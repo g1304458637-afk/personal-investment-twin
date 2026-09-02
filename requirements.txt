@@ -3,3 +3,6 @@ vectorbt==1.1.0
 # vectorbt 1.1.0 imports a removed scattermapbox template under Plotly 7.0.0.
 plotly==6.9.0
 pytest==9.1.1
+
+# Financial return and benchmark statistics.
+empyrical-reloaded==0.5.12

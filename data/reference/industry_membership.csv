@@ -1,0 +1,2 @@
+symbol,industry_id,industry_name,valid_from,valid_to,classification,data_source,data_version,is_synthetic
+600000.SH,SW_BANK,银行,2020-01-01,,synthetic_industry,local_fixture,v1,true

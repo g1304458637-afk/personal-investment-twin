@@ -1,0 +1,13 @@
+date,instrument,close,price_type,data_source,data_version,is_synthetic
+2025-01-06,600000.SH,10.0,synthetic,local_fixture,v1,true
+2025-02-10,600000.SH,11.0,synthetic,local_fixture,v1,true
+2025-03-18,600000.SH,12.0,synthetic,local_fixture,v1,true
+2025-05-20,600000.SH,13.0,synthetic,local_fixture,v1,true
+2025-01-06,CSI300,100.0,synthetic,local_fixture,v1,true
+2025-02-10,CSI300,102.0,synthetic,local_fixture,v1,true
+2025-03-18,CSI300,103.0,synthetic,local_fixture,v1,true
+2025-05-20,CSI300,108.0,synthetic,local_fixture,v1,true
+2025-01-06,SW_BANK,100.0,synthetic,local_fixture,v1,true
+2025-02-10,SW_BANK,105.0,synthetic,local_fixture,v1,true
+2025-03-18,SW_BANK,112.0,synthetic,local_fixture,v1,true
+2025-05-20,SW_BANK,125.0,synthetic,local_fixture,v1,true
