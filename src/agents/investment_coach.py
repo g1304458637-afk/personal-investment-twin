@@ -4,21 +4,27 @@ from __future__ import annotations
 
 import argparse
 import os
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Final
+from typing import Final, Literal
 
 import pandas as pd
+from openai import AsyncOpenAI
+from openai.types.shared import Reasoning
 from agents import (
     Agent,
     ModelSettings,
     RunContextWrapper,
+    RunConfig,
     RunResult,
     Runner,
     ToolCallItem,
     ToolCallOutputItem,
     function_tool,
 )
+from agents.models import get_default_model
+from agents.models.openai_responses import OpenAIResponsesModel
 
 from src.attribution.selection_evidence import (
     SelectionEvidence,
@@ -36,6 +42,10 @@ from src.episodes.investment_episode import (
 DEFAULT_QUESTION: Final = "帮我分析一下这次投资。"
 DEMO_INITIAL_CASH: Final = 100_000.0
 PROJECT_ROOT: Final = Path(__file__).resolve().parents[2]
+ProviderName = Literal["deepseek", "openai"]
+DEFAULT_PROVIDER: Final[ProviderName] = "deepseek"
+DEEPSEEK_BASE_URL: Final = "https://api.deepseek.com"
+DEFAULT_DEEPSEEK_MODEL: Final = "deepseek-v4-flash"
 REQUIRED_COACH_TOOLS: Final = frozenset(
     {
         "get_current_investment_episode",
@@ -61,6 +71,15 @@ get_current_investment_episode 和 get_current_selection_evidence 两个工具�
    或自行计算替代结果。
 5. synthetic_provenance_present 为 true 时，必须明确说明这是 synthetic/demo 数据，不是真实历史市场表现。
 6. 不荐股、不预测未来涨跌、不自动交易，也不给出确定性的买入或卖出指令。
+7. 可以报告 Position Return 与 Asset Episode TWR 的大小关系，但不得仅依据这一大小关系自行解释或归因
+   差异。只有当相应的 deterministic Attribution Tool 已注册为当前 Agent tool、在本次 run 中实际成功
+   调用并返回有效 attribution evidence 时，才允许严格依据该工具结果解释差异来源。没有对应 Attribution
+   Tool 或任一条件未满足时，必须说明当前证据不足以判断差异来自 Entry / Exit / Sizing / Scaling /
+   Friction 中的哪一项，不得猜测。
+8. 当前 V0 已注册的 tools 只有 get_current_investment_episode 和 get_current_selection_evidence。Agent
+   只能声称拥有当前已注册且可成功调用的 tools 所支持的能力。Behavior Analytics、Investor DNA、
+   Personal Memory 和 Pre-Decision Intervention 不是永久禁止的能力；没有对应工具时才说明当前尚未接入，
+   不得假装拥有。
 
 回答应简洁、清楚，并明确区分确定性事实、证据限制与非结论。
 """.strip()
@@ -131,6 +150,17 @@ class InvestmentCoachContext:
     def __post_init__(self) -> None:
         if self.episode.episode_id != self.selection_evidence.episode_id:
             raise ValueError("Episode and SelectionEvidence IDs must match")
+
+
+@dataclass(frozen=True, slots=True)
+class CoachModelRuntime:
+    """One explicit Agents SDK model/client configuration for a coach run."""
+
+    provider: ProviderName
+    model_name: str
+    model: OpenAIResponsesModel = field(repr=False)
+    model_settings: ModelSettings = field(repr=False)
+    run_config: RunConfig = field(repr=False)
 
 
 def _timestamp_text(value: object | None) -> str | None:
@@ -302,11 +332,66 @@ def get_current_selection_evidence(
     return _selection_evidence_facts(context.context.selection_evidence)
 
 
+class ProviderConfigurationError(ValueError):
+    """Raised when the selected model provider cannot be configured safely."""
+
+
+def create_model_runtime(
+    provider: str = DEFAULT_PROVIDER,
+    model: str | None = None,
+    *,
+    environment: Mapping[str, str] | None = None,
+) -> CoachModelRuntime:
+    """Build a per-run OpenAI-compatible client without changing SDK globals."""
+
+    env = os.environ if environment is None else environment
+    if provider == "deepseek":
+        api_key = env.get("DEEPSEEK_API_KEY")
+        if api_key is None or not api_key.strip():
+            raise ProviderConfigurationError(
+                "Set DEEPSEEK_API_KEY in the environment for the DeepSeek provider."
+            )
+        model_name = model or DEFAULT_DEEPSEEK_MODEL
+        client = AsyncOpenAI(api_key=api_key, base_url=DEEPSEEK_BASE_URL)
+        reasoning = Reasoning(effort="none")
+        tracing_disabled = True
+    elif provider == "openai":
+        api_key = env.get("OPENAI_API_KEY")
+        if api_key is None or not api_key.strip():
+            raise ProviderConfigurationError(
+                "Set OPENAI_API_KEY in the environment for the OpenAI provider."
+            )
+        model_name = model or get_default_model()
+        client = AsyncOpenAI(api_key=api_key)
+        reasoning = None
+        tracing_disabled = False
+    else:
+        raise ProviderConfigurationError(
+            f"Unsupported provider: {provider}. Expected deepseek or openai."
+        )
+
+    return CoachModelRuntime(
+        provider=provider,
+        model_name=model_name,
+        model=OpenAIResponsesModel(model=model_name, openai_client=client),
+        model_settings=ModelSettings(
+            tool_choice="required",
+            reasoning=reasoning,
+        ),
+        run_config=RunConfig(tracing_disabled=tracing_disabled),
+    )
+
+
 def create_investment_coach_agent(
     *,
-    model: str | None = None,
+    model: str | OpenAIResponsesModel | None = None,
+    model_settings: ModelSettings | None = None,
 ) -> Agent[InvestmentCoachContext]:
     """Create the single bounded Investment Coach Agent V0."""
+
+    settings = model_settings or ModelSettings(tool_choice="required")
+    if settings.tool_choice != "required":
+        raise ValueError("Investment Coach requires tool_choice='required'")
 
     return Agent(
         name="Investment Coach Agent V0",
@@ -316,7 +401,7 @@ def create_investment_coach_agent(
             get_current_selection_evidence,
         ],
         model=model,
-        model_settings=ModelSettings(tool_choice="required"),
+        model_settings=settings,
     )
 
 
@@ -364,11 +449,17 @@ def run_investment_coach(
     context: InvestmentCoachContext,
     *,
     agent: Agent[InvestmentCoachContext] | None = None,
+    run_config: RunConfig | None = None,
 ) -> str:
     """Run once and expose output only after required tool-use validation."""
 
     active_agent = agent or create_investment_coach_agent()
-    result = Runner.run_sync(active_agent, question, context=context)
+    result = Runner.run_sync(
+        active_agent,
+        question,
+        context=context,
+        run_config=run_config,
+    )
     return validate_required_tool_use(result)
 
 
@@ -404,23 +495,42 @@ def load_synthetic_demo_context(
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Run the synthetic demo against a real OpenAI model."""
+    """Run the synthetic demo against the selected OpenAI-compatible provider."""
 
     parser = argparse.ArgumentParser(description="Run Investment Coach Agent V0")
     parser.add_argument("question", nargs="?", default=DEFAULT_QUESTION)
     parser.add_argument(
+        "--provider",
+        choices=("deepseek", "openai"),
+        default=DEFAULT_PROVIDER,
+        help="Model provider (default: deepseek).",
+    )
+    parser.add_argument(
         "--model",
         default=None,
-        help="Optional OpenAI model override; otherwise use the Agents SDK default.",
+        help=(
+            "Optional model override. DeepSeek defaults to deepseek-v4-flash; "
+            "OpenAI uses the Agents SDK default."
+        ),
     )
     args = parser.parse_args(argv)
 
-    if not os.environ.get("OPENAI_API_KEY"):
-        raise SystemExit("Set OPENAI_API_KEY in the environment before running the demo.")
+    try:
+        runtime = create_model_runtime(args.provider, args.model)
+    except ProviderConfigurationError as exc:
+        raise SystemExit(str(exc)) from exc
 
     context = load_synthetic_demo_context()
-    agent = create_investment_coach_agent(model=args.model)
-    final_output = run_investment_coach(args.question, context, agent=agent)
+    agent = create_investment_coach_agent(
+        model=runtime.model,
+        model_settings=runtime.model_settings,
+    )
+    final_output = run_investment_coach(
+        args.question,
+        context,
+        agent=agent,
+        run_config=runtime.run_config,
+    )
     print(final_output)
     return 0
 

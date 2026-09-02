@@ -1,20 +1,31 @@
 import asyncio
 from dataclasses import replace
 from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
-from agents import FunctionTool, ToolCallItem, ToolCallOutputItem
+from agents import (
+    FunctionTool,
+    ModelSettings,
+    RunConfig,
+    ToolCallItem,
+    ToolCallOutputItem,
+)
 from agents.tool_context import ToolContext
 
 import src.agents.investment_coach as coach_module
 from src.agents.investment_coach import (
     COACH_INSTRUCTIONS,
+    DEFAULT_DEEPSEEK_MODEL,
+    DEEPSEEK_BASE_URL,
     InvestmentCoachContext,
     InvestmentEpisodeFacts,
+    ProviderConfigurationError,
     REQUIRED_COACH_TOOLS,
     RequiredToolUseError,
     SelectionEvidenceFacts,
     create_investment_coach_agent,
+    create_model_runtime,
     get_current_investment_episode,
     get_current_selection_evidence,
     load_synthetic_demo_context,
@@ -27,6 +38,18 @@ from src.data.local_market_data_provider import LocalMarketDataProvider
 @pytest.fixture(scope="module")
 def coach_context() -> InvestmentCoachContext:
     return load_synthetic_demo_context()
+
+
+@pytest.fixture
+def client_calls(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, object]]:
+    calls: list[dict[str, object]] = []
+
+    def fake_async_openai(**kwargs):
+        calls.append(kwargs)
+        return SimpleNamespace()
+
+    monkeypatch.setattr(coach_module, "AsyncOpenAI", fake_async_openai)
+    return calls
 
 
 def _invoke_tool(
@@ -120,6 +143,154 @@ def test_instructions_enforce_deterministic_financial_boundaries():
     assert "synthetic/demo" in COACH_INSTRUCTIONS
     assert "不得由单个 Episode 推断" in COACH_INSTRUCTIONS
     assert "不荐股" in COACH_INSTRUCTIONS
+
+
+def test_instructions_require_tool_evidence_before_causal_attribution():
+    assert "可以报告 Position Return 与 Asset Episode TWR 的大小关系" in (
+        COACH_INSTRUCTIONS
+    )
+    assert "不得仅依据这一大小关系自行解释或归因" in COACH_INSTRUCTIONS
+    for required_condition in (
+        "已注册为当前 Agent tool",
+        "在本次 run 中实际成功",
+        "返回有效 attribution evidence",
+    ):
+        assert required_condition in COACH_INSTRUCTIONS
+    assert "才允许严格依据该工具结果解释差异来源" in COACH_INSTRUCTIONS
+    for attribution_dimension in (
+        "Entry",
+        "Exit",
+        "Sizing",
+        "Scaling",
+        "Friction",
+    ):
+        assert attribution_dimension in COACH_INSTRUCTIONS
+    assert "当前证据不足以判断差异来自" in COACH_INSTRUCTIONS
+
+
+def test_instructions_make_capability_claims_follow_registered_tools():
+    assert "当前 V0 已注册的 tools 只有" in COACH_INSTRUCTIONS
+    assert "get_current_investment_episode" in COACH_INSTRUCTIONS
+    assert "get_current_selection_evidence" in COACH_INSTRUCTIONS
+    assert "只能声称拥有当前已注册且可成功调用的 tools 所支持的能力" in (
+        COACH_INSTRUCTIONS
+    )
+    for future_capability in (
+        "Behavior Analytics",
+        "Investor DNA",
+        "Personal Memory",
+        "Pre-Decision Intervention",
+    ):
+        assert future_capability in COACH_INSTRUCTIONS
+    assert "不是永久禁止的能力" in COACH_INSTRUCTIONS
+    assert "没有对应工具时才说明当前尚未接入" in COACH_INSTRUCTIONS
+
+
+def test_deepseek_is_default_provider_and_uses_official_base_url(
+    client_calls: list[dict[str, object]],
+):
+    environment = Mock()
+    environment.get.return_value = "placeholder-credential"
+
+    runtime = create_model_runtime(environment=environment)
+
+    environment.get.assert_called_once_with("DEEPSEEK_API_KEY")
+    assert runtime.provider == "deepseek"
+    assert runtime.model_name == DEFAULT_DEEPSEEK_MODEL
+    assert runtime.model.model == "deepseek-v4-flash"
+    assert runtime.model_settings.tool_choice == "required"
+    assert runtime.model_settings.reasoning is not None
+    assert runtime.model_settings.reasoning.effort == "none"
+    assert runtime.run_config.tracing_disabled is True
+    assert len(client_calls) == 1
+    assert client_calls[0]["base_url"] == DEEPSEEK_BASE_URL
+    assert "api_key" in client_calls[0]
+
+
+def test_deepseek_v4_pro_is_allowed_without_openai_key(
+    client_calls: list[dict[str, object]],
+):
+    environment = Mock()
+    environment.get.return_value = "placeholder-credential"
+
+    runtime = create_model_runtime(
+        "deepseek",
+        "deepseek-v4-pro",
+        environment=environment,
+    )
+
+    environment.get.assert_called_once_with("DEEPSEEK_API_KEY")
+    assert runtime.model_name == "deepseek-v4-pro"
+    assert runtime.model.model == "deepseek-v4-pro"
+    assert runtime.model_settings.tool_choice == "required"
+    assert runtime.model_settings.reasoning is not None
+    assert runtime.model_settings.reasoning.effort == "none"
+    assert len(client_calls) == 1
+
+
+def test_missing_deepseek_key_fails_before_client_creation(
+    client_calls: list[dict[str, object]],
+):
+    with pytest.raises(ProviderConfigurationError, match="DEEPSEEK_API_KEY"):
+        create_model_runtime(environment={})
+
+    assert client_calls == []
+
+
+def test_openai_provider_reads_only_openai_key_and_uses_default_endpoint(
+    client_calls: list[dict[str, object]],
+):
+    environment = Mock()
+    environment.get.return_value = "placeholder-credential"
+
+    runtime = create_model_runtime(
+        "openai",
+        "gpt-5.4-mini",
+        environment=environment,
+    )
+
+    environment.get.assert_called_once_with("OPENAI_API_KEY")
+    assert runtime.provider == "openai"
+    assert runtime.model_name == "gpt-5.4-mini"
+    assert runtime.model_settings.tool_choice == "required"
+    assert runtime.model_settings.reasoning is None
+    assert runtime.run_config.tracing_disabled is False
+    assert len(client_calls) == 1
+    assert "base_url" not in client_calls[0]
+
+
+def test_provider_switch_does_not_change_financial_tools(
+    client_calls: list[dict[str, object]],
+):
+    deepseek_runtime = create_model_runtime(
+        "deepseek",
+        environment={"DEEPSEEK_API_KEY": "placeholder-credential"},
+    )
+    openai_runtime = create_model_runtime(
+        "openai",
+        "gpt-5.4-mini",
+        environment={"OPENAI_API_KEY": "placeholder-credential"},
+    )
+
+    deepseek_agent = create_investment_coach_agent(
+        model=deepseek_runtime.model,
+        model_settings=deepseek_runtime.model_settings,
+    )
+    openai_agent = create_investment_coach_agent(
+        model=openai_runtime.model,
+        model_settings=openai_runtime.model_settings,
+    )
+
+    assert deepseek_agent.tools == openai_agent.tools == [
+        get_current_investment_episode,
+        get_current_selection_evidence,
+    ]
+    assert deepseek_agent.model_settings.tool_choice == "required"
+    assert deepseek_agent.model_settings.reasoning is not None
+    assert deepseek_agent.model_settings.reasoning.effort == "none"
+    assert openai_agent.model_settings.tool_choice == "required"
+    assert openai_agent.model_settings.reasoning is None
+    assert len(client_calls) == 2
 
 
 def test_tools_return_existing_deterministic_facts(
@@ -296,6 +467,44 @@ def test_run_accepts_output_only_after_both_tools_execute(
     assert output == "accepted coach response"
 
 
+def test_deepseek_run_disables_openai_tracing_without_weakening_audit(
+    monkeypatch: pytest.MonkeyPatch,
+    coach_context: InvestmentCoachContext,
+    client_calls: list[dict[str, object]],
+):
+    runtime = create_model_runtime(
+        environment={"DEEPSEEK_API_KEY": "placeholder-credential"}
+    )
+    agent = create_investment_coach_agent(
+        model=runtime.model,
+        model_settings=runtime.model_settings,
+    )
+    result = _run_result_with_tool_outputs(
+        agent,
+        coach_context,
+        REQUIRED_COACH_TOOLS,
+    )
+    received = {}
+
+    def fake_run_sync(*args, **kwargs):
+        received.update(kwargs)
+        return result
+
+    monkeypatch.setattr(coach_module.Runner, "run_sync", fake_run_sync)
+
+    output = run_investment_coach(
+        "帮我分析一下这次投资。",
+        coach_context,
+        agent=agent,
+        run_config=runtime.run_config,
+    )
+
+    assert output == "accepted coach response"
+    assert received["run_config"] is runtime.run_config
+    assert received["run_config"].tracing_disabled is True
+    assert len(client_calls) == 1
+
+
 @pytest.mark.parametrize("missing_tool", sorted(REQUIRED_COACH_TOOLS))
 def test_run_rejects_final_output_when_a_required_tool_did_not_execute(
     monkeypatch: pytest.MonkeyPatch,
@@ -338,8 +547,63 @@ def test_run_rejects_final_output_when_a_tool_returns_an_error(
         run_investment_coach("帮我分析一下这次投资。", coach_context, agent=agent)
 
 
-def test_demo_requires_api_key_before_any_model_run(monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+def test_default_cli_requires_deepseek_key_before_any_model_run(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "placeholder-credential")
 
-    with pytest.raises(SystemExit, match="Set OPENAI_API_KEY"):
+    with pytest.raises(SystemExit, match="Set DEEPSEEK_API_KEY"):
         main([])
+
+
+def test_cli_passes_explicit_provider_and_model(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    coach_context: InvestmentCoachContext,
+):
+    received = {}
+    runtime = SimpleNamespace(
+        model=object(),
+        model_settings=ModelSettings(tool_choice="required"),
+        run_config=RunConfig(tracing_disabled=False),
+    )
+
+    def fake_create_runtime(provider, model):
+        received["provider"] = provider
+        received["model"] = model
+        return runtime
+
+    monkeypatch.setattr(coach_module, "create_model_runtime", fake_create_runtime)
+    monkeypatch.setattr(
+        coach_module,
+        "load_synthetic_demo_context",
+        lambda: coach_context,
+    )
+    monkeypatch.setattr(
+        coach_module,
+        "create_investment_coach_agent",
+        lambda *, model, model_settings: SimpleNamespace(
+            model=model,
+            model_settings=model_settings,
+        ),
+    )
+    monkeypatch.setattr(
+        coach_module,
+        "run_investment_coach",
+        lambda question, context, *, agent, run_config: "coach answer",
+    )
+
+    result = main(
+        [
+            "帮我分析一下这次投资。",
+            "--provider",
+            "openai",
+            "--model",
+            "gpt-5.4-mini",
+        ]
+    )
+
+    assert result == 0
+    assert received == {"provider": "openai", "model": "gpt-5.4-mini"}
+    assert capsys.readouterr().out == "coach answer\n"
