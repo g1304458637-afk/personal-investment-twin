@@ -1,0 +1,5 @@
+# Direct dependencies for the bounded vectorbt feasibility experiment.
+vectorbt==1.1.0
+# vectorbt 1.1.0 imports a removed scattermapbox template under Plotly 7.0.0.
+plotly==6.9.0
+pytest==9.1.1
