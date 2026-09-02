@@ -191,8 +191,9 @@ def replay_multi_asset_executions(
         indexed["signed_size"]
         .unstack("symbol")
         .reindex(index=marks.index, columns=symbols)
-        .fillna(0.0)
     )
+    # In vectorbt 1.1.0's long-only Amount replay, an inactive zero after a full
+    # close enters the reduce/close path and is rejected; NaN skips the order.
     order_price = (
         indexed["executed_price"]
         .unstack("symbol")
