@@ -6,3 +6,6 @@ pytest==9.1.1
 
 # Financial return and benchmark statistics.
 empyrical-reloaded==0.5.12
+
+# Agent orchestration.
+openai-agents==0.22.0

@@ -27,6 +27,16 @@ EvidenceStatus = Literal["complete", "partial", "insufficient_evidence"]
 
 
 @dataclass(frozen=True, slots=True)
+class PriceProvenance:
+    instrument: str
+    data_source: str
+    data_version: str
+    as_of: pd.Timestamp
+    price_type: str
+    is_synthetic: bool
+
+
+@dataclass(frozen=True, slots=True)
 class BenchmarkProvenance:
     benchmark_id: str
     benchmark_name: str
@@ -71,6 +81,7 @@ class SelectionEvidence:
     industry_comparison: Comparison | None
     evidence_status: EvidenceStatus
     evidence_reason: str | None
+    asset_provenance: PriceProvenance | None
     industry_provenance: IndustryProvenance | None
     benchmark_provenance: tuple[BenchmarkProvenance, ...]
 
@@ -93,7 +104,7 @@ def _price_window(
     instrument: str,
     start_date: pd.Timestamp,
     end_date: pd.Timestamp,
-) -> tuple[pd.Series, pd.DataFrame]:
+) -> tuple[pd.Series, pd.DataFrame, PriceProvenance]:
     rows = provider.get_prices([instrument], start_date, end_date)
     context = f"Price data for {instrument}"
 
@@ -119,9 +130,17 @@ def _price_window(
     if (close <= 0).any():
         raise _EvidenceDataError(f"{context} contains a non-positive close")
 
-    _validated_price_provenance(rows, context)
+    provenance_values = _validated_price_provenance(rows, context)
+    provenance = PriceProvenance(
+        instrument=instrument,
+        data_source=str(provenance_values["data_source"]),
+        data_version=str(provenance_values["data_version"]),
+        as_of=pd.Timestamp(rows["date"].max()),
+        price_type=str(provenance_values["price_type"]),
+        is_synthetic=bool(provenance_values["is_synthetic"]),
+    )
     prices = pd.Series(close.to_numpy(), index=rows["date"], name=instrument)
-    return prices, rows
+    return prices, rows, provenance
 
 
 def _synthetic_flag(value: object, context: str) -> bool:
@@ -249,6 +268,7 @@ def _insufficient_evidence(
     industry_name: str | None = None,
     industry_as_of_date: pd.Timestamp | None = None,
     industry_benchmark_name: str | None = None,
+    asset_provenance: PriceProvenance | None = None,
     industry_provenance: IndustryProvenance | None = None,
     provenance: tuple[BenchmarkProvenance, ...] = (),
 ) -> SelectionEvidence:
@@ -271,6 +291,7 @@ def _insufficient_evidence(
         industry_comparison=None,
         evidence_status="insufficient_evidence",
         evidence_reason=reason,
+        asset_provenance=asset_provenance,
         industry_provenance=industry_provenance,
         benchmark_provenance=provenance,
     )
@@ -319,6 +340,7 @@ def build_selection_evidence(
     industry_name: str | None = None
     industry_as_of_date: pd.Timestamp | None = None
     industry_benchmark_name: str | None = None
+    asset_provenance: PriceProvenance | None = None
     industry_provenance: IndustryProvenance | None = None
     provenance: list[BenchmarkProvenance] = []
 
@@ -387,15 +409,15 @@ def build_selection_evidence(
         )
 
     try:
-        asset_prices, _ = _price_window(
+        asset_prices, _, asset_provenance = _price_window(
             provider, episode.symbol, start_date, end_date
         )
-        market_prices, market_rows = _price_window(
+        market_prices, market_rows, _ = _price_window(
             provider, MARKET_BENCHMARK_ID, start_date, end_date
         )
         market_provenance = _benchmark_provenance(market_mapping, market_rows)
         provenance.append(market_provenance)
-        industry_prices, industry_rows = _price_window(
+        industry_prices, industry_rows, _ = _price_window(
             provider, industry_id, start_date, end_date
         )
         industry_benchmark_provenance = _benchmark_provenance(
@@ -416,6 +438,7 @@ def build_selection_evidence(
             industry_name=industry_name,
             industry_as_of_date=industry_as_of_date,
             industry_benchmark_name=industry_benchmark_name,
+            asset_provenance=asset_provenance,
             industry_provenance=industry_provenance,
             provenance=tuple(provenance),
         )
@@ -448,6 +471,7 @@ def build_selection_evidence(
         industry_comparison=_comparison(asset_return, industry_return),
         evidence_status=evidence_status,
         evidence_reason=evidence_reason,
+        asset_provenance=asset_provenance,
         industry_provenance=industry_provenance,
         benchmark_provenance=tuple(provenance),
     )

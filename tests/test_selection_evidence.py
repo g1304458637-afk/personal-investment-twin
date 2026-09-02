@@ -114,6 +114,15 @@ def test_benchmark_provenance_is_preserved(
     evidence = build_selection_evidence(closed_episode, provider)
     provenance = {item.benchmark_id: item for item in evidence.benchmark_provenance}
 
+    asset = evidence.asset_provenance
+    assert asset is not None
+    assert asset.instrument == "600000.SH"
+    assert asset.data_source == "local_fixture"
+    assert asset.data_version == "v1"
+    assert asset.as_of == pd.Timestamp("2025-05-20")
+    assert asset.price_type == "synthetic"
+    assert asset.is_synthetic is True
+
     assert set(provenance) == {"CSI300", "SW_BANK"}
     assert provenance["CSI300"].benchmark_name == "沪深300"
     assert provenance["CSI300"].benchmark_type == "market"
@@ -231,6 +240,7 @@ def test_invalid_asset_price_provenance_returns_insufficient_evidence(
     assert evidence.evidence_status == "insufficient_evidence"
     assert "600000.SH" in evidence.evidence_reason
     assert expected_reason in evidence.evidence_reason
+    assert evidence.asset_provenance is None
     _assert_no_calculated_evidence(evidence)
 
 
