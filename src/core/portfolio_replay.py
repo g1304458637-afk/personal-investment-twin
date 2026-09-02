@@ -126,10 +126,27 @@ def _validated_executions(executions: pd.DataFrame) -> pd.DataFrame:
         raise PortfolioReplayError("execution_id must be unique")
     if frame.duplicated(["event_time", "symbol"]).any():
         raise PortfolioReplayError(
-            "Sizing Evidence v1 accepts at most one execution per symbol at a "
-            "decision timestamp"
+            "Portfolio replay accepts at most one execution per symbol at a timestamp"
         )
-    return frame.sort_values(["event_time", "symbol"], kind="stable")
+    return frame.sort_values("event_time", kind="stable")
+
+
+def _execution_call_sequence(
+    frame: pd.DataFrame,
+    marks: pd.DataFrame,
+    symbols: list[str],
+) -> np.ndarray:
+    """Preserve normalized row order within each execution timestamp."""
+
+    default = np.arange(len(symbols), dtype=np.int64)
+    call_sequence = np.tile(default, (len(marks.index), 1))
+    symbol_position = {symbol: position for position, symbol in enumerate(symbols)}
+    for timestamp, rows in frame.groupby("event_time", sort=False):
+        executed = [symbol_position[symbol] for symbol in rows["symbol"]]
+        executed_set = set(executed)
+        inactive = [position for position in default if position not in executed_set]
+        call_sequence[marks.index.get_loc(timestamp)] = executed + inactive
+    return call_sequence
 
 
 def replay_multi_asset_executions(
@@ -141,7 +158,8 @@ def replay_multi_asset_executions(
     """Replay normalized long-only executions with shared cash through vectorbt.
 
     Broker order and execution identifiers remain in the normalized input as an
-    audit sidecar; vectorbt does not need them for portfolio calculations.
+    audit sidecar; vectorbt does not need them for portfolio calculations.  For
+    executions sharing a timestamp, DataFrame row order is the execution order.
     """
 
     frame = _validated_executions(executions)
@@ -192,6 +210,7 @@ def replay_multi_asset_executions(
     size.columns.name = marks.columns.name
     order_price.columns.name = marks.columns.name
     fixed_fees.columns.name = marks.columns.name
+    call_sequence = _execution_call_sequence(frame, marks, symbols)
 
     try:
         return vbt.Portfolio.from_orders(
@@ -209,7 +228,7 @@ def replay_multi_asset_executions(
             init_cash=normalized_init_cash,
             cash_sharing=True,
             group_by=True,
-            call_seq="auto",
+            call_seq=call_sequence,
         )
     except (RejectedOrderError, ValueError) as exc:
         raise PortfolioReplayError(f"vectorbt could not replay executions: {exc}") from exc
