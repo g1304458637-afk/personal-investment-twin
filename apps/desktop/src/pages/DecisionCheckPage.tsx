@@ -2,11 +2,12 @@ import { AlertCircle, FlaskConical, LoaderCircle, Scale } from "lucide-react";
 import { useMemo, useReducer, useState } from "react";
 
 import { GlassPanel } from "@/components/common/GlassPanel";
+import { EvidenceExplainButton } from "@/components/evidence/EvidenceInspector";
 import { PageHeader, SectionHeading } from "@/components/common/PageHeader";
 import { StateNotice } from "@/components/common/StateNotice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { pretradeDemo } from "@/data/backendEvidence";
+import { pretradeDemo, pretradeExplainability } from "@/data/backendEvidence";
 import {
   checkPretrade,
   createPretradeRequestId,
@@ -197,6 +198,17 @@ export function DecisionCheckPage() {
               eyebrow={runtime === "tauri_local" ? t("Live deterministic vectorbt replay") : t("Generated offline deterministic replay")}
               title={t("Current → proposed trade")}
               description={t("If executed at the stated proposed price and quantity, the portfolio would change as follows. No future return or price is estimated.")}
+              action={
+                <EvidenceExplainButton
+                  view={pretradeExplainability}
+                  label="Explain this change"
+                  context={{
+                    label: t("Pre-trade evidence"),
+                    title: complete.symbol,
+                    detail: t("Current → proposed trade"),
+                  }}
+                />
+              }
             />
           </div>
           <dl className="grid border-t border-border/60 md:grid-cols-3">

@@ -8,6 +8,11 @@ import type {
 import type { TranslationValues } from "@/locales/LocaleProvider";
 
 import type { BehaviorHistorySeries } from "./behaviorHistory";
+import {
+  adaptExplainabilityPayload,
+  conceptOnlyView,
+  type ExplainabilityView,
+} from "./explainability";
 import { adaptPeerBenchmarkPayload, type BackendPeerBenchmarkPayload } from "./peerBenchmark";
 import {
   adaptPositionEpisodeDemo,
@@ -51,6 +56,7 @@ interface BackendEvidenceExport {
   peer_benchmark: BackendPeerBenchmarkPayload;
   pretrade_demo: BackendPretradeImpact;
   position_episode_demo: BackendPositionEpisodeDemo;
+  explainability: unknown;
 }
 
 interface BackendHistoricalMetricSeries {
@@ -106,6 +112,22 @@ export const pretradeDemo = adaptPretradeImpact(backend.pretrade_demo);
 export const positionEpisodeDemo: PositionEpisodeDemoView = adaptPositionEpisodeDemo(
   backend.position_episode_demo,
 );
+export const explainability = adaptExplainabilityPayload(backend.explainability);
+
+export function explainabilityForEvidence(evidenceId: string): ExplainabilityView | null {
+  return explainability.evidenceViews.find((item) => item.evidenceId === evidenceId) ?? null;
+}
+
+export function explainabilityForConcept(conceptId: string): ExplainabilityView | null {
+  return explainability.evidenceViews.find(
+    (item) => item.concept.conceptId === conceptId && item.trace?.status === "complete",
+  ) ?? conceptOnlyView(explainability, conceptId);
+}
+
+export const insufficientExplainability = explainability.evidenceViews.find(
+  (item) => item.trace?.status === "insufficient",
+) ?? null;
+export const pretradeExplainability = explainability.pretrade;
 
 export function getPositionEpisodeById(episodeId: string): PositionEpisodeEntryView | null {
   return positionEpisodeDemo.entries.find((entry) => entry.episode.episodeId === episodeId) ?? null;

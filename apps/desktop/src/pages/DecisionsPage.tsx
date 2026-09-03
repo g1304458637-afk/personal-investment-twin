@@ -1,4 +1,4 @@
-import { ArrowRight, ChevronDown, ChevronUp, Database, Hash, Sparkles } from "lucide-react";
+import { ArrowRight, Database, Hash, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -6,8 +6,15 @@ import { EvidenceTrendChart } from "@/components/charts/EvidenceTrendChart";
 import { GlassPanel } from "@/components/common/GlassPanel";
 import { PageHeader, SectionHeading } from "@/components/common/PageHeader";
 import { DemoBadge, StatusBadge } from "@/components/common/StatusBadge";
-import { Button } from "@/components/ui/button";
-import { decisionMetrics, evidenceRecords, positionEpisodeDemo, translateEvidenceText } from "@/data/backendEvidence";
+import { EvidenceExplainButton } from "@/components/evidence/EvidenceInspector";
+import {
+  decisionMetrics,
+  evidenceRecords,
+  explainabilityForConcept,
+  explainabilityForEvidence,
+  positionEpisodeDemo,
+  translateEvidenceText,
+} from "@/data/backendEvidence";
 import type { DemoEvidenceRecord, EvidenceMetric } from "@/demo/types";
 import { cn } from "@/lib/utils";
 import { useLocale, type TranslationValues } from "@/locales/LocaleProvider";
@@ -19,8 +26,15 @@ function findEvidence(metric: EvidenceMetric): DemoEvidenceRecord {
 }
 
 function EvidenceDetail({ record, metric, t }: { record: DemoEvidenceRecord; metric: EvidenceMetric; t: (value: string, values?: TranslationValues) => string }) {
-  const [open, setOpen] = useState(false);
   const confidence = t(metric.confidence ?? "CI not available for this registered method");
+  const conceptIds: Record<string, string> = {
+    selection: "selection_episode_asset_return",
+    sizing: "sizing_equal_weight_comparison",
+    exit: "post_exit_fixed_window_return",
+    friction: "recorded_trading_friction",
+  };
+  const view = explainabilityForEvidence(record.evidence_id)
+    ?? explainabilityForConcept(conceptIds[metric.id]);
 
   return (
     <div className="border-t border-border/70 pt-3">
@@ -29,32 +43,12 @@ function EvidenceDetail({ record, metric, t }: { record: DemoEvidenceRecord; met
         <span><strong className="mr-1 font-medium text-foreground">{t("Uncertainty")}</strong>{confidence}</span>
         <span><strong className="mr-1 font-medium text-foreground">{t("As of")}</strong>{t("31 Mar 2025")}</span>
       </div>
-      <Button
-        type="button"
-        variant="quiet"
-        size="sm"
+      <EvidenceExplainButton
+        view={view}
         className="mt-2 -ml-3"
-        aria-expanded={open}
-        onClick={() => setOpen((current) => !current)}
-      >
-        {open ? <ChevronUp /> : <ChevronDown />}
-        {t(open ? "Hide evidence details" : "Show evidence details")}
-      </Button>
-      {open ? (
-        <div className="mt-2 grid gap-3 border-l border-accent/35 pl-3 text-xs leading-5 text-muted md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
-          <div>
-            <p className="text-foreground">{t("Method")}</p>
-            <p className="font-mono text-[11px]">{record.method_id} · v{record.method_version}</p>
-            <p className="mt-2 text-foreground">{t("Evidence ID")}</p>
-            <p className="break-all font-mono text-[11px]">{record.evidence_id}</p>
-          </div>
-          <div>
-            <p className="text-foreground">{t("Boundary")}</p>
-            <p>{t(record.evidence_reason ?? record.limitations[0])}</p>
-            {record.limitations.length > 1 ? <p className="mt-1">{t("Also excludes")}: {record.limitations.slice(1).map((item) => t(item)).join(" ")}</p> : null}
-          </div>
-        </div>
-      ) : null}
+        label="View evidence"
+        context={{ label: t("Decision evidence"), title: t(metric.label), detail: t("Synthetic offline fixture") }}
+      />
     </div>
   );
 }

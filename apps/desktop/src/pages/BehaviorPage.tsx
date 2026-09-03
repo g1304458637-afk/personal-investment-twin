@@ -1,13 +1,20 @@
-import { ChevronDown, ChevronUp, CircleHelp, FlaskConical, Hash } from "lucide-react";
+import { CircleHelp, FlaskConical, Hash } from "lucide-react";
 import { useState } from "react";
 
 import { HistoricalMetricChart } from "@/components/charts/HistoricalMetricChart";
 import { GlassPanel } from "@/components/common/GlassPanel";
+import { EvidenceExplainButton } from "@/components/evidence/EvidenceInspector";
 import { PageHeader, SectionHeading } from "@/components/common/PageHeader";
 import { StateNotice } from "@/components/common/StateNotice";
 import { DemoBadge, StatusBadge } from "@/components/common/StatusBadge";
-import { Button } from "@/components/ui/button";
-import { behaviorHistory, behaviorMetrics, evidenceRecords, translateEvidenceText } from "@/data/backendEvidence";
+import {
+  behaviorHistory,
+  behaviorMetrics,
+  evidenceRecords,
+  explainabilityForConcept,
+  explainabilityForEvidence,
+  translateEvidenceText,
+} from "@/data/backendEvidence";
 import type { DemoEvidenceRecord, EvidenceMetric } from "@/demo/types";
 import { cn } from "@/lib/utils";
 import { useLocale, type TranslationValues } from "@/locales/LocaleProvider";
@@ -26,24 +33,25 @@ function evidenceFor(metric: EvidenceMetric): DemoEvidenceRecord {
 }
 
 function BehaviorDetail({ metric, record, t }: { metric: EvidenceMetric; record: DemoEvidenceRecord; t: (value: string, values?: TranslationValues) => string }) {
-  const [open, setOpen] = useState(false);
+  const conceptIds: Record<string, string> = {
+    hhi: "portfolio_concentration_hhi",
+    turnover: "turnover_intensity",
+    disposition: "disposition_effect",
+    "loss-averaging": "loss_state_addition",
+  };
+  const view = explainabilityForEvidence(record.evidence_id)
+    ?? explainabilityForConcept(conceptIds[metric.id]);
   return (
     <div className="border-t border-border/70 pt-3">
       <div className="grid grid-cols-2 gap-2 text-xs text-muted">
         <span><strong className="mr-1 font-medium text-foreground">N</strong>{metric.observationCount ?? t("Not available")}</span>
         <span><strong className="mr-1 font-medium text-foreground">{t("Range / CI")}</strong>{metric.confidence ? t(metric.confidence) : t("Not available")}</span>
       </div>
-      <Button type="button" variant="quiet" size="sm" className="mt-2 -ml-3" onClick={() => setOpen((current) => !current)} aria-expanded={open}>
-        {open ? <ChevronUp /> : <ChevronDown />}{t(open ? "Hide method details" : "Show method details")}
-      </Button>
-      {open ? (
-        <div className="mt-2 border-l border-accent/35 pl-3 text-xs leading-5 text-muted">
-          <p>{t(methodExplanations[metric.id])}</p>
-          <p className="mt-2 text-foreground">{t("Method")} <span className="font-mono text-[11px]">{record.method_id} · v{record.method_version}</span></p>
-          <p className="mt-1">{t("Boundary")}: {record.limitations.map((item) => t(item)).join(" ")}</p>
-          <p className="mt-2 break-all font-mono text-[11px]">{record.evidence_id}</p>
-        </div>
-      ) : null}
+      <EvidenceExplainButton
+        view={view}
+        className="mt-2 -ml-3"
+        context={{ label: t("Behavior evidence"), title: t(metric.label), detail: t("Synthetic offline fixture") }}
+      />
     </div>
   );
 }

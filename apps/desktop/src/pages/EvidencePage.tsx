@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { GlassPanel } from "@/components/common/GlassPanel";
+import { EvidenceExplainButton } from "@/components/evidence/EvidenceInspector";
 import { PageHeader, SectionHeading } from "@/components/common/PageHeader";
 import { StateNotice } from "@/components/common/StateNotice";
 import { DemoBadge, StatusBadge } from "@/components/common/StatusBadge";
@@ -13,7 +14,7 @@ import {
   SheetDescription,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { evidenceRecords } from "@/data/backendEvidence";
+import { evidenceRecords, insufficientExplainability } from "@/data/backendEvidence";
 import type { DemoEvidenceRecord, EvidenceStatus } from "@/demo/types";
 import { displayEvidenceValue, statusLabel } from "@/lib/format";
 import { useLocale } from "@/locales/LocaleProvider";
@@ -119,6 +120,20 @@ export default function EvidencePage() {
         <div className="flex items-center justify-between border-b border-border/70 px-5 py-4"><div className="flex items-center gap-2"><SlidersHorizontal className="size-4 text-muted" /><span className="text-sm font-medium">{t("{count} records", { count: formatNumber(filtered.length) })}</span></div><span className="text-xs text-muted">{t("Select a row for full provenance")}</span></div>
         {filtered.length === 0 ? <div className="p-6"><StateNotice state="empty" title={t("No matching evidence")} detail={t("Try a broader search or clear one of the local filters. No missing record is substituted.")} /></div> : <div className="divide-y divide-border/60">{filtered.map((record) => <button key={record.evidence_id} type="button" className="grid w-full gap-3 px-5 py-4 text-left transition-colors hover:bg-white/[0.045] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/55 md:grid-cols-[minmax(180px,1.15fr)_minmax(150px,1fr)_auto_auto] md:items-center" onClick={() => setSearchParams({ selected: record.evidence_id })}><div><p className="font-medium">{t(record.metric_id)}</p><code className="mt-1 block truncate text-[11px] text-muted">{record.evidence_id}</code></div><div><p className="text-sm text-foreground/85">{record.method_id}</p><p className="mt-1 text-xs text-muted">v{record.method_version} · {t(record.evidence_kind)}</p></div><div className="text-sm tabular-nums"><span className="text-muted">{t("Value")} </span>{displayEvidenceValue(record.value, locale)}<span className="ml-2 text-xs text-muted">N={record.observation_count ?? "—"}</span></div><StatusBadge status={record.evidence_status} compact /></button>)}</div>}
       </GlassPanel>
+
+      {insufficientExplainability ? (
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border/70 bg-white/[0.025] px-5 py-4">
+          <div className="min-w-0">
+            <p className="text-sm font-medium">{t("Evidence still maturing")}</p>
+            <p className="mt-1 text-xs leading-5 text-muted">{t("A real deterministic trace with incomplete observations is preserved without inventing a result.")}</p>
+          </div>
+          <EvidenceExplainButton
+            view={insufficientExplainability}
+            label="View insufficient evidence"
+            context={{ label: t("Evidence maturity"), title: t(insufficientExplainability.concept.titleKey) }}
+          />
+        </div>
+      ) : null}
 
       <Sheet open={selected !== null} onOpenChange={(open) => !open && setSearchParams({})}>{selected ? <SheetContent><EvidenceDetail record={selected} /></SheetContent> : null}</Sheet>
     </div>
