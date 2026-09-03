@@ -872,6 +872,106 @@
       "subject_id": "demo-user:synthetic-behavior"
     }
   },
+  "peer_benchmark": {
+    "cohort": {
+      "asset_types": [
+        "equity"
+      ],
+      "cohort_id": "synthetic-cn-equity-long-only-2025-01-v1",
+      "data_tier": "synthetic",
+      "description": "72 deterministic synthetic long-only equity accounts observed from 2025-01-02 through 2025-01-08, with no leverage.",
+      "direction": "long_only",
+      "leverage_allowed": false,
+      "limitations": [
+        "Synthetic accounts are deterministic plumbing fixtures, not real people.",
+        "This short demo window does not represent long-term investor behavior.",
+        "The distribution does not represent real Chinese investors.",
+        "Percentiles are descriptive positions, not quality or skill scores."
+      ],
+      "market": "synthetic-cn-equity-demo",
+      "min_descriptive_n": 30,
+      "observation_end": "2025-01-08T00:00:00",
+      "observation_start": "2025-01-02T00:00:00"
+    },
+    "cohort_n": 72,
+    "metrics": {
+      "closed_episode_count": {
+        "benchmark_reason": null,
+        "benchmark_status": "complete",
+        "cohort_id": "synthetic-cn-equity-long-only-2025-01-v1",
+        "cohort_n": 72,
+        "data_tier": "synthetic",
+        "limitations": [
+          "Synthetic accounts are deterministic plumbing fixtures, not real people.",
+          "This short demo window does not represent long-term investor behavior.",
+          "The distribution does not represent real Chinese investors.",
+          "Percentiles are descriptive positions, not quality or skill scores."
+        ],
+        "median": 1.0,
+        "metric_id": "closed_episode_count",
+        "metric_n": 72,
+        "observation_end": "2025-01-08T00:00:00",
+        "observation_start": "2025-01-02T00:00:00",
+        "p25": 0.0,
+        "p75": 2.0,
+        "percentile": 17.36111111111111,
+        "percentile_method": "scipy_percentileofscore_rank_v1",
+        "quantile_method": "numpy_quantile_linear_v1",
+        "subject_id": "demo-user:synthetic-behavior",
+        "subject_value": 0.0
+      },
+      "portfolio_hhi": {
+        "benchmark_reason": null,
+        "benchmark_status": "complete",
+        "cohort_id": "synthetic-cn-equity-long-only-2025-01-v1",
+        "cohort_n": 72,
+        "data_tier": "synthetic",
+        "limitations": [
+          "Synthetic accounts are deterministic plumbing fixtures, not real people.",
+          "This short demo window does not represent long-term investor behavior.",
+          "The distribution does not represent real Chinese investors.",
+          "Percentiles are descriptive positions, not quality or skill scores."
+        ],
+        "median": 0.4291886650455402,
+        "metric_id": "portfolio_concentration_hhi",
+        "metric_n": 72,
+        "observation_end": "2025-01-08T00:00:00",
+        "observation_start": "2025-01-02T00:00:00",
+        "p25": 0.38105860113421547,
+        "p75": 0.5601520524963367,
+        "percentile": 66.66666666666666,
+        "percentile_method": "scipy_percentileofscore_rank_v1",
+        "quantile_method": "numpy_quantile_linear_v1",
+        "subject_id": "demo-user:synthetic-behavior",
+        "subject_value": 0.4817677368212446
+      },
+      "turnover": {
+        "benchmark_reason": null,
+        "benchmark_status": "complete",
+        "cohort_id": "synthetic-cn-equity-long-only-2025-01-v1",
+        "cohort_n": 72,
+        "data_tier": "synthetic",
+        "limitations": [
+          "Synthetic accounts are deterministic plumbing fixtures, not real people.",
+          "This short demo window does not represent long-term investor behavior.",
+          "The distribution does not represent real Chinese investors.",
+          "Percentiles are descriptive positions, not quality or skill scores."
+        ],
+        "median": 0.032980579381108655,
+        "metric_id": "mean_daily_turnover",
+        "metric_n": 72,
+        "observation_end": "2025-01-08T00:00:00",
+        "observation_start": "2025-01-02T00:00:00",
+        "p25": 0.0184,
+        "p75": 0.04573538288301162,
+        "percentile": 29.166666666666664,
+        "percentile_method": "scipy_percentileofscore_rank_v1",
+        "quantile_method": "numpy_quantile_linear_v1",
+        "subject_id": "demo-user:synthetic-behavior",
+        "subject_value": 0.021777318144968673
+      }
+    }
+  },
   "schema_version": "1",
   "selected_episode": {
     "avg_entry_price": 10.333333333333334,

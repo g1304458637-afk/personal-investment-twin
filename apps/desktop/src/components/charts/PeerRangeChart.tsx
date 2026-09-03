@@ -2,20 +2,20 @@ import type { EChartsCoreOption } from "echarts/core";
 import { useMemo } from "react";
 
 import { useTheme } from "@/components/layout/ThemeProvider";
-import type { PeerMetric } from "@/demo/types";
+import type { PeerRangeMetric } from "@/data/peerBenchmark";
 import { useLocale } from "@/locales/LocaleProvider";
 
 import { EChart } from "./EChart";
 import { getPeerRangeDomain } from "./PeerRangeChartDomain";
 
-export function PeerRangeChart({ metric }: { metric: PeerMetric }) {
+export function PeerRangeChart({ metric }: { metric: PeerRangeMetric }) {
   const { theme } = useTheme();
   const { formatNumber, t } = useLocale();
   const dark = theme === "dark";
 
   const formatValue = (value: number) => {
-    const formatted = formatNumber(value, Number.isInteger(value) ? 0 : 2);
-    return metric.unit === "×" ? `${formatted}×` : formatted;
+    if (metric.valueFormat === "percent") return t("{value}%", { value: formatNumber(value * 100, 2) });
+    return formatNumber(value, metric.valueFormat === "integer" ? 0 : 4);
   };
 
   const option = useMemo<EChartsCoreOption>(() => {

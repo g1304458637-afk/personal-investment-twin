@@ -97,17 +97,6 @@ export interface PeriodSnapshot {
   behaviorNotes: string[];
 }
 
-export interface PeerMetric {
-  id: string;
-  label: string;
-  unit: string;
-  user: number;
-  p25: number;
-  median: number;
-  p75: number;
-  percentile: number;
-}
-
 export interface DecisionCheckScenario {
   symbol: string;
   side: "Buy" | "Sell";

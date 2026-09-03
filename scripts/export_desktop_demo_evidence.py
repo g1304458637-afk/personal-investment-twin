@@ -28,6 +28,7 @@ from src.attribution.exit_timing_evidence import build_exit_timing_evidence  # n
 from src.attribution.friction_evidence import build_friction_evidence  # noqa: E402
 from src.attribution.selection_evidence import build_selection_evidence  # noqa: E402
 from src.attribution.sizing_evidence import build_sizing_evidence  # noqa: E402
+from src.benchmark.peer import build_synthetic_peer_benchmark  # noqa: E402
 from src.behavior.disposition_effect import build_disposition_effect_evidence  # noqa: E402
 from src.behavior.loss_averaging import build_loss_averaging_evidence  # noqa: E402
 from src.behavior.portfolio_concentration import (  # noqa: E402
@@ -259,6 +260,18 @@ def build_export() -> dict[str, object]:
         snapshot_at=snapshot_at,
         data_tier="synthetic",
     )
+    peer_benchmark = build_synthetic_peer_benchmark(
+        subject_id=behavior_subject,
+        subject_executions=behavior_executions,
+        market_prices=behavior_prices,
+        init_cash=INITIAL_CASH,
+        calculation_code_version=CALCULATION_CODE_VERSION,
+    )
+    peer_metric_keys = {
+        "portfolio_concentration_hhi": "portfolio_hhi",
+        "mean_daily_turnover": "turnover",
+        "closed_episode_count": "closed_episode_count",
+    }
     return {
         "schema_version": "1",
         "export_version": "desktop-demo-evidence-v1",
@@ -276,6 +289,14 @@ def build_export() -> dict[str, object]:
             "comparison": {
                 "portfolio_hhi": build_twin_metric_comparison(hhi_history),
                 "turnover": build_twin_metric_comparison(turnover_history),
+            },
+        },
+        "peer_benchmark": {
+            "cohort": peer_benchmark.cohort,
+            "cohort_n": peer_benchmark.cohort_n,
+            "metrics": {
+                peer_metric_keys[result.metric_id]: result
+                for result in peer_benchmark.metrics
             },
         },
     }

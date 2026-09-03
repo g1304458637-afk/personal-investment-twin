@@ -4,7 +4,6 @@ import type {
   DemoEvidenceProvenance,
   DemoEvidenceRecord,
   EvidenceMetric,
-  PeerMetric,
   PeriodSnapshot,
   PortfolioPoint,
   PositionRow,
@@ -460,47 +459,6 @@ export const twinPeriods: PeriodSnapshot[] = [
       "Long-horizon observations are separated from recent snapshots.",
       "This demo snapshot is not a production Investor DNA profile.",
     ],
-  },
-];
-
-export const peerCohort = {
-  name: "Demo Cohort · Synthetic",
-  definition:
-    "72 synthetic long-only equity profiles with 12-month execution coverage and no margin activity.",
-  n: 72,
-  consent: "Demo-only cohort; no real participant data is present.",
-};
-
-export const peerMetrics: PeerMetric[] = [
-  {
-    id: "turnover",
-    label: "Turnover intensity",
-    unit: "×",
-    user: 0.86,
-    p25: 0.54,
-    median: 0.78,
-    p75: 1.12,
-    percentile: 58,
-  },
-  {
-    id: "hhi",
-    label: "Portfolio HHI",
-    unit: "",
-    user: 0.31,
-    p25: 0.22,
-    median: 0.29,
-    p75: 0.38,
-    percentile: 55,
-  },
-  {
-    id: "episode-count",
-    label: "Closed episodes",
-    unit: "",
-    user: 28,
-    p25: 16,
-    median: 24,
-    p75: 37,
-    percentile: 61,
   },
 ];
 

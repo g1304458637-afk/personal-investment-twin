@@ -8,15 +8,15 @@ import { StateNotice } from "@/components/common/StateNotice";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { twinState } from "@/data/backendEvidence";
+import { peerBenchmark, twinState } from "@/data/backendEvidence";
+import { isCompletePeerBenchmarkMetric, type PeerBenchmarkMetricView } from "@/data/peerBenchmark";
 import type { TwinMetricComparisonView } from "@/data/twinState";
-import { peerCohort, peerMetrics } from "@/demo/fixture";
 import { useLocale } from "@/locales/LocaleProvider";
 
 const peerMetricDirections: Record<string, readonly [string, string]> = {
   turnover: ["Lower turnover", "Higher turnover"],
-  hhi: ["Lower concentration", "Higher concentration"],
-  "episode-count": ["Fewer closed episodes", "More closed episodes"],
+  portfolio_hhi: ["Lower concentration", "Higher concentration"],
+  closed_episode_count: ["Fewer closed episodes", "More closed episodes"],
 };
 
 const historyMetricLabels: Record<string, string> = {
@@ -43,19 +43,20 @@ export function ComparePage() {
       ? formatNumber(metric.absoluteChange, 4)
       : `${formatNumber(metric.absoluteChange * 100, 2)} pp`;
   };
-  const formatPeerValue = (value: number, unit: string) => {
-    if (unit === "×") return `${formatNumber(value, 2)}×`;
-    return formatNumber(value, Number.isInteger(value) ? 0 : 2);
+  const formatPeerValue = (metric: PeerBenchmarkMetricView, value: number) => {
+    if (metric.valueFormat === "percent") return formatPercent(value, 2);
+    return formatNumber(value, metric.valueFormat === "integer" ? 0 : 4);
   };
-  const medianDifference = (metric: (typeof peerMetrics)[number]) => {
-    const difference = metric.user - metric.median;
+  const medianDifference = (metric: PeerBenchmarkMetricView & { chartMetric: NonNullable<PeerBenchmarkMetricView["chartMetric"]> }) => {
+    const difference = metric.chartMetric.user - metric.chartMetric.median;
     if (difference === 0) return t("Matches cohort median");
     return t(difference > 0 ? "Above cohort median by {difference}" : "Below cohort median by {difference}", {
-      difference: formatPeerValue(Math.abs(difference), metric.unit),
+      difference: formatPeerValue(metric, Math.abs(difference)),
     });
   };
-  const rankedByPercentileDistance = [...peerMetrics].sort(
-    (left, right) => Math.abs(right.percentile - 50) - Math.abs(left.percentile - 50),
+  const completePeerMetrics = peerBenchmark.metrics.filter(isCompletePeerBenchmarkMetric);
+  const rankedByPercentileDistance = [...completePeerMetrics].sort(
+    (left, right) => Math.abs(right.chartMetric.percentile - 50) - Math.abs(left.chartMetric.percentile - 50),
   );
   const furthestFromCohortMedian = rankedByPercentileDistance[0];
   const closestToCohortMedian = rankedByPercentileDistance[rankedByPercentileDistance.length - 1];
@@ -124,9 +125,9 @@ export function ComparePage() {
           <div className="flex flex-col gap-3 rounded-md border border-border/70 bg-white/[0.022] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-center gap-2 text-sm">
               <UsersRound className="size-4 shrink-0 text-accent" aria-hidden="true" />
-              <strong className="truncate font-medium">{t(peerCohort.name)}</strong>
+              <strong className="truncate font-medium">{t("Synthetic Demo Cohort")}</strong>
               <span className="text-muted">·</span>
-              <span className="whitespace-nowrap tabular-nums text-muted">N={formatNumber(peerCohort.n)}</span>
+              <span className="whitespace-nowrap tabular-nums text-muted">N={formatNumber(peerBenchmark.cohortN)}</span>
             </div>
             <Sheet>
               <SheetTrigger asChild>
@@ -140,14 +141,16 @@ export function ComparePage() {
                 <SheetDescription className="mt-2 text-sm leading-6 text-muted">
                   {t("The fixed metadata behind this synthetic comparison.")}
                 </SheetDescription>
-                <p className="mt-7 border-y border-border/70 py-4 text-sm leading-6 text-muted">{t(peerCohort.definition)}</p>
+                <p className="mt-7 border-y border-border/70 py-4 text-sm leading-6 text-muted">{t(peerBenchmark.cohort.description)}</p>
                 <dl className="divide-y divide-border/65">
                   {[
-                    [t("Market"), t("Not specified in the demo fixture")],
-                    [t("Asset type"), t("Equity profiles")],
-                    [t("Position scope"), t("Long-only · no margin activity")],
-                    [t("Observation window"), t("12 months of execution coverage")],
-                    [t("Cohort N"), formatNumber(peerCohort.n)],
+                    [t("Cohort ID"), peerBenchmark.cohort.id],
+                    [t("Market"), t(peerBenchmark.cohort.market)],
+                    [t("Asset type"), peerBenchmark.cohort.assetTypes.map((value) => t(value)).join(", ")],
+                    [t("Position scope"), t(peerBenchmark.cohort.direction)],
+                    [t("Observation window"), `${historyDate(peerBenchmark.cohort.observationStart)} → ${historyDate(peerBenchmark.cohort.observationEnd)}`],
+                    [t("Cohort N"), formatNumber(peerBenchmark.cohortN)],
+                    [t("Minimum descriptive N"), formatNumber(peerBenchmark.cohort.minDescriptiveN)],
                     [t("Data tier"), t("Synthetic / Demo")],
                   ].map(([label, value]) => (
                     <div key={label} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-5 py-4 text-sm">
@@ -156,6 +159,22 @@ export function ComparePage() {
                     </div>
                   ))}
                 </dl>
+                <dl className="mt-5 divide-y divide-border/65 border-t border-border/65">
+                  {peerBenchmark.metrics.map((metric) => (
+                    <div key={metric.id} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-5 py-4 text-sm">
+                      <dt className="text-muted">{t(metric.label)} · N={formatNumber(metric.metricN)}</dt>
+                      <dd className="text-right font-medium">{metric.quantileMethod} · {metric.percentileMethod}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className="mt-5 border-t border-border/65 pt-4">
+                  <h3 className="text-sm font-medium">{t("Cohort limitations")}</h3>
+                  <ul className="mt-2 space-y-1 text-xs leading-5 text-muted">
+                    {peerBenchmark.cohort.limitations.map((limitation) => (
+                      <li key={limitation}>• {t(limitation)}</li>
+                    ))}
+                  </ul>
+                </div>
                 <StateNotice
                   state="demo"
                   compact
@@ -166,63 +185,75 @@ export function ComparePage() {
             </Sheet>
           </div>
 
-          <GlassPanel className="overflow-hidden">
-            <div className="px-5 py-3.5">
-              <SectionHeading
-                eyebrow={t("Difference summary")}
-                title={t("Compared with your Demo Cohort")}
-                description={t("Compared by distance from the 50th percentile. This is descriptive context, not a quality ranking.")}
-              />
-            </div>
-            <div className="grid border-t border-border/60 md:grid-cols-2 md:divide-x md:divide-border/60">
-              {[
-                { label: t("Furthest from cohort median"), metric: furthestFromCohortMedian },
-                { label: t("Closest to cohort median"), metric: closestToCohortMedian },
-              ].map(({ label, metric }) => (
-                <div key={label} className="relative overflow-hidden px-5 py-3">
-                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(111,214,224,.08),transparent_52%)]" aria-hidden="true" />
-                  <div className="relative flex items-end justify-between gap-4">
-                    <div>
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">{label}</span>
-                      <h3 className="mt-1 text-[15px] font-semibold">{t(metric.label)}</h3>
-                      <p className="mt-1 text-xs text-muted">{medianDifference(metric)}</p>
+          {completePeerMetrics.length > 0 ? (
+            <GlassPanel className="overflow-hidden">
+              <div className="px-5 py-3.5">
+                <SectionHeading
+                  eyebrow={t("Difference summary")}
+                  title={t("Compared with your Demo Cohort")}
+                  description={t("Compared by distance from the 50th percentile. This is descriptive context, not a quality ranking.")}
+                />
+              </div>
+              <div className={`grid border-t border-border/60 ${completePeerMetrics.length > 1 ? "md:grid-cols-2 md:divide-x md:divide-border/60" : ""}`}>
+                {[
+                  { label: t("Furthest from cohort median"), metric: furthestFromCohortMedian },
+                  ...(completePeerMetrics.length > 1 ? [{ label: t("Closest to cohort median"), metric: closestToCohortMedian }] : []),
+                ].map(({ label, metric }) => (
+                  <div key={label} className="relative overflow-hidden px-5 py-3">
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(111,214,224,.08),transparent_52%)]" aria-hidden="true" />
+                    <div className="relative flex items-end justify-between gap-4">
+                      <div>
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">{label}</span>
+                        <h3 className="mt-1 text-[15px] font-semibold">{t(metric.label)}</h3>
+                        <p className="mt-1 text-xs text-muted">{medianDifference(metric)}</p>
+                      </div>
+                      <AnimatedNumber
+                        value={metric.chartMetric.percentile}
+                        format={(value) => t("Percentile {percentile}", { percentile: formatNumber(Math.round(value)) })}
+                        className="whitespace-nowrap text-lg font-semibold text-accent"
+                      />
                     </div>
-                    <AnimatedNumber
-                      value={metric.percentile}
-                      format={(value) => t("Percentile {percentile}", { percentile: formatNumber(Math.round(value)) })}
-                      className="whitespace-nowrap text-lg font-semibold text-accent"
-                    />
                   </div>
-                </div>
-              ))}
-            </div>
-          </GlassPanel>
+                ))}
+              </div>
+            </GlassPanel>
+          ) : null}
 
           <GlassPanel className="overflow-hidden">
             <div className="px-5 py-3.5">
               <SectionHeading
                 eyebrow={t("Cohort distribution")}
                 title={t("Where you sit")}
-                description={t("P25, median and P75 are fixed Demo Cohort values. A higher percentile describes position only; it does not mean better.")}
+                description={t("P25, median and P75 come from the registered synthetic cohort. A higher percentile describes position only; it does not mean better.")}
               />
             </div>
             <div className="divide-y divide-border/60 border-t border-border/60">
-              {peerMetrics.map((metric) => {
+              {peerBenchmark.metrics.map((metric) => {
                 const [lowDirection, highDirection] = peerMetricDirections[metric.id] ?? ["Lower value", "Higher value"];
                 return (
                   <article key={metric.id} className="group relative overflow-hidden px-5 py-2.5">
                     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_50%,rgba(105,207,219,.07),transparent_38%)] opacity-0 transition-opacity duration-200 group-hover:opacity-100" aria-hidden="true" />
                     <div className="relative flex flex-wrap items-center justify-between gap-x-5 gap-y-1">
                       <h3 className="text-sm font-semibold">{t(metric.label)}</h3>
-                      <p className="text-xs tabular-nums text-muted">{medianDifference(metric)}</p>
+                      <p className="text-xs tabular-nums text-muted">
+                        {metric.chartMetric ? medianDifference(metric as PeerBenchmarkMetricView & { chartMetric: NonNullable<PeerBenchmarkMetricView["chartMetric"]> }) : t("Insufficient cohort evidence")}
+                      </p>
                     </div>
                     <div className="relative mt-1.5 flex justify-between text-[10px] text-muted">
                       <span>← {t(lowDirection)}</span>
                       <span>{t(highDirection)} →</span>
                     </div>
-                    <div className="relative">
-                      <PeerRangeChart metric={metric} />
-                    </div>
+                    <p className="relative mt-1 text-[10px] tabular-nums text-muted">{t("Metric N")}: {formatNumber(metric.metricN)} · {historyDate(metric.observationStart)} → {historyDate(metric.observationEnd)}</p>
+                    {metric.chartMetric ? (
+                      <div className="relative"><PeerRangeChart metric={metric.chartMetric} /></div>
+                    ) : (
+                      <StateNotice
+                        state="insufficient"
+                        compact
+                        title={t("Insufficient cohort evidence")}
+                        detail={metric.reason ?? t("This metric does not have enough eligible synthetic cohort observations to show a range.")}
+                      />
+                    )}
                   </article>
                 );
               })}
