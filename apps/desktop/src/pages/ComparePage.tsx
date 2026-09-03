@@ -8,7 +8,9 @@ import { StateNotice } from "@/components/common/StateNotice";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { notableChanges, peerCohort, peerMetrics } from "@/demo/fixture";
+import { twinState } from "@/data/backendEvidence";
+import type { TwinMetricComparisonView } from "@/data/twinState";
+import { peerCohort, peerMetrics } from "@/demo/fixture";
 import { useLocale } from "@/locales/LocaleProvider";
 
 const peerMetricDirections: Record<string, readonly [string, string]> = {
@@ -17,8 +19,30 @@ const peerMetricDirections: Record<string, readonly [string, string]> = {
   "episode-count": ["Fewer closed episodes", "More closed episodes"],
 };
 
+const historyMetricLabels: Record<string, string> = {
+  portfolio_concentration_hhi: "HHI",
+  mean_daily_turnover: "Turnover",
+};
+
 export function ComparePage() {
-  const { formatNumber, t } = useLocale();
+  const { formatNumber, formatPercent, locale, t } = useLocale();
+  const historyDate = (value: string) => new Intl.DateTimeFormat(locale, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(value));
+  const historyValue = (metric: TwinMetricComparisonView, value: number | null) => {
+    if (value === null) return t("Not available");
+    return metric.metricId === "portfolio_concentration_hhi"
+      ? formatNumber(value, 4)
+      : formatPercent(value, 2);
+  };
+  const historyAbsoluteChange = (metric: TwinMetricComparisonView) => {
+    if (metric.absoluteChange === null) return t("Not available");
+    return metric.metricId === "portfolio_concentration_hhi"
+      ? formatNumber(metric.absoluteChange, 4)
+      : `${formatNumber(metric.absoluteChange * 100, 2)} pp`;
+  };
   const formatPeerValue = (value: number, unit: string) => {
     if (unit === "×") return `${formatNumber(value, 2)}×`;
     return formatNumber(value, Number.isInteger(value) ? 0 : 2);
@@ -59,16 +83,40 @@ export function ComparePage() {
               description={t("A temporal comparison of registered demo observations. This view is descriptive and does not predict an outcome.")}
             />
             <dl className="mt-6 divide-y divide-border/60 rounded-md border border-border/70">
-              {notableChanges.map((change) => (
-                <div key={change.label} className="grid gap-2 px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+              {twinState.comparisons.map((comparison) => (
+                <div key={comparison.metricId} className="grid gap-2 px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                   <div>
-                    <dt className="font-medium">{t(change.label)}</dt>
-                    <dd className="mt-1 text-sm leading-5 text-muted">{t(change.detail)}</dd>
+                    <dt className="font-medium">{t(historyMetricLabels[comparison.metricId])}</dt>
+                    {comparison.status === "insufficient_evidence" ? (
+                      <dd className="mt-1 text-sm leading-5 text-muted">{t("Insufficient historical evidence")}</dd>
+                    ) : (
+                      <dd className="mt-1 text-sm leading-5 text-muted">
+                        {t("{past} on {pastDate} → {current} on {currentDate}", {
+                          past: historyValue(comparison, comparison.pastValue),
+                          pastDate: comparison.referenceDate ? historyDate(comparison.referenceDate) : "—",
+                          current: historyValue(comparison, comparison.currentValue),
+                          currentDate: comparison.currentDate ? historyDate(comparison.currentDate) : "—",
+                        })}
+                      </dd>
+                    )}
                   </div>
-                  <dd className="font-semibold tabular-nums text-foreground">{t(change.value)}</dd>
+                  <dd className="text-right font-semibold tabular-nums text-foreground">
+                    {comparison.status === "insufficient_evidence"
+                      ? "—"
+                      : t("Absolute {absolute} · Relative {relative}", {
+                          absolute: historyAbsoluteChange(comparison),
+                          relative: comparison.relativeChange === null ? "—" : formatPercent(comparison.relativeChange, 1),
+                        })}
+                  </dd>
                 </div>
               ))}
             </dl>
+            <StateNotice
+              state="insufficient"
+              compact
+              title={t("No sufficient historical evidence for other metrics")}
+              detail={t("Selection, Sizing, Exit, Friction, Disposition, and Loss Averaging remain current evidence only; no historical series is inferred.")}
+            />
           </GlassPanel>
         </TabsContent>
 

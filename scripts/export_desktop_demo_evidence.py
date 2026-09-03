@@ -45,6 +45,12 @@ from src.history.metric_series import (  # noqa: E402
     build_portfolio_hhi_history,
     build_turnover_history,
 )
+from src.twin.state import (  # noqa: E402
+    build_historical_twin_snapshots,
+    build_twin_metric_comparison,
+    build_twin_snapshot,
+    latest_twin_snapshot_at,
+)
 
 
 def _json_value(value: object) -> Any:
@@ -237,6 +243,22 @@ def build_export() -> dict[str, object]:
         turnover,
         parent_record=turnover_record,
     )
+    histories = (hhi_history, turnover_history)
+    snapshot_at = latest_twin_snapshot_at(records, histories)
+    current_twin = build_twin_snapshot(
+        records,
+        histories,
+        subject_id=behavior_subject,
+        snapshot_at=snapshot_at,
+        data_tier="synthetic",
+    )
+    historical_twins = build_historical_twin_snapshots(
+        records,
+        histories,
+        subject_id=behavior_subject,
+        snapshot_at=snapshot_at,
+        data_tier="synthetic",
+    )
     return {
         "schema_version": "1",
         "export_version": "desktop-demo-evidence-v1",
@@ -246,6 +268,15 @@ def build_export() -> dict[str, object]:
         "historical_series": {
             "portfolio_hhi": hhi_history,
             "turnover": turnover_history,
+        },
+        "twin": {
+            "data_tier": "synthetic",
+            "current_snapshot": current_twin,
+            "historical_snapshots": historical_twins,
+            "comparison": {
+                "portfolio_hhi": build_twin_metric_comparison(hhi_history),
+                "turnover": build_twin_metric_comparison(turnover_history),
+            },
         },
     }
 

@@ -8,6 +8,7 @@ import type {
 import type { TranslationValues } from "@/locales/LocaleProvider";
 
 import type { BehaviorHistorySeries } from "./behaviorHistory";
+import { adaptTwinPayload, type BackendTwinPayload } from "./twinState";
 
 export interface SelectedEpisodeView {
   episode_id: string;
@@ -38,6 +39,7 @@ interface BackendEvidenceExport {
     portfolio_hhi: BackendHistoricalMetricSeries;
     turnover: BackendHistoricalMetricSeries;
   };
+  twin: BackendTwinPayload;
 }
 
 interface BackendHistoricalMetricSeries {
@@ -87,6 +89,7 @@ export const behaviorHistory = {
   hhi: historyView(backend.historical_series.portfolio_hhi),
   turnover: historyView(backend.historical_series.turnover),
 };
+export const twinState = adaptTwinPayload(backend.twin);
 
 export function translateEvidenceText(
   t: (source: string, values?: TranslationValues) => string,
