@@ -305,6 +305,53 @@ def test_before_and_after_state_values_are_read_from_vectorbt(
         float(after_portfolio.asset_value(group_by=False).iloc[-1][trade.symbol])
         / float(after_portfolio.value().iloc[-1])
     )
+    assert result.before.valuation_price == float(
+        before_portfolio.close[trade.symbol].iloc[-1]
+    )
+    assert result.after.valuation_price == float(
+        after_portfolio.close[trade.symbol].iloc[-1]
+    )
+
+
+def test_assumed_execution_price_is_separate_from_vectorbt_valuation_price(
+    executions, prices, hhi_history, peer_context
+) -> None:
+    trade = _trade(execution_price=12.5)
+    result = _simulate(trade, executions, prices, hhi_history, peer_context)
+
+    assert result.after is not None
+    assert trade.execution_price == pytest.approx(12.5)
+    assert result.after.valuation_price == pytest.approx(13.0)
+    assert result.after.valuation_price == float(
+        prepare_behavior_replay(
+            pd.concat(
+                [
+                    executions.loc[
+                        pd.to_datetime(executions["event_time"]) < trade.proposed_time
+                    ],
+                    pd.DataFrame(
+                        [
+                            {
+                                "event_time": trade.proposed_time,
+                                "symbol": trade.symbol,
+                                "side": trade.side,
+                                "executed_quantity": trade.quantity,
+                                "executed_price": trade.execution_price,
+                                "fee": trade.fees,
+                                "order_id": "price-semantics-order",
+                                "execution_id": "price-semantics-execution",
+                            }
+                        ]
+                    ),
+                ],
+                ignore_index=True,
+            ),
+            prices.loc[
+                pd.to_datetime(prices["date"]) < trade.proposed_time
+            ],
+            init_cash=INITIAL_CASH,
+        ).portfolio.close[trade.symbol].iloc[-1]
+    )
 
 
 def test_self_context_uses_real_no_lookahead_hhi_history(

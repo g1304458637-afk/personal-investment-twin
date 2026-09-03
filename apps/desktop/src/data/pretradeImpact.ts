@@ -15,6 +15,7 @@ interface BackendPortfolioImpactState {
   portfolio_value: number;
   symbol_quantity: number;
   symbol_weight: number;
+  valuation_price: number;
   hhi: number;
   active_assets: number;
 }
@@ -61,6 +62,7 @@ export interface PretradeImpactStateView {
   portfolioValue: number;
   symbolQuantity: number;
   symbolWeight: number;
+  valuationPrice: number;
   hhi: number;
   activeAssets: number;
 }
@@ -111,6 +113,7 @@ function state(value: BackendPortfolioImpactState | null): PretradeImpactStateVi
     portfolioValue: finite(value.portfolio_value, "portfolio value"),
     symbolQuantity: finite(value.symbol_quantity, "symbol quantity"),
     symbolWeight: finite(value.symbol_weight, "symbol weight"),
+    valuationPrice: finite(value.valuation_price, "valuation price"),
     hhi: finite(value.hhi, "HHI"),
     activeAssets: finite(value.active_assets, "active assets"),
   };

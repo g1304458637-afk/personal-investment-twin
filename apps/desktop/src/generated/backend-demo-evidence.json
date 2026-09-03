@@ -979,28 +979,35 @@
       "hhi": 0.576748374970632,
       "portfolio_value": 100595.0,
       "symbol_quantity": 650.0,
-      "symbol_weight": 0.08400019881703862
+      "symbol_weight": 0.08400019881703862,
+      "valuation_price": 13.0
     },
+    "after_hhi_evidence_id": "ev_2228052b8934ca0dbce66c124afef9dcb55ea84f7fe9817bf2d1f2a9b909a904",
     "before": {
       "active_assets": 5,
       "cash": 91900.0,
       "hhi": 0.4817677368212446,
       "portfolio_value": 100600.0,
       "symbol_quantity": 450.0,
-      "symbol_weight": 0.05815109343936382
+      "symbol_weight": 0.05815109343936382,
+      "valuation_price": 13.0
     },
+    "before_hhi_evidence_id": "ev_0570b357f1fde2e47fcf70d9e9865828006f785d23bd43fb51849e4ce6dd213f",
     "data_tier": "synthetic",
     "delta": {
       "cash": -2605.0,
       "hhi": 0.09498063814938745,
       "symbol_weight": 0.0258491053776748
     },
+    "hypothetical_execution_id": "hypothetical:demo-user:synthetic-behavior:2025-01-08T23:59:00:SYN_PAPER_WIN",
     "limitations": [
       "This is a deterministic hypothetical execution, not a brokerage order or recommendation.",
       "No future price, expected return, or trade outcome is predicted.",
       "Symbol weight is marked from vectorbt asset value divided by total portfolio value.",
       "Peer context uses a deterministic synthetic cohort and does not represent real investors."
     ],
+    "method_id": "pretrade_hhi_impact_v1",
+    "method_version": "1",
     "peer_context": {
       "cohort_hhi_median": 0.4291886650455402,
       "cohort_id": "synthetic-cn-equity-long-only-2025-01-v1",

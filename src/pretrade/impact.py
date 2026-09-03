@@ -32,6 +32,8 @@ from src.history.metric_series import HistoricalMetricSeries
 
 
 SimulationStatus = Literal["complete", "rejected", "insufficient_evidence"]
+METHOD_ID = "pretrade_hhi_impact_v1"
+METHOD_VERSION = "1"
 
 
 def _required_text(value: object, name: str) -> str:
@@ -70,12 +72,17 @@ class ProposedTrade:
 
 @dataclass(frozen=True, slots=True)
 class PortfolioImpactState:
-    """State read from vectorbt; symbol_weight uses total portfolio value."""
+    """State read from vectorbt; symbol_weight uses total portfolio value.
+
+    ``valuation_price`` is vectorbt's final ``close``/mark for the target
+    symbol. It is not the proposed execution price and is never forecast.
+    """
 
     cash: float
     portfolio_value: float
     symbol_quantity: float
     symbol_weight: float
+    valuation_price: float
     hhi: float
     active_assets: int
 
@@ -119,6 +126,11 @@ class TradeImpact:
     simulation_reason: str | None
     data_tier: Literal["synthetic"]
     limitations: tuple[str, ...]
+    hypothetical_execution_id: str | None = None
+    before_hhi_evidence_id: str | None = None
+    after_hhi_evidence_id: str | None = None
+    method_id: str = METHOD_ID
+    method_version: str = METHOD_VERSION
 
 
 LIMITATIONS = (
@@ -139,6 +151,8 @@ def _result(
     delta: TradeImpactDelta | None = None,
     self_context: SelfHhiContext | None = None,
     peer_context: PeerHhiContext | None = None,
+    before_hhi_evidence_id: str | None = None,
+    after_hhi_evidence_id: str | None = None,
 ) -> TradeImpact:
     return TradeImpact(
         proposed_trade=proposed_trade,
@@ -151,6 +165,9 @@ def _result(
         simulation_reason=reason,
         data_tier="synthetic",
         limitations=LIMITATIONS,
+        hypothetical_execution_id=_hypothetical_execution_id(proposed_trade),
+        before_hhi_evidence_id=before_hhi_evidence_id,
+        after_hhi_evidence_id=after_hhi_evidence_id,
     )
 
 
@@ -183,14 +200,18 @@ def _window_inputs(
     )
 
 
+def _hypothetical_execution_id(proposed_trade: ProposedTrade) -> str:
+    return (
+        f"hypothetical:{proposed_trade.subject_id}:"
+        f"{proposed_trade.proposed_time.isoformat()}:{proposed_trade.symbol}"
+    )
+
+
 def _hypothetical_executions(
     proposed_trade: ProposedTrade,
     prior_executions: pd.DataFrame,
 ) -> pd.DataFrame:
-    identifier = (
-        f"hypothetical:{proposed_trade.subject_id}:"
-        f"{proposed_trade.proposed_time.isoformat()}:{proposed_trade.symbol}"
-    )
+    identifier = _hypothetical_execution_id(proposed_trade)
     row = pd.DataFrame(
         [
             {
@@ -225,7 +246,20 @@ def _state_from_replay(
     asset_values = context.portfolio.asset_value(group_by=False).iloc[-1]
     symbol_quantity = float(assets.get(symbol, 0.0))
     symbol_asset_value = float(asset_values.get(symbol, 0.0))
-    values = (cash, portfolio_value, symbol_quantity, symbol_asset_value, float(hhi.hhi))
+    try:
+        valuation_price = float(context.portfolio.close[symbol].iloc[-1])
+    except KeyError as exc:
+        raise BehaviorReplayError(
+            f"Missing market prices for target symbol: {symbol}"
+        ) from exc
+    values = (
+        cash,
+        portfolio_value,
+        symbol_quantity,
+        symbol_asset_value,
+        valuation_price,
+        float(hhi.hhi),
+    )
     if not all(math.isfinite(value) for value in values) or portfolio_value <= 0:
         raise BehaviorReplayError("vectorbt state is not finite and positive")
     return PortfolioImpactState(
@@ -233,6 +267,7 @@ def _state_from_replay(
         portfolio_value=portfolio_value,
         symbol_quantity=symbol_quantity,
         symbol_weight=symbol_asset_value / portfolio_value,
+        valuation_price=valuation_price,
         hhi=float(hhi.hhi),
         active_assets=hhi.active_asset_count,
     )
@@ -327,6 +362,15 @@ def simulate_trade_impact(
             executions,
             market_prices,
         )
+        if (
+            proposed_trade.side == "SELL"
+            and proposed_trade.symbol not in set(prior_executions["symbol"])
+        ):
+            return _result(
+                proposed_trade,
+                "rejected",
+                "Short positions are unsupported; the subject holds no long quantity",
+            )
         before_hhi = build_portfolio_concentration_evidence(
             prior_executions,
             price_prefix,
@@ -472,6 +516,8 @@ def simulate_trade_impact(
         ),
         self_context=self_context,
         peer_context=peer_context,
+        before_hhi_evidence_id=before_record.evidence_id,
+        after_hhi_evidence_id=after_record.evidence_id,
     )
 
 

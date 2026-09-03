@@ -1,27 +1,70 @@
-import { AlertCircle, FlaskConical, Scale } from "lucide-react";
-import { useMemo, useState } from "react";
+import { AlertCircle, FlaskConical, LoaderCircle, Scale } from "lucide-react";
+import { useMemo, useReducer, useState } from "react";
 
 import { GlassPanel } from "@/components/common/GlassPanel";
 import { PageHeader, SectionHeading } from "@/components/common/PageHeader";
 import { StateNotice } from "@/components/common/StateNotice";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { pretradeDemo } from "@/data/backendEvidence";
+import {
+  checkPretrade,
+  createPretradeRequestId,
+  currentPretradeRuntime,
+  emptyPretradeRequestState,
+  inputFromDemo,
+  PretradeServiceError,
+  pretradeRequestReducer,
+} from "@/data/pretradeService";
 import { useLocale } from "@/locales/LocaleProvider";
 
 export function DecisionCheckPage() {
   const { formatNumber, formatPercent, locale, t } = useLocale();
+  const runtime = useMemo(currentPretradeRuntime, []);
   const [symbol, setSymbol] = useState(pretradeDemo.symbol);
   const [side, setSide] = useState<"BUY" | "SELL">(pretradeDemo.side);
   const [quantity, setQuantity] = useState(String(pretradeDemo.quantity));
   const [executionPrice, setExecutionPrice] = useState(String(pretradeDemo.executionPrice));
-  const isFixedScenario = useMemo(
-    () =>
-      symbol.trim().toUpperCase() === pretradeDemo.symbol
-      && side === pretradeDemo.side
-      && Number(quantity) === pretradeDemo.quantity
-      && Number(executionPrice) === pretradeDemo.executionPrice,
-    [executionPrice, quantity, side, symbol],
+  const [fees, setFees] = useState(String(pretradeDemo.fees));
+  const [requestState, dispatch] = useReducer(
+    pretradeRequestReducer,
+    emptyPretradeRequestState,
   );
+  const impact = requestState.phase === "success" ? requestState.outcome.impact : null;
+
+  const markInputChanged = (update: () => void) => {
+    dispatch({ type: "input_changed" });
+    update();
+  };
+
+  const runCheck = async () => {
+    const requestId = createPretradeRequestId();
+    dispatch({ type: "started", requestId });
+    try {
+      const outcome = await checkPretrade(
+        {
+          ...inputFromDemo(pretradeDemo),
+          symbol,
+          side,
+          quantity: Number(quantity),
+          executionPrice: Number(executionPrice),
+          fees: Number(fees),
+        },
+        { runtime, requestId, offlineDemo: pretradeDemo },
+      );
+      dispatch({ type: "succeeded", requestId, outcome });
+    } catch (error) {
+      const serviceError = error instanceof PretradeServiceError
+        ? error
+        : new PretradeServiceError(
+            "unexpected_frontend_error",
+            error instanceof Error ? error.message : String(error),
+            requestId,
+          );
+      dispatch({ type: "failed", requestId, error: serviceError });
+    }
+  };
+
   const currency = (value: number) => new Intl.NumberFormat(locale, {
     style: "currency",
     currency: "CNY",
@@ -37,18 +80,20 @@ export function DecisionCheckPage() {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(pretradeDemo.proposedTime));
-  const complete = pretradeDemo.status === "complete"
-    && pretradeDemo.before
-    && pretradeDemo.after
-    && pretradeDemo.delta
-    && pretradeDemo.selfContext
-    && pretradeDemo.peerContext
+  const complete = impact?.status === "complete"
+    && impact.before
+    && impact.after
+    && impact.delta
+    && impact.selfContext
+    && impact.peerContext
     ? {
-        before: pretradeDemo.before,
-        after: pretradeDemo.after,
-        delta: pretradeDemo.delta,
-        selfContext: pretradeDemo.selfContext,
-        peerContext: pretradeDemo.peerContext,
+        before: impact.before,
+        after: impact.after,
+        delta: impact.delta,
+        selfContext: impact.selfContext,
+        peerContext: impact.peerContext,
+        executionPrice: impact.executionPrice,
+        symbol: impact.symbol,
       }
     : null;
 
@@ -57,26 +102,32 @@ export function DecisionCheckPage() {
       <PageHeader
         eyebrow={t("Pre-decision context")}
         title={t("Decision Check")}
-        description={t("A deterministic demo scenario for reviewing evidence context before a proposed action. This interface does not provide a buy or sell recommendation.")}
+        description={t("Review deterministic evidence context before a proposed action. This interface does not provide a buy or sell recommendation.")}
       />
 
       <GlassPanel className="p-6">
         <SectionHeading
-          eyebrow={t("Backend-generated synthetic scenario")}
+          eyebrow={runtime === "tauri_local" ? t("Local Python Runtime") : t("Demo / Offline Runtime")}
           title={t("Describe the proposed action")}
-          description={t("Only the registered quantity and proposed execution price below have deterministic backend context. Changing an input clears the displayed result.")}
+          description={runtime === "tauri_local"
+            ? t("The desktop runtime sends this proposed action through a fixed local bridge to the existing deterministic engine.")
+            : t("Browser mode cannot invoke local Python. Only the registered generated scenario is available as an offline demo.")}
         />
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <label className="grid gap-2 text-sm font-medium">
             {t("Symbol")}
-            <Input value={symbol} onChange={(event) => setSymbol(event.target.value)} aria-label={t("Symbol")} />
+            <Input
+              value={symbol}
+              onChange={(event) => markInputChanged(() => setSymbol(event.target.value))}
+              aria-label={t("Symbol")}
+            />
           </label>
           <label className="grid gap-2 text-sm font-medium">
             {t("Side")}
             <select
               className="h-10 rounded-md border border-border/80 bg-black/[0.08] px-3 text-sm text-foreground outline-none focus:border-accent/45 focus:ring-2 focus:ring-accent/15 dark:bg-white/[0.035]"
               value={side}
-              onChange={(event) => setSide(event.target.value as "BUY" | "SELL")}
+              onChange={(event) => markInputChanged(() => setSide(event.target.value as "BUY" | "SELL"))}
               aria-label={t("Side")}
             >
               <option value="BUY">{t("Buy")}</option>
@@ -88,7 +139,7 @@ export function DecisionCheckPage() {
             <Input
               inputMode="decimal"
               value={quantity}
-              onChange={(event) => setQuantity(event.target.value)}
+              onChange={(event) => markInputChanged(() => setQuantity(event.target.value))}
               aria-label={t("Quantity")}
             />
           </label>
@@ -97,13 +148,38 @@ export function DecisionCheckPage() {
             <Input
               inputMode="decimal"
               value={executionPrice}
-              onChange={(event) => setExecutionPrice(event.target.value)}
+              onChange={(event) => markInputChanged(() => setExecutionPrice(event.target.value))}
               aria-label={t("Proposed execution price in CNY")}
             />
           </label>
+          <label className="grid gap-2 text-sm font-medium">
+            {t("Recorded fees (CNY)")}
+            <Input
+              inputMode="decimal"
+              value={fees}
+              onChange={(event) => markInputChanged(() => setFees(event.target.value))}
+              aria-label={t("Recorded fees in CNY")}
+            />
+          </label>
+        </div>
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <Button
+            type="button"
+            variant="primary"
+            onClick={runCheck}
+            disabled={requestState.phase === "loading"}
+          >
+            {requestState.phase === "loading" ? (
+              <LoaderCircle className="animate-spin" aria-hidden="true" />
+            ) : null}
+            {requestState.phase === "loading" ? t("Checking changes…") : t("Check changes")}
+          </Button>
+          <span className="text-xs text-muted">
+            {runtime === "tauri_local" ? t("Tauri → local Python → deterministic engine") : t("Synthetic generated fallback; not a live Python result")}
+          </span>
         </div>
         <p className="mt-4 text-xs leading-5 text-muted">
-          {t("Registered scenario: {side} {quantity} {symbol} at CNY {price}, recorded fees CNY {fees}, at {time}.", {
+          {t("Registered offline scenario: {side} {quantity} {symbol} at CNY {price}, recorded fees CNY {fees}, at {time}.", {
             side: t(pretradeDemo.side === "BUY" ? "Buy" : "Sell"),
             quantity: formatNumber(pretradeDemo.quantity),
             symbol: pretradeDemo.symbol,
@@ -114,11 +190,11 @@ export function DecisionCheckPage() {
         </p>
       </GlassPanel>
 
-      {isFixedScenario && complete ? (
+      {complete ? (
         <GlassPanel className="overflow-hidden">
           <div className="p-6 pb-4">
             <SectionHeading
-              eyebrow={t("Deterministic vectorbt replay")}
+              eyebrow={runtime === "tauri_local" ? t("Live deterministic vectorbt replay") : t("Generated offline deterministic replay")}
               title={t("Current → proposed trade")}
               description={t("If executed at the stated proposed price and quantity, the portfolio would change as follows. No future return or price is estimated.")}
             />
@@ -166,6 +242,19 @@ export function DecisionCheckPage() {
               </div>
             ))}
           </dl>
+
+          <div className="border-b border-border/60 px-5 py-3 text-sm">
+            <span className="text-muted">{t("Assumed execution price")}: </span>
+            <span className="font-medium tabular-nums">{currency(complete.executionPrice)}</span>
+            <span className="px-2 text-muted">·</span>
+            <span className="text-muted">{t("Portfolio valuation price")}: </span>
+            <span className="font-medium tabular-nums">{currency(complete.after.valuationPrice)}</span>
+          </div>
+          {complete.executionPrice !== complete.after.valuationPrice ? (
+            <p className="border-b border-border/60 px-5 py-3 text-xs leading-5 text-muted">
+              {t("After the trade, the portfolio is revalued at the current valuation price. A difference between the assumed execution price and valuation price creates an immediate mark-to-market difference; it is not a future return forecast and does not mean the assumed price can necessarily be executed.")}
+            </p>
+          ) : null}
 
           <div className="grid gap-4 p-6 lg:grid-cols-2">
             <div className="rounded-md border border-border/70 bg-white/[0.025] p-4">
@@ -227,21 +316,41 @@ export function DecisionCheckPage() {
           <StateNotice
             state="demo"
             compact
-            title={t("Synthetic scenario boundary")}
-            detail={t("This backend-generated scenario is deterministic demo evidence. It is not a recommendation and does not predict price or return.")}
+            title={runtime === "tauri_local" ? t("Synthetic local-runtime boundary") : t("Synthetic offline-runtime boundary")}
+            detail={runtime === "tauri_local"
+              ? t("This result was generated now by the local deterministic engine from synthetic data. It is not a recommendation and does not predict price or return.")
+              : t("This result is the registered generated offline demo, not a live Python calculation. It is not a recommendation and does not predict price or return.")}
           />
         </GlassPanel>
-      ) : isFixedScenario ? (
+      ) : impact ? (
         <StateNotice
           state="insufficient"
-          title={t("Scenario evidence unavailable")}
-          detail={pretradeDemo.reason ?? t("The deterministic backend could not produce complete pre-trade evidence for this scenario.")}
+          title={impact.status === "rejected" ? t("Proposed trade rejected") : t("Scenario evidence unavailable")}
+          detail={impact.reason ?? t("The deterministic backend could not produce complete pre-trade evidence for this scenario.")}
+        />
+      ) : requestState.phase === "error" ? (
+        <StateNotice
+          state="insufficient"
+          title={t("Pre-trade check failed")}
+          detail={runtime === "browser_offline_demo" && requestState.error.code === "offline_demo_only"
+            ? t("Browser mode cannot run local Python. Restore the registered offline scenario or open the Tauri desktop app for a live check.")
+            : requestState.error.message}
+        />
+      ) : requestState.phase === "loading" ? (
+        <StateNotice
+          state="loading"
+          title={t("Checking deterministic changes")}
+          detail={t("The local engine is replaying the current and proposed states.")}
         />
       ) : (
         <StateNotice
           state="empty"
-          title={t("No deterministic output for this input")}
-          detail={t("This demo does not calculate changed inputs in the browser. Return to the registered symbol, side, quantity, and proposed execution price to view backend-generated evidence.")}
+          title={requestState.stale ? t("Inputs changed") : t("Ready to check")}
+          detail={requestState.stale
+            ? t("The previous result was cleared because it no longer matches the current input. Run the check again to refresh it.")
+            : runtime === "tauri_local"
+              ? t("Run the check to calculate the current and proposed states with the local deterministic engine.")
+              : t("Run the registered scenario to view the generated offline result. Live recalculation requires the Tauri desktop runtime.")}
         />
       )}
 

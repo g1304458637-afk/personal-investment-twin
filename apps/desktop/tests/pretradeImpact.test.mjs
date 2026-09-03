@@ -10,6 +10,7 @@ function state(overrides = {}) {
     portfolio_value: 100_000,
     symbol_quantity: 500,
     symbol_weight: 0.065,
+    valuation_price: 13,
     hhi: 0.48,
     active_assets: 5,
     ...overrides,
@@ -66,6 +67,22 @@ test("pre-trade adapter maps complete backend facts without calculating them", (
   assert.equal(view.peerContext?.proposedPercentile, source.peer_context.proposed_percentile);
 });
 
+test("pre-trade adapter keeps assumed execution and valuation prices distinct", () => {
+  const source = payload({
+    proposed_trade: {
+      ...payload().proposed_trade,
+      execution_price: 12.5,
+    },
+    before: state({ valuation_price: 13 }),
+    after: state({ valuation_price: 13 }),
+  });
+  const view = adaptPretradeImpact(source);
+
+  assert.equal(view.executionPrice, 12.5);
+  assert.equal(view.after?.valuationPrice, 13);
+  assert.notEqual(view.executionPrice, view.after?.valuationPrice);
+});
+
 test("pre-trade adapter preserves a rejected result without inventing after state", () => {
   const source = payload({
     after: null,
@@ -101,4 +118,20 @@ test("Decision Check no longer contains the handwritten scenario fixture", async
   assert.equal(fixture.includes("26.4% deterministic scenario exposure"), false);
   assert.equal(page.includes("@/data/backendEvidence"), true);
   assert.equal(page.includes("@/demo/fixture"), false);
+});
+
+test("Decision Check labels valuation differences as mark-to-market, not future return", async () => {
+  const page = await readFile(new URL("../src/pages/DecisionCheckPage.tsx", import.meta.url), "utf8");
+  const english = await readFile(new URL("../src/locales/en-US.ts", import.meta.url), "utf8");
+  const chinese = await readFile(new URL("../src/locales/zh-CN.ts", import.meta.url), "utf8");
+
+  assert.match(page, /Assumed execution price/);
+  assert.match(page, /Portfolio valuation price/);
+  assert.match(page, /not a future return forecast/);
+  assert.doesNotMatch(page, /expected return|anticipated profit|arbitrage profit/i);
+  assert.match(english, /"Assumed execution price": "Assumed execution price"/);
+  assert.match(english, /"Portfolio valuation price": "Portfolio valuation price"/);
+  assert.match(chinese, /"Assumed execution price": "假设成交价"/);
+  assert.match(chinese, /"Portfolio valuation price": "组合估值价"/);
+  assert.match(chinese, /不是未来收益预测/);
 });
