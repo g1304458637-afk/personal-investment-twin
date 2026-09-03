@@ -39,6 +39,15 @@ from src.core.portfolio_replay import replay_multi_asset_executions  # noqa: E40
 from src.data.csv_importer import load_normalized_csv  # noqa: E402
 from src.data.local_market_data_provider import LocalMarketDataProvider  # noqa: E402
 from src.evidence.adapters import adapt_evidence  # noqa: E402
+from src.evidence.explainability import (  # noqa: E402
+    CALCULATION_TRACE_SCHEMA_VERSION,
+    build_explainability_view,
+    build_pretrade_hhi_trace,
+)
+from src.evidence.registry import (  # noqa: E402
+    CONCEPT_REGISTRY_REVISION,
+    list_concepts,
+)
 from src.episodes.investment_episode import (  # noqa: E402
     from_vectorbt_position_record,
 )
@@ -287,6 +296,15 @@ def build_export() -> dict[str, object]:
         exit_episode,
         _exit_provider(PROJECT_ROOT, exit_price_rows),
     )
+    incomplete_exit = build_exit_timing_evidence(
+        exit_episode,
+        _exit_provider(
+            PROJECT_ROOT,
+            exit_price_rows.loc[
+                exit_price_rows["instrument"] == exit_episode.symbol
+            ].iloc[:9].copy(),
+        ),
+    )
 
     behavior_subject = "demo-user:synthetic-behavior"
     records = [
@@ -399,6 +417,23 @@ def build_export() -> dict[str, object]:
         raise RuntimeError(
             f"Synthetic pre-trade demo failed: {pretrade_demo.simulation_reason}"
         )
+    evidence_by_metric = {record.metric_id: record for record in records}
+    explainability_sources = (
+        (evidence_by_metric["portfolio_concentration_hhi"], concentration),
+        (evidence_by_metric["mean_daily_turnover"], turnover),
+        (evidence_by_metric["loss_averaging_event_rate"], loss_averaging),
+        (evidence_by_metric["sizing_equal_weight_comparison"], sizing),
+        (evidence_by_metric["exit_timing_post_exit_asset_return"], exit),
+        (_adapt(incomplete_exit, exit_episode.episode_id), incomplete_exit),
+    )
+    explainability_views = tuple(
+        build_explainability_view(record, source)
+        for record, source in explainability_sources
+    )
+    pretrade_trace = build_pretrade_hhi_trace(
+        pretrade_demo,
+        calculation_code_version=CALCULATION_CODE_VERSION,
+    )
     peer_metric_keys = {
         "portfolio_concentration_hhi": "portfolio_hhi",
         "mean_daily_turnover": "turnover",
@@ -408,6 +443,13 @@ def build_export() -> dict[str, object]:
         "schema_version": "1",
         "export_version": "desktop-demo-evidence-v1",
         "data_tier": "synthetic",
+        "explainability": {
+            "schema_version": CALCULATION_TRACE_SCHEMA_VERSION,
+            "concept_registry_revision": CONCEPT_REGISTRY_REVISION,
+            "concepts": list_concepts(),
+            "evidence_views": explainability_views,
+            "pretrade_trace": pretrade_trace,
+        },
         "selected_episode": selected_episode,
         "evidence_records": records,
         "historical_series": {

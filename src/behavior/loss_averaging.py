@@ -41,6 +41,7 @@ class LossAveragingEvent:
     added_quantity: float
     eligible_event: bool
     event_detected: bool
+    execution_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -140,6 +141,7 @@ def build_loss_averaging_evidence(
                     event_detected=(
                         eligible and execution_price < float(average_cost)
                     ),
+                    execution_id=str(row.execution_id),
                 )
             )
     except (BehaviorReplayError, TypeError, ValueError) as exc:

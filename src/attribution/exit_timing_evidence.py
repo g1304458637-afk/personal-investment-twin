@@ -42,6 +42,14 @@ EvidenceStatus = Literal["complete", "insufficient_evidence"]
 
 
 @dataclass(frozen=True, slots=True)
+class ExitPriceObservation:
+    """One validated market observation passed to the existing return method."""
+
+    observation_time: pd.Timestamp
+    price: float
+
+
+@dataclass(frozen=True, slots=True)
 class ExitTimingEvidence:
     """Fixed-policy post-exit market evidence for one InvestmentEpisode.
 
@@ -65,6 +73,7 @@ class ExitTimingEvidence:
     evidence_reason: str | None
     provenance: PriceProvenance | None
     counterfactual_notice: str
+    window_prices: tuple[ExitPriceObservation, ...] = ()
 
 
 def _insufficient(
@@ -91,6 +100,7 @@ def _insufficient(
         evidence_reason=reason,
         provenance=provenance,
         counterfactual_notice=COUNTERFACTUAL_NOTICE,
+        window_prices=(),
     )
 
 
@@ -209,4 +219,11 @@ def build_exit_timing_evidence(
         evidence_reason=None,
         provenance=provenance,
         counterfactual_notice=COUNTERFACTUAL_NOTICE,
+        window_prices=tuple(
+            ExitPriceObservation(
+                observation_time=pd.Timestamp(observation_time),
+                price=float(price),
+            )
+            for observation_time, price in prices.items()
+        ),
     )

@@ -31,6 +31,15 @@ EvidenceStatus = Literal["complete", "insufficient_evidence"]
 
 
 @dataclass(frozen=True, slots=True)
+class ConcentrationWeightComponent:
+    """One already-computed risky-security weight used by the HHI result."""
+
+    symbol: str
+    asset_value: float
+    weight: float
+
+
+@dataclass(frozen=True, slots=True)
 class PortfolioConcentrationEvidence:
     method_id: str
     method_source: str
@@ -46,6 +55,7 @@ class PortfolioConcentrationEvidence:
     provenance: tuple[PriceProvenance, ...]
     synthetic_provenance_present: bool
     limitation: str
+    weight_components: tuple[ConcentrationWeightComponent, ...] = ()
 
 
 def _insufficient(
@@ -69,6 +79,7 @@ def _insufficient(
         provenance=provenance,
         synthetic_provenance_present=any(item.is_synthetic for item in provenance),
         limitation=LIMITATION,
+        weight_components=(),
     )
 
 
@@ -124,4 +135,12 @@ def build_portfolio_concentration_evidence(
         provenance=context.provenance,
         synthetic_provenance_present=context.synthetic_provenance_present,
         limitation=LIMITATION,
+        weight_components=tuple(
+            ConcentrationWeightComponent(
+                symbol=str(symbol),
+                asset_value=float(active.loc[symbol]),
+                weight=float(weights.loc[symbol]),
+            )
+            for symbol in weights.index
+        ),
     )

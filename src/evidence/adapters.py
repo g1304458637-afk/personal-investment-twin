@@ -215,6 +215,14 @@ def adapt_portfolio_concentration_evidence(
         "active_asset_count": evidence.active_asset_count,
         "top1_weight": evidence.top1_weight,
         "top3_weight": evidence.top3_weight,
+        "weight_components": [
+            {
+                "symbol": item.symbol,
+                "asset_value": item.asset_value,
+                "weight": item.weight,
+            }
+            for item in evidence.weight_components
+        ],
         "synthetic_provenance_present": evidence.synthetic_provenance_present,
     }
     return _record(
@@ -241,6 +249,7 @@ def adapt_portfolio_concentration_evidence(
             "active_asset_count": evidence.active_asset_count,
             "top1_weight": evidence.top1_weight,
             "top3_weight": evidence.top3_weight,
+            "weight_components": attributes["weight_components"],
         },
         additional_limitations=(evidence.limitation,),
     )
@@ -319,6 +328,7 @@ def adapt_loss_averaging_evidence(
             "added_quantity": item.added_quantity,
             "eligible_event": item.eligible_event,
             "event_detected": item.event_detected,
+            "execution_id": item.execution_id,
         }
         for item in evidence.events
     ]
@@ -493,6 +503,13 @@ def adapt_exit_timing_evidence(
         "counterfactual_exit_price": evidence.counterfactual_exit_price,
         "comparison": evidence.comparison,
         "counterfactual_notice": evidence.counterfactual_notice,
+        "window_prices": [
+            {
+                "observation_time": _iso(item.observation_time),
+                "price": item.price,
+            }
+            for item in evidence.window_prices
+        ],
     }
     identity_attributes = {
         key: attributes[key]
@@ -506,6 +523,7 @@ def adapt_exit_timing_evidence(
             "exit_session_market_price",
             "counterfactual_exit_price",
             "comparison",
+            "window_prices",
         )
     }
     return _record(
