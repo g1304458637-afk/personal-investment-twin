@@ -1,12 +1,21 @@
-import { Info, LockKeyhole, Send, ShieldCheck, UsersRound } from "lucide-react";
+import { ChevronRight, Info, LockKeyhole, Send, ShieldCheck, UsersRound } from "lucide-react";
 
+import { PeerRangeChart } from "@/components/charts/PeerRangeChart";
+import { AnimatedNumber } from "@/components/common/AnimatedNumber";
 import { GlassPanel } from "@/components/common/GlassPanel";
 import { PageHeader, SectionHeading } from "@/components/common/PageHeader";
 import { StateNotice } from "@/components/common/StateNotice";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { notableChanges, peerCohort, peerMetrics } from "@/demo/fixture";
 import { useLocale } from "@/locales/LocaleProvider";
+
+const peerMetricDirections: Record<string, readonly [string, string]> = {
+  turnover: ["Lower turnover", "Higher turnover"],
+  hhi: ["Lower concentration", "Higher concentration"],
+  "episode-count": ["Fewer closed episodes", "More closed episodes"],
+};
 
 export function ComparePage() {
   const { formatNumber, t } = useLocale();
@@ -14,6 +23,18 @@ export function ComparePage() {
     if (unit === "×") return `${formatNumber(value, 2)}×`;
     return formatNumber(value, Number.isInteger(value) ? 0 : 2);
   };
+  const medianDifference = (metric: (typeof peerMetrics)[number]) => {
+    const difference = metric.user - metric.median;
+    if (difference === 0) return t("Matches cohort median");
+    return t(difference > 0 ? "Above cohort median by {difference}" : "Below cohort median by {difference}", {
+      difference: formatPeerValue(Math.abs(difference), metric.unit),
+    });
+  };
+  const rankedByPercentileDistance = [...peerMetrics].sort(
+    (left, right) => Math.abs(right.percentile - 50) - Math.abs(left.percentile - 50),
+  );
+  const furthestFromCohortMedian = rankedByPercentileDistance[0];
+  const closestToCohortMedian = rankedByPercentileDistance[rankedByPercentileDistance.length - 1];
 
   return (
     <div className="page-stack">
@@ -51,68 +72,118 @@ export function ComparePage() {
           </GlassPanel>
         </TabsContent>
 
-        <TabsContent value="peer" className="space-y-4">
-          <GlassPanel className="p-6">
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-              <div className="max-w-3xl">
-                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                  <UsersRound className="size-4 text-accent" aria-hidden="true" />
-                  {t(peerCohort.name)}
-                </div>
-                <p className="mt-3 text-sm leading-6 text-muted">{t(peerCohort.definition)}</p>
-              </div>
-              <dl className="grid grid-cols-2 gap-x-8 gap-y-3 rounded-md border border-border/70 bg-white/[0.025] px-4 py-3 text-sm">
-                <div>
-                  <dt className="text-xs uppercase tracking-[0.12em] text-muted">{t("Cohort N")}</dt>
-                  <dd className="mt-1 font-semibold tabular-nums">{formatNumber(peerCohort.n)}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs uppercase tracking-[0.12em] text-muted">{t("Data tier")}</dt>
-                  <dd className="mt-1 font-semibold">{t("Synthetic")}</dd>
-                </div>
-              </dl>
+        <TabsContent value="peer" className="space-y-3">
+          <div className="flex flex-col gap-3 rounded-md border border-border/70 bg-white/[0.022] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-2 text-sm">
+              <UsersRound className="size-4 shrink-0 text-accent" aria-hidden="true" />
+              <strong className="truncate font-medium">{t(peerCohort.name)}</strong>
+              <span className="text-muted">·</span>
+              <span className="whitespace-nowrap tabular-nums text-muted">N={formatNumber(peerCohort.n)}</span>
             </div>
-            <div className="mt-5 border-t border-border/60 pt-4 text-xs leading-5 text-muted">{t(peerCohort.consent)}</div>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button type="button" variant="quiet" size="sm" className="shrink-0">
+                  {t("View cohort definition")}
+                  <ChevronRight aria-hidden="true" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetTitle className="text-xl font-semibold tracking-tight">{t("Cohort definition")}</SheetTitle>
+                <SheetDescription className="mt-2 text-sm leading-6 text-muted">
+                  {t("The fixed metadata behind this synthetic comparison.")}
+                </SheetDescription>
+                <p className="mt-7 border-y border-border/70 py-4 text-sm leading-6 text-muted">{t(peerCohort.definition)}</p>
+                <dl className="divide-y divide-border/65">
+                  {[
+                    [t("Market"), t("Not specified in the demo fixture")],
+                    [t("Asset type"), t("Equity profiles")],
+                    [t("Position scope"), t("Long-only · no margin activity")],
+                    [t("Observation window"), t("12 months of execution coverage")],
+                    [t("Cohort N"), formatNumber(peerCohort.n)],
+                    [t("Data tier"), t("Synthetic / Demo")],
+                  ].map(([label, value]) => (
+                    <div key={label} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-5 py-4 text-sm">
+                      <dt className="text-muted">{label}</dt>
+                      <dd className="text-right font-medium">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <StateNotice
+                  state="demo"
+                  compact
+                  title={t("Synthetic cohort boundary")}
+                  detail={t("These deterministic demo values describe only the stated Demo Cohort definition and N. They do not represent the distribution of real Chinese investors.")}
+                />
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          <GlassPanel className="overflow-hidden">
+            <div className="px-5 py-3.5">
+              <SectionHeading
+                eyebrow={t("Difference summary")}
+                title={t("Compared with your Demo Cohort")}
+                description={t("Compared by distance from the 50th percentile. This is descriptive context, not a quality ranking.")}
+              />
+            </div>
+            <div className="grid border-t border-border/60 md:grid-cols-2 md:divide-x md:divide-border/60">
+              {[
+                { label: t("Furthest from cohort median"), metric: furthestFromCohortMedian },
+                { label: t("Closest to cohort median"), metric: closestToCohortMedian },
+              ].map(({ label, metric }) => (
+                <div key={label} className="relative overflow-hidden px-5 py-3">
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(111,214,224,.08),transparent_52%)]" aria-hidden="true" />
+                  <div className="relative flex items-end justify-between gap-4">
+                    <div>
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">{label}</span>
+                      <h3 className="mt-1 text-[15px] font-semibold">{t(metric.label)}</h3>
+                      <p className="mt-1 text-xs text-muted">{medianDifference(metric)}</p>
+                    </div>
+                    <AnimatedNumber
+                      value={metric.percentile}
+                      format={(value) => t("Percentile {percentile}", { percentile: formatNumber(Math.round(value)) })}
+                      className="whitespace-nowrap text-lg font-semibold text-accent"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </GlassPanel>
 
           <GlassPanel className="overflow-hidden">
-            <div className="p-6 pb-4">
+            <div className="px-5 py-3.5">
               <SectionHeading
-                eyebrow={t("Distribution reference")}
-                title={t("Where the Demo User sits")}
-                description={t("P25, median and P75 describe the Demo Cohort distribution. Percentile is the Demo User’s position within this synthetic cohort.")}
+                eyebrow={t("Cohort distribution")}
+                title={t("Where you sit")}
+                description={t("P25, median and P75 are fixed Demo Cohort values. A higher percentile describes position only; it does not mean better.")}
               />
             </div>
-            <div className="overflow-x-auto border-t border-border/60">
-              <table className="w-full min-w-[760px] text-left text-sm">
-                <thead className="bg-white/[0.025] text-xs uppercase tracking-[0.1em] text-muted">
-                  <tr>
-                    <th className="px-6 py-3 font-medium">{t("Metric")}</th>
-                    <th className="px-4 py-3 font-medium">{t("Demo User")}</th>
-                    <th className="px-4 py-3 font-medium">P25</th>
-                    <th className="px-4 py-3 font-medium">{t("Median")}</th>
-                    <th className="px-4 py-3 font-medium">P75</th>
-                    <th className="px-6 py-3 font-medium">{t("Percentile")}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
-                  {peerMetrics.map((metric) => (
-                    <tr key={metric.id} className="transition-colors hover:bg-white/[0.025]">
-                      <th scope="row" className="px-6 py-4 font-medium text-foreground">{t(metric.label)}</th>
-                      <td className="px-4 py-4 font-semibold tabular-nums">{formatPeerValue(metric.user, metric.unit)}</td>
-                      <td className="px-4 py-4 tabular-nums text-muted">{formatPeerValue(metric.p25, metric.unit)}</td>
-                      <td className="px-4 py-4 tabular-nums text-muted">{formatPeerValue(metric.median, metric.unit)}</td>
-                      <td className="px-4 py-4 tabular-nums text-muted">{formatPeerValue(metric.p75, metric.unit)}</td>
-                      <td className="px-6 py-4 tabular-nums">{t("{percentile}th", { percentile: formatNumber(metric.percentile) })}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="divide-y divide-border/60 border-t border-border/60">
+              {peerMetrics.map((metric) => {
+                const [lowDirection, highDirection] = peerMetricDirections[metric.id] ?? ["Lower value", "Higher value"];
+                return (
+                  <article key={metric.id} className="group relative overflow-hidden px-5 py-2.5">
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_50%,rgba(105,207,219,.07),transparent_38%)] opacity-0 transition-opacity duration-200 group-hover:opacity-100" aria-hidden="true" />
+                    <div className="relative flex flex-wrap items-center justify-between gap-x-5 gap-y-1">
+                      <h3 className="text-sm font-semibold">{t(metric.label)}</h3>
+                      <p className="text-xs tabular-nums text-muted">{medianDifference(metric)}</p>
+                    </div>
+                    <div className="relative mt-1.5 flex justify-between text-[10px] text-muted">
+                      <span>← {t(lowDirection)}</span>
+                      <span>{t(highDirection)} →</span>
+                    </div>
+                    <div className="relative">
+                      <PeerRangeChart metric={metric} />
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </GlassPanel>
 
           <StateNotice
             state="demo"
+            compact
             title={t("Synthetic cohort boundary")}
             detail={t("These deterministic demo values describe only the stated Demo Cohort definition and N. They do not represent the distribution of real Chinese investors.")}
           />
