@@ -13,7 +13,7 @@ import {
   SheetDescription,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { evidenceRecords } from "@/demo/fixture";
+import { evidenceRecords } from "@/data/backendEvidence";
 import type { DemoEvidenceRecord, EvidenceStatus } from "@/demo/types";
 import { displayEvidenceValue, statusLabel } from "@/lib/format";
 import { useLocale } from "@/locales/LocaleProvider";
@@ -29,7 +29,7 @@ function EvidenceDetail({ record }: { record: DemoEvidenceRecord }) {
   const provenance = record.provenance.map((source) => (
     <li key={`${source.source_id}-${source.instrument}-${source.benchmark_id}`}>
       <strong>{source.source_name}</strong>
-      <span>{t(humanize(source.source_type))} · {source.data_version} · {t("as of {date}", { date: source.as_of })}</span>
+      <span>{t(humanize(source.source_type))} · {source.data_version} · {t("as of {date}", { date: source.as_of ?? t("Not available") })}</span>
       <span>
         {source.instrument ?? t("No instrument")}
         {source.benchmark_id ? ` · ${t("benchmark: {id}", { id: source.benchmark_id })}` : ""}
@@ -64,7 +64,7 @@ function EvidenceDetail({ record }: { record: DemoEvidenceRecord }) {
         <DetailSection title={t("Evidence ID")}><code className="break-all text-xs text-muted">{record.evidence_id}</code></DetailSection>
         <DetailSection title={t("Observation window")}>
           <p>{record.observation_start ?? t("Not available")} → {record.observation_end ?? t("Not available")}</p>
-          <p className="mt-1 text-xs text-muted">{t("As of {date}", { date: record.as_of })}</p>
+          <p className="mt-1 text-xs text-muted">{t("As of {date}", { date: record.as_of ?? t("Not available") })}</p>
         </DetailSection>
         <DetailSection title={t("Method boundary")}>
           <p>{t(record.evidence_reason ?? "The registered method boundary was met for this record.")}</p>

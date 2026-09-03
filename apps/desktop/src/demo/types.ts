@@ -6,17 +6,25 @@ export type EvidenceStatus =
 
 export type DataTier = "synthetic" | "demo" | "authorized_beta" | "production";
 
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
 export interface DemoEvidenceProvenance {
   source_type: string;
   source_name: string;
   data_version: string;
-  as_of: string;
+  as_of: string | null;
   price_type: string | null;
   is_synthetic: boolean;
   source_id: string | null;
   instrument: string | null;
   benchmark_id: string | null;
-  attributes: Record<string, string | number | boolean | null>;
+  attributes: Record<string, JsonValue>;
 }
 
 export interface DemoEvidenceRecord {
@@ -28,7 +36,7 @@ export interface DemoEvidenceRecord {
   method_version: string;
   observation_start: string | null;
   observation_end: string | null;
-  as_of: string;
+  as_of: string | null;
   value: string | number | boolean | null;
   numerator: number | null;
   denominator: number | string | null;
@@ -41,7 +49,7 @@ export interface DemoEvidenceRecord {
   data_tier: DataTier;
   calculation_code_version: string;
   limitations: string[];
-  attributes: Record<string, string | number | boolean | null>;
+  attributes: Record<string, JsonValue>;
 }
 
 export interface PortfolioPoint {
@@ -70,11 +78,13 @@ export interface EvidenceMetric {
   eyebrow: string;
   primary: string;
   description: string;
-  observationCount: number;
+  observationCount: number | null;
   status: EvidenceStatus;
   confidence: string | null;
   evidenceId: string;
   trend: number[];
+  primaryValues?: Record<string, string | number>;
+  descriptionValues?: Record<string, string | number>;
 }
 
 export interface PeriodSnapshot {

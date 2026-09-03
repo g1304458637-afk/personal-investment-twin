@@ -1,0 +1,894 @@
+{
+  "data_tier": "synthetic",
+  "evidence_records": [
+    {
+      "as_of": "2025-05-20T10:05:00",
+      "attributes": {
+        "episode_id": "investment-episode:600000.SH:0",
+        "industry_as_of_date": "2025-01-06T09:35:00",
+        "industry_benchmark_id": "SW_BANK",
+        "industry_benchmark_name": "银行行业基准",
+        "industry_benchmark_return": 0.2500000000000002,
+        "industry_comparison": "outperformed",
+        "industry_id": "SW_BANK",
+        "industry_name": "银行",
+        "market_benchmark_id": "CSI300",
+        "market_benchmark_name": "沪深300",
+        "market_benchmark_return": 0.08000000000000007,
+        "market_comparison": "outperformed",
+        "symbol": "600000.SH"
+      },
+      "calculation_code_version": "desktop-demo-evidence-v1",
+      "ci_lower": null,
+      "ci_upper": null,
+      "data_tier": "synthetic",
+      "denominator": null,
+      "evidence_id": "ev_2a2dcff8f0f0c8afb1283545f11fbc99a04015ce4ff0f0f52b3bc90e11f6012a",
+      "evidence_kind": "decision_evidence",
+      "evidence_reason": null,
+      "evidence_status": "complete",
+      "limitations": [
+        "SelectionEvidence is comparative episode evidence, not alpha or a conclusion about durable selection skill."
+      ],
+      "method_id": "selection_episode_twr_vs_benchmarks_v1",
+      "method_version": "1",
+      "metric_id": "selection_episode_asset_return",
+      "numerator": null,
+      "observation_count": null,
+      "observation_end": "2025-05-20T10:05:00",
+      "observation_start": "2025-01-06T09:35:00",
+      "provenance": [
+        {
+          "as_of": "2025-05-20T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "600000.SH",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-06T09:35:00",
+          "attributes": {
+            "classification": "synthetic_industry",
+            "industry_name": "银行"
+          },
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": null,
+          "is_synthetic": true,
+          "price_type": null,
+          "source_id": "SW_BANK",
+          "source_name": "local_fixture",
+          "source_type": "industry_classification"
+        },
+        {
+          "as_of": "2025-05-20T00:00:00",
+          "attributes": {
+            "benchmark_name": "沪深300",
+            "benchmark_type": "market"
+          },
+          "benchmark_id": "CSI300",
+          "data_version": "v1",
+          "instrument": null,
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_fixture",
+          "source_type": "benchmark_price_series"
+        },
+        {
+          "as_of": "2025-05-20T00:00:00",
+          "attributes": {
+            "benchmark_name": "银行行业基准",
+            "benchmark_type": "industry"
+          },
+          "benchmark_id": "SW_BANK",
+          "data_version": "v1",
+          "instrument": null,
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_fixture",
+          "source_type": "benchmark_price_series"
+        }
+      ],
+      "subject_id": "investment-episode:600000.SH:0",
+      "value": 0.2999999999999998
+    },
+    {
+      "as_of": "2025-01-03T00:00:00",
+      "attributes": {
+        "active_assets": [
+          "SYN_LOSS_SOLD",
+          "SYN_NEUTRAL",
+          "SYN_PAPER_LOSS",
+          "SYN_PAPER_WIN",
+          "SYN_WIN_SOLD"
+        ],
+        "actual_end_value": 100300.0,
+        "actual_start_value": 100000.0,
+        "actual_weights": {
+          "SYN_LOSS_SOLD": 0.02,
+          "SYN_NEUTRAL": 0.005,
+          "SYN_PAPER_LOSS": 0.01,
+          "SYN_PAPER_WIN": 0.04,
+          "SYN_WIN_SOLD": 0.01
+        },
+        "baseline_end_value": 100085.0,
+        "baseline_start_value": 100000.0,
+        "baseline_weights": {
+          "SYN_LOSS_SOLD": 0.017,
+          "SYN_NEUTRAL": 0.017,
+          "SYN_PAPER_LOSS": 0.017,
+          "SYN_PAPER_WIN": 0.017,
+          "SYN_WIN_SOLD": 0.017
+        },
+        "comparison": "outperformed_baseline",
+        "risky_exposure": 0.085
+      },
+      "calculation_code_version": "desktop-demo-evidence-v1",
+      "ci_lower": null,
+      "ci_upper": null,
+      "data_tier": "synthetic",
+      "denominator": null,
+      "evidence_id": "ev_d2d9e3247e3090e8319e6645f72c0de7bf8c82e23144f9258e434ad821f8ff48",
+      "evidence_kind": "decision_evidence",
+      "evidence_reason": null,
+      "evidence_status": "complete",
+      "limitations": [
+        "The historical counterfactual is not sizing skill, alpha, causal attribution, or a recommendation."
+      ],
+      "method_id": "equal_weight_sizing_counterfactual_v1",
+      "method_version": "1",
+      "metric_id": "sizing_equal_weight_comparison",
+      "numerator": null,
+      "observation_count": null,
+      "observation_end": "2025-01-03T00:00:00",
+      "observation_start": "2025-01-02T00:00:00",
+      "provenance": [],
+      "subject_id": "demo-user:synthetic-behavior",
+      "value": "outperformed_baseline"
+    },
+    {
+      "as_of": "2025-06-30T00:00:00",
+      "attributes": {
+        "actual_exit_price": 99.5,
+        "comparison": "actual_exit_underperformed_hold_baseline",
+        "counterfactual_exit_price": 120.0,
+        "counterfactual_exit_time": "2025-06-30T00:00:00",
+        "counterfactual_notice": "This is a retrospective fixed-horizon counterfactual. The 20-session horizon is a fixed project policy, not an optimal or industry-standard horizon, and does not imply that subsequent price changes were knowable at the actual exit time.",
+        "episode_id": "investment-episode:SYN_EXIT_UP:0",
+        "exit_session_market_price": 100.0,
+        "policy_id": "hold_20_sessions_v1",
+        "policy_sessions": 20,
+        "symbol": "SYN_EXIT_UP"
+      },
+      "calculation_code_version": "desktop-demo-evidence-v1",
+      "ci_lower": null,
+      "ci_upper": null,
+      "data_tier": "synthetic",
+      "denominator": null,
+      "evidence_id": "ev_13be270ab0aac9aabf54ab0266ebd95a879e7c5a996fa36b758542cb1628c9ba",
+      "evidence_kind": "decision_evidence",
+      "evidence_reason": null,
+      "evidence_status": "complete",
+      "limitations": [
+        "This is a retrospective fixed-horizon counterfactual. The 20-session horizon is a fixed project policy, not an optimal or industry-standard horizon, and does not imply that subsequent price changes were knowable at the actual exit time."
+      ],
+      "method_id": "hold_20_sessions_v1",
+      "method_version": "1",
+      "metric_id": "exit_timing_post_exit_asset_return",
+      "numerator": null,
+      "observation_count": null,
+      "observation_end": "2025-06-30T00:00:00",
+      "observation_start": "2025-06-02T10:05:00",
+      "provenance": [
+        {
+          "as_of": "2025-06-30T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_EXIT_UP",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_exit_fixture",
+          "source_type": "price_series"
+        }
+      ],
+      "subject_id": "investment-episode:SYN_EXIT_UP:0",
+      "value": 0.19999999999999973
+    },
+    {
+      "as_of": "2025-05-20T10:05:00",
+      "attributes": {
+        "actual_end_value": 103369.1,
+        "comparison": "lower_than_zero_fee_baseline",
+        "excluded_costs": [
+          "unrecorded_tax",
+          "slippage",
+          "bid_ask_spread",
+          "market_impact",
+          "opportunity_cost"
+        ],
+        "included_costs": [
+          "recorded_fee"
+        ],
+        "recorded_fee_total": 30.9,
+        "zero_recorded_fee_end_value": 103400.0
+      },
+      "calculation_code_version": "desktop-demo-evidence-v1",
+      "ci_lower": null,
+      "ci_upper": null,
+      "data_tier": "synthetic",
+      "denominator": null,
+      "evidence_id": "ev_969d3f6763de43156f1d3fbe9c39a7f03e6b89b4689013076fe2ab97ddf7f791",
+      "evidence_kind": "decision_evidence",
+      "evidence_reason": null,
+      "evidence_status": "complete",
+      "limitations": [
+        "Includes recorded explicit fees only; it does not estimate tax, slippage, spread, market impact, or opportunity cost."
+      ],
+      "method_id": "zero_recorded_fee_counterfactual_v1",
+      "method_version": "1",
+      "metric_id": "recorded_trading_friction_comparison",
+      "numerator": null,
+      "observation_count": 4,
+      "observation_end": "2025-05-20T10:05:00",
+      "observation_start": "2025-01-06T09:35:00",
+      "provenance": [],
+      "subject_id": "investment-episode:600000.SH:0",
+      "value": "lower_than_zero_fee_baseline"
+    },
+    {
+      "as_of": "2025-01-08T00:00:00",
+      "attributes": {
+        "daily_turnover": [
+          {
+            "observation_date": "2025-01-02T00:00:00",
+            "portfolio_value": 100000.0,
+            "traded_value": 8500.0,
+            "turnover": 0.085
+          },
+          {
+            "observation_date": "2025-01-03T00:00:00",
+            "portfolio_value": 100300.0,
+            "traded_value": 1000.0,
+            "turnover": 0.009970089730807577
+          },
+          {
+            "observation_date": "2025-01-06T00:00:00",
+            "portfolio_value": 100400.0,
+            "traded_value": 0.0,
+            "turnover": 0.0
+          },
+          {
+            "observation_date": "2025-01-07T00:00:00",
+            "portfolio_value": 100600.0,
+            "traded_value": 600.0,
+            "turnover": 0.005964214711729622
+          },
+          {
+            "observation_date": "2025-01-08T00:00:00",
+            "portfolio_value": 100600.0,
+            "traded_value": 800.0,
+            "turnover": 0.007952286282306162
+          }
+        ],
+        "observation_days": 5,
+        "synthetic_provenance_present": true,
+        "total_traded_value": 10900.0
+      },
+      "calculation_code_version": "desktop-demo-evidence-v1",
+      "ci_lower": null,
+      "ci_upper": null,
+      "data_tier": "synthetic",
+      "denominator": "portfolio_value",
+      "evidence_id": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
+      "evidence_kind": "behavior_evidence",
+      "evidence_reason": null,
+      "evidence_status": "complete",
+      "limitations": [
+        "Turnover Intensity is descriptive and is not an overtrading label, skill score, or psychological inference. It uses double-sided filled dollars, excludes fees from traded value, and is sensitive to low portfolio values."
+      ],
+      "method_id": "pyfolio_portfolio_value_turnover_v1",
+      "method_version": "1",
+      "metric_id": "mean_daily_turnover",
+      "numerator": 10900.0,
+      "observation_count": 5,
+      "observation_end": "2025-01-08T00:00:00",
+      "observation_start": "2025-01-02T00:00:00",
+      "provenance": [
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_LOSS_SOLD",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_NEUTRAL",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_PAPER_LOSS",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_PAPER_WIN",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_WIN_SOLD",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        }
+      ],
+      "subject_id": "demo-user:synthetic-behavior",
+      "value": 0.021777318144968673
+    },
+    {
+      "as_of": "2025-01-08T00:00:00",
+      "attributes": {
+        "active_asset_count": 5,
+        "synthetic_provenance_present": true,
+        "top1_weight": 0.6724137931034483,
+        "top3_weight": 0.8850574712643678
+      },
+      "calculation_code_version": "desktop-demo-evidence-v1",
+      "ci_lower": null,
+      "ci_upper": null,
+      "data_tier": "synthetic",
+      "denominator": null,
+      "evidence_id": "ev_0570b357f1fde2e47fcf70d9e9865828006f785d23bd43fb51849e4ce6dd213f",
+      "evidence_kind": "behavior_evidence",
+      "evidence_reason": null,
+      "evidence_status": "complete",
+      "limitations": [
+        "Cash is excluded from security weights. This evidence applies no high/medium/low threshold, benchmark judgment, behavior score, or claim that concentration is good or bad."
+      ],
+      "method_id": "hhi_security_weights_v1",
+      "method_version": "1",
+      "metric_id": "portfolio_concentration_hhi",
+      "numerator": null,
+      "observation_count": 1,
+      "observation_end": "2025-01-08T00:00:00",
+      "observation_start": "2025-01-08T00:00:00",
+      "provenance": [
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_LOSS_SOLD",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_NEUTRAL",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_PAPER_LOSS",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_PAPER_WIN",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_WIN_SOLD",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        }
+      ],
+      "subject_id": "demo-user:synthetic-behavior",
+      "value": 0.4817677368212446
+    },
+    {
+      "as_of": null,
+      "attributes": {
+        "eligible_sale_events": 2,
+        "neutral_observations": 3,
+        "paper_gains": 2,
+        "paper_losses": 3,
+        "pgr": 0.3333333333333333,
+        "plr": 0.25,
+        "realized_gains": 1,
+        "realized_losses": 1,
+        "synthetic_provenance_present": true
+      },
+      "calculation_code_version": "desktop-demo-evidence-v1",
+      "ci_lower": null,
+      "ci_upper": null,
+      "data_tier": "synthetic",
+      "denominator": null,
+      "evidence_id": "ev_97b9cf058c2ea4e7ff75087d24fa0ec2316dc0372bc82df274c7eacac779dcbe",
+      "evidence_kind": "behavior_evidence",
+      "evidence_reason": null,
+      "evidence_status": "complete",
+      "limitations": [
+        "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment."
+      ],
+      "method_id": "odean_pgr_plr_v1",
+      "method_version": "1",
+      "metric_id": "disposition_effect",
+      "numerator": null,
+      "observation_count": 10,
+      "observation_end": null,
+      "observation_start": null,
+      "provenance": [
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_LOSS_SOLD",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_NEUTRAL",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_PAPER_LOSS",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_PAPER_WIN",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_WIN_SOLD",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        }
+      ],
+      "subject_id": "demo-user:synthetic-behavior",
+      "value": 0.08333333333333331
+    },
+    {
+      "as_of": "2025-01-03T00:00:00",
+      "attributes": {
+        "eligible_add_events": 2,
+        "events": [
+          {
+            "added_quantity": 100.0,
+            "eligible_event": false,
+            "event_detected": false,
+            "event_time": "2025-01-02T00:00:00",
+            "execution_price": 10.0,
+            "pre_trade_avg_cost": null,
+            "pre_trade_position": 0.0,
+            "symbol": "SYN_WIN_SOLD"
+          },
+          {
+            "added_quantity": 100.0,
+            "eligible_event": false,
+            "event_detected": false,
+            "event_time": "2025-01-02T00:00:00",
+            "execution_price": 20.0,
+            "pre_trade_avg_cost": null,
+            "pre_trade_position": 0.0,
+            "symbol": "SYN_LOSS_SOLD"
+          },
+          {
+            "added_quantity": 400.0,
+            "eligible_event": false,
+            "event_detected": false,
+            "event_time": "2025-01-02T00:00:00",
+            "execution_price": 10.0,
+            "pre_trade_avg_cost": null,
+            "pre_trade_position": 0.0,
+            "symbol": "SYN_PAPER_WIN"
+          },
+          {
+            "added_quantity": 100.0,
+            "eligible_event": false,
+            "event_detected": false,
+            "event_time": "2025-01-02T00:00:00",
+            "execution_price": 10.0,
+            "pre_trade_avg_cost": null,
+            "pre_trade_position": 0.0,
+            "symbol": "SYN_PAPER_LOSS"
+          },
+          {
+            "added_quantity": 100.0,
+            "eligible_event": false,
+            "event_detected": false,
+            "event_time": "2025-01-02T00:00:00",
+            "execution_price": 5.0,
+            "pre_trade_avg_cost": null,
+            "pre_trade_position": 0.0,
+            "symbol": "SYN_NEUTRAL"
+          },
+          {
+            "added_quantity": 50.0,
+            "eligible_event": true,
+            "event_detected": false,
+            "event_time": "2025-01-03T00:00:00",
+            "execution_price": 11.0,
+            "pre_trade_avg_cost": 10.0,
+            "pre_trade_position": 400.0,
+            "symbol": "SYN_PAPER_WIN"
+          },
+          {
+            "added_quantity": 50.0,
+            "eligible_event": true,
+            "event_detected": true,
+            "event_time": "2025-01-03T00:00:00",
+            "execution_price": 9.0,
+            "pre_trade_avg_cost": 10.0,
+            "pre_trade_position": 100.0,
+            "symbol": "SYN_PAPER_LOSS"
+          }
+        ],
+        "loss_averaging_events": 1,
+        "synthetic_provenance_present": true
+      },
+      "calculation_code_version": "desktop-demo-evidence-v1",
+      "ci_lower": null,
+      "ci_upper": null,
+      "data_tier": "synthetic",
+      "denominator": 2,
+      "evidence_id": "ev_120750f69a5e5d65353eb5479d2d05a0d0ab72f0e67507d74072c826fe4a5369",
+      "evidence_kind": "behavior_evidence",
+      "evidence_reason": null,
+      "evidence_status": "complete",
+      "limitations": [
+        "A detected event only means that quantity was added while the position was below average cost. It is not evidence of revenge trading, irrationality, greed, fear, FOMO, investment skill, or whether the decision was good or bad."
+      ],
+      "method_id": "loss_state_add_v1",
+      "method_version": "1",
+      "metric_id": "loss_averaging_event_rate",
+      "numerator": 1,
+      "observation_count": 7,
+      "observation_end": "2025-01-03T00:00:00",
+      "observation_start": "2025-01-02T00:00:00",
+      "provenance": [
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_LOSS_SOLD",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_NEUTRAL",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_PAPER_LOSS",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_PAPER_WIN",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {},
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_WIN_SOLD",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        }
+      ],
+      "subject_id": "demo-user:synthetic-behavior",
+      "value": 0.5
+    }
+  ],
+  "export_version": "desktop-demo-evidence-v1",
+  "historical_series": {
+    "portfolio_hhi": {
+      "data_tier": "synthetic",
+      "limitations": [
+        "Cash is excluded from security weights. This evidence applies no high/medium/low threshold, benchmark judgment, behavior score, or claim that concentration is good or bad."
+      ],
+      "method_id": "hhi_security_weights_v1",
+      "method_version": "1",
+      "metric_id": "portfolio_concentration_hhi",
+      "points": [
+        {
+          "as_of": "2025-01-02T00:00:00",
+          "attributes": {
+            "active_asset_count": 5,
+            "evidence_reason": null,
+            "synthetic_provenance_present": true,
+            "top1_weight": 0.47058823529411764,
+            "top3_weight": 0.8235294117647058
+          },
+          "evidence_status": "complete",
+          "observation_count": 1,
+          "source_evidence_id": "ev_12f74d60ab3aa954513f30179c7e9e990b1cdad4f74edf85b03d2c331b52bce4",
+          "value": 0.3079584775086505
+        },
+        {
+          "as_of": "2025-01-03T00:00:00",
+          "attributes": {
+            "active_asset_count": 5,
+            "evidence_reason": null,
+            "synthetic_provenance_present": true,
+            "top1_weight": 0.5051020408163265,
+            "top3_weight": 0.836734693877551
+          },
+          "evidence_status": "complete",
+          "observation_count": 1,
+          "source_evidence_id": "ev_6474370b3d2b1c53772ce0fc57d4aaf8cae051d6209a52a5dcf10927f80883d8",
+          "value": 0.3268950437317783
+        },
+        {
+          "as_of": "2025-01-06T00:00:00",
+          "attributes": {
+            "active_asset_count": 5,
+            "evidence_reason": null,
+            "synthetic_provenance_present": true,
+            "top1_weight": 0.5227272727272727,
+            "top3_weight": 0.8333333333333334
+          },
+          "evidence_status": "complete",
+          "observation_count": 1,
+          "source_evidence_id": "ev_208269cd8f35eea66b8ee67ef556623933090fd1d44b87485663dd8b9f76ad59",
+          "value": 0.3389322518110397
+        },
+        {
+          "as_of": "2025-01-07T00:00:00",
+          "attributes": {
+            "active_asset_count": 5,
+            "evidence_reason": null,
+            "synthetic_provenance_present": true,
+            "top1_weight": 0.5684210526315789,
+            "top3_weight": 0.8842105263157896
+          },
+          "evidence_status": "complete",
+          "observation_count": 1,
+          "source_evidence_id": "ev_f07b2bbbca4d77fd8bd83744a92a0a3950f07170250e71b44feb4a6f57e56ce5",
+          "value": 0.38171745152354564
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {
+            "active_asset_count": 5,
+            "evidence_reason": null,
+            "synthetic_provenance_present": true,
+            "top1_weight": 0.6724137931034483,
+            "top3_weight": 0.8850574712643678
+          },
+          "evidence_status": "complete",
+          "observation_count": 1,
+          "source_evidence_id": "ev_0570b357f1fde2e47fcf70d9e9865828006f785d23bd43fb51849e4ce6dd213f",
+          "value": 0.4817677368212446
+        }
+      ],
+      "subject_id": "demo-user:synthetic-behavior"
+    },
+    "turnover": {
+      "data_tier": "synthetic",
+      "limitations": [
+        "Turnover Intensity is descriptive and is not an overtrading label, skill score, or psychological inference. It uses double-sided filled dollars, excludes fees from traded value, and is sensitive to low portfolio values."
+      ],
+      "method_id": "pyfolio_portfolio_value_turnover_v1",
+      "method_version": "1",
+      "metric_id": "mean_daily_turnover",
+      "points": [
+        {
+          "as_of": "2025-01-02T00:00:00",
+          "attributes": {
+            "portfolio_value": 100000.0,
+            "traded_value": 8500.0
+          },
+          "evidence_status": "complete",
+          "observation_count": 1,
+          "source_evidence_id": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
+          "value": 0.085
+        },
+        {
+          "as_of": "2025-01-03T00:00:00",
+          "attributes": {
+            "portfolio_value": 100300.0,
+            "traded_value": 1000.0
+          },
+          "evidence_status": "complete",
+          "observation_count": 1,
+          "source_evidence_id": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
+          "value": 0.009970089730807577
+        },
+        {
+          "as_of": "2025-01-06T00:00:00",
+          "attributes": {
+            "portfolio_value": 100400.0,
+            "traded_value": 0.0
+          },
+          "evidence_status": "complete",
+          "observation_count": 1,
+          "source_evidence_id": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
+          "value": 0.0
+        },
+        {
+          "as_of": "2025-01-07T00:00:00",
+          "attributes": {
+            "portfolio_value": 100600.0,
+            "traded_value": 600.0
+          },
+          "evidence_status": "complete",
+          "observation_count": 1,
+          "source_evidence_id": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
+          "value": 0.005964214711729622
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "attributes": {
+            "portfolio_value": 100600.0,
+            "traded_value": 800.0
+          },
+          "evidence_status": "complete",
+          "observation_count": 1,
+          "source_evidence_id": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
+          "value": 0.007952286282306162
+        }
+      ],
+      "subject_id": "demo-user:synthetic-behavior"
+    }
+  },
+  "schema_version": "1",
+  "selected_episode": {
+    "avg_entry_price": 10.333333333333334,
+    "avg_exit_price": 12.6,
+    "direction": "Long",
+    "entry_fees": 10.0,
+    "entry_time": "2025-01-06T09:35:00",
+    "episode_id": "investment-episode:600000.SH:0",
+    "exit_fees": 20.9,
+    "exit_time": "2025-05-20T10:05:00",
+    "pnl": 3369.1,
+    "position_id": 0,
+    "return_value": 0.21736129032258064,
+    "size": 1500.0,
+    "status": "Closed",
+    "symbol": "600000.SH",
+    "valuation_price": null,
+    "valuation_time": null
+  }
+}

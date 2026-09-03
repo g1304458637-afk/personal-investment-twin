@@ -13,17 +13,23 @@ import { useWorkspace } from "@/components/layout/useWorkspace";
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/locales/LocaleProvider";
 import {
+  demoUser,
+  portfolioSummary,
+} from "@/demo/fixture";
+import {
   behaviorMetrics,
   decisionMetrics,
-  demoUser,
   evidenceRecords,
-  portfolioSummary,
   recentEvidenceIds,
-} from "@/demo/fixture";
+  translateEvidenceText,
+} from "@/data/backendEvidence";
 
 const recentEvidence = recentEvidenceIds
   .map((id) => evidenceRecords.find((record) => record.evidence_id === id))
   .filter((record): record is (typeof evidenceRecords)[number] => Boolean(record));
+const metricByEvidenceId = new Map(
+  [...decisionMetrics, ...behaviorMetrics].map((metric) => [metric.evidenceId, metric]),
+);
 
 export default function OverviewPage() {
   const { openAgent } = useWorkspace();
@@ -39,8 +45,8 @@ export default function OverviewPage() {
           <div className="data-quality-chip">
             <ShieldCheck aria-hidden="true" />
             <span>
-              {t("Deterministic fixture")}
-              <small>{t("9 evidence records")}</small>
+              {t("Deterministic backend export")}
+              <small>{t("8 evidence records")}</small>
             </span>
           </div>
         }
@@ -50,7 +56,7 @@ export default function OverviewPage() {
         <SectionHeading
           eyebrow={t("Portfolio overview")}
           title={t("A precise snapshot, without a composite score")}
-          description={t("Fixed offline values from ui-demo-v1. No live account or market connection.")}
+          description={t("Backend-generated deterministic values from synthetic local evidence. No live account or market connection.")}
           action={<span className="as-of-label">{t("As of 31 Mar 2025")}</span>}
         />
         <MetricRail
@@ -153,7 +159,7 @@ export default function OverviewPage() {
               <div className="snapshot-row" key={metric.id}>
                 <div>
                   <span>{t(metric.label)}</span>
-                  <strong>{t(metric.primary)}</strong>
+                  <strong>{translateEvidenceText(t, metric.primary, metric.primaryValues)}</strong>
                 </div>
                 <MiniTrend values={metric.trend} label={t("{metric} observations", { metric: t(metric.label) })} />
                 <StatusBadge status={metric.status} compact />
@@ -177,7 +183,7 @@ export default function OverviewPage() {
               <div className="snapshot-row" key={metric.id}>
                 <div>
                   <span>{t(metric.label)}</span>
-                  <strong>{t(metric.primary)}</strong>
+                  <strong>{translateEvidenceText(t, metric.primary, metric.primaryValues)}</strong>
                 </div>
                 <MiniTrend values={metric.trend} label={t("{metric} observations", { metric: t(metric.label) })} />
                 <StatusBadge status={metric.status} compact />
@@ -202,10 +208,16 @@ export default function OverviewPage() {
           {recentEvidence.map((record) => (
             <Link to={`/evidence?selected=${record.evidence_id}`} key={record.evidence_id}>
               <div className="recent-evidence__topline">
-                <span>{t(record.metric_id)}</span>
+                <span>{(() => {
+                  const metric = metricByEvidenceId.get(record.evidence_id);
+                  return metric ? t(metric.label) : t(record.metric_id);
+                })()}</span>
                 <StatusBadge status={record.evidence_status} compact />
               </div>
-              <strong>{t(String(record.attributes.display_value ?? record.value ?? t("Not available")))}</strong>
+              {(() => {
+                const metric = metricByEvidenceId.get(record.evidence_id);
+                return <strong>{metric ? translateEvidenceText(t, metric.primary, metric.primaryValues) : t("Not available")}</strong>;
+              })()}
               <dl>
                 <div>
                   <dt>N</dt>

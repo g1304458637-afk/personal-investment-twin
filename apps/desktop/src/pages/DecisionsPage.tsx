@@ -6,10 +6,10 @@ import { GlassPanel } from "@/components/common/GlassPanel";
 import { PageHeader, SectionHeading } from "@/components/common/PageHeader";
 import { DemoBadge, StatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
-import { decisionMetrics, evidenceRecords } from "@/demo/fixture";
+import { decisionMetrics, evidenceRecords, translateEvidenceText } from "@/data/backendEvidence";
 import type { DemoEvidenceRecord, EvidenceMetric } from "@/demo/types";
 import { cn } from "@/lib/utils";
-import { useLocale } from "@/locales/LocaleProvider";
+import { useLocale, type TranslationValues } from "@/locales/LocaleProvider";
 
 function findEvidence(metric: EvidenceMetric): DemoEvidenceRecord {
   const record = evidenceRecords.find((item) => item.evidence_id === metric.evidenceId);
@@ -17,14 +17,14 @@ function findEvidence(metric: EvidenceMetric): DemoEvidenceRecord {
   return record;
 }
 
-function EvidenceDetail({ record, metric, t }: { record: DemoEvidenceRecord; metric: EvidenceMetric; t: (value: string) => string }) {
+function EvidenceDetail({ record, metric, t }: { record: DemoEvidenceRecord; metric: EvidenceMetric; t: (value: string, values?: TranslationValues) => string }) {
   const [open, setOpen] = useState(false);
   const confidence = t(metric.confidence ?? "CI not available for this registered method");
 
   return (
     <div className="border-t border-border/70 pt-3">
       <div className="grid gap-2 text-xs text-muted sm:grid-cols-3">
-        <span><strong className="mr-1 font-medium text-foreground">N</strong>{record.observation_count ?? t("Not available")}</span>
+        <span><strong className="mr-1 font-medium text-foreground">N</strong>{metric.observationCount ?? t("Not available")}</span>
         <span><strong className="mr-1 font-medium text-foreground">{t("Uncertainty")}</strong>{confidence}</span>
         <span><strong className="mr-1 font-medium text-foreground">{t("As of")}</strong>{t("31 Mar 2025")}</span>
       </div>
@@ -58,7 +58,7 @@ function EvidenceDetail({ record, metric, t }: { record: DemoEvidenceRecord; met
   );
 }
 
-function DecisionModule({ metric, selected, onSelect, t }: { metric: EvidenceMetric; selected: boolean; onSelect: () => void; t: (value: string) => string }) {
+function DecisionModule({ metric, selected, onSelect, t }: { metric: EvidenceMetric; selected: boolean; onSelect: () => void; t: (value: string, values?: TranslationValues) => string }) {
   const record = findEvidence(metric);
   return (
     <article className={cn("rounded-lg border p-4 transition-colors", selected ? "border-accent/45 bg-accent/[0.07]" : "border-border/75 bg-white/[0.025] hover:bg-white/[0.045]")}>
@@ -70,8 +70,8 @@ function DecisionModule({ metric, selected, onSelect, t }: { metric: EvidenceMet
           </div>
           <StatusBadge status={metric.status} compact />
         </div>
-        <p className="mt-4 font-mono text-[23px] font-semibold tracking-tight text-foreground tabular-nums">{t(metric.primary)}</p>
-        <p className="mt-2 text-sm leading-5 text-muted">{t(metric.description)}</p>
+        <p className="mt-4 font-mono text-[23px] font-semibold tracking-tight text-foreground tabular-nums">{translateEvidenceText(t, metric.primary, metric.primaryValues)}</p>
+        <p className="mt-2 text-sm leading-5 text-muted">{translateEvidenceText(t, metric.description, metric.descriptionValues)}</p>
       </button>
       <div className="mt-4">
         <EvidenceDetail record={record} metric={metric} t={t} />
@@ -107,14 +107,14 @@ export function DecisionsPage() {
           <div>
             <div className="flex items-center gap-2"><Sparkles className="size-4 text-accent" aria-hidden="true" /><span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">{t("Selected deterministic series")}</span></div>
             <h2 className="mt-2 text-lg font-semibold text-foreground">{t(selectedMetric.label)} {t("observation trend")}</h2>
-            <p className="mt-1 max-w-2xl text-sm leading-5 text-muted">{t(selectedMetric.description)}</p>
+            <p className="mt-1 max-w-2xl text-sm leading-5 text-muted">{translateEvidenceText(t, selectedMetric.description, selectedMetric.descriptionValues)}</p>
           </div>
           <StatusBadge status={selectedMetric.status} />
         </div>
         <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-end">
           <EvidenceTrendChart metric={selectedMetric} />
           <dl className="grid grid-cols-2 gap-x-3 gap-y-4 rounded-md border border-border/70 bg-white/[0.025] p-4 text-xs">
-            <div><dt className="text-muted">{t("Observations")}</dt><dd className="mt-1 font-mono text-base text-foreground tabular-nums">N={selectedRecord.observation_count ?? "—"}</dd></div>
+            <div><dt className="text-muted">{t("Observations")}</dt><dd className="mt-1 font-mono text-base text-foreground tabular-nums">N={selectedMetric.observationCount ?? "—"}</dd></div>
             <div><dt className="text-muted">{t("Uncertainty")}</dt><dd className="mt-1 text-foreground">{selectedMetric.confidence ? t(selectedMetric.confidence) : t("Not available")}</dd></div>
             <div className="col-span-2"><dt className="flex items-center gap-1 text-muted"><Database className="size-3" aria-hidden="true" />{t("Provenance")}</dt><dd className="mt-1 text-foreground">{t("Synthetic offline fixture")} · {t(selectedRecord.data_tier)}</dd></div>
           </dl>

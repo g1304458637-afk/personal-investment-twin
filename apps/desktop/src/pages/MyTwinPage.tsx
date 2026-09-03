@@ -5,10 +5,9 @@ import { MirrorOrb } from "@/components/common/MirrorOrb";
 import { PageHeader, SectionHeading } from "@/components/common/PageHeader";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { behaviorMetrics, decisionMetrics, translateEvidenceText } from "@/data/backendEvidence";
 import { useLocale } from "@/locales/LocaleProvider";
 import {
-  behaviorMetrics,
-  decisionMetrics,
   demoUser,
   notableChanges,
   twinPeriods,
@@ -109,7 +108,7 @@ export default function MyTwinPage() {
             {decisionMetrics.map((metric) => (
               <div key={metric.id}>
                 <span>{t(metric.label)}</span>
-                <strong>{t(metric.primary)}</strong>
+                <strong>{translateEvidenceText(t, metric.primary, metric.primaryValues)}</strong>
                 <StatusBadge status={metric.status} compact />
               </div>
             ))}
@@ -121,7 +120,7 @@ export default function MyTwinPage() {
             {behaviorMetrics.map((metric) => (
               <div key={metric.id}>
                 <span>{t(metric.label)}</span>
-                <strong>{t(metric.primary)}</strong>
+                <strong>{translateEvidenceText(t, metric.primary, metric.primaryValues)}</strong>
                 <StatusBadge status={metric.status} compact />
               </div>
             ))}
@@ -145,7 +144,7 @@ export default function MyTwinPage() {
         <GlassPanel>
           <SectionHeading eyebrow={t("Data quality")} title={t("What this snapshot can support")} />
           <div className="quality-list">
-            <div><Database /><span><strong>{t("9 unified records")}</strong><small>{t("UI-shaped deterministic evidence")}</small></span></div>
+            <div><Database /><span><strong>{t("8 unified records")}</strong><small>{t("Backend-generated deterministic evidence")}</small></span></div>
             <div><Layers3 /><span><strong>{t("3M / 12M / lifetime")}</strong><small>{t("Explicitly different sample windows")}</small></span></div>
             <div><ShieldCheck /><span><strong>{t("Demo Snapshot")}</strong><small>{t("Never presented as Production Twin")}</small></span></div>
           </div>

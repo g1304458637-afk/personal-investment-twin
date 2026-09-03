@@ -11,7 +11,7 @@ import {
   SheetDescription,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { portfolioSummary } from "@/demo/fixture";
+import { selectedEpisode, selectionRecord } from "@/data/backendEvidence";
 import { useLocale } from "@/locales/LocaleProvider";
 
 export interface AgentPanelProps {
@@ -22,6 +22,7 @@ export interface AgentPanelProps {
 export function AgentPanel({ open, onOpenChange }: AgentPanelProps) {
   const [orbState, setOrbState] = useState<Exclude<MirrorOrbState, "hover">>("active");
   const { t, formatPercent } = useLocale();
+  const assetEpisodeTwr = typeof selectionRecord.value === "number" ? selectionRecord.value : null;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -48,18 +49,18 @@ export function AgentPanel({ open, onOpenChange }: AgentPanelProps) {
           <div className="agent-context__heading">
             <div>
               <span className="eyebrow">{t("Selected demo episode")}</span>
-              <h3 id="agent-context-title">600000.SH · {t("Closed")}</h3>
+              <h3 id="agent-context-title">{selectedEpisode.symbol} · {t(selectedEpisode.status)}</h3>
             </div>
             <Braces aria-hidden="true" />
           </div>
           <dl>
             <div>
               <dt>{t("Position Return")}</dt>
-              <dd>{formatPercent(portfolioSummary.positionReturn, 4)}</dd>
+              <dd>{formatPercent(selectedEpisode.return_value, 4)}</dd>
             </div>
             <div>
               <dt>{t("Asset Episode TWR")}</dt>
-              <dd>{formatPercent(portfolioSummary.assetEpisodeTwr, 1)}</dd>
+              <dd>{assetEpisodeTwr === null ? t("Not available") : formatPercent(assetEpisodeTwr, 1)}</dd>
             </div>
           </dl>
           <p>
