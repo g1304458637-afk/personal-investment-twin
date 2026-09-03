@@ -2,3 +2,6 @@
 .pytest_cache/
 __pycache__/
 *.py[cod]
+
+# Local UI screenshots and other generated visual artifacts
+artifacts/ui/

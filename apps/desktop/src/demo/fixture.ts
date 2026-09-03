@@ -1,0 +1,558 @@
+import type {
+  AllocationRow,
+  DecisionCheckScenario,
+  DemoEvidenceProvenance,
+  DemoEvidenceRecord,
+  EvidenceMetric,
+  PeerMetric,
+  PeriodSnapshot,
+  PortfolioPoint,
+  PositionRow,
+} from "./types";
+
+export const DEMO_FIXTURE_VERSION = "ui-demo-v1";
+export const DEMO_AS_OF = "2025-03-31T16:00:00+08:00";
+
+const evidenceId = (seed: string): string => {
+  const normalized = seed.toLowerCase().replace(/[^0-9a-f]/g, "a");
+  return `ev_${normalized.padEnd(64, normalized.at(-1) ?? "0").slice(0, 64)}`;
+};
+
+const provenance = (
+  instrument: string | null,
+  benchmarkId: string | null = null,
+): DemoEvidenceProvenance => ({
+  source_type: "fixture",
+  source_name: "toujing-ui-demo",
+  data_version: DEMO_FIXTURE_VERSION,
+  as_of: DEMO_AS_OF,
+  price_type: "synthetic",
+  is_synthetic: true,
+  source_id: "fixture:workspace-v1",
+  instrument,
+  benchmark_id: benchmarkId,
+  attributes: {
+    environment: "offline",
+    display_only: true,
+  },
+});
+
+export const demoUser = {
+  id: "demo_user_001",
+  displayName: "Demo User",
+  profileName: "Reflective long-only equity profile",
+  updatedLabel: "Updated 31 Mar 2025 · 16:00 CST",
+  dataTier: "synthetic" as const,
+};
+
+export const portfolioSummary = {
+  totalValue: 128_430.9,
+  cash: 22_140.5,
+  activePositions: 3,
+  episodeCount: 28,
+  positionReturn: 0.217361,
+  assetEpisodeTwr: 0.3,
+};
+
+export const portfolioHistory: PortfolioPoint[] = [
+  { date: "2025-01-06", value: 100_000, reference: 100_000 },
+  { date: "2025-01-17", value: 101_840, reference: 100_720 },
+  { date: "2025-01-31", value: 104_620, reference: 101_480 },
+  { date: "2025-02-14", value: 108_450, reference: 102_210 },
+  { date: "2025-02-28", value: 111_780, reference: 103_100 },
+  { date: "2025-03-10", value: 116_300, reference: 104_080 },
+  { date: "2025-03-20", value: 121_880, reference: 105_120 },
+  { date: "2025-03-31", value: 128_430.9, reference: 106_500 },
+];
+
+export const activePositions: PositionRow[] = [
+  {
+    symbol: "510300.SH",
+    name: "Demo broad-market ETF",
+    marketValue: 45_820.4,
+    weight: 0.3568,
+    positionReturn: 0.083,
+  },
+  {
+    symbol: "000001.SZ",
+    name: "Demo financial equity",
+    marketValue: 34_280,
+    weight: 0.2669,
+    positionReturn: -0.021,
+  },
+  {
+    symbol: "159915.SZ",
+    name: "Demo growth ETF",
+    marketValue: 26_190,
+    weight: 0.2039,
+    positionReturn: 0.126,
+  },
+];
+
+export const assetAllocation: AllocationRow[] = [
+  { label: "Broad market", value: 0.3568, color: "#8fdde4" },
+  { label: "Financial equity", value: 0.2669, color: "#9da6ef" },
+  { label: "Growth equity", value: 0.2039, color: "#76c7a2" },
+  { label: "Cash", value: 0.1724, color: "#657084" },
+];
+
+const ids = {
+  selection: evidenceId("510ec7100a"),
+  sizing: evidenceId("5121a60a0b"),
+  exit: evidenceId("e017a1100c"),
+  friction: evidenceId("f21c71000d"),
+  hhi: evidenceId("aa1100000e"),
+  turnover: evidenceId("7a2a0e000f"),
+  disposition: evidenceId("d150051710"),
+  lossAveraging: evidenceId("1055a0e011"),
+  insufficient: evidenceId("1a5aff1c12"),
+};
+
+export const decisionMetrics: EvidenceMetric[] = [
+  {
+    id: "selection",
+    label: "Selection",
+    eyebrow: "Asset episode evidence",
+    primary: "+5.0 pp vs industry",
+    description:
+      "Asset Episode TWR 30.0% · Demo market 8.0% · Demo industry 25.0%.",
+    observationCount: 1,
+    status: "complete",
+    confidence: null,
+    evidenceId: ids.selection,
+    trend: [12, 15, 13, 18, 21, 25, 30],
+  },
+  {
+    id: "sizing",
+    label: "Sizing",
+    eyebrow: "Exposure evidence",
+    primary: "42.0% peak weight",
+    description: "Observed peak allocation in the deterministic demo window.",
+    observationCount: 14,
+    status: "partial",
+    confidence: "95% CI unavailable",
+    evidenceId: ids.sizing,
+    trend: [24, 29, 32, 38, 42, 39, 34],
+  },
+  {
+    id: "exit",
+    label: "Exit",
+    eyebrow: "Post-exit evidence",
+    primary: "+2.4 pp next-window",
+    description: "Demo post-exit comparison from the registered exit method.",
+    observationCount: 6,
+    status: "complete",
+    confidence: "95% CI +0.4 to +4.1 pp",
+    evidenceId: ids.exit,
+    trend: [-1.2, 0.3, 1.1, 0.8, 1.9, 2.4],
+  },
+  {
+    id: "friction",
+    label: "Friction",
+    eyebrow: "Recorded explicit fees",
+    primary: "¥30.90 recorded",
+    description: "Same executions compared with recorded fees set to zero.",
+    observationCount: 4,
+    status: "complete",
+    confidence: null,
+    evidenceId: ids.friction,
+    trend: [5, 10, 18.2, 30.9],
+  },
+];
+
+export const behaviorMetrics: EvidenceMetric[] = [
+  {
+    id: "hhi",
+    label: "HHI",
+    eyebrow: "Portfolio concentration",
+    primary: "0.31",
+    description: "Concentration evidence across observed portfolio snapshots.",
+    observationCount: 12,
+    status: "complete",
+    confidence: "Range 0.27–0.36",
+    evidenceId: ids.hhi,
+    trend: [0.28, 0.3, 0.29, 0.34, 0.36, 0.33, 0.31],
+  },
+  {
+    id: "turnover",
+    label: "Turnover",
+    eyebrow: "Turnover intensity",
+    primary: "0.86×",
+    description: "Observed turnover intensity; not a skill or cost forecast.",
+    observationCount: 8,
+    status: "complete",
+    confidence: null,
+    evidenceId: ids.turnover,
+    trend: [0.62, 0.75, 0.71, 0.92, 0.88, 0.86],
+  },
+  {
+    id: "disposition",
+    label: "Disposition",
+    eyebrow: "Realized outcome tendency",
+    primary: "1.24 ratio",
+    description: "Experimental demo tendency, shown with method limitations.",
+    observationCount: 11,
+    status: "experimental",
+    confidence: "95% CI 0.88–1.61",
+    evidenceId: ids.disposition,
+    trend: [1.05, 1.14, 1.09, 1.17, 1.31, 1.24],
+  },
+  {
+    id: "loss-averaging",
+    label: "Loss Averaging",
+    eyebrow: "Observed add events",
+    primary: "3 events",
+    description: "Observed additions while marked below prior cost basis.",
+    observationCount: 17,
+    status: "partial",
+    confidence: null,
+    evidenceId: ids.lossAveraging,
+    trend: [0, 1, 1, 2, 2, 3],
+  },
+];
+
+export const evidenceRecords: DemoEvidenceRecord[] = [
+  {
+    evidence_id: ids.selection,
+    subject_id: "episode:600000.SH:0",
+    metric_id: "selection.asset_episode_twr",
+    evidence_kind: "selection_evidence",
+    method_id: "selection_episode_relative_return",
+    method_version: "1.0.0",
+    observation_start: "2025-01-06T09:35:00+08:00",
+    observation_end: "2025-01-10T14:55:00+08:00",
+    as_of: DEMO_AS_OF,
+    value: 0.3,
+    numerator: null,
+    denominator: null,
+    observation_count: 1,
+    ci_lower: null,
+    ci_upper: null,
+    evidence_status: "complete",
+    evidence_reason: null,
+    provenance: [
+      provenance("600000.SH"),
+      provenance(null, "demo_market"),
+      provenance(null, "demo_industry"),
+    ],
+    data_tier: "synthetic",
+    calculation_code_version: "selection-evidence-v1",
+    limitations: [
+      "Single-episode evidence is not evidence of persistent selection skill.",
+      "Synthetic prices are for product demonstration only.",
+    ],
+    attributes: {
+      display_value: "30.0% asset episode TWR",
+      market_comparison: "outperformed",
+      industry_comparison: "outperformed",
+    },
+  },
+  {
+    evidence_id: ids.sizing,
+    subject_id: demoUser.id,
+    metric_id: "sizing.peak_position_weight",
+    evidence_kind: "sizing_evidence",
+    method_id: "sizing_episode_exposure",
+    method_version: "1.0.0",
+    observation_start: "2025-01-06T09:35:00+08:00",
+    observation_end: "2025-03-31T16:00:00+08:00",
+    as_of: DEMO_AS_OF,
+    value: 0.42,
+    numerator: null,
+    denominator: null,
+    observation_count: 14,
+    ci_lower: null,
+    ci_upper: null,
+    evidence_status: "partial",
+    evidence_reason: "The demo window does not cover a full market cycle.",
+    provenance: [provenance("portfolio:demo_user_001")],
+    data_tier: "synthetic",
+    calculation_code_version: "sizing-evidence-v1",
+    limitations: ["Exposure is descriptive and is not a risk recommendation."],
+    attributes: { display_value: "42.0% peak position weight" },
+  },
+  {
+    evidence_id: ids.exit,
+    subject_id: demoUser.id,
+    metric_id: "exit.next_window_delta",
+    evidence_kind: "exit_timing_evidence",
+    method_id: "exit_timing_next_window",
+    method_version: "1.0.0",
+    observation_start: "2025-01-10T14:55:00+08:00",
+    observation_end: "2025-02-21T15:00:00+08:00",
+    as_of: DEMO_AS_OF,
+    value: 0.024,
+    numerator: null,
+    denominator: null,
+    observation_count: 6,
+    ci_lower: 0.004,
+    ci_upper: 0.041,
+    evidence_status: "complete",
+    evidence_reason: null,
+    provenance: [provenance("portfolio:demo_user_001")],
+    data_tier: "synthetic",
+    calculation_code_version: "exit-timing-evidence-v1",
+    limitations: ["Post-exit paths are evidence, not a causal timing score."],
+    attributes: { display_value: "+2.4 pp next-window delta" },
+  },
+  {
+    evidence_id: ids.friction,
+    subject_id: "episode:600000.SH:0",
+    metric_id: "friction.recorded_fee_total",
+    evidence_kind: "friction_evidence",
+    method_id: "recorded_explicit_fee_counterfactual",
+    method_version: "1.0.0",
+    observation_start: "2025-01-06T09:35:00+08:00",
+    observation_end: "2025-01-10T14:55:00+08:00",
+    as_of: DEMO_AS_OF,
+    value: 30.9,
+    numerator: 30.9,
+    denominator: "CNY",
+    observation_count: 4,
+    ci_lower: null,
+    ci_upper: null,
+    evidence_status: "complete",
+    evidence_reason: null,
+    provenance: [provenance("600000.SH")],
+    data_tier: "synthetic",
+    calculation_code_version: "friction-evidence-v1",
+    limitations: [
+      "Includes recorded explicit fees only.",
+      "Excludes unrecorded tax, spread, slippage, market impact and opportunity cost.",
+    ],
+    attributes: {
+      comparison: "lower_than_zero_fee_baseline",
+      display_value: "CNY 30.90 recorded explicit fees",
+    },
+  },
+  ...[
+    [
+      ids.hhi,
+      "behavior.portfolio_hhi",
+      "portfolio_concentration_hhi",
+      0.31,
+      12,
+      "complete",
+      "HHI is descriptive and is not a diversification recommendation.",
+    ],
+    [
+      ids.turnover,
+      "behavior.turnover_intensity",
+      "turnover_intensity",
+      0.86,
+      8,
+      "complete",
+      "Turnover does not estimate unrecorded trading costs.",
+    ],
+    [
+      ids.disposition,
+      "behavior.disposition_effect",
+      "disposition_effect",
+      1.24,
+      11,
+      "experimental",
+      "The sample is small and does not establish a stable behavior trait.",
+    ],
+    [
+      ids.lossAveraging,
+      "behavior.loss_averaging",
+      "loss_averaging",
+      3,
+      17,
+      "partial",
+      "Events are observations and do not determine intent.",
+    ],
+  ].map(
+    ([id, metricId, methodId, value, count, status, limitation]) =>
+      ({
+        evidence_id: id,
+        subject_id: demoUser.id,
+        metric_id: metricId,
+        evidence_kind: "behavior_evidence",
+        method_id: methodId,
+        method_version: "1.0.0",
+        observation_start: "2025-01-06T09:35:00+08:00",
+        observation_end: "2025-03-31T16:00:00+08:00",
+        as_of: DEMO_AS_OF,
+        value,
+        numerator: null,
+        denominator: null,
+        observation_count: count,
+        ci_lower: null,
+        ci_upper: null,
+        evidence_status: status,
+        evidence_reason: null,
+        provenance: [provenance("portfolio:demo_user_001")],
+        data_tier: "synthetic",
+        calculation_code_version: "behavior-evidence-v1",
+        limitations: [limitation],
+        attributes: { fixture_version: DEMO_FIXTURE_VERSION },
+      }) as DemoEvidenceRecord,
+  ),
+  {
+    evidence_id: ids.insufficient,
+    subject_id: "episode:600000.SH:0",
+    metric_id: "selection.secondary_industry_mapping",
+    evidence_kind: "selection_evidence",
+    method_id: "selection_episode_relative_return",
+    method_version: "1.0.0",
+    observation_start: "2025-01-06T09:35:00+08:00",
+    observation_end: "2025-01-10T14:55:00+08:00",
+    as_of: DEMO_AS_OF,
+    value: null,
+    numerator: null,
+    denominator: null,
+    observation_count: 0,
+    ci_lower: null,
+    ci_upper: null,
+    evidence_status: "insufficient_evidence",
+    evidence_reason: "No second-level industry mapping exists in the demo fixture.",
+    provenance: [provenance("600000.SH")],
+    data_tier: "synthetic",
+    calculation_code_version: "selection-evidence-v1",
+    limitations: ["No value is inferred or substituted when mapping is absent."],
+    attributes: { display_value: "Not available" },
+  },
+];
+
+export const twinPeriods: PeriodSnapshot[] = [
+  {
+    id: "3m",
+    label: "3M",
+    observationWindow: "06 Jan – 31 Mar 2025",
+    episodeCount: 8,
+    evidenceCoverage: 0.82,
+    decisionNotes: [
+      "Selection evidence is available for 6 of 8 closed episodes.",
+      "Recorded friction is present for every imported execution.",
+    ],
+    behaviorNotes: [
+      "Concentration eased in the final three snapshots.",
+      "Three loss-averaging events remain descriptive observations.",
+    ],
+  },
+  {
+    id: "12m",
+    label: "12M",
+    observationWindow: "01 Apr 2024 – 31 Mar 2025",
+    episodeCount: 19,
+    evidenceCoverage: 0.74,
+    decisionNotes: [
+      "Exit evidence has six comparable closed episodes.",
+      "Sizing coverage is partial before November 2024.",
+    ],
+    behaviorNotes: [
+      "Turnover evidence spans eight complete monthly windows.",
+      "Disposition evidence remains experimental at this sample size.",
+    ],
+  },
+  {
+    id: "lifetime",
+    label: "Lifetime",
+    observationWindow: "15 Jun 2023 – 31 Mar 2025",
+    episodeCount: 28,
+    evidenceCoverage: 0.61,
+    decisionNotes: [
+      "Older executions have incomplete benchmark provenance.",
+      "No missing evidence is replaced with inferred values.",
+    ],
+    behaviorNotes: [
+      "Long-horizon observations are separated from recent snapshots.",
+      "This demo snapshot is not a production Investor DNA profile.",
+    ],
+  },
+];
+
+export const peerCohort = {
+  name: "Demo Cohort · Synthetic",
+  definition:
+    "72 synthetic long-only equity profiles with 12-month execution coverage and no margin activity.",
+  n: 72,
+  consent: "Demo-only cohort; no real participant data is present.",
+};
+
+export const peerMetrics: PeerMetric[] = [
+  {
+    id: "turnover",
+    label: "Turnover intensity",
+    unit: "×",
+    user: 0.86,
+    p25: 0.54,
+    median: 0.78,
+    p75: 1.12,
+    percentile: 58,
+  },
+  {
+    id: "hhi",
+    label: "Portfolio HHI",
+    unit: "",
+    user: 0.31,
+    p25: 0.22,
+    median: 0.29,
+    p75: 0.38,
+    percentile: 55,
+  },
+  {
+    id: "episode-count",
+    label: "Closed episodes",
+    unit: "",
+    user: 28,
+    p25: 16,
+    median: 24,
+    p75: 37,
+    percentile: 61,
+  },
+];
+
+export const decisionCheckScenario: DecisionCheckScenario = {
+  symbol: "600000.SH",
+  side: "Buy",
+  inputMode: "amount",
+  amount: 12_000,
+  quantity: 1_000,
+  current: "18.0% demo portfolio exposure",
+  postTrade: "26.4% deterministic scenario exposure",
+  selfBaseline: "21.7% median exposure across 6 similar demo events",
+  peerContext: "19.5% Demo Cohort median · N=72",
+  similarEvents: 6,
+  limitation:
+    "This is evidence context, not a Buy/Sell recommendation. No expected return or future price is produced.",
+};
+
+export const notableChanges = [
+  {
+    label: "Evidence coverage",
+    value: "+8 pp",
+    detail: "More closed episodes now have complete benchmark provenance.",
+  },
+  {
+    label: "Concentration",
+    value: "−0.05 HHI",
+    detail: "The latest three synthetic snapshots are less concentrated.",
+  },
+  {
+    label: "Recorded friction",
+    value: "4 executions",
+    detail: "Explicit fees are available for the selected sample episode.",
+  },
+];
+
+export const uiStateExamples = [
+  { id: "loading", label: "Loading", detail: "Refreshing deterministic evidence…" },
+  { id: "empty", label: "Empty", detail: "No authorized user comparison selected." },
+  {
+    id: "insufficient",
+    label: "Insufficient evidence",
+    detail: "No value is inferred when the method boundary is not met.",
+  },
+  { id: "error", label: "Error", detail: "An imported fixture failed validation." },
+  { id: "demo", label: "Demo data", detail: "Synthetic offline fixture · ui-demo-v1." },
+  { id: "disconnected", label: "Disconnected", detail: "Remote services are not connected in v1." },
+];
+
+export const recentEvidenceIds = [
+  ids.selection,
+  ids.friction,
+  ids.hhi,
+  ids.disposition,
+];
