@@ -142,3 +142,10 @@ def test_desktop_export_is_byte_deterministic_and_contains_real_dates():
     assert payload["historical_series"]["portfolio_hhi"]["points"][0]["as_of"].startswith(
         "2025-01-02"
     )
+    episode_demo = payload["position_episode_demo"]
+    assert episode_demo["data_tier"] == "synthetic"
+    assert len(episode_demo["entries"]) == 2
+    assert {entry["episode"]["status"] for entry in episode_demo["entries"]} == {
+        "open",
+        "closed",
+    }

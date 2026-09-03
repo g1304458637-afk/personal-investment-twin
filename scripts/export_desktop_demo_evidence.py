@@ -42,6 +42,10 @@ from src.evidence.adapters import adapt_evidence  # noqa: E402
 from src.episodes.investment_episode import (  # noqa: E402
     from_vectorbt_position_record,
 )
+from src.episodes.position_episode import (  # noqa: E402
+    PositionEpisodeLifecycle,
+    build_position_episode_lifecycle,
+)
 from src.history.metric_series import (  # noqa: E402
     build_portfolio_hhi_history,
     build_turnover_history,
@@ -142,6 +146,68 @@ def _build_exit_episode(root: Path):
     return from_vectorbt_position_record(records.iloc[0])
 
 
+def _position_episode_entry(
+    lifecycle: PositionEpisodeLifecycle,
+    *,
+    episode_id: str,
+    market_prices: pd.DataFrame,
+) -> dict[str, object]:
+    episode = next(item for item in lifecycle.episodes if item.episode_id == episode_id)
+    decisions = tuple(
+        item for item in lifecycle.decisions if item.episode_id == episode.episode_id
+    )
+    state_ids = {
+        reference
+        for decision in decisions
+        for reference in (decision.state_before_ref, decision.state_after_ref)
+    }
+    snapshot = next(
+        (
+            item
+            for item in lifecycle.snapshots
+            if item.episode_id == episode.episode_id
+        ),
+        None,
+    )
+    if snapshot is not None:
+        state_ids.add(snapshot.position_state_ref)
+    states = {
+        item.state_id: item for item in lifecycle.states if item.state_id in state_ids
+    }
+    evidence_ids = {
+        *episode.evidence_refs,
+        *(reference for item in decisions for reference in item.evidence_refs),
+    }
+    evidence_references = tuple(
+        item
+        for item in lifecycle.evidence_references
+        if item.evidence_id in evidence_ids
+    )
+
+    dates = pd.to_datetime(market_prices["date"], errors="raise")
+    timeline_end = episode.closed_at or lifecycle.as_of
+    price_rows = market_prices.loc[
+        (market_prices["instrument"] == episode.instrument_id)
+        & (dates.dt.normalize() >= episode.opened_at.normalize())
+        & (dates.dt.normalize() <= timeline_end.normalize())
+    ].sort_values("date", kind="stable")
+    price_points = tuple(
+        {
+            "observed_at": pd.Timestamp(row["date"]),
+            "price": float(row["close"]),
+        }
+        for _, row in price_rows.iterrows()
+    )
+    return {
+        "episode": episode,
+        "snapshot": snapshot,
+        "decisions": decisions,
+        "states_by_ref": states,
+        "evidence_references": evidence_references,
+        "price_points": price_points,
+    }
+
+
 def _exit_provider(root: Path, exit_prices: pd.DataFrame) -> LocalMarketDataProvider:
     with tempfile.TemporaryDirectory(prefix="desktop-demo-reference-") as temporary_name:
         temporary_root = Path(temporary_name)
@@ -233,6 +299,48 @@ def build_export() -> dict[str, object]:
         _adapt(disposition, behavior_subject),
         _adapt(loss_averaging, behavior_subject),
     ]
+    selection_record = next(
+        record for record in records if record.metric_id == "selection_episode_asset_return"
+    )
+    friction_record = next(
+        record
+        for record in records
+        if record.metric_id == "recorded_trading_friction_comparison"
+    )
+    selected_market_prices = pd.read_csv(PROJECT_ROOT / "data" / "reference" / "prices.csv")
+    selected_lifecycle = build_position_episode_lifecycle(
+        sample_executions,
+        selected_market_prices,
+        subject_id="demo-user:synthetic-selected-episode",
+        account_id="demo-account:selected",
+        as_of=pd.Timestamp("2025-05-20 23:59:00"),
+        init_cash=INITIAL_CASH,
+        data_tier="synthetic",
+        calculation_code_version=CALCULATION_CODE_VERSION,
+        episode_evidence={
+            str(sample_executions.iloc[0]["execution_id"]): (
+                selection_record,
+                friction_record,
+            )
+        },
+    )
+    selected_position_episode = selected_lifecycle.episodes[0]
+
+    behavior_lifecycle = build_position_episode_lifecycle(
+        behavior_executions,
+        behavior_prices,
+        subject_id=behavior_subject,
+        account_id="demo-account:behavior",
+        as_of=pd.Timestamp("2025-01-08 23:59:00"),
+        init_cash=INITIAL_CASH,
+        data_tier="synthetic",
+        calculation_code_version=CALCULATION_CODE_VERSION,
+    )
+    open_position_episode = next(
+        item
+        for item in behavior_lifecycle.episodes
+        if item.instrument_id == "SYN_WIN_SOLD"
+    )
     turnover_record = next(
         record for record in records if record.metric_id == "mean_daily_turnover"
     )
@@ -324,6 +432,22 @@ def build_export() -> dict[str, object]:
             },
         },
         "pretrade_demo": pretrade_demo,
+        "position_episode_demo": {
+            "data_tier": "synthetic",
+            "default_episode_id": selected_position_episode.episode_id,
+            "entries": (
+                _position_episode_entry(
+                    selected_lifecycle,
+                    episode_id=selected_position_episode.episode_id,
+                    market_prices=selected_market_prices,
+                ),
+                _position_episode_entry(
+                    behavior_lifecycle,
+                    episode_id=open_position_episode.episode_id,
+                    market_prices=behavior_prices,
+                ),
+            ),
+        },
     }
 
 

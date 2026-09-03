@@ -93,19 +93,81 @@ def test_converter_does_not_recalculate_vectorbt_metrics(
 
 def test_open_vectorbt_position_remains_open(normalized_executions: pd.DataFrame):
     open_executions = normalized_executions.iloc[:2].copy()
-    record = _replay(open_executions).positions.records_readable.iloc[0]
+    portfolio = _replay(open_executions)
+    record = portfolio.positions.records_readable.iloc[0]
+    symbol = str(record["Column"])
+    valuation_time = pd.Timestamp(portfolio.close.index[-1])
+    valuation_price = float(portfolio.close[symbol].iloc[-1])
 
-    episode = from_vectorbt_position_record(record)
+    episode = from_vectorbt_position_record(
+        record,
+        valuation_time=valuation_time,
+        valuation_price=valuation_price,
+    )
 
     assert record["Status"] == "Open"
     assert episode.status == "Open"
     assert episode.exit_time is None
     assert episode.avg_exit_price is None
     assert episode.exit_fees is None
-    assert episode.valuation_time == pd.Timestamp(record["Exit Timestamp"])
-    assert episode.valuation_price == float(record["Avg Exit Price"])
+    assert episode.valuation_time == valuation_time
+    assert episode.valuation_price == valuation_price
     assert episode.pnl == float(record["PnL"])
     assert episode.return_value == float(record["Return"])
+
+
+def test_open_valuation_does_not_use_vectorbt_aggregate_exit_price():
+    event_time = pd.to_datetime(
+        ["2025-01-02 09:30", "2025-01-03 10:00", "2025-01-06 16:00"]
+    )
+    executions = pd.DataFrame(
+        {
+            "event_time": event_time[:2],
+            "symbol": ["A", "A"],
+            "side": ["BUY", "SELL"],
+            "executed_quantity": [100.0, 40.0],
+            "executed_price": [10.0, 12.0],
+            "fee": [0.0, 0.0],
+            "order_id": ["ORD-1", "ORD-2"],
+            "execution_id": ["EXE-1", "EXE-2"],
+        }
+    )
+    valuation_prices = pd.Series([10.0, 12.0, 15.0], index=event_time, name="A")
+    portfolio = replay_single_symbol_executions(
+        executions,
+        valuation_prices,
+        init_cash=INITIAL_CASH,
+    )
+    record = portfolio.positions.records_readable.iloc[0]
+    mark = float(portfolio.close["A"].iloc[-1])
+
+    episode = from_vectorbt_position_record(
+        record,
+        valuation_time=portfolio.close.index[-1],
+        valuation_price=mark,
+    )
+
+    assert record["Status"] == "Open"
+    assert float(record["Avg Exit Price"]) == pytest.approx(13.8)
+    assert mark == pytest.approx(15.0)
+    assert episode.valuation_price == mark
+    assert episode.valuation_price != float(record["Avg Exit Price"])
+    assert episode.exit_time is None
+    assert episode.avg_exit_price is None
+
+
+def test_open_position_without_explicit_replay_mark_does_not_guess_valuation(
+    normalized_executions: pd.DataFrame,
+):
+    record = _replay(
+        normalized_executions.iloc[:2].copy()
+    ).positions.records_readable.iloc[0]
+
+    episode = from_vectorbt_position_record(record)
+
+    assert episode.status == "Open"
+    assert episode.valuation_time is None
+    assert episode.valuation_price is None
 
 
 def test_missing_vectorbt_field_is_rejected(closed_position_record: pd.Series):

@@ -68,11 +68,19 @@ def _required_float(value: object, field: str) -> float:
 
 def from_vectorbt_position_record(
     record: Mapping[str, object] | pd.Series,
+    *,
+    valuation_time: object | None = None,
+    valuation_price: object | None = None,
 ) -> InvestmentEpisode:
     """Map one ``positions.records_readable`` row without financial recomputation.
 
     The episode ID is an internal product identifier derived from vectorbt's
     position ID and symbol.  It is not a broker order or execution identifier.
+
+    vectorbt's aggregate Open Position ``Avg Exit Price`` can combine actual
+    partial exits with the remaining mark.  It is therefore not a current
+    valuation price.  Callers may supply an explicit replay ``close`` mark and
+    its actual timestamp; otherwise Open valuation fields remain unavailable.
     """
 
     missing = [field for field in VECTORBT_POSITION_FIELDS if field not in record]
@@ -95,6 +103,8 @@ def from_vectorbt_position_record(
         raise ValueError("Status must be Open or Closed")
 
     if status == "Closed":
+        if valuation_time is not None or valuation_price is not None:
+            raise ValueError("Closed positions cannot receive Open valuation fields")
         exit_time = _required_timestamp(record["Exit Timestamp"], "Exit Timestamp")
         avg_exit_price = _required_float(record["Avg Exit Price"], "Avg Exit Price")
         exit_fees = _required_float(record["Exit Fees"], "Exit Fees")
@@ -104,8 +114,13 @@ def from_vectorbt_position_record(
         exit_time = None
         avg_exit_price = None
         exit_fees = None
-        valuation_time = _required_timestamp(record["Exit Timestamp"], "Exit Timestamp")
-        valuation_price = _required_float(record["Avg Exit Price"], "Avg Exit Price")
+        if (valuation_time is None) != (valuation_price is None):
+            raise ValueError(
+                "Open valuation_time and valuation_price must be supplied together"
+            )
+        if valuation_time is not None:
+            valuation_time = _required_timestamp(valuation_time, "valuation_time")
+            valuation_price = _required_float(valuation_price, "valuation_price")
 
     return InvestmentEpisode(
         episode_id=f"investment-episode:{symbol}:{position_id}",

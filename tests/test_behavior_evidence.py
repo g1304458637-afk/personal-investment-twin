@@ -619,6 +619,27 @@ def test_prefix_state_uses_vectorbt_open_position_after_partial_sale(
     assert state.average_costs["SYN_WIN_SOLD"] == pytest.approx(10.0)
 
 
+def test_prefix_state_uses_current_open_inventory_after_reduce_then_add():
+    executions = _executions(
+        [
+            ("2025-01-02 09:30", "A", "BUY", 100.0, 10.0),
+            ("2025-01-03 09:30", "A", "SELL", 50.0, 12.0),
+            ("2025-01-06 09:30", "A", "BUY", 50.0, 8.0),
+            ("2025-01-07 09:30", "A", "SELL", 10.0, 9.0),
+        ]
+    )
+    prices = _market_prices(
+        {"A": [10.0, 12.0, 8.0, 9.0]},
+        ["2025-01-02", "2025-01-03", "2025-01-06", "2025-01-07"],
+    )
+    context = prepare_behavior_replay(executions, prices, init_cash=INITIAL_CASH)
+
+    state = prefix_portfolio_state(context, pd.Timestamp("2025-01-07 09:30"))
+
+    assert state.holdings["A"] == pytest.approx(100.0)
+    assert state.average_costs["A"] == pytest.approx(9.0)
+
+
 def test_no_existing_position_adds_have_no_fabricated_event_rate():
     executions, prices = _balanced_case()
 

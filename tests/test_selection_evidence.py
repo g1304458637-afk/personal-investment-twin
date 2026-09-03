@@ -35,6 +35,12 @@ def _episode(executions: pd.DataFrame) -> InvestmentEpisode:
         init_cash=INITIAL_CASH,
     )
     record = portfolio.positions.records_readable.iloc[0]
+    if record["Status"] == "Open":
+        return from_vectorbt_position_record(
+            record,
+            valuation_time=portfolio.close.index[-1],
+            valuation_price=portfolio.close[symbol].iloc[-1],
+        )
     return from_vectorbt_position_record(record)
 
 

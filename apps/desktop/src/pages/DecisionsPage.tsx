@@ -1,12 +1,13 @@
-import { ChevronDown, ChevronUp, Database, Hash, Sparkles } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronUp, Database, Hash, Sparkles } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 import { EvidenceTrendChart } from "@/components/charts/EvidenceTrendChart";
 import { GlassPanel } from "@/components/common/GlassPanel";
 import { PageHeader, SectionHeading } from "@/components/common/PageHeader";
 import { DemoBadge, StatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
-import { decisionMetrics, evidenceRecords, translateEvidenceText } from "@/data/backendEvidence";
+import { decisionMetrics, evidenceRecords, positionEpisodeDemo, translateEvidenceText } from "@/data/backendEvidence";
 import type { DemoEvidenceRecord, EvidenceMetric } from "@/demo/types";
 import { cn } from "@/lib/utils";
 import { useLocale, type TranslationValues } from "@/locales/LocaleProvider";
@@ -94,6 +95,34 @@ export function DecisionsPage() {
         description={t("Deterministic evidence from a synthetic offline fixture. These observations are not a trading score, prediction, or recommendation.")}
         actions={<DemoBadge />}
       />
+
+      <GlassPanel className="p-5 md:p-6">
+        <SectionHeading
+          eyebrow={t("Position Episode v1")}
+          title={t("Follow one position from opening to its current state")}
+          description={t("Actual executions are organized into a lifecycle; quantities, average cost, and valuation facts come from deterministic vectorbt replay.")}
+        />
+        <div className="mt-4 divide-y divide-border/70 rounded-lg border border-border/70 bg-white/[0.025]">
+          {positionEpisodeDemo.entries.map((entry) => (
+            <Link
+              key={entry.episode.episodeId}
+              to={`/decisions/episodes/${entry.episode.episodeId}`}
+              className="flex items-center justify-between gap-4 px-4 py-3 text-sm transition-colors first:rounded-t-lg last:rounded-b-lg hover:bg-white/[0.045] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
+            >
+              <span className="min-w-0">
+                <strong className="block truncate font-medium text-foreground">{entry.episode.instrumentId}</strong>
+                <span className="mt-0.5 block text-xs text-muted">
+                  {t(entry.episode.status === "open" ? "Holding" : "Closed position")} · {t("{count} executions", { count: entry.episode.executionRefs.length })}
+                </span>
+              </span>
+              <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-accent">
+                {t("View episode")}
+                <ArrowRight className="size-3.5" aria-hidden="true" />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </GlassPanel>
 
       <GlassPanel className="p-5 md:p-6">
         <SectionHeading eyebrow={t("Four decision lenses")} title={t("Evidence, not a black-box score")} description={t("Select a lens to inspect its fixed observation trend and registered evidence boundary.")} />

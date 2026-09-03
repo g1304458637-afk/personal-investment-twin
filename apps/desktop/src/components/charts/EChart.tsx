@@ -1,24 +1,31 @@
-import { LineChart } from "echarts/charts";
+import { LineChart, ScatterChart } from "echarts/charts";
 import {
   GridComponent,
   TooltipComponent,
 } from "echarts/components";
-import { init, use, type EChartsCoreOption } from "echarts/core";
+import {
+  init,
+  use,
+  type ECElementEvent,
+  type EChartsCoreOption,
+} from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
 import { useEffect, useRef } from "react";
 
 import { cn } from "@/lib/utils";
 
-use([LineChart, GridComponent, TooltipComponent, CanvasRenderer]);
+use([LineChart, ScatterChart, GridComponent, TooltipComponent, CanvasRenderer]);
 
 export function EChart({
   option,
   label,
   className,
+  onChartClick,
 }: {
   option: EChartsCoreOption;
   label: string;
   className?: string;
+  onChartClick?: (event: ECElementEvent) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ReturnType<typeof init> | null>(null);
@@ -43,6 +50,15 @@ export function EChart({
   useEffect(() => {
     chartRef.current?.setOption(option, { notMerge: true });
   }, [option]);
+
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart || !onChartClick) return undefined;
+    chart.on("click", onChartClick);
+    return () => {
+      chart.off("click", onChartClick);
+    };
+  }, [onChartClick]);
 
   return <div ref={containerRef} className={cn("echart", className)} role="img" aria-label={label} />;
 }

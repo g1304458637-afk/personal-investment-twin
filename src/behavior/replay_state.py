@@ -241,13 +241,17 @@ def prefix_portfolio_state(
         raise BehaviorReplayError("Margin exposure is unsupported")
     holdings = holdings.mask(holdings.abs() <= 1e-12, 0.0)
 
-    open_positions = portfolio.positions.open.records_readable
+    # ``positions.open`` aggregates the entire lifecycle.  After a partial
+    # exit followed by another entry its Avg Entry Price is not necessarily
+    # the cost basis of the quantity that remains open.  vectorbt's open exit
+    # trade is the current remaining-position record.
+    open_positions = portfolio.exit_trades.open.records_readable
     average_costs: dict[str, float] = {}
     for symbol in holdings[holdings > 0].index:
         records = open_positions[open_positions["Column"] == symbol]
         if len(records) != 1:
             raise BehaviorReplayError(
-                f"vectorbt has no unique open position for {symbol}"
+                f"vectorbt has no unique current open-position state for {symbol}"
             )
         record = records.iloc[0]
         average_cost = float(record["Avg Entry Price"])

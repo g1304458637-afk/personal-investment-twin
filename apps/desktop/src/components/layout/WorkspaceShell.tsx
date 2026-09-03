@@ -22,7 +22,10 @@ export function WorkspaceShell() {
   const { t } = useLocale();
   const [agentOpen, setAgentOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
-  const title = t(navigationTitle[location.pathname] ?? "Workspace");
+  const navigationPath = location.pathname.startsWith("/decisions/episodes/")
+    ? "/decisions"
+    : location.pathname;
+  const title = t(navigationTitle[navigationPath] ?? "Workspace");
   const nextTheme = theme === "dark" ? "light" : "dark";
 
   return (
@@ -43,7 +46,7 @@ export function WorkspaceShell() {
           <span className="workspace-nav__label">{t("Reflect")}</span>
           {navigationItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path;
+            const isActive = navigationPath === item.path;
             return (
               <Tooltip key={item.path} delayDuration={480}>
                 <TooltipTrigger asChild>
