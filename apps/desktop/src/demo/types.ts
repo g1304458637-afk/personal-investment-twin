@@ -96,17 +96,3 @@ export interface PeriodSnapshot {
   decisionNotes: string[];
   behaviorNotes: string[];
 }
-
-export interface DecisionCheckScenario {
-  symbol: string;
-  side: "Buy" | "Sell";
-  inputMode: "amount" | "quantity";
-  amount: number;
-  quantity: number;
-  current: string;
-  postTrade: string;
-  selfBaseline: string;
-  peerContext: string;
-  similarEvents: number;
-  limitation: string;
-}

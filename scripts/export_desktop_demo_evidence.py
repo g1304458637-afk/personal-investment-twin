@@ -46,6 +46,10 @@ from src.history.metric_series import (  # noqa: E402
     build_portfolio_hhi_history,
     build_turnover_history,
 )
+from src.pretrade.impact import (  # noqa: E402
+    ProposedTrade,
+    simulate_synthetic_trade_impact,
+)
 from src.twin.state import (  # noqa: E402
     build_historical_twin_snapshots,
     build_twin_metric_comparison,
@@ -267,6 +271,26 @@ def build_export() -> dict[str, object]:
         init_cash=INITIAL_CASH,
         calculation_code_version=CALCULATION_CODE_VERSION,
     )
+    pretrade_demo = simulate_synthetic_trade_impact(
+        ProposedTrade(
+            subject_id=behavior_subject,
+            proposed_time=pd.Timestamp("2025-01-08 23:59:00"),
+            symbol="SYN_PAPER_WIN",
+            side="BUY",
+            quantity=200.0,
+            execution_price=13.0,
+            fees=5.0,
+        ),
+        behavior_executions,
+        behavior_prices,
+        init_cash=INITIAL_CASH,
+        hhi_history=hhi_history,
+        calculation_code_version=CALCULATION_CODE_VERSION,
+    )
+    if pretrade_demo.simulation_status != "complete":
+        raise RuntimeError(
+            f"Synthetic pre-trade demo failed: {pretrade_demo.simulation_reason}"
+        )
     peer_metric_keys = {
         "portfolio_concentration_hhi": "portfolio_hhi",
         "mean_daily_turnover": "turnover",
@@ -299,6 +323,7 @@ def build_export() -> dict[str, object]:
                 for result in peer_benchmark.metrics
             },
         },
+        "pretrade_demo": pretrade_demo,
     }
 
 

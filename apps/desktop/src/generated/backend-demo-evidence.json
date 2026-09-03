@@ -972,6 +972,63 @@
       }
     }
   },
+  "pretrade_demo": {
+    "after": {
+      "active_assets": 5,
+      "cash": 89295.0,
+      "hhi": 0.576748374970632,
+      "portfolio_value": 100595.0,
+      "symbol_quantity": 650.0,
+      "symbol_weight": 0.08400019881703862
+    },
+    "before": {
+      "active_assets": 5,
+      "cash": 91900.0,
+      "hhi": 0.4817677368212446,
+      "portfolio_value": 100600.0,
+      "symbol_quantity": 450.0,
+      "symbol_weight": 0.05815109343936382
+    },
+    "data_tier": "synthetic",
+    "delta": {
+      "cash": -2605.0,
+      "hhi": 0.09498063814938745,
+      "symbol_weight": 0.0258491053776748
+    },
+    "limitations": [
+      "This is a deterministic hypothetical execution, not a brokerage order or recommendation.",
+      "No future price, expected return, or trade outcome is predicted.",
+      "Symbol weight is marked from vectorbt asset value divided by total portfolio value.",
+      "Peer context uses a deterministic synthetic cohort and does not represent real investors."
+    ],
+    "peer_context": {
+      "cohort_hhi_median": 0.4291886650455402,
+      "cohort_id": "synthetic-cn-equity-long-only-2025-01-v1",
+      "cohort_n": 72,
+      "current_percentile": 66.66666666666666,
+      "metric_n": 72,
+      "percentile_method": "scipy_percentileofscore_rank_v1",
+      "proposed_percentile": 83.33333333333333
+    },
+    "proposed_trade": {
+      "execution_price": 13.0,
+      "fees": 5.0,
+      "proposed_time": "2025-01-08T23:59:00",
+      "quantity": 200.0,
+      "side": "BUY",
+      "subject_id": "demo-user:synthetic-behavior",
+      "symbol": "SYN_PAPER_WIN"
+    },
+    "self_context": {
+      "current_hhi": 0.4817677368212446,
+      "historical_hhi_median": 0.3389322518110397,
+      "historical_observation_count": 5,
+      "history_method_id": "hhi_security_weights_v1",
+      "proposed_hhi": 0.576748374970632
+    },
+    "simulation_reason": null,
+    "simulation_status": "complete"
+  },
   "schema_version": "1",
   "selected_episode": {
     "avg_entry_price": 10.333333333333334,

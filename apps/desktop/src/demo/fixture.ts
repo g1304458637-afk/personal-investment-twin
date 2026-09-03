@@ -1,6 +1,5 @@
 import type {
   AllocationRow,
-  DecisionCheckScenario,
   DemoEvidenceProvenance,
   DemoEvidenceRecord,
   EvidenceMetric,
@@ -461,21 +460,6 @@ export const twinPeriods: PeriodSnapshot[] = [
     ],
   },
 ];
-
-export const decisionCheckScenario: DecisionCheckScenario = {
-  symbol: "600000.SH",
-  side: "Buy",
-  inputMode: "amount",
-  amount: 12_000,
-  quantity: 1_000,
-  current: "18.0% demo portfolio exposure",
-  postTrade: "26.4% deterministic scenario exposure",
-  selfBaseline: "21.7% median exposure across 6 similar demo events",
-  peerContext: "19.5% Demo Cohort median · N=72",
-  similarEvents: 6,
-  limitation:
-    "This is evidence context, not a Buy/Sell recommendation. No expected return or future price is produced.",
-};
 
 export const notableChanges = [
   {

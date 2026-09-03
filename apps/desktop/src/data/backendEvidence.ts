@@ -9,6 +9,7 @@ import type { TranslationValues } from "@/locales/LocaleProvider";
 
 import type { BehaviorHistorySeries } from "./behaviorHistory";
 import { adaptPeerBenchmarkPayload, type BackendPeerBenchmarkPayload } from "./peerBenchmark";
+import { adaptPretradeImpact, type BackendPretradeImpact } from "./pretradeImpact";
 import { adaptTwinPayload, type BackendTwinPayload } from "./twinState";
 
 export interface SelectedEpisodeView {
@@ -42,6 +43,7 @@ interface BackendEvidenceExport {
   };
   twin: BackendTwinPayload;
   peer_benchmark: BackendPeerBenchmarkPayload;
+  pretrade_demo: BackendPretradeImpact;
 }
 
 interface BackendHistoricalMetricSeries {
@@ -93,6 +95,7 @@ export const behaviorHistory = {
 };
 export const twinState = adaptTwinPayload(backend.twin);
 export const peerBenchmark = adaptPeerBenchmarkPayload(backend.peer_benchmark);
+export const pretradeDemo = adaptPretradeImpact(backend.pretrade_demo);
 
 export function translateEvidenceText(
   t: (source: string, values?: TranslationValues) => string,
