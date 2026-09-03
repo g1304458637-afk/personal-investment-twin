@@ -7,7 +7,6 @@ import {
   Scale,
   ScanSearch,
   Settings2,
-  UsersRound,
   type LucideIcon,
 } from "lucide-react";
 
@@ -47,13 +46,6 @@ export const navigationItems: NavigationItem[] = [
     path: "/behavior",
     icon: Activity,
     description: "Descriptive portfolio behavior evidence",
-  },
-  {
-    label: "Peer",
-    shortLabel: "Peer",
-    path: "/peer",
-    icon: UsersRound,
-    description: "Synthetic Demo Cohort context",
   },
   {
     label: "Compare",

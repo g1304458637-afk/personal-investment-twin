@@ -14,7 +14,6 @@ const BehaviorPage = lazy(async () => ({ default: (await import("@/pages/Behavio
 const ComparePage = lazy(async () => ({ default: (await import("@/pages/ComparePage")).ComparePage }));
 const DecisionCheckPage = lazy(async () => ({ default: (await import("@/pages/DecisionCheckPage")).DecisionCheckPage }));
 const DecisionsPage = lazy(async () => ({ default: (await import("@/pages/DecisionsPage")).DecisionsPage }));
-const PeerPage = lazy(async () => ({ default: (await import("@/pages/PeerPage")).PeerPage }));
 
 function load(page: React.ReactNode) {
   return <Suspense fallback={<RouteLoading />}>{page}</Suspense>;
@@ -39,7 +38,6 @@ export default function App() {
                   <Route path="/my-twin" element={load(<MyTwinPage />)} />
                   <Route path="/decisions" element={load(<DecisionsPage />)} />
                   <Route path="/behavior" element={load(<BehaviorPage />)} />
-                  <Route path="/peer" element={load(<PeerPage />)} />
                   <Route path="/compare" element={load(<ComparePage />)} />
                   <Route path="/decision-check" element={load(<DecisionCheckPage />)} />
                   <Route path="/evidence" element={load(<EvidencePage />)} />
