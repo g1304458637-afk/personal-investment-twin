@@ -9,3 +9,6 @@ empyrical-reloaded==0.5.12
 
 # Agent orchestration.
 openai-agents==0.22.0
+
+# Reproducible macOS Apple Silicon production runtime build.
+pyinstaller==6.22.2

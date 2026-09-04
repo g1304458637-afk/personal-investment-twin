@@ -3,6 +3,9 @@ use serde_json::Value;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use tauri::Manager;
+
+mod runtime;
 
 const PRETRADE_ACTION: &str = "pretrade_check";
 
@@ -238,10 +241,20 @@ async fn run_pretrade_check(request: PretradeBridgeRequest) -> PretradeBridgeRes
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![run_pretrade_check])
-        .run(tauri::generate_context!())
+    let app = runtime::install(tauri::Builder::default())
+        .invoke_handler(tauri::generate_handler![
+            run_pretrade_check,
+            runtime::runtime_health,
+            runtime::runtime_core_smoke
+        ])
+        .build(tauri::generate_context!())
         .expect("error while running the 投镜 desktop application");
+    app.run(|app_handle, event| {
+        if matches!(event, tauri::RunEvent::Exit) {
+            let manager = app_handle.state::<runtime::RuntimeManager>();
+            tauri::async_runtime::block_on(manager.shutdown());
+        }
+    });
 }
 
 #[cfg(test)]

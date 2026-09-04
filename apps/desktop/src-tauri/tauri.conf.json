@@ -35,6 +35,7 @@
   },
   "bundle": {
     "active": true,
+    "externalBin": ["binaries/toujing-core"],
     "targets": "all",
     "category": "Finance",
     "shortDescription": "Reflective intelligence for personal investment evidence"
