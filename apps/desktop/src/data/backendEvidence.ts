@@ -21,6 +21,10 @@ import {
   type PositionEpisodeDemoView,
 } from "./positionEpisode";
 import { adaptPretradeImpact, type BackendPretradeImpact } from "./pretradeImpact";
+import {
+  adaptSelfBaselinePayload,
+  type BackendSelfBaselinePayload,
+} from "./selfBaseline";
 import { adaptTwinPayload, type BackendTwinPayload } from "./twinState";
 
 export interface SelectedEpisodeView {
@@ -56,6 +60,7 @@ interface BackendEvidenceExport {
   peer_benchmark: BackendPeerBenchmarkPayload;
   pretrade_demo: BackendPretradeImpact;
   position_episode_demo: BackendPositionEpisodeDemo;
+  self_baseline: BackendSelfBaselinePayload;
   explainability: unknown;
 }
 
@@ -128,6 +133,10 @@ export const twinState = adaptTwinPayload(
     subjectId: entry.episode.subjectId,
     status: entry.episode.status,
   })),
+);
+export const selfBaseline = adaptSelfBaselinePayload(
+  backend.self_baseline,
+  twinState.currentSnapshot.subjectId,
 );
 export const explainability = adaptExplainabilityPayload(backend.explainability);
 

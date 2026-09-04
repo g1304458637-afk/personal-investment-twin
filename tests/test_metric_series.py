@@ -10,6 +10,7 @@ from src.data.csv_importer import load_normalized_csv
 from src.evidence.adapters import adapt_evidence
 from src.history.metric_series import (
     build_portfolio_hhi_history,
+    build_portfolio_hhi_history_with_records,
     build_turnover_history,
 )
 
@@ -102,6 +103,21 @@ def test_hhi_history_preserves_existing_method_identity(executions, prices):
     assert series.method_version == "1"
 
 
+def test_hhi_history_can_retain_exact_source_records_for_derived_views(executions, prices):
+    series, records = build_portfolio_hhi_history_with_records(
+        executions,
+        prices,
+        init_cash=INITIAL_CASH,
+        subject_id=SUBJECT_ID,
+        data_tier="synthetic",
+        calculation_code_version=CODE_VERSION,
+    )
+
+    assert tuple(record.evidence_id for record in records) == tuple(
+        point.source_evidence_id for point in series.points
+    )
+
+
 def test_turnover_history_exactly_reuses_daily_turnover(executions, prices):
     evidence = build_turnover_intensity_evidence(
         executions,
@@ -157,3 +173,15 @@ def test_desktop_export_is_byte_deterministic_and_contains_real_dates():
         for status in ("open", "closed")
         for reference in current_twin["episode_refs"][status]
     } <= exported_episode_ids
+    self_baseline = payload["self_baseline"]
+    assert self_baseline["subject_id"] == current_twin["subject_id"]
+    assert self_baseline["default_window"] == "rolling_12m"
+    assert {
+        (metric["metric_id"], comparison["window"])
+        for metric in self_baseline["metrics"]
+        for comparison in metric["windows"]
+    } == {
+        (metric_id, window)
+        for metric_id in ("portfolio_concentration_hhi", "mean_daily_turnover")
+        for window in ("rolling_3m", "rolling_12m", "lifetime")
+    }

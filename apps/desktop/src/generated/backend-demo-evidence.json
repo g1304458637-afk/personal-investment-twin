@@ -5294,6 +5294,757 @@
     "valuation_price": null,
     "valuation_time": null
   },
+  "self_baseline": {
+    "as_of": "2025-01-08T23:59:00",
+    "available_metric_count": 1,
+    "data_tier": "synthetic",
+    "default_window": "rolling_12m",
+    "insufficient_metric_count": 1,
+    "limitations": [
+      "Self vs Past is descriptive and does not judge whether a higher or lower value is good.",
+      "The comparison uses only registered same-subject historical observations available at as_of.",
+      "Self historical percentile is not a peer percentile or an investment skill score."
+    ],
+    "metrics": [
+      {
+        "metric_id": "mean_daily_turnover",
+        "observation_cadence": "supplied_complete_market_price_observation_dates",
+        "observation_kind": "window_statistic",
+        "observation_unit": "calendar_day_portfolio_value_turnover_ratio",
+        "windows": [
+          {
+            "as_of": "2025-01-08T23:59:00",
+            "comparison_band": null,
+            "comparison_id": "sb_4a04d599183e5445cb7d57713d468c5df78b775e6b115203d942939d94d8d729",
+            "current_source_ref": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
+            "current_value": 0.007952286282306162,
+            "delta_from_median": null,
+            "historical_series_ref": "hs_70eee62ed73e52d23e3f5f415c145eaa3cf4f81b6d8cc23af9d260cc1da094cb",
+            "insufficient_reason": "4 valid historical observations are available; 5 are required for rolling_3m",
+            "limitations": [
+              "Self vs Past is descriptive and does not judge whether a higher or lower value is good.",
+              "The comparison uses only registered same-subject historical observations available at as_of.",
+              "Self historical percentile is not a peer percentile or an investment skill score.",
+              "Historical points are existing daily turnover observations, not a recomputed rolling mean.",
+              "A supplied complete market-price date with no trade contributes zero turnover; a date absent from the source is not silently inserted as a zero observation.",
+              "Turnover comparisons do not label trading activity as excessive or disciplined."
+            ],
+            "median": null,
+            "method_id": "self_historical_distribution_v1",
+            "method_version": "1",
+            "metric_id": "mean_daily_turnover",
+            "observation_cadence": "supplied_complete_market_price_observation_dates",
+            "observation_end": "2025-01-07T00:00:00",
+            "observation_kind": "window_statistic",
+            "observation_start": "2025-01-02T00:00:00",
+            "observation_unit": "calendar_day_portfolio_value_turnover_ratio",
+            "p25": null,
+            "p75": null,
+            "provenance": {
+              "current_source_ref": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
+              "data_tier": "synthetic",
+              "historical_point_source_refs": [
+                "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387"
+              ],
+              "historical_series_ref": "hs_70eee62ed73e52d23e3f5f415c145eaa3cf4f81b6d8cc23af9d260cc1da094cb",
+              "input_version_refs": [
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "a12c610a22c826565506d38acfdee24d0a275a848d3c36d0344f77dc8b5085e0",
+                  "instrument": null,
+                  "is_synthetic": true,
+                  "price_type": null,
+                  "source_id": "demo-account:behavior",
+                  "source_name": "twin_snapshot_execution_prefix",
+                  "source_type": "normalized_executions"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_LOSS_SOLD",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_NEUTRAL",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_PAPER_LOSS",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_PAPER_WIN",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_WIN_SOLD",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                }
+              ],
+              "observation_cadence": "supplied_complete_market_price_observation_dates",
+              "observation_kind": "window_statistic",
+              "observation_unit": "calendar_day_portfolio_value_turnover_ratio",
+              "percentile_method": "empirical_midrank_percentile_v1",
+              "quantile_method": "numpy_quantile_linear_v1",
+              "source_method_id": "pyfolio_portfolio_value_turnover_v1",
+              "source_method_version": "1"
+            },
+            "self_historical_percentile": null,
+            "source_method_id": "pyfolio_portfolio_value_turnover_v1",
+            "source_method_version": "1",
+            "status": "insufficient_self_history",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valid_n": 4,
+            "window": "rolling_3m"
+          },
+          {
+            "as_of": "2025-01-08T23:59:00",
+            "comparison_band": null,
+            "comparison_id": "sb_4bd11890b9cf29e42522d0e3804e80cc10df44152814fb2664bf8493c5e9b69a",
+            "current_source_ref": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
+            "current_value": 0.007952286282306162,
+            "delta_from_median": null,
+            "historical_series_ref": "hs_70eee62ed73e52d23e3f5f415c145eaa3cf4f81b6d8cc23af9d260cc1da094cb",
+            "insufficient_reason": "4 valid historical observations are available; 5 are required for rolling_12m",
+            "limitations": [
+              "Self vs Past is descriptive and does not judge whether a higher or lower value is good.",
+              "The comparison uses only registered same-subject historical observations available at as_of.",
+              "Self historical percentile is not a peer percentile or an investment skill score.",
+              "Historical points are existing daily turnover observations, not a recomputed rolling mean.",
+              "A supplied complete market-price date with no trade contributes zero turnover; a date absent from the source is not silently inserted as a zero observation.",
+              "Turnover comparisons do not label trading activity as excessive or disciplined."
+            ],
+            "median": null,
+            "method_id": "self_historical_distribution_v1",
+            "method_version": "1",
+            "metric_id": "mean_daily_turnover",
+            "observation_cadence": "supplied_complete_market_price_observation_dates",
+            "observation_end": "2025-01-07T00:00:00",
+            "observation_kind": "window_statistic",
+            "observation_start": "2025-01-02T00:00:00",
+            "observation_unit": "calendar_day_portfolio_value_turnover_ratio",
+            "p25": null,
+            "p75": null,
+            "provenance": {
+              "current_source_ref": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
+              "data_tier": "synthetic",
+              "historical_point_source_refs": [
+                "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387"
+              ],
+              "historical_series_ref": "hs_70eee62ed73e52d23e3f5f415c145eaa3cf4f81b6d8cc23af9d260cc1da094cb",
+              "input_version_refs": [
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "a12c610a22c826565506d38acfdee24d0a275a848d3c36d0344f77dc8b5085e0",
+                  "instrument": null,
+                  "is_synthetic": true,
+                  "price_type": null,
+                  "source_id": "demo-account:behavior",
+                  "source_name": "twin_snapshot_execution_prefix",
+                  "source_type": "normalized_executions"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_LOSS_SOLD",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_NEUTRAL",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_PAPER_LOSS",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_PAPER_WIN",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_WIN_SOLD",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                }
+              ],
+              "observation_cadence": "supplied_complete_market_price_observation_dates",
+              "observation_kind": "window_statistic",
+              "observation_unit": "calendar_day_portfolio_value_turnover_ratio",
+              "percentile_method": "empirical_midrank_percentile_v1",
+              "quantile_method": "numpy_quantile_linear_v1",
+              "source_method_id": "pyfolio_portfolio_value_turnover_v1",
+              "source_method_version": "1"
+            },
+            "self_historical_percentile": null,
+            "source_method_id": "pyfolio_portfolio_value_turnover_v1",
+            "source_method_version": "1",
+            "status": "insufficient_self_history",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valid_n": 4,
+            "window": "rolling_12m"
+          },
+          {
+            "as_of": "2025-01-08T23:59:00",
+            "comparison_band": null,
+            "comparison_id": "sb_3a285d11d51e1af7a5c14a826c494216d68a32d695625331ad4fd7f37d93a432",
+            "current_source_ref": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
+            "current_value": 0.007952286282306162,
+            "delta_from_median": null,
+            "historical_series_ref": "hs_70eee62ed73e52d23e3f5f415c145eaa3cf4f81b6d8cc23af9d260cc1da094cb",
+            "insufficient_reason": "4 valid historical observations are available; 5 are required for lifetime",
+            "limitations": [
+              "Self vs Past is descriptive and does not judge whether a higher or lower value is good.",
+              "The comparison uses only registered same-subject historical observations available at as_of.",
+              "Self historical percentile is not a peer percentile or an investment skill score.",
+              "Historical points are existing daily turnover observations, not a recomputed rolling mean.",
+              "A supplied complete market-price date with no trade contributes zero turnover; a date absent from the source is not silently inserted as a zero observation.",
+              "Turnover comparisons do not label trading activity as excessive or disciplined."
+            ],
+            "median": null,
+            "method_id": "self_historical_distribution_v1",
+            "method_version": "1",
+            "metric_id": "mean_daily_turnover",
+            "observation_cadence": "supplied_complete_market_price_observation_dates",
+            "observation_end": "2025-01-07T00:00:00",
+            "observation_kind": "window_statistic",
+            "observation_start": "2025-01-02T00:00:00",
+            "observation_unit": "calendar_day_portfolio_value_turnover_ratio",
+            "p25": null,
+            "p75": null,
+            "provenance": {
+              "current_source_ref": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
+              "data_tier": "synthetic",
+              "historical_point_source_refs": [
+                "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387"
+              ],
+              "historical_series_ref": "hs_70eee62ed73e52d23e3f5f415c145eaa3cf4f81b6d8cc23af9d260cc1da094cb",
+              "input_version_refs": [
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "a12c610a22c826565506d38acfdee24d0a275a848d3c36d0344f77dc8b5085e0",
+                  "instrument": null,
+                  "is_synthetic": true,
+                  "price_type": null,
+                  "source_id": "demo-account:behavior",
+                  "source_name": "twin_snapshot_execution_prefix",
+                  "source_type": "normalized_executions"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_LOSS_SOLD",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_NEUTRAL",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_PAPER_LOSS",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_PAPER_WIN",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_WIN_SOLD",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                }
+              ],
+              "observation_cadence": "supplied_complete_market_price_observation_dates",
+              "observation_kind": "window_statistic",
+              "observation_unit": "calendar_day_portfolio_value_turnover_ratio",
+              "percentile_method": "empirical_midrank_percentile_v1",
+              "quantile_method": "numpy_quantile_linear_v1",
+              "source_method_id": "pyfolio_portfolio_value_turnover_v1",
+              "source_method_version": "1"
+            },
+            "self_historical_percentile": null,
+            "source_method_id": "pyfolio_portfolio_value_turnover_v1",
+            "source_method_version": "1",
+            "status": "insufficient_self_history",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valid_n": 4,
+            "window": "lifetime"
+          }
+        ]
+      },
+      {
+        "metric_id": "portfolio_concentration_hhi",
+        "observation_cadence": "supplied_complete_market_price_observation_dates",
+        "observation_kind": "state_snapshot",
+        "observation_unit": "portfolio_state_snapshot",
+        "windows": [
+          {
+            "as_of": "2025-01-08T23:59:00",
+            "comparison_band": "above_historical_iqr",
+            "comparison_id": "sb_5ae607e1e6e9190a8d45f0a650551aacbb2cf781705ee8066a6511bfc4df2662",
+            "current_source_ref": "ev_51f0a6831a2c4937f00adb3d20eb2a2a06aaaf192a5795b153ad01f676f1a19d",
+            "current_value": 0.4817677368212446,
+            "delta_from_median": 0.1488540890498356,
+            "historical_series_ref": "hs_71cec9268fd4dd3abf29cf6b5554df41b08bc3928a2bc12e8ddd3e2c59682cd9",
+            "insufficient_reason": null,
+            "limitations": [
+              "Self vs Past is descriptive and does not judge whether a higher or lower value is good.",
+              "The comparison uses only registered same-subject historical observations available at as_of.",
+              "Self historical percentile is not a peer percentile or an investment skill score.",
+              "HHI comparisons describe concentration position, not risk quality or investment skill.",
+              "HHI history is an observation-weighted distribution over supplied market-price dates, not a time-weighted distribution; dates absent from the source receive no weight."
+            ],
+            "median": 0.33291364777140897,
+            "method_id": "self_historical_distribution_v1",
+            "method_version": "1",
+            "metric_id": "portfolio_concentration_hhi",
+            "observation_cadence": "supplied_complete_market_price_observation_dates",
+            "observation_end": "2025-01-07T00:00:00",
+            "observation_kind": "state_snapshot",
+            "observation_start": "2025-01-02T00:00:00",
+            "observation_unit": "portfolio_state_snapshot",
+            "p25": 0.32216090217599636,
+            "p75": 0.3496285517391662,
+            "provenance": {
+              "current_source_ref": "ev_51f0a6831a2c4937f00adb3d20eb2a2a06aaaf192a5795b153ad01f676f1a19d",
+              "data_tier": "synthetic",
+              "historical_point_source_refs": [
+                "ev_0809e259c6bfcc0911b5ad2b417ae2cf512092878dfdec65182f05141e318a7d",
+                "ev_69074db46427c6b6a5119e31207614a288f3cc454ff56e71897951fc37dbbb54",
+                "ev_823c80599b1529a5aafaf307a8251b4e8954c7531c04d2882e54aa4d3a9bf64f",
+                "ev_e5e5cb9c3d3077c5f604c0ef230fc8d4f18a95380deb03765296f56f3951157b"
+              ],
+              "historical_series_ref": "hs_71cec9268fd4dd3abf29cf6b5554df41b08bc3928a2bc12e8ddd3e2c59682cd9",
+              "input_version_refs": [
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "a12c610a22c826565506d38acfdee24d0a275a848d3c36d0344f77dc8b5085e0",
+                  "instrument": null,
+                  "is_synthetic": true,
+                  "price_type": null,
+                  "source_id": "demo-account:behavior",
+                  "source_name": "twin_snapshot_execution_prefix",
+                  "source_type": "normalized_executions"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_LOSS_SOLD",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_NEUTRAL",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_PAPER_LOSS",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_PAPER_WIN",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_WIN_SOLD",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                }
+              ],
+              "observation_cadence": "supplied_complete_market_price_observation_dates",
+              "observation_kind": "state_snapshot",
+              "observation_unit": "portfolio_state_snapshot",
+              "percentile_method": "empirical_midrank_percentile_v1",
+              "quantile_method": "numpy_quantile_linear_v1",
+              "source_method_id": "hhi_security_weights_v1",
+              "source_method_version": "1"
+            },
+            "self_historical_percentile": 100.0,
+            "source_method_id": "hhi_security_weights_v1",
+            "source_method_version": "1",
+            "status": "complete",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valid_n": 4,
+            "window": "rolling_3m"
+          },
+          {
+            "as_of": "2025-01-08T23:59:00",
+            "comparison_band": "above_historical_iqr",
+            "comparison_id": "sb_0841208657432e2e8f2a5c18f33e51c2260edc30e0e59707f7405fa481843074",
+            "current_source_ref": "ev_51f0a6831a2c4937f00adb3d20eb2a2a06aaaf192a5795b153ad01f676f1a19d",
+            "current_value": 0.4817677368212446,
+            "delta_from_median": 0.1488540890498356,
+            "historical_series_ref": "hs_71cec9268fd4dd3abf29cf6b5554df41b08bc3928a2bc12e8ddd3e2c59682cd9",
+            "insufficient_reason": null,
+            "limitations": [
+              "Self vs Past is descriptive and does not judge whether a higher or lower value is good.",
+              "The comparison uses only registered same-subject historical observations available at as_of.",
+              "Self historical percentile is not a peer percentile or an investment skill score.",
+              "HHI comparisons describe concentration position, not risk quality or investment skill.",
+              "HHI history is an observation-weighted distribution over supplied market-price dates, not a time-weighted distribution; dates absent from the source receive no weight."
+            ],
+            "median": 0.33291364777140897,
+            "method_id": "self_historical_distribution_v1",
+            "method_version": "1",
+            "metric_id": "portfolio_concentration_hhi",
+            "observation_cadence": "supplied_complete_market_price_observation_dates",
+            "observation_end": "2025-01-07T00:00:00",
+            "observation_kind": "state_snapshot",
+            "observation_start": "2025-01-02T00:00:00",
+            "observation_unit": "portfolio_state_snapshot",
+            "p25": 0.32216090217599636,
+            "p75": 0.3496285517391662,
+            "provenance": {
+              "current_source_ref": "ev_51f0a6831a2c4937f00adb3d20eb2a2a06aaaf192a5795b153ad01f676f1a19d",
+              "data_tier": "synthetic",
+              "historical_point_source_refs": [
+                "ev_0809e259c6bfcc0911b5ad2b417ae2cf512092878dfdec65182f05141e318a7d",
+                "ev_69074db46427c6b6a5119e31207614a288f3cc454ff56e71897951fc37dbbb54",
+                "ev_823c80599b1529a5aafaf307a8251b4e8954c7531c04d2882e54aa4d3a9bf64f",
+                "ev_e5e5cb9c3d3077c5f604c0ef230fc8d4f18a95380deb03765296f56f3951157b"
+              ],
+              "historical_series_ref": "hs_71cec9268fd4dd3abf29cf6b5554df41b08bc3928a2bc12e8ddd3e2c59682cd9",
+              "input_version_refs": [
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "a12c610a22c826565506d38acfdee24d0a275a848d3c36d0344f77dc8b5085e0",
+                  "instrument": null,
+                  "is_synthetic": true,
+                  "price_type": null,
+                  "source_id": "demo-account:behavior",
+                  "source_name": "twin_snapshot_execution_prefix",
+                  "source_type": "normalized_executions"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_LOSS_SOLD",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_NEUTRAL",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_PAPER_LOSS",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_PAPER_WIN",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_WIN_SOLD",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                }
+              ],
+              "observation_cadence": "supplied_complete_market_price_observation_dates",
+              "observation_kind": "state_snapshot",
+              "observation_unit": "portfolio_state_snapshot",
+              "percentile_method": "empirical_midrank_percentile_v1",
+              "quantile_method": "numpy_quantile_linear_v1",
+              "source_method_id": "hhi_security_weights_v1",
+              "source_method_version": "1"
+            },
+            "self_historical_percentile": 100.0,
+            "source_method_id": "hhi_security_weights_v1",
+            "source_method_version": "1",
+            "status": "complete",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valid_n": 4,
+            "window": "rolling_12m"
+          },
+          {
+            "as_of": "2025-01-08T23:59:00",
+            "comparison_band": "above_historical_iqr",
+            "comparison_id": "sb_f077ad7c5b8fda9fc424c020e16166a029307728a1b6ed1fb7b6f582f6b8a503",
+            "current_source_ref": "ev_51f0a6831a2c4937f00adb3d20eb2a2a06aaaf192a5795b153ad01f676f1a19d",
+            "current_value": 0.4817677368212446,
+            "delta_from_median": 0.1488540890498356,
+            "historical_series_ref": "hs_71cec9268fd4dd3abf29cf6b5554df41b08bc3928a2bc12e8ddd3e2c59682cd9",
+            "insufficient_reason": null,
+            "limitations": [
+              "Self vs Past is descriptive and does not judge whether a higher or lower value is good.",
+              "The comparison uses only registered same-subject historical observations available at as_of.",
+              "Self historical percentile is not a peer percentile or an investment skill score.",
+              "HHI comparisons describe concentration position, not risk quality or investment skill.",
+              "HHI history is an observation-weighted distribution over supplied market-price dates, not a time-weighted distribution; dates absent from the source receive no weight."
+            ],
+            "median": 0.33291364777140897,
+            "method_id": "self_historical_distribution_v1",
+            "method_version": "1",
+            "metric_id": "portfolio_concentration_hhi",
+            "observation_cadence": "supplied_complete_market_price_observation_dates",
+            "observation_end": "2025-01-07T00:00:00",
+            "observation_kind": "state_snapshot",
+            "observation_start": "2025-01-02T00:00:00",
+            "observation_unit": "portfolio_state_snapshot",
+            "p25": 0.32216090217599636,
+            "p75": 0.3496285517391662,
+            "provenance": {
+              "current_source_ref": "ev_51f0a6831a2c4937f00adb3d20eb2a2a06aaaf192a5795b153ad01f676f1a19d",
+              "data_tier": "synthetic",
+              "historical_point_source_refs": [
+                "ev_0809e259c6bfcc0911b5ad2b417ae2cf512092878dfdec65182f05141e318a7d",
+                "ev_69074db46427c6b6a5119e31207614a288f3cc454ff56e71897951fc37dbbb54",
+                "ev_823c80599b1529a5aafaf307a8251b4e8954c7531c04d2882e54aa4d3a9bf64f",
+                "ev_e5e5cb9c3d3077c5f604c0ef230fc8d4f18a95380deb03765296f56f3951157b"
+              ],
+              "historical_series_ref": "hs_71cec9268fd4dd3abf29cf6b5554df41b08bc3928a2bc12e8ddd3e2c59682cd9",
+              "input_version_refs": [
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "a12c610a22c826565506d38acfdee24d0a275a848d3c36d0344f77dc8b5085e0",
+                  "instrument": null,
+                  "is_synthetic": true,
+                  "price_type": null,
+                  "source_id": "demo-account:behavior",
+                  "source_name": "twin_snapshot_execution_prefix",
+                  "source_type": "normalized_executions"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_LOSS_SOLD",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_NEUTRAL",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_PAPER_LOSS",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_PAPER_WIN",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                },
+                {
+                  "as_of": "2025-01-08T00:00:00",
+                  "benchmark_id": null,
+                  "data_version": "v1",
+                  "instrument": "SYN_WIN_SOLD",
+                  "is_synthetic": true,
+                  "price_type": "synthetic",
+                  "source_id": null,
+                  "source_name": "local_behavior_fixture",
+                  "source_type": "price_series"
+                }
+              ],
+              "observation_cadence": "supplied_complete_market_price_observation_dates",
+              "observation_kind": "state_snapshot",
+              "observation_unit": "portfolio_state_snapshot",
+              "percentile_method": "empirical_midrank_percentile_v1",
+              "quantile_method": "numpy_quantile_linear_v1",
+              "source_method_id": "hhi_security_weights_v1",
+              "source_method_version": "1"
+            },
+            "self_historical_percentile": 100.0,
+            "source_method_id": "hhi_security_weights_v1",
+            "source_method_version": "1",
+            "status": "complete",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valid_n": 4,
+            "window": "lifetime"
+          }
+        ]
+      }
+    ],
+    "subject_id": "demo-user:synthetic-behavior"
+  },
   "twin": {
     "comparison": {
       "portfolio_hhi": {

@@ -107,7 +107,7 @@ def _point_from_record(record: EvidenceRecord, *, as_of: pd.Timestamp) -> Histor
     )
 
 
-def build_portfolio_hhi_history(
+def build_portfolio_hhi_history_with_records(
     executions: pd.DataFrame,
     market_prices: pd.DataFrame,
     *,
@@ -115,8 +115,8 @@ def build_portfolio_hhi_history(
     subject_id: str,
     data_tier: DataTier,
     calculation_code_version: str,
-) -> HistoricalMetricSeries:
-    """Build dated HHI snapshots solely through the existing HHI evidence path.
+) -> tuple[HistoricalMetricSeries, tuple[EvidenceRecord, ...]]:
+    """Build dated HHI snapshots and retain their source Evidence records.
 
     Each point uses executions on or before that calendar date and market-price
     rows on or before that date.  No price is filled and no later row is exposed
@@ -168,7 +168,7 @@ def build_portfolio_hhi_history(
     if not records:
         raise ValueError("no historical HHI observation dates are available")
     latest = records[-1]
-    return HistoricalMetricSeries(
+    series = HistoricalMetricSeries(
         subject_id=subject_id,
         metric_id=latest.metric_id,
         method_id=latest.method_id,
@@ -177,6 +177,29 @@ def build_portfolio_hhi_history(
         data_tier=data_tier,
         limitations=latest.limitations,
     )
+    return series, tuple(records)
+
+
+def build_portfolio_hhi_history(
+    executions: pd.DataFrame,
+    market_prices: pd.DataFrame,
+    *,
+    init_cash: float,
+    subject_id: str,
+    data_tier: DataTier,
+    calculation_code_version: str,
+) -> HistoricalMetricSeries:
+    """Build dated HHI snapshots solely through the existing HHI evidence path."""
+
+    series, _ = build_portfolio_hhi_history_with_records(
+        executions,
+        market_prices,
+        init_cash=init_cash,
+        subject_id=subject_id,
+        data_tier=data_tier,
+        calculation_code_version=calculation_code_version,
+    )
+    return series
 
 
 def build_turnover_history(

@@ -56,9 +56,10 @@ from src.episodes.position_episode import (  # noqa: E402
     build_position_episode_lifecycle,
 )
 from src.history.metric_series import (  # noqa: E402
-    build_portfolio_hhi_history,
+    build_portfolio_hhi_history_with_records,
     build_turnover_history,
 )
+from src.self_baseline.core import build_self_baseline_summary  # noqa: E402
 from src.pretrade.impact import (  # noqa: E402
     ProposedTrade,
     simulate_synthetic_trade_impact,
@@ -357,7 +358,7 @@ def build_export() -> dict[str, object]:
     turnover_record = next(
         record for record in records if record.metric_id == "mean_daily_turnover"
     )
-    hhi_history = build_portfolio_hhi_history(
+    hhi_history, hhi_history_records = build_portfolio_hhi_history_with_records(
         behavior_executions,
         behavior_prices,
         init_cash=INITIAL_CASH,
@@ -389,6 +390,15 @@ def build_export() -> dict[str, object]:
         init_cash=INITIAL_CASH,
         data_tier="synthetic",
         calculation_code_version=CALCULATION_CODE_VERSION,
+    )
+    self_record_catalog = {
+        record.evidence_id: record
+        for record in (*twin_records, *hhi_history_records)
+    }
+    self_baseline = build_self_baseline_summary(
+        current_twin,
+        histories,
+        tuple(self_record_catalog.values()),
     )
     historical_twins = build_historical_twin_snapshots(
         twin_records,
@@ -473,6 +483,7 @@ def build_export() -> dict[str, object]:
                 "turnover": build_twin_metric_comparison(turnover_history),
             },
         },
+        "self_baseline": self_baseline,
         "peer_benchmark": {
             "cohort": peer_benchmark.cohort,
             "cohort_n": peer_benchmark.cohort_n,

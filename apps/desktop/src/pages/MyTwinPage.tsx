@@ -5,10 +5,12 @@ import { GlassPanel } from "@/components/common/GlassPanel";
 import { MirrorOrb } from "@/components/common/MirrorOrb";
 import { EvidenceExplainButton } from "@/components/evidence/EvidenceInspector";
 import { StatusBadge } from "@/components/common/StatusBadge";
+import { SelfBaselineSection } from "@/components/twin/SelfBaselineSection";
 import {
   explainabilityForConcept,
   explainabilityForEvidence,
   getEvidenceRecordById,
+  selfBaseline,
   twinState,
 } from "@/data/backendEvidence";
 import type { TwinEpisodeRefView, TwinEvidenceRefView, TwinMetricStateView } from "@/data/twinState";
@@ -79,7 +81,7 @@ export default function MyTwinPage() {
   return (
     <div className="page twin-page">
       <GlassPanel className="twin-archive-hero glass-reflection">
-        <div className="twin-archive-hero__orb"><MirrorOrb size="md" state="idle" /></div>
+        <div className="twin-archive-hero__orb"><MirrorOrb size="lg" state="idle" /></div>
         <div className="twin-archive-hero__copy">
           <span className="eyebrow">{t("My Twin · Point-in-time archive")}</span>
           <h1>{t("What the evidence can say about me now")}</h1>
@@ -97,18 +99,19 @@ export default function MyTwinPage() {
           <div><span className="eyebrow">01</span><h2 id="twin-now-heading">{t("My state now")}</h2></div>
           <p>{t("A point-in-time summary copied from the deterministic TwinSnapshot.")}</p>
         </header>
-        <dl className="twin-fact-strip">
+        <dl className="twin-fact-strip twin-fact-strip--primary">
           <div><dt>{t("Active investment experiences")}</dt><dd>{currentSnapshot.dataQuality.openEpisodeCount}</dd></div>
           <div><dt>{t("Closed investment experiences")}</dt><dd>{currentSnapshot.dataQuality.closedEpisodeCount}</dd></div>
-          <div><dt>{t("Complete evidence")}</dt><dd>{currentSnapshot.evidenceSummary.complete}</dd></div>
-          <div><dt>{t("Evidence still maturing")}</dt><dd>{currentSnapshot.evidenceSummary.insufficient}</dd></div>
           <div><dt>{t("Portfolio state")}</dt><dd className="twin-fact-strip__status">{t(currentSnapshot.portfolioState.status === "available" ? "Available" : currentSnapshot.portfolioState.status === "not_started" ? "Not started" : "Not available")}</dd></div>
         </dl>
+        <p className="twin-evidence-health">{t("System evidence health: {complete} complete · {insufficient} still maturing", { complete: currentSnapshot.evidenceSummary.complete, insufficient: currentSnapshot.evidenceSummary.insufficient })}</p>
       </section>
+
+      <SelfBaselineSection summary={selfBaseline} />
 
       <section className="twin-section" aria-labelledby="twin-open-heading">
         <header className="twin-section__heading">
-          <div><span className="eyebrow">02</span><h2 id="twin-open-heading">{t("Investment experiences in progress")}</h2></div>
+          <div><span className="eyebrow">03</span><h2 id="twin-open-heading">{t("Investment experiences in progress")}</h2></div>
           <p>{t("Open marks are current valuation facts, not exits.")}</p>
         </header>
         <div className="twin-row-list">
@@ -120,7 +123,7 @@ export default function MyTwinPage() {
 
       <section className="twin-section" aria-labelledby="twin-closed-heading">
         <header className="twin-section__heading">
-          <div><span className="eyebrow">03</span><h2 id="twin-closed-heading">{t("Recently completed investment experiences")}</h2></div>
+          <div><span className="eyebrow">04</span><h2 id="twin-closed-heading">{t("Recently completed investment experiences")}</h2></div>
           <p>{t("Only Episodes referenced by this snapshot are shown.")}</p>
         </header>
         <div className="twin-row-list">
@@ -132,7 +135,7 @@ export default function MyTwinPage() {
 
       <section className="twin-section" aria-labelledby="twin-evidence-heading">
         <header className="twin-section__heading">
-          <div><span className="eyebrow">04</span><h2 id="twin-evidence-heading">{t("Observations supported by evidence")}</h2></div>
+          <div><span className="eyebrow">05</span><h2 id="twin-evidence-heading">{t("Observations supported by evidence")}</h2></div>
           <p>{t("These are observations, not scores, diagnoses, or permanent traits.")}</p>
         </header>
         <div className="twin-evidence-list">
@@ -157,7 +160,7 @@ export default function MyTwinPage() {
 
       <div className="twin-detail-grid">
         <section className="twin-section twin-section--compact" aria-labelledby="twin-quality-heading">
-          <header className="twin-section__heading"><div><span className="eyebrow">05</span><h2 id="twin-quality-heading">{t("Evidence maturity")}</h2></div></header>
+          <header className="twin-section__heading"><div><span className="eyebrow">06</span><h2 id="twin-quality-heading">{t("Evidence maturity")}</h2></div></header>
           <dl className="twin-quality-rows">
             <div><dt>{t("Evidence coverage")}</dt><dd>{currentSnapshot.dataQuality.referencedEvidenceCount} / {currentSnapshot.dataQuality.expectedEvidenceCount}</dd></div>
             <div><dt>{t("Complete")}</dt><dd>{currentSnapshot.evidenceSummary.complete}</dd></div>
@@ -169,9 +172,8 @@ export default function MyTwinPage() {
         </section>
 
         <section className="twin-section twin-section--compact" aria-labelledby="twin-unknown-heading">
-          <header className="twin-section__heading"><div><span className="eyebrow">06</span><h2 id="twin-unknown-heading">{t("Not formed yet")}</h2></div></header>
+          <header className="twin-section__heading"><div><span className="eyebrow">07</span><h2 id="twin-unknown-heading">{t("Not formed yet")}</h2></div></header>
           <div className="twin-unknown-list">
-            <div><span>{t("Changes versus my past")}</span><small>{t("Self vs Past is not connected yet")}</small></div>
             <div><span>{t("Position among comparable accounts")}</span><small>{t("Comparable-account context is not connected yet")}</small></div>
             <div><span>{t("Long-term notable changes")}</span><small>{t("No registered notable-change evidence yet")}</small></div>
           </div>
