@@ -257,3 +257,32 @@ def test_desktop_current_twin_is_replay_backed_and_every_episode_is_resolvable()
         for record in exported["evidence_records"]
         if record["evidence_id"] == reference["evidence_id"]
     )
+
+
+def test_desktop_investments_projection_copies_twin_refs_and_neutral_names():
+    exported = _json_value(build_export())
+    snapshot = exported["twin"]["current_snapshot"]
+    investments = exported["investments"]
+    entries = exported["position_episode_demo"]["entries"]
+
+    assert investments["subject_id"] == snapshot["subject_id"]
+    assert investments["as_of"] == snapshot["snapshot_at"]
+    assert investments["portfolio_state_status"] == snapshot["portfolio_state"]["status"]
+    assert investments["open_episode_ids"] == [
+        item["episode_id"] for item in snapshot["episode_refs"]["open"]
+    ]
+    assert investments["closed_episode_ids"] == [
+        item["episode_id"] for item in snapshot["episode_refs"]["closed"]
+    ]
+    assert investments["summary"]["open_episode_count"] == snapshot[
+        "data_quality_summary"
+    ]["open_episode_count"]
+    assert investments["summary"]["closed_episode_count"] == snapshot[
+        "data_quality_summary"
+    ]["closed_episode_count"]
+    assert all(
+        entry["instrument"]["instrument_id"] == entry["episode"]["instrument_id"]
+        and entry["instrument"]["display_name"].startswith("Demo Security ")
+        and entry["instrument"]["is_synthetic"] is True
+        for entry in entries
+    )

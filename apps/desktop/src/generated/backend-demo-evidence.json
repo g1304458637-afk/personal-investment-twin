@@ -3734,6 +3734,26 @@
       "subject_id": "demo-user:synthetic-behavior"
     }
   },
+  "investments": {
+    "as_of": "2025-01-08T23:59:00",
+    "closed_episode_ids": [],
+    "data_tier": "synthetic",
+    "open_episode_ids": [
+      "pe_460a70738da94f7dca7f03f18c47168c855a0f23bde32111af10e8d74612b9bf",
+      "pe_8aa45542d79249f41b272e6efb46dec7a11119b7eac854ed6005ebf3e8b4b7d0",
+      "pe_cb215cbf858c71448eeb04b0268b5883a82404eb8d17b73f8e752de01bef28e5",
+      "pe_db1d299a07e8c15c234076633709dc5996d4fa6c8ee6757bc805b1db4179a213",
+      "pe_dc5c9dff3dbb79eb92f1d19cfe799bc5d97bfe04ecba00dadb9bad27e05ac657"
+    ],
+    "portfolio_state_reason": null,
+    "portfolio_state_status": "available",
+    "subject_id": "demo-user:synthetic-behavior",
+    "summary": {
+      "closed_episode_count": 0,
+      "current_position_count": 5,
+      "open_episode_count": 5
+    }
+  },
   "peer_benchmark": {
     "cohort": {
       "asset_types": [
@@ -3968,6 +3988,12 @@
             "metric_id": "recorded_trading_friction_comparison"
           }
         ],
+        "instrument": {
+          "data_tier": "synthetic",
+          "display_name": "Demo Security F",
+          "instrument_id": "600000.SH",
+          "is_synthetic": true
+        },
         "price_points": [
           {
             "observed_at": "2025-01-06T00:00:00",
@@ -4234,6 +4260,12 @@
           "subject_id": "demo-user:synthetic-behavior"
         },
         "evidence_references": [],
+        "instrument": {
+          "data_tier": "synthetic",
+          "display_name": "Demo Security A",
+          "instrument_id": "SYN_WIN_SOLD",
+          "is_synthetic": true
+        },
         "price_points": [
           {
             "observed_at": "2025-01-02T00:00:00",
@@ -4463,6 +4495,12 @@
           "subject_id": "demo-user:synthetic-behavior"
         },
         "evidence_references": [],
+        "instrument": {
+          "data_tier": "synthetic",
+          "display_name": "Demo Security B",
+          "instrument_id": "SYN_LOSS_SOLD",
+          "is_synthetic": true
+        },
         "price_points": [
           {
             "observed_at": "2025-01-02T00:00:00",
@@ -4692,6 +4730,12 @@
           "subject_id": "demo-user:synthetic-behavior"
         },
         "evidence_references": [],
+        "instrument": {
+          "data_tier": "synthetic",
+          "display_name": "Demo Security C",
+          "instrument_id": "SYN_PAPER_WIN",
+          "is_synthetic": true
+        },
         "price_points": [
           {
             "observed_at": "2025-01-02T00:00:00",
@@ -4921,6 +4965,12 @@
           "subject_id": "demo-user:synthetic-behavior"
         },
         "evidence_references": [],
+        "instrument": {
+          "data_tier": "synthetic",
+          "display_name": "Demo Security D",
+          "instrument_id": "SYN_PAPER_LOSS",
+          "is_synthetic": true
+        },
         "price_points": [
           {
             "observed_at": "2025-01-02T00:00:00",
@@ -5134,6 +5184,12 @@
           "subject_id": "demo-user:synthetic-behavior"
         },
         "evidence_references": [],
+        "instrument": {
+          "data_tier": "synthetic",
+          "display_name": "Demo Security E",
+          "instrument_id": "SYN_NEUTRAL",
+          "is_synthetic": true
+        },
         "price_points": [
           {
             "observed_at": "2025-01-02T00:00:00",

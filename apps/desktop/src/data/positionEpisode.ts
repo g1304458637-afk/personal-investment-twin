@@ -76,6 +76,12 @@ export interface BackendPositionEpisodeSnapshot {
 }
 
 export interface BackendPositionEpisodeEntry {
+  instrument: {
+    instrument_id: string;
+    display_name: string | null;
+    is_synthetic: boolean;
+    data_tier: "synthetic";
+  };
   episode: BackendPositionEpisode;
   decisions: BackendPositionEpisodeDecision[];
   states_by_ref: Record<string, BackendPositionEpisodeState>;
@@ -162,6 +168,12 @@ export interface PositionEpisodeSnapshotView {
 }
 
 export interface PositionEpisodeEntryView {
+  instrument: {
+    instrumentId: string;
+    displayName: string;
+    isSynthetic: true;
+    dataTier: "synthetic";
+  };
   episode: PositionEpisodeView;
   decisions: PositionDecisionView[];
   statesByRef: Record<string, PositionStateView>;
@@ -252,6 +264,17 @@ function adaptEntry(entry: BackendPositionEpisodeEntry): PositionEpisodeEntryVie
     dataTier: entry.episode.data_tier,
     limitations: entry.episode.limitations,
   };
+  if (
+    entry.instrument.instrument_id !== episode.instrumentId
+    || entry.instrument.data_tier !== "synthetic"
+    || entry.instrument.is_synthetic !== true
+  ) {
+    throw new Error("Position episode instrument metadata must match its synthetic Episode.");
+  }
+  const displayName = typeof entry.instrument.display_name === "string"
+    && entry.instrument.display_name.trim().length > 0
+    ? entry.instrument.display_name.trim()
+    : episode.instrumentId;
   const decisions = entry.decisions.map((decision) => {
     if (decision.episode_id !== episode.episodeId) {
       throw new Error(`Position episode decision ${decision.decision_id} belongs to another Episode.`);
@@ -310,6 +333,12 @@ function adaptEntry(entry: BackendPositionEpisodeEntry): PositionEpisodeEntryVie
     : null;
 
   return {
+    instrument: {
+      instrumentId: episode.instrumentId,
+      displayName,
+      isSynthetic: true,
+      dataTier: "synthetic",
+    },
     episode,
     decisions,
     statesByRef,

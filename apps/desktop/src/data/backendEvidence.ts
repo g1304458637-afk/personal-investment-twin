@@ -9,6 +9,10 @@ import type { TranslationValues } from "@/locales/LocaleProvider";
 
 import type { BehaviorHistorySeries } from "./behaviorHistory";
 import {
+  adaptInvestmentsPayload,
+  type BackendInvestmentsPayload,
+} from "./investments";
+import {
   adaptExplainabilityPayload,
   conceptOnlyView,
   type ExplainabilityView,
@@ -59,6 +63,7 @@ interface BackendEvidenceExport {
   twin: BackendTwinPayload;
   peer_benchmark: BackendPeerBenchmarkPayload;
   pretrade_demo: BackendPretradeImpact;
+  investments: BackendInvestmentsPayload;
   position_episode_demo: BackendPositionEpisodeDemo;
   self_baseline: BackendSelfBaselinePayload;
   explainability: unknown;
@@ -117,6 +122,7 @@ export const pretradeDemo = adaptPretradeImpact(backend.pretrade_demo);
 export const positionEpisodeDemo: PositionEpisodeDemoView = adaptPositionEpisodeDemo(
   backend.position_episode_demo,
 );
+export const investments = adaptInvestmentsPayload(backend.investments, positionEpisodeDemo);
 export const twinState = adaptTwinPayload(
   backend.twin,
   [

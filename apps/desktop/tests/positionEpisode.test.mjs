@@ -46,6 +46,12 @@ function demo(overrides = {}) {
     default_episode_id: "episode-open",
     entries: [
       {
+        instrument: {
+          instrument_id: "SYN",
+          display_name: "Demo Security",
+          is_synthetic: true,
+          data_tier: "synthetic",
+        },
         episode: {
           episode_id: "episode-open",
           subject_id: "demo-user",
@@ -204,12 +210,30 @@ test("generated demo preserves distinct Closed and Open visual semantics", async
   assert.notEqual(open.snapshot.positionState.valuationPrice, open.decisions.at(-1)?.executionPrice);
 });
 
+test("presentation metadata preserves canonical identity and falls back safely", () => {
+  const source = demo();
+  source.entries[0].instrument.display_name = "<untrusted demo name>";
+  const named = adaptPositionEpisodeDemo(source).entries[0];
+  assert.equal(named.instrument.displayName, "<untrusted demo name>");
+  assert.equal(named.instrument.instrumentId, "SYN");
+  assert.equal(named.episode.instrumentId, "SYN");
+
+  const unnamed = demo();
+  unnamed.entries[0].instrument.display_name = null;
+  assert.equal(adaptPositionEpisodeDemo(unnamed).entries[0].instrument.displayName, "SYN");
+
+  const mismatched = demo();
+  mismatched.entries[0].instrument.instrument_id = "OTHER";
+  assert.throws(() => adaptPositionEpisodeDemo(mismatched), /metadata must match/);
+});
+
 test("Episode UI uses backend facts and labels current valuation as not an exit", async () => {
   const page = await readFile(new URL("../src/pages/PositionEpisodePage.tsx", import.meta.url), "utf8");
   const chart = await readFile(new URL("../src/components/charts/PositionEpisodeTimeline.tsx", import.meta.url), "utf8");
   const chinese = await readFile(new URL("../src/locales/zh-CN.ts", import.meta.url), "utf8");
 
   assert.equal(page.includes("@/demo/fixture"), false);
+  assert.equal(page.includes("dangerouslySetInnerHTML"), false);
   assert.match(page, /stateBefore\.quantity/);
   assert.match(page, /stateAfter\.quantity/);
   assert.match(chart, /seriesId !== "decision-events"/);

@@ -22,6 +22,15 @@ OUTPUT_PATH = PROJECT_ROOT / "apps" / "desktop" / "src" / "generated" / "backend
 INITIAL_CASH = 100_000.0
 CALCULATION_CODE_VERSION = "desktop-demo-evidence-v1"
 
+DEMO_INSTRUMENT_NAMES = {
+    "SYN_WIN_SOLD": "Demo Security A",
+    "SYN_LOSS_SOLD": "Demo Security B",
+    "SYN_PAPER_WIN": "Demo Security C",
+    "SYN_PAPER_LOSS": "Demo Security D",
+    "SYN_NEUTRAL": "Demo Security E",
+    "600000.SH": "Demo Security F",
+}
+
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.attribution.exit_timing_evidence import build_exit_timing_evidence  # noqa: E402
@@ -209,6 +218,15 @@ def _position_episode_entry(
         for _, row in price_rows.iterrows()
     )
     return {
+        "instrument": {
+            "instrument_id": episode.instrument_id,
+            "display_name": DEMO_INSTRUMENT_NAMES.get(
+                episode.instrument_id,
+                episode.instrument_id,
+            ),
+            "is_synthetic": True,
+            "data_tier": "synthetic",
+        },
         "episode": episode,
         "snapshot": snapshot,
         "decisions": decisions,
@@ -493,6 +511,24 @@ def build_export() -> dict[str, object]:
             },
         },
         "pretrade_demo": pretrade_demo,
+        "investments": {
+            "subject_id": current_twin.subject_id,
+            "as_of": current_twin.snapshot_at,
+            "data_tier": "synthetic",
+            "portfolio_state_status": current_twin.portfolio_state.status,
+            "portfolio_state_reason": current_twin.portfolio_state.reason,
+            "summary": {
+                "open_episode_count": current_twin.data_quality_summary.open_episode_count,
+                "closed_episode_count": current_twin.data_quality_summary.closed_episode_count,
+                "current_position_count": len(current_twin.portfolio_state.positions),
+            },
+            "open_episode_ids": tuple(
+                item.episode_id for item in current_twin.episode_refs.open
+            ),
+            "closed_episode_ids": tuple(
+                item.episode_id for item in current_twin.episode_refs.closed
+            ),
+        },
         "position_episode_demo": {
             "data_tier": "synthetic",
             "default_episode_id": selected_position_episode.episode_id,

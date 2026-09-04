@@ -93,7 +93,7 @@ export const productRoutes: readonly ProductRouteDefinition[] = [
     navigationGroup: null,
     navigationOrder: 10,
     showInSidebar: true,
-    availability: "hidden_until_ready",
+    availability: "available",
     parentId: null,
     inspectorPolicy: "supported",
   }),

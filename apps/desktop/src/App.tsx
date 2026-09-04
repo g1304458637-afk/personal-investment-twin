@@ -12,7 +12,8 @@ import {
   resolveLegacyRedirect,
   type ProductRouteId,
 } from "@/routing/productRoutes";
-const OverviewPage = lazy(() => import("@/pages/OverviewPage"));
+const OverviewPage = lazy(() => import("@/pages/OverviewHomePage"));
+const InvestmentsPage = lazy(async () => ({ default: (await import("@/pages/InvestmentsPage")).InvestmentsPage }));
 const MyTwinPage = lazy(() => import("@/pages/MyTwinPage"));
 const EvidencePage = lazy(() => import("@/pages/EvidencePage"));
 const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
@@ -23,6 +24,7 @@ const PositionEpisodePage = lazy(async () => ({ default: (await import("@/pages/
 
 const routeElements: Partial<Record<ProductRouteId, React.ReactNode>> = {
   overview: <OverviewPage />,
+  investments: <InvestmentsPage />,
   review_decisions: <DecisionsPage />,
   review_patterns: <BehaviorPage />,
   twin: <MyTwinPage />,

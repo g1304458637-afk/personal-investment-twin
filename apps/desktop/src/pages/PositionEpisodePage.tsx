@@ -231,7 +231,7 @@ export function PositionEpisodePage() {
     return (
       <div className="space-y-5 pb-8">
         <Button asChild variant="quiet" size="sm">
-          <Link to="/review/decisions"><ArrowLeft />{t("Back to decision evidence")}</Link>
+          <Link to="/investments"><ArrowLeft />{t("Back to My Investments")}</Link>
         </Button>
         <StateNotice
           state="empty"
@@ -262,13 +262,13 @@ export function PositionEpisodePage() {
   return (
     <div className="space-y-6 pb-8">
       <Button asChild variant="quiet" size="sm" className="-ml-3">
-        <Link to="/review/decisions"><ArrowLeft />{t("Back to decision evidence")}</Link>
+        <Link to="/investments"><ArrowLeft />{t("Back to My Investments")}</Link>
       </Button>
 
       <PageHeader
         eyebrow={t("Position Episode · single-instrument lifecycle")}
-        title={episode.instrumentId}
-        description={t("The fixture does not provide an instrument name, so only its exact symbol is shown. No name is inferred.")}
+        title={t(entry.instrument.displayName)}
+        description={t("Canonical instrument ID: {instrumentId}. The display name is synthetic presentation metadata; lifecycle facts still reference the canonical ID.", { instrumentId: episode.instrumentId })}
         actions={
           <div className="flex items-center gap-2">
             <DemoBadge />
@@ -403,7 +403,7 @@ export function PositionEpisodePage() {
               <Link to={`/investments/episodes/${candidate.episode.episodeId}`}>
                 <CircleDot />
                 {t("View {symbol} · {status}", {
-                  symbol: candidate.episode.instrumentId,
+                  symbol: t(candidate.instrument.displayName),
                   status: t(candidate.episode.status === "open" ? "Holding" : "Closed position"),
                 })}
               </Link>
