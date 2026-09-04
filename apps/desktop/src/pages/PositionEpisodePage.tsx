@@ -101,7 +101,7 @@ function EvidenceLinks({
       {references.map((reference) => (
         <Link
           key={reference.evidenceId}
-          to={`/evidence?selected=${reference.evidenceId}`}
+          to={`/advanced/evidence?selected=${reference.evidenceId}`}
           className="flex items-start justify-between gap-3 rounded-lg border border-border/70 bg-white/[0.025] p-3 transition-colors hover:bg-white/[0.05]"
         >
           <span className="min-w-0">
@@ -231,7 +231,7 @@ export function PositionEpisodePage() {
     return (
       <div className="space-y-5 pb-8">
         <Button asChild variant="quiet" size="sm">
-          <Link to="/decisions"><ArrowLeft />{t("Back to decision evidence")}</Link>
+          <Link to="/review/decisions"><ArrowLeft />{t("Back to decision evidence")}</Link>
         </Button>
         <StateNotice
           state="empty"
@@ -262,7 +262,7 @@ export function PositionEpisodePage() {
   return (
     <div className="space-y-6 pb-8">
       <Button asChild variant="quiet" size="sm" className="-ml-3">
-        <Link to="/decisions"><ArrowLeft />{t("Back to decision evidence")}</Link>
+        <Link to="/review/decisions"><ArrowLeft />{t("Back to decision evidence")}</Link>
       </Button>
 
       <PageHeader
@@ -400,7 +400,7 @@ export function PositionEpisodePage() {
           .filter((candidate) => candidate.episode.episodeId !== episode.episodeId)
           .map((candidate) => (
             <Button key={candidate.episode.episodeId} asChild variant="quiet" size="sm">
-              <Link to={`/decisions/episodes/${candidate.episode.episodeId}`}>
+              <Link to={`/investments/episodes/${candidate.episode.episodeId}`}>
                 <CircleDot />
                 {t("View {symbol} · {status}", {
                   symbol: candidate.episode.instrumentId,

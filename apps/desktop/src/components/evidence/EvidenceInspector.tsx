@@ -1,18 +1,17 @@
 import { ArrowUpRight, Braces, Database, FlaskConical, Info, Sigma } from "lucide-react";
-import { useState } from "react";
 
 import { CalculationRenderer } from "@/components/evidence/CalculationRenderer";
+import {
+  useInspector,
+  type InspectorDisplayContext,
+} from "@/components/inspector/InspectorContext";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ExplainabilityView, TraceScalar } from "@/data/explainability";
 import { useLocale } from "@/locales/LocaleProvider";
 
-export interface EvidenceInspectorContext {
-  label?: string;
-  title?: string;
-  detail?: string;
-}
+export type EvidenceInspectorContext = InspectorDisplayContext;
 
 function resultText(
   value: TraceScalar,
@@ -158,6 +157,48 @@ function Method({ view }: { view: ExplainabilityView }) {
   );
 }
 
+export function EvidenceInspectorContent({
+  view,
+  context,
+}: {
+  view: ExplainabilityView;
+  context?: EvidenceInspectorContext;
+}) {
+  const { locale, t } = useLocale();
+  const status = view.trace?.status ?? view.result?.status ?? "concept_only";
+  const primary = view.result?.value ?? view.trace?.result ?? null;
+  return (
+    <div className="evidence-inspector-content">
+      <header className="pr-10">
+        {context?.label ? <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-accent">{context.label}</p> : null}
+        {context?.title ? <p className="mt-1 text-sm text-muted">{context.title}{context.detail ? ` · ${context.detail}` : ""}</p> : null}
+        <h2 className="mt-3 text-xl font-semibold tracking-tight">{t(view.concept.titleKey)}</h2>
+        <p className="mt-2 text-sm leading-6 text-muted">{t(view.concept.shortDefinitionKey)}</p>
+        <div className="mt-5 flex flex-wrap items-end justify-between gap-3 border-b border-border/70 pb-5">
+          <strong className="font-mono text-[30px] font-semibold leading-none tabular-nums">{resultText(primary, view.concept.unit, view.concept.conceptId, locale, t)}</strong>
+          <span className="rounded-full border border-border/80 bg-white/[0.035] px-2.5 py-1 text-[11px] text-muted">{t(statusLabel(status))}</span>
+        </div>
+      </header>
+
+      <Tabs defaultValue="explanation" className="mt-5">
+        <TabsList aria-label={t("Evidence explanation layers")} className="grid w-full grid-cols-3">
+          <TabsTrigger value="explanation"><Info className="mr-1.5 size-3.5" />{t("Explanation")}</TabsTrigger>
+          <TabsTrigger value="calculation"><Sigma className="mr-1.5 size-3.5" />{t("Calculation")}</TabsTrigger>
+          <TabsTrigger value="method"><Braces className="mr-1.5 size-3.5" />{t("Method")}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="explanation"><Explanation view={view} /></TabsContent>
+        <TabsContent value="calculation"><Calculation view={view} /></TabsContent>
+        <TabsContent value="method"><Method view={view} /></TabsContent>
+      </Tabs>
+
+      <div className="mt-7 flex items-start gap-2 border-t border-border/70 pt-4 text-xs leading-5 text-muted">
+        <FlaskConical className="mt-0.5 size-3.5 shrink-0 text-accent" aria-hidden="true" />
+        <p>{t("Synthetic demo evidence. It does not represent a real investor account or real market history.")}</p>
+      </div>
+    </div>
+  );
+}
+
 export function EvidenceInspector({
   view,
   context,
@@ -169,38 +210,13 @@ export function EvidenceInspector({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { locale, t } = useLocale();
-  const status = view.trace?.status ?? view.result?.status ?? "concept_only";
-  const primary = view.result?.value ?? view.trace?.result ?? null;
+  const { t } = useLocale();
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-[min(96vw,620px)] sm:p-7">
-        <header className="pr-10">
-          {context?.label ? <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-accent">{context.label}</p> : null}
-          {context?.title ? <p className="mt-1 text-sm text-muted">{context.title}{context.detail ? ` · ${context.detail}` : ""}</p> : null}
-          <SheetTitle className="mt-3 text-xl font-semibold tracking-tight">{t(view.concept.titleKey)}</SheetTitle>
-          <SheetDescription className="mt-2 text-sm leading-6">{t(view.concept.shortDefinitionKey)}</SheetDescription>
-          <div className="mt-5 flex flex-wrap items-end justify-between gap-3 border-b border-border/70 pb-5">
-            <strong className="font-mono text-[30px] font-semibold leading-none tabular-nums">{resultText(primary, view.concept.unit, view.concept.conceptId, locale, t)}</strong>
-            <span className="rounded-full border border-border/80 bg-white/[0.035] px-2.5 py-1 text-[11px] text-muted">{t(statusLabel(status))}</span>
-          </div>
-        </header>
-
-        <Tabs defaultValue="explanation" className="mt-5">
-          <TabsList aria-label={t("Evidence explanation layers")} className="grid w-full grid-cols-3">
-            <TabsTrigger value="explanation"><Info className="mr-1.5 size-3.5" />{t("Explanation")}</TabsTrigger>
-            <TabsTrigger value="calculation"><Sigma className="mr-1.5 size-3.5" />{t("Calculation")}</TabsTrigger>
-            <TabsTrigger value="method"><Braces className="mr-1.5 size-3.5" />{t("Method")}</TabsTrigger>
-          </TabsList>
-          <TabsContent value="explanation"><Explanation view={view} /></TabsContent>
-          <TabsContent value="calculation"><Calculation view={view} /></TabsContent>
-          <TabsContent value="method"><Method view={view} /></TabsContent>
-        </Tabs>
-
-        <div className="mt-7 flex items-start gap-2 border-t border-border/70 pt-4 text-xs leading-5 text-muted">
-          <FlaskConical className="mt-0.5 size-3.5 shrink-0 text-accent" aria-hidden="true" />
-          <p>{t("Synthetic demo evidence. It does not represent a real investor account or real market history.")}</p>
-        </div>
+        <SheetTitle className="sr-only">{t(view.concept.titleKey)}</SheetTitle>
+        <SheetDescription className="sr-only">{t(view.concept.shortDefinitionKey)}</SheetDescription>
+        <EvidenceInspectorContent view={view} context={context} />
       </SheetContent>
     </Sheet>
   );
@@ -218,14 +234,11 @@ export function EvidenceExplainButton({
   className?: string;
 }) {
   const { t } = useLocale();
-  const [open, setOpen] = useState(false);
+  const { openEvidence } = useInspector();
   if (!view) return null;
   return (
-    <>
-      <Button type="button" variant="quiet" size="sm" className={className} onClick={() => setOpen(true)}>
-        {t(label)} <ArrowUpRight className="size-3.5" aria-hidden="true" />
-      </Button>
-      <EvidenceInspector view={view} context={context} open={open} onOpenChange={setOpen} />
-    </>
+    <Button type="button" variant="quiet" size="sm" className={className} onClick={() => openEvidence(view, context)}>
+      {t(label)} <ArrowUpRight className="size-3.5" aria-hidden="true" />
+    </Button>
   );
 }

@@ -150,7 +150,7 @@ export default function OverviewPage() {
             title={t("Four questions, kept separate")}
             action={
               <Button asChild size="sm" variant="ghost">
-                <Link to="/decisions">{t("View details")} <ArrowRight /></Link>
+                <Link to="/review/decisions">{t("View details")} <ArrowRight /></Link>
               </Button>
             }
           />
@@ -174,7 +174,7 @@ export default function OverviewPage() {
             title={t("Observed patterns, not identity labels")}
             action={
               <Button asChild size="sm" variant="ghost">
-                <Link to="/behavior">{t("View details")} <ArrowRight /></Link>
+                <Link to="/review/patterns">{t("View details")} <ArrowRight /></Link>
               </Button>
             }
           />
@@ -200,13 +200,13 @@ export default function OverviewPage() {
           description={t("Method, sample and status stay visible before interpretation.")}
           action={
             <Button asChild size="sm" variant="secondary">
-              <Link to="/evidence">{t("Explore all evidence")} <ArrowRight /></Link>
+              <Link to="/advanced/evidence">{t("Explore all evidence")} <ArrowRight /></Link>
             </Button>
           }
         />
         <div className="recent-evidence__grid">
           {recentEvidence.map((record) => (
-            <Link to={`/evidence?selected=${record.evidence_id}`} key={record.evidence_id}>
+            <Link to={`/advanced/evidence?selected=${record.evidence_id}`} key={record.evidence_id}>
               <div className="recent-evidence__topline">
                 <span>{(() => {
                   const metric = metricByEvidenceId.get(record.evidence_id);

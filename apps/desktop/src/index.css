@@ -124,6 +124,10 @@ a {
     linear-gradient(145deg, hsl(222 34% 6%), hsl(218 34% 8%) 52%, hsl(222 30% 6%));
 }
 
+.workspace-shell:has(> .contextual-inspector--docked) {
+  grid-template-columns: 236px minmax(0, 1fr) minmax(340px, 380px);
+}
+
 :root[data-theme="light"] .workspace-shell {
   background:
     radial-gradient(circle at 78% -16%, hsl(184 66% 70% / 0.25), transparent 37%),
@@ -235,6 +239,47 @@ a {
   text-transform: uppercase;
 }
 
+.workspace-nav__manage {
+  display: grid;
+  gap: 3px;
+  margin-top: 11px;
+  padding-top: 14px;
+  border-top: 1px solid hsl(var(--border) / 0.72);
+}
+
+.workspace-nav__group {
+  display: grid;
+  gap: 2px;
+  margin: 3px 0;
+}
+
+.workspace-nav__group-title {
+  display: flex;
+  height: 31px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 11px;
+  color: hsl(var(--muted) / 0.82);
+  font-size: 11px;
+  font-weight: 580;
+  letter-spacing: 0.04em;
+}
+
+.workspace-nav__group-title > svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 1.7;
+}
+
+.workspace-nav__group-title--active {
+  color: hsl(var(--foreground) / 0.9);
+}
+
+.workspace-nav__children {
+  display: grid;
+  gap: 2px;
+}
+
 .workspace-nav__item {
   position: relative;
   display: flex;
@@ -278,6 +323,18 @@ a {
   color: hsl(var(--foreground));
 }
 
+.workspace-nav__item--child {
+  height: 35px;
+  margin-left: 18px;
+  padding-left: 12px;
+  font-size: 12px;
+}
+
+.workspace-nav__item--child > svg {
+  width: 14px;
+  height: 14px;
+}
+
 .workspace-nav__indicator {
   position: absolute !important;
   inset: 0;
@@ -292,6 +349,48 @@ a {
   margin-top: auto;
   padding: 14px 9px 2px;
   border-top: 1px solid hsl(var(--border) / 0.72);
+}
+
+.contextual-inspector {
+  position: relative;
+  z-index: 11;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 28px 24px 36px;
+  border-left: 1px solid hsl(var(--border) / 0.72);
+  background: hsl(var(--overlay) / 0.9);
+  box-shadow: -18px 0 54px rgba(0, 0, 0, 0.17);
+  backdrop-filter: blur(24px) saturate(120%);
+}
+
+.contextual-inspector__close {
+  position: absolute;
+  z-index: 2;
+  top: 17px;
+  right: 17px;
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  color: hsl(var(--muted));
+  outline: none;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.contextual-inspector__close:hover {
+  color: hsl(var(--foreground));
+  background: hsl(var(--foreground) / 0.06);
+}
+
+.contextual-inspector__close:focus-visible {
+  box-shadow: 0 0 0 2px hsl(var(--accent) / 0.55);
+}
+
+.contextual-inspector__close > svg {
+  width: 16px;
+  height: 16px;
 }
 
 .workspace-sidebar__footer p,
@@ -2352,6 +2451,10 @@ body:has(.twin-page) .ambient-light--one {
 @media (max-width: 1320px) {
   .workspace-shell {
     grid-template-columns: 216px minmax(0, 1fr);
+  }
+
+  .workspace-shell:has(> .contextual-inspector--docked) {
+    grid-template-columns: 216px minmax(0, 1fr) 340px;
   }
 
   .route-frame {

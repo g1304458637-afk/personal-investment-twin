@@ -63,7 +63,7 @@ export default function MyTwinPage() {
   const episodeRow = (episode: TwinEpisodeRefView) => {
     const state = episode.currentPositionState;
     return (
-      <Link className="twin-episode-row" key={episode.episodeId} to={`/decisions/episodes/${episode.episodeId}`}>
+      <Link className="twin-episode-row" key={episode.episodeId} to={`/investments/episodes/${episode.episodeId}`}>
         <div className="twin-episode-row__identity">
           <strong>{episode.instrumentId}</strong>
           <span>{date(episode.openedAt)} → {episode.closedAt ? date(episode.closedAt) : t("Present")}</span>

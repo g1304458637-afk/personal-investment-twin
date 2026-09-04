@@ -13,7 +13,7 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useLocale } from "@/locales/LocaleProvider";
 
-import { navigationItems } from "./navigation";
+import { commandNavigationItems } from "./navigation";
 
 export function CommandPalette({
   open,
@@ -55,7 +55,7 @@ export function CommandPalette({
               {t("No workspace page found.")}
             </CommandEmpty>
             <CommandGroup heading={t("Workspace")}>
-              {navigationItems.map((item) => {
+              {commandNavigationItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <CommandItem

@@ -100,7 +100,7 @@ export function DecisionsPage() {
           {positionEpisodeDemo.entries.map((entry) => (
             <Link
               key={entry.episode.episodeId}
-              to={`/decisions/episodes/${entry.episode.episodeId}`}
+              to={`/investments/episodes/${entry.episode.episodeId}`}
               className="flex items-center justify-between gap-4 px-4 py-3 text-sm transition-colors first:rounded-t-lg last:rounded-b-lg hover:bg-white/[0.045] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/55"
             >
               <span className="min-w-0">

@@ -1,20 +1,36 @@
 import { MotionConfig } from "motion/react";
 import { lazy, Suspense } from "react";
-import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
+import { HashRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { WorkspaceShell } from "@/components/layout/WorkspaceShell";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LocaleProvider, useLocale } from "@/locales/LocaleProvider";
+import {
+  legacyRoutePaths,
+  productRoutes,
+  resolveLegacyRedirect,
+  type ProductRouteId,
+} from "@/routing/productRoutes";
 const OverviewPage = lazy(() => import("@/pages/OverviewPage"));
 const MyTwinPage = lazy(() => import("@/pages/MyTwinPage"));
 const EvidencePage = lazy(() => import("@/pages/EvidencePage"));
 const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
 const BehaviorPage = lazy(async () => ({ default: (await import("@/pages/BehaviorPage")).BehaviorPage }));
-const ComparePage = lazy(async () => ({ default: (await import("@/pages/ComparePage")).ComparePage }));
 const DecisionCheckPage = lazy(async () => ({ default: (await import("@/pages/DecisionCheckPage")).DecisionCheckPage }));
 const DecisionsPage = lazy(async () => ({ default: (await import("@/pages/DecisionsPage")).DecisionsPage }));
 const PositionEpisodePage = lazy(async () => ({ default: (await import("@/pages/PositionEpisodePage")).PositionEpisodePage }));
+
+const routeElements: Partial<Record<ProductRouteId, React.ReactNode>> = {
+  overview: <OverviewPage />,
+  review_decisions: <DecisionsPage />,
+  review_patterns: <BehaviorPage />,
+  twin: <MyTwinPage />,
+  pretrade: <DecisionCheckPage />,
+  settings: <SettingsPage />,
+  advanced_evidence: <EvidencePage />,
+  investment_episode: <PositionEpisodePage />,
+};
 
 function load(page: React.ReactNode) {
   return <Suspense fallback={<RouteLoading />}>{page}</Suspense>;
@@ -23,6 +39,12 @@ function load(page: React.ReactNode) {
 function RouteLoading() {
   const { t } = useLocale();
   return <div className="route-loading" role="status">{t("Opening view…")}</div>;
+}
+
+function LegacyRouteRedirect() {
+  const location = useLocation();
+  const target = resolveLegacyRedirect(location.pathname) ?? "/overview";
+  return <Navigate to={{ pathname: target, search: location.search }} replace />;
 }
 
 export default function App() {
@@ -35,15 +57,13 @@ export default function App() {
               <Routes>
                 <Route element={<WorkspaceShell />}>
                   <Route index element={<Navigate to="/overview" replace />} />
-                  <Route path="/overview" element={load(<OverviewPage />)} />
-                  <Route path="/my-twin" element={load(<MyTwinPage />)} />
-                  <Route path="/decisions" element={load(<DecisionsPage />)} />
-                  <Route path="/decisions/episodes/:episodeId" element={load(<PositionEpisodePage />)} />
-                  <Route path="/behavior" element={load(<BehaviorPage />)} />
-                  <Route path="/compare" element={load(<ComparePage />)} />
-                  <Route path="/decision-check" element={load(<DecisionCheckPage />)} />
-                  <Route path="/evidence" element={load(<EvidencePage />)} />
-                  <Route path="/settings" element={load(<SettingsPage />)} />
+                  {productRoutes.map((definition) => {
+                    const element = routeElements[definition.id];
+                    return element ? <Route key={definition.id} path={definition.path} element={load(element)} /> : null;
+                  })}
+                  {legacyRoutePaths().map((path) => (
+                    <Route key={`legacy:${path}`} path={path} element={<LegacyRouteRedirect />} />
+                  ))}
                   <Route path="*" element={<Navigate to="/overview" replace />} />
                 </Route>
               </Routes>

@@ -120,7 +120,7 @@ test("My Twin renders backend as-of, existing drill-down, and no financial formu
   const page = await readFile(new URL("../src/pages/MyTwinPage.tsx", import.meta.url), "utf8");
   const adapter = await readFile(new URL("../src/data/twinState.ts", import.meta.url), "utf8");
   assert.match(page, /currentSnapshot\.snapshotAt/);
-  assert.match(page, /\/decisions\/episodes\/\$\{episode\.episodeId\}/);
+  assert.match(page, /\/investments\/episodes\/\$\{episode\.episodeId\}/);
   assert.match(page, /EvidenceExplainButton/);
   assert.equal(page.includes("historicalSnapshots"), false);
   assert.equal(page.includes("comparisons"), false);
