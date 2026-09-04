@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const { adaptInvestmentsPayload } = await import("../src/data/investments.ts");
+const { adaptDemoInvestmentsCatalog, adaptInvestmentsPayload } = await import("../src/data/investments.ts");
 const { adaptPositionEpisodeDemo } = await import("../src/data/positionEpisode.ts");
 const generated = JSON.parse(await readFile(
   new URL("../src/generated/backend-demo-evidence.json", import.meta.url),
@@ -20,6 +20,8 @@ test("generated investments maps authoritative open rows for one subject", () =>
   assert.equal(view.portfolioState.status, "available");
   assert.equal(view.openEpisodes.length, 5);
   assert.equal(view.closedEpisodes.length, 0);
+  assert.equal(view.primaryEpisodeId, null);
+  assert.equal(view.openEpisodes[0].episodeId, "pe_460a70738da94f7dca7f03f18c47168c855a0f23bde32111af10e8d74612b9bf");
   assert.equal(view.summary.openEpisodeCount, 5);
   assert.equal(view.summary.closedEpisodeCount, 0);
   assert.equal(view.summary.currentPositionCount, 5);
@@ -31,6 +33,17 @@ test("generated investments maps authoritative open rows for one subject", () =>
     assert.equal(typeof episode.valuationPrice, "number");
     assert.equal(episode.isSynthetic, true);
   }
+});
+
+test("Demo catalog leads with the complex Product Demo rather than the behavior fixture", () => {
+  const catalog = adaptDemoInvestmentsCatalog(views());
+  const product = views().entries.find((entry) => entry.instrument.instrumentId === "SYN_PRODUCT");
+  assert.equal(catalog.primaryEpisodeId, generated.position_episode_demo.default_episode_id);
+  assert.equal(catalog.primaryEpisodeId, product.episode.episodeId);
+  assert.equal(catalog.closedEpisodes[0].instrumentId, "SYN_PRODUCT");
+  assert.equal(catalog.closedEpisodes[0].status, "closed");
+  assert.notEqual(catalog.closedEpisodes[0].episodeId, "pe_460a70738da94f7dca7f03f18c47168c855a0f23bde32111af10e8d74612b9bf");
+  assert.ok(catalog.openEpisodes.some((episode) => episode.episodeId === "pe_460a70738da94f7dca7f03f18c47168c855a0f23bde32111af10e8d74612b9bf"));
 });
 
 test("closed rows use explicit lifecycle status and are not borrowed into another subject", () => {
@@ -97,8 +110,12 @@ test("Investments and Overview render backend view models without financial calc
 
   assert.match(page, /view\.openEpisodes/);
   assert.match(page, /view\.closedEpisodes/);
+  assert.match(page, /view\.primaryEpisodeId/);
   assert.match(page, /realUserApi\.investments/);
   assert.match(row, /to=\{`\/investments\/episodes\/\$\{episode\.episodeId\}`\}/);
+  assert.match(row, /data-primary-demo/);
+  assert.match(overview, /investments\.primaryEpisodeId/);
+  assert.match(overview, /Primary Product Demo/);
   assert.equal(source.includes("@/demo/fixture"), false);
   assert.equal(source.includes("dangerouslySetInnerHTML"), false);
   for (const forbidden of [/calculate/i, /average\s*=/i, /marketValue\s*=/i, /reduce\s*\(/, /Math\./]) {

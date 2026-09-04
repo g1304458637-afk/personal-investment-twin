@@ -54,6 +54,7 @@ export interface InvestmentsView {
   };
   openEpisodes: InvestmentEpisodeRowView[];
   closedEpisodes: InvestmentEpisodeRowView[];
+  primaryEpisodeId: string | null;
 }
 
 function requiredText(value: unknown, name: string): string {
@@ -132,5 +133,38 @@ export function adaptInvestmentsPayload(
     summary: { openEpisodeCount, closedEpisodeCount, currentPositionCount },
     openEpisodes,
     closedEpisodes,
+    primaryEpisodeId: null,
+  };
+}
+
+export function adaptDemoInvestmentsCatalog(
+  episodes: PositionEpisodeDemoView,
+): InvestmentsView {
+  const primary = episodes.entries.find((entry) => entry.episode.episodeId === episodes.defaultEpisodeId);
+  if (!primary) {
+    throw new Error("Demo investments catalog is missing the primary Product Demo Episode.");
+  }
+  const remainder = episodes.entries.filter((entry) => entry.episode.episodeId !== episodes.defaultEpisodeId);
+  const ordered = [primary, ...remainder];
+  const openEpisodes = ordered.filter((entry) => entry.episode.status === "open").map(row);
+  const closedEpisodes = ordered.filter((entry) => entry.episode.status === "closed").map(row);
+  let asOf = primary.episode.closedAt ?? primary.episode.openedAt;
+  for (const entry of ordered) {
+    const candidate = entry.episode.closedAt ?? entry.snapshot?.asOf ?? entry.episode.openedAt;
+    if (Date.parse(candidate) > Date.parse(asOf)) asOf = candidate;
+  }
+  return {
+    subjectId: primary.episode.subjectId,
+    asOf,
+    dataTier: "synthetic",
+    portfolioState: { status: "available", reason: null },
+    summary: {
+      openEpisodeCount: openEpisodes.length,
+      closedEpisodeCount: closedEpisodes.length,
+      currentPositionCount: openEpisodes.length,
+    },
+    openEpisodes,
+    closedEpisodes,
+    primaryEpisodeId: primary.episode.episodeId,
   };
 }

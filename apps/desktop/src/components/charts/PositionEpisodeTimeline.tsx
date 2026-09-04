@@ -2,6 +2,15 @@ import type { ECElementEvent, EChartsCoreOption } from "echarts/core";
 import { useCallback, useMemo } from "react";
 
 import { EChart } from "@/components/charts/EChart";
+import {
+  dailyDataZoom,
+  dailyTimeDomain,
+  formatDailyAxisTick,
+  minDailyZoomSpanMs,
+  uniqueDailyObservationTimes,
+  MS_PER_DAY,
+  calendarDayTime,
+} from "@/components/charts/dailyTimeAxis";
 import type {
   PositionDecisionType,
   PositionEpisodeEntryView,
@@ -31,10 +40,18 @@ function escapeHtml(value: string): string {
 export function PositionEpisodeTimeline({
   entry,
   selectedDecisionId,
+  emphasizedDecisionIds,
+  highlightStart,
+  highlightEnd,
+  chartGroup,
   onSelectDecision,
 }: {
   entry: PositionEpisodeEntryView;
   selectedDecisionId: string | null;
+  emphasizedDecisionIds?: string[];
+  highlightStart?: string | null;
+  highlightEnd?: string | null;
+  chartGroup?: string;
   onSelectDecision: (decisionId: string) => void;
 }) {
   const { locale, t, formatCurrency, formatNumber } = useLocale();
@@ -52,10 +69,6 @@ export function PositionEpisodeTimeline({
   );
 
   const option = useMemo<EChartsCoreOption>(() => {
-    const dateFormatter = new Intl.DateTimeFormat(locale, {
-      month: "short",
-      day: "numeric",
-    });
     const timeFormatter = new Intl.DateTimeFormat(locale, {
       year: "numeric",
       month: "short",
@@ -63,37 +76,37 @@ export function PositionEpisodeTimeline({
       hour: "2-digit",
       minute: "2-digit",
     });
-    const decisions = entry.decisions.map((decision) => ({
-      value: [decision.occurredAt, decision.executionPrice],
-      decisionId: decision.decisionId,
-      decisionLabel: decisionLabel(decision.decisionType),
-      executionPrice: decision.executionPrice,
-      executedQuantity: decision.executedQuantity,
-      beforeQuantity: decision.stateBefore.quantity,
-      afterQuantity: decision.stateAfter.quantity,
-      occurredAt: decision.occurredAt,
-      symbol: markerStyle[decision.decisionType].symbol,
-      symbolSize: decision.decisionId === selectedDecisionId
-        ? 19
-        : decision.decisionType === "close_position" ? 15 : 14,
-      itemStyle: {
-        color: decision.decisionId === selectedDecisionId
-          ? "#f4fbff"
-          : markerStyle[decision.decisionType].color,
-        borderColor: "rgba(7, 14, 24, .82)",
-        borderWidth: 2,
-        shadowBlur: decision.decisionId === selectedDecisionId ? 22 : 14,
-        shadowColor: `${markerStyle[decision.decisionType].color}55`,
-      },
-      label: {
-        show: true,
-        position: "top",
-        distance: 8,
-        color: "rgba(235, 243, 252, .88)",
-        fontSize: 11,
-        formatter: decisionLabel(decision.decisionType),
-      },
-    }));
+    const emphasized = new Set(emphasizedDecisionIds ?? []);
+    const decisions = entry.decisions.map((decision) => {
+      const active = decision.decisionId === selectedDecisionId || emphasized.has(decision.decisionId);
+      return {
+        value: [decision.occurredAt, decision.executionPrice],
+        decisionId: decision.decisionId,
+        decisionLabel: decisionLabel(decision.decisionType),
+        executionPrice: decision.executionPrice,
+        executedQuantity: decision.executedQuantity,
+        beforeQuantity: decision.stateBefore.quantity,
+        afterQuantity: decision.stateAfter.quantity,
+        occurredAt: decision.occurredAt,
+        symbol: markerStyle[decision.decisionType].symbol,
+        symbolSize: active ? 19 : decision.decisionType === "close_position" ? 15 : 14,
+        itemStyle: {
+          color: active ? "#f4fbff" : markerStyle[decision.decisionType].color,
+          borderColor: "rgba(7, 14, 24, .82)",
+          borderWidth: 2,
+          shadowBlur: active ? 22 : 14,
+          shadowColor: `${markerStyle[decision.decisionType].color}55`,
+        },
+        label: {
+          show: true,
+          position: "top",
+          distance: 8,
+          color: "rgba(235, 243, 252, .88)",
+          fontSize: 11,
+          formatter: decisionLabel(decision.decisionType),
+        },
+      };
+    });
     const averageCost = entry.decisions.map((decision) => ({
       value: [decision.occurredAt, decision.outcome.after.averageCost],
       decisionId: decision.decisionId,
@@ -126,11 +139,50 @@ export function PositionEpisodeTimeline({
             },
           ]
         : [];
+    const holdingEnd = entry.episode.closedAt ?? current?.valuationAt ?? entry.episode.openedAt;
+    const markArea = {
+      silent: true,
+      data: [
+        [
+          {
+            xAxis: entry.episode.openedAt,
+            itemStyle: { color: "rgba(142, 220, 255, 0.016)" },
+            label: {
+              show: true,
+              formatter: t("Holding period"),
+              color: "rgba(177, 196, 214, .42)",
+              fontSize: 9,
+              position: "insideTopLeft",
+            },
+          },
+          { xAxis: holdingEnd },
+        ],
+        ...(highlightStart && highlightEnd
+          ? [[
+              {
+                xAxis: highlightStart,
+                itemStyle: { color: "rgba(188, 169, 255, 0.11)" },
+              },
+              { xAxis: highlightEnd },
+            ]]
+          : []),
+      ],
+    };
+    const observationTimes = uniqueDailyObservationTimes(entry.pricePoints.map((point) => point.observedAt));
+    const minValueSpan = minDailyZoomSpanMs(observationTimes);
+    const executionDays = new Set(
+      entry.decisions.map((decision) => calendarDayTime(Date.parse(decision.occurredAt))),
+    );
+    const bySegment = (segment: "pre_entry" | "episode" | "post_exit") =>
+      entry.pricePoints
+        .filter((point) => point.segment === segment)
+        .map((point) => [point.observedAt, point.price] as [string, number]);
 
     return {
       animationDuration: 420,
       animationEasing: "cubicOut",
-      grid: { left: 58, right: entry.snapshot ? 116 : 30, top: 48, bottom: 48 },
+      axisPointer: { link: [{ xAxisIndex: "all" }] },
+      grid: { left: 58, right: entry.snapshot ? 116 : 30, top: 48, bottom: 58 },
       tooltip: {
         trigger: "axis",
         axisPointer: { type: "cross" },
@@ -169,23 +221,46 @@ export function PositionEpisodeTimeline({
           if (point.seriesId === "average-cost") {
             const value = point.value;
             return value && value[1] !== null
-              ? `${escapeHtml(dateFormatter.format(new Date(value[0])))}<br/>${escapeHtml(t("Average cost"))}: ${escapeHtml(formatCurrency(Number(value[1])))}`
+              ? `${escapeHtml(formatDailyAxisTick(Date.parse(value[0]), locale))}<br/>${escapeHtml(t("Average cost"))}: ${escapeHtml(formatCurrency(Number(value[1])))}`
               : "";
           }
           const value = point.value;
-          return value
-            ? `${escapeHtml(dateFormatter.format(new Date(value[0])))}<br/>${escapeHtml(formatCurrency(Number(value[1])))}`
-            : "";
+          if (!value) return "";
+          const stamp = Date.parse(value[0]);
+          const day = calendarDayTime(stamp);
+          const sameDayExecution = executionDays.has(day);
+          const prior = [...entry.decisions]
+            .reverse()
+            .find((decision) => calendarDayTime(Date.parse(decision.occurredAt)) < day);
+          const lines = [
+            escapeHtml(formatDailyAxisTick(stamp, locale)),
+            `${escapeHtml(t("Market price"))}: ${escapeHtml(formatCurrency(Number(value[1])))}`,
+          ];
+          if (sameDayExecution) {
+            lines.push(escapeHtml(t("A recorded execution falls on this calendar date; quantity at close is not assigned.")));
+          } else if (prior) {
+            if (prior.outcome.after.averageCost !== null) {
+              lines.push(`${escapeHtml(t("Average cost"))}: ${escapeHtml(formatCurrency(prior.outcome.after.averageCost))}`);
+            }
+            lines.push(`${escapeHtml(t("Position quantity"))}: ${escapeHtml(formatNumber(prior.outcome.after.quantity, 0))}`);
+          }
+          return lines.join("<br/>");
         },
       },
       xAxis: {
         type: "time",
+        minInterval: MS_PER_DAY,
+        ...dailyTimeDomain([
+          ...entry.pricePoints.map((point) => point.observedAt),
+          ...entry.decisions.map((decision) => decision.occurredAt),
+        ]),
         boundaryGap: ["4%", "8%"],
         axisLine: { lineStyle: { color: "rgba(148, 177, 204, .18)" } },
         axisTick: { show: false },
         axisLabel: {
           color: "rgba(177, 196, 214, .72)",
-          formatter: (value: number) => dateFormatter.format(new Date(value)),
+          hideOverlap: true,
+          formatter: (value: number) => formatDailyAxisTick(value, locale),
         },
         splitLine: { show: false },
       },
@@ -198,21 +273,47 @@ export function PositionEpisodeTimeline({
         },
         splitLine: { lineStyle: { color: "rgba(148, 177, 204, .09)" } },
       },
-      dataZoom: [{ type: "inside", xAxisIndex: 0, filterMode: "none" }],
+      dataZoom: dailyDataZoom(8, minValueSpan),
       series: [
+        ...(bySegment("pre_entry").length
+          ? [{
+              id: "pre-entry-price",
+              name: t("Pre-entry market path"),
+              type: "line" as const,
+              data: bySegment("pre_entry"),
+              showSymbol: false,
+              connectNulls: false,
+              smooth: false,
+              lineStyle: { color: "rgba(142, 220, 255, .42)", width: 1.6 },
+              z: 1,
+            }]
+          : []),
         {
           id: "market-price",
           name: t("Market price"),
           type: "line",
-          data: entry.pricePoints.map((point) => [point.observedAt, point.price]),
+          data: bySegment("episode"),
           showSymbol: false,
           connectNulls: false,
           smooth: false,
-          lineStyle: { color: "rgba(142, 220, 255, .72)", width: 2 },
-          areaStyle: { color: "rgba(91, 179, 221, .08)" },
+          lineStyle: { color: "rgba(142, 220, 255, .92)", width: 2.4 },
+          markArea,
           emphasis: { focus: "series" },
           z: 2,
         },
+        ...(bySegment("post_exit").length
+          ? [{
+              id: "post-exit-price",
+              name: t("Post-exit market path"),
+              type: "line" as const,
+              data: bySegment("post_exit"),
+              showSymbol: false,
+              connectNulls: false,
+              smooth: false,
+              lineStyle: { color: "rgba(240, 202, 131, .55)", width: 1.5, type: "dotted" as const },
+              z: 1,
+            }]
+          : []),
         {
           id: "average-cost",
           name: t("Average cost"),
@@ -242,7 +343,18 @@ export function PositionEpisodeTimeline({
         },
       ],
     };
-  }, [decisionLabel, entry, formatCurrency, formatNumber, locale, selectedDecisionId, t]);
+  }, [
+    decisionLabel,
+    emphasizedDecisionIds,
+    entry,
+    formatCurrency,
+    formatNumber,
+    highlightEnd,
+    highlightStart,
+    locale,
+    selectedDecisionId,
+    t,
+  ]);
 
   const handleClick = useCallback(
     (event: ECElementEvent) => {
@@ -253,13 +365,28 @@ export function PositionEpisodeTimeline({
     [onSelectDecision],
   );
 
+  const hasPreEntryPath = entry.pricePoints.some((point) => point.segment === "pre_entry");
+  const hasPostExitPath = entry.pricePoints.some((point) => point.segment === "post_exit");
+
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted">
+        {hasPreEntryPath ? (
+          <span className="inline-flex items-center gap-2">
+            <span className="h-0.5 w-5 rounded-full bg-[#8edcff]/40" aria-hidden="true" />
+            {t("Pre-entry market path")}
+          </span>
+        ) : null}
         <span className="inline-flex items-center gap-2">
           <span className="h-0.5 w-5 rounded-full bg-[#8edcff]" aria-hidden="true" />
           {t("Market price")}
         </span>
+        {hasPostExitPath ? (
+          <span className="inline-flex items-center gap-2">
+            <span className="w-5 border-t border-dotted border-[#f0ca83]" aria-hidden="true" />
+            {t("Post-exit market path")}
+          </span>
+        ) : null}
         <span className="inline-flex items-center gap-2">
           <span className="size-2.5 rounded-full bg-[#bca9ff]" aria-hidden="true" />
           {t("Actual execution")}
@@ -277,6 +404,9 @@ export function PositionEpisodeTimeline({
       </div>
       <EChart
         option={option}
+        group={chartGroup}
+        resetKey={entry.episode.episodeId}
+        observationTimes={uniqueDailyObservationTimes(entry.pricePoints.map((point) => point.observedAt))}
         label={t("Market price and actual position decision timeline for {symbol}", {
           symbol: entry.episode.instrumentId,
         })}

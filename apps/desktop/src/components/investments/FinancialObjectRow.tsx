@@ -7,9 +7,11 @@ import { useLocale } from "@/locales/LocaleProvider";
 export function FinancialObjectRow({
   episode,
   compact = false,
+  primary = false,
 }: {
   episode: InvestmentEpisodeRowView;
   compact?: boolean;
+  primary?: boolean;
 }) {
   const { locale, t, formatCurrency, formatNumber } = useLocale();
   const date = (value: string) => new Intl.DateTimeFormat(locale, {
@@ -24,6 +26,7 @@ export function FinancialObjectRow({
       className="financial-object-row"
       data-compact={compact || undefined}
       to={`/investments/episodes/${episode.episodeId}`}
+      data-primary-demo={primary || undefined}
     >
       <div className="financial-object-row__identity">
         <div>

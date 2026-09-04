@@ -2,21 +2,36 @@ import type { ECElementEvent, EChartsCoreOption } from "echarts/core";
 import { useCallback, useMemo } from "react";
 
 import { EChart } from "@/components/charts/EChart";
+import {
+  dailyDataZoom,
+  dailyTimeDomain,
+  formatDailyAxisTick,
+  minDailyZoomSpanMs,
+  uniqueDailyObservationTimes,
+  MS_PER_DAY,
+} from "@/components/charts/dailyTimeAxis";
 import type { PositionEpisodeEntryView } from "@/data/positionEpisode";
 import { useLocale } from "@/locales/LocaleProvider";
 
 export function PositionQuantityTimeline({
   entry,
   selectedDecisionId,
+  emphasizedDecisionIds,
+  highlightStart,
+  highlightEnd,
+  chartGroup,
   onSelectDecision,
 }: {
   entry: PositionEpisodeEntryView;
   selectedDecisionId: string | null;
+  emphasizedDecisionIds?: string[];
+  highlightStart?: string | null;
+  highlightEnd?: string | null;
+  chartGroup?: string;
   onSelectDecision: (decisionId: string) => void;
 }) {
   const { locale, t, formatNumber } = useLocale();
   const option = useMemo<EChartsCoreOption>(() => {
-    const date = new Intl.DateTimeFormat(locale, { month: "short", day: "numeric" });
     const first = entry.decisions[0];
     const quantityPoints = first
       ? [
@@ -24,22 +39,30 @@ export function PositionQuantityTimeline({
           ...entry.decisions.map((decision) => [decision.occurredAt, decision.outcome.after.quantity]),
         ]
       : [];
-    const events = entry.decisions.map((decision) => ({
-      value: [decision.occurredAt, decision.outcome.after.quantity],
-      decisionId: decision.decisionId,
-      quantity: decision.outcome.after.quantity,
-      symbolSize: decision.decisionId === selectedDecisionId ? 14 : 9,
-      itemStyle: {
-        color: decision.decisionId === selectedDecisionId ? "#e9f7ff" : "#8edcff",
-        borderColor: "rgba(8, 16, 27, .9)",
-        borderWidth: 2,
-        shadowBlur: decision.decisionId === selectedDecisionId ? 16 : 6,
-        shadowColor: "rgba(142, 220, 255, .42)",
-      },
-    }));
+    const emphasized = new Set(emphasizedDecisionIds ?? []);
+    const events = entry.decisions.map((decision) => {
+      const active = decision.decisionId === selectedDecisionId || emphasized.has(decision.decisionId);
+      return {
+        value: [decision.occurredAt, decision.outcome.after.quantity],
+        decisionId: decision.decisionId,
+        quantity: decision.outcome.after.quantity,
+        symbolSize: active ? 14 : 9,
+        itemStyle: {
+          color: active ? "#e9f7ff" : "#8edcff",
+          borderColor: "rgba(8, 16, 27, .9)",
+          borderWidth: 2,
+          shadowBlur: active ? 16 : 6,
+          shadowColor: "rgba(142, 220, 255, .42)",
+        },
+      };
+    });
+    const observationTimes = uniqueDailyObservationTimes(entry.pricePoints.map((point) => point.observedAt));
+    const minValueSpan = minDailyZoomSpanMs(observationTimes);
+    const holdingEnd = entry.episode.closedAt ?? entry.snapshot?.positionState.valuationAt ?? entry.episode.openedAt;
     return {
       animationDuration: 360,
-      grid: { left: 54, right: 24, top: 16, bottom: 38 },
+      axisPointer: { link: [{ xAxisIndex: "all" }] },
+      grid: { left: 54, right: 24, top: 16, bottom: 46 },
       tooltip: {
         trigger: "axis",
         axisPointer: { type: "cross" },
@@ -51,16 +74,25 @@ export function PositionQuantityTimeline({
           const source = Array.isArray(params) ? params[0] : params;
           const point = source as { value?: [string, number] };
           return point.value
-            ? `${date.format(new Date(point.value[0]))}<br/>${t("Position quantity")}: ${formatNumber(point.value[1], 0)}`
+            ? `${formatDailyAxisTick(Date.parse(point.value[0]), locale)}<br/>${t("Position quantity")}: ${formatNumber(point.value[1], 0)}`
             : "";
         },
       },
       xAxis: {
         type: "time",
+        minInterval: MS_PER_DAY,
+        ...dailyTimeDomain([
+          ...entry.pricePoints.map((point) => point.observedAt),
+          ...entry.decisions.map((decision) => decision.occurredAt),
+        ]),
         boundaryGap: ["4%", "6%"],
         axisLine: { lineStyle: { color: "rgba(148, 177, 204, .18)" } },
         axisTick: { show: false },
-        axisLabel: { color: "rgba(177, 196, 214, .72)", formatter: (value: number) => date.format(new Date(value)) },
+        axisLabel: {
+          color: "rgba(177, 196, 214, .72)",
+          hideOverlap: true,
+          formatter: (value: number) => formatDailyAxisTick(value, locale),
+        },
         splitLine: { show: false },
       },
       yAxis: {
@@ -69,7 +101,7 @@ export function PositionQuantityTimeline({
         axisLabel: { color: "rgba(177, 196, 214, .72)", formatter: (value: number) => formatNumber(value, 0) },
         splitLine: { lineStyle: { color: "rgba(148, 177, 204, .09)" } },
       },
-      dataZoom: [{ type: "inside", xAxisIndex: 0, filterMode: "none" }],
+      dataZoom: dailyDataZoom(6, minValueSpan),
       series: [
         {
           id: "position-quantity",
@@ -79,14 +111,25 @@ export function PositionQuantityTimeline({
           smooth: false,
           showSymbol: false,
           connectNulls: false,
-          lineStyle: { color: "rgba(142, 220, 255, .78)", width: 2 },
-          areaStyle: { color: "rgba(91, 179, 221, .08)" },
+          lineStyle: { color: "rgba(142, 220, 255, .9)", width: 2.2 },
+          markArea: {
+            silent: true,
+            data: [
+              [
+                { xAxis: entry.episode.openedAt, itemStyle: { color: "rgba(142, 220, 255, 0.014)" } },
+                { xAxis: holdingEnd },
+              ],
+              ...(highlightStart && highlightEnd
+                ? [[{ xAxis: highlightStart, itemStyle: { color: "rgba(188, 169, 255, 0.11)" } }, { xAxis: highlightEnd }]]
+                : []),
+            ],
+          },
           z: 2,
         },
         { id: "quantity-events", type: "scatter", data: events, z: 4 },
       ],
     };
-  }, [entry, formatNumber, locale, selectedDecisionId, t]);
+  }, [emphasizedDecisionIds, entry, formatNumber, highlightEnd, highlightStart, locale, selectedDecisionId, t]);
 
   const onClick = useCallback((event: ECElementEvent) => {
     if (event.seriesId !== "quantity-events") return;
@@ -97,6 +140,9 @@ export function PositionQuantityTimeline({
   return (
     <EChart
       option={option}
+      group={chartGroup}
+      resetKey={entry.episode.episodeId}
+      observationTimes={uniqueDailyObservationTimes(entry.pricePoints.map((point) => point.observedAt))}
       label={t("Position quantity evolution for {symbol}", { symbol: entry.episode.instrumentId })}
       className="h-[190px] w-full"
       onChartClick={onClick}

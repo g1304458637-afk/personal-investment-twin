@@ -9,6 +9,7 @@ import type { TranslationValues } from "@/locales/LocaleProvider";
 
 import type { BehaviorHistorySeries } from "./behaviorHistory";
 import {
+  adaptDemoInvestmentsCatalog,
   adaptInvestmentsPayload,
   type BackendInvestmentsPayload,
 } from "./investments";
@@ -123,7 +124,8 @@ export const pretradeDemo = adaptPretradeImpact(backend.pretrade_demo);
 export const positionEpisodeDemo: PositionEpisodeDemoView = adaptPositionEpisodeDemo(
   backend.position_episode_demo,
 );
-export const investments = adaptInvestmentsPayload(backend.investments, positionEpisodeDemo);
+export const twinInvestments = adaptInvestmentsPayload(backend.investments, positionEpisodeDemo);
+export const investments = adaptDemoInvestmentsCatalog(positionEpisodeDemo);
 export const twinState = adaptTwinPayload(
   backend.twin,
   [

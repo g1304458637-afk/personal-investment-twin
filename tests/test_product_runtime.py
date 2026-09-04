@@ -41,6 +41,10 @@ def test_product_runtime_preview_commit_restart_reimport_and_delete(tmp_path):
     episode = runtime.episode({"subject_id": "local-user", "account_id": "ACC-1", "episode_id": episode_id})
     assert episode["status"] == "available"
     assert episode["entry"]["instrument"]["is_synthetic"] is False
+    analysis = episode["entry"]["path_analysis"]
+    assert analysis["episode_id"] == episode_id
+    assert analysis["phases"]
+    assert analysis["phases"][0]["phase_type"] == "entry"
     runtime.close()
     reopened = ProductRuntime(db)
     assert reopened.investments({"subject_id": "local-user", "account_id": "ACC-1"}) == investments

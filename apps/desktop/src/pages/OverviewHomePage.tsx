@@ -23,7 +23,10 @@ export default function OverviewHomePage() {
     day: "numeric",
   }).format(new Date(value));
   const portfolioAvailable = investments.portfolioState.status === "available";
-  const openPreview = investments.openEpisodes.slice(0, 3);
+  const primaryEpisode = investments.primaryEpisodeId
+    ? [...investments.closedEpisodes, ...investments.openEpisodes].find((episode) => episode.episodeId === investments.primaryEpisodeId) ?? null
+    : null;
+  const openPreview = investments.openEpisodes.filter((episode) => episode.episodeId !== investments.primaryEpisodeId).slice(0, 2);
 
   return (
     <div className="page overview-home">
@@ -58,12 +61,16 @@ export default function OverviewHomePage() {
 
       <section className="product-section" aria-labelledby="overview-open-heading">
         <SectionHeading
-          eyebrow={t("In progress")}
-          title={t("Investment experiences in progress")}
-          description={t("A short continuation list; the complete open and closed history lives in My Investments.")}
+          eyebrow={t("Product Demo")}
+          title={t("Primary Product Demo")}
+          description={t("This is the canonical Product Demo path used for visual acceptance.")}
           action={<Button asChild size="sm" variant="quiet"><Link to="/investments">{t("View all investments")} <ArrowRight /></Link></Button>}
         />
-        {openPreview.length > 0 ? (
+        {primaryEpisode ? (
+          <div className="financial-object-list">
+            <FinancialObjectRow compact key={primaryEpisode.episodeId} episode={primaryEpisode} primary />
+          </div>
+        ) : openPreview.length > 0 ? (
           <div className="financial-object-list">
             {openPreview.map((episode) => <FinancialObjectRow compact key={episode.episodeId} episode={episode} />)}
           </div>

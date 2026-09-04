@@ -10,6 +10,8 @@ test("real-user transport uses the allowlisted runtime and never generated JSON"
   assert.doesNotMatch(service, /backend-demo-evidence/);
   assert.match(investments, /realUserApi\.investments/);
   assert.match(episode, /realUserApi\.episode/);
+  assert.match(episode, /data\.mode === "demo"/);
+  assert.match(episode, /adaptRuntimePositionEpisodeEntry/);
 });
 
 test("data import uses native CSV dialog and exposes no shell or SQL API", async () => {
@@ -22,12 +24,14 @@ test("data import uses native CSV dialog and exposes no shell or SQL API", async
 test("Episode market and cost series are unsmoothed, gapped, and zoomable", async () => {
   const price = await readFile(new URL("../src/components/charts/PositionEpisodeTimeline.tsx", import.meta.url), "utf8");
   const quantity = await readFile(new URL("../src/components/charts/PositionQuantityTimeline.tsx", import.meta.url), "utf8");
+  const axis = await readFile(new URL("../src/components/charts/dailyTimeAxis.ts", import.meta.url), "utf8");
   assert.doesNotMatch(price, /smooth:\s*0\./);
   assert.match(price, /smooth:\s*false/);
   assert.match(price, /connectNulls:\s*false/);
   assert.match(price, /type:\s*"cross"/);
-  assert.match(price, /type:\s*"inside"/);
+  assert.match(axis, /type: "inside"/);
+  assert.match(axis, /minValueSpan,/);
   assert.match(quantity, /smooth:\s*false/);
   assert.match(quantity, /connectNulls:\s*false/);
-  assert.match(quantity, /type:\s*"inside"/);
+  assert.match(quantity, /dailyDataZoom/);
 });

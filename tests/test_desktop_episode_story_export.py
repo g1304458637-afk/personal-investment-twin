@@ -11,12 +11,45 @@ def _entries():
 
 def test_product_demo_primary_episode_has_a_mature_unsmoothed_daily_path():
     entry = _entries()["SYN_PRODUCT"]
-    assert 60 <= len(entry["price_points"]) <= 90
+    assert 60 <= len(entry["price_points"]) <= 100
     assert [item["decision_type"] for item in entry["decisions"]] == [
-        "open_position", "add_position", "add_position", "reduce_position",
-        "add_position", "close_position",
+        "open_position",
+        "add_position",
+        "add_position",
+        "reduce_position",
+        "reduce_position",
+        "close_position",
     ]
+    assert {item["segment"] for item in entry["price_points"]} >= {
+        "pre_entry",
+        "episode",
+        "post_exit",
+    }
+    phases = [item["phase_type"] for item in entry["path_analysis"]["phases"]]
+    assert phases == ["entry", "scaling_in", "scaling_out", "exit"]
+    assert 3 <= len(entry["path_analysis"]["presentation_items"]) <= 6
+    assert any(
+        item["scenario_id"] == "omit_decision_phase_until_next_decision_v1"
+        for item in entry["path_analysis"]["phase_counterfactuals"]
+    )
     assert entry["instrument"]["is_synthetic"] is True
+    dates = [item["observed_at"][:10] for item in entry["price_points"]]
+    assert len(set(dates)) == len(dates)
+    assert 60 <= len(set(dates)) <= 100
+    prices = [item["price"] for item in entry["price_points"]]
+    deltas = [later - earlier for earlier, later in zip(prices, prices[1:])]
+    assert sum(1 for item in deltas if item > 0) >= 20
+    assert sum(1 for item in deltas if item < 0) >= 20
+    signs = [1 if item > 0 else -1 if item < 0 else 0 for item in deltas]
+    flips = 0
+    previous = 0
+    for sign in signs:
+        if sign != 0 and previous != 0 and sign != previous:
+            flips += 1
+        if sign != 0:
+            previous = sign
+    assert flips >= 15
+    assert any(item["segment"] == "pre_entry" for item in entry["price_points"])
 
 
 def test_episode_story_exports_authoritative_actual_outcomes_for_every_lifecycle():
@@ -101,3 +134,37 @@ def test_episode_story_reuses_existing_exit_evidence_and_separate_price_bases():
     assert followup["actual_exit_price"] == 99.5
     assert followup["exit_session_market_price"] == 100.0
     assert followup["post_exit_asset_return"] == 0.19999999999999973
+
+
+def test_long_horizon_fixtures_are_exported_without_replacing_product_demo():
+    payload = _json_value(build_export())
+    demo = payload["position_episode_demo"]
+    entries = {
+        item["instrument"]["instrument_id"]: item
+        for item in demo["entries"]
+    }
+    assert demo["default_episode_id"] == entries["SYN_PRODUCT"]["episode"]["episode_id"]
+    closed = entries["SYN_LONG_CLOSED"]
+    opened = entries["SYN_LONG_OPEN"]
+    holding = [
+        item for item in closed["price_points"] if item["segment"] == "episode"
+    ]
+    assert closed["episode"]["status"] == "closed"
+    assert opened["episode"]["status"] == "open"
+    assert opened["episode"]["closed_at"] is None
+    assert len(holding) >= 750
+    assert len(opened["price_points"]) >= 1000
+    assert closed["path_analysis"]["market_path"]["pre_entry_context"]["valid_observation_count"] <= 20
+    assert closed["path_analysis"]["market_path"]["post_exit_context"]["valid_observation_count"] <= 20
+    assert opened["path_analysis"]["market_path"]["post_exit_context"]["valid_observation_count"] == 0
+    assert any(
+        item["pattern_code"] == "long_no_execution_interval"
+        for item in closed["path_analysis"]["patterns"]
+    )
+    assert 1 <= len(closed["path_analysis"]["presentation_items"]) <= 6
+    assert all(
+        item["phase_type"] in {"entry", "scaling_in", "scaling_out", "exit"}
+        for item in closed["path_analysis"]["phases"]
+    )
+    assert opened["outcome_story"]["episode_outcome"]["actual_result"]["result_kind"] == "marked"
+    assert closed["outcome_story"]["episode_outcome"]["actual_result"]["result_kind"] == "realized"

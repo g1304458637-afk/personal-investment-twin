@@ -2,8 +2,11 @@ import type { EvidenceStatus } from "@/demo/types";
 
 import {
   adaptDecisionOutcomeStory,
+  adaptHistoricalCounterfactual,
   type DecisionImmediateOutcomeView,
+  type DecisionOutcomeContext,
   type DecisionOutcomeStoryView,
+  type HistoricalCounterfactualView,
 } from "./decisionOutcome.ts";
 
 export type PositionEpisodeStatus = "open" | "closed";
@@ -93,7 +96,8 @@ export interface BackendPositionEpisodeEntry {
   states_by_ref: Record<string, BackendPositionEpisodeState>;
   snapshot: BackendPositionEpisodeSnapshot | null;
   evidence_references: BackendPositionEvidenceReference[];
-  price_points: Array<{ observed_at: string; price: number }>;
+  price_points: Array<{ observed_at: string; price: number; segment?: string }>;
+  path_analysis?: unknown;
   outcome_story: unknown;
 }
 
@@ -187,7 +191,8 @@ export interface PositionEpisodeEntryView {
   statesByRef: Record<string, PositionStateView>;
   snapshot: PositionEpisodeSnapshotView | null;
   evidenceReferences: PositionEvidenceReferenceView[];
-  pricePoints: Array<{ observedAt: string; price: number }>;
+  pricePoints: Array<{ observedAt: string; price: number; segment: "pre_entry" | "episode" | "post_exit" }>;
+  pathAnalysis: EpisodePathAnalysisView;
   outcomeStory: DecisionOutcomeStoryView;
 }
 
@@ -195,6 +200,396 @@ export interface PositionEpisodeDemoView {
   dataTier: "synthetic" | "authorized_beta";
   defaultEpisodeId: string;
   entries: PositionEpisodeEntryView[];
+}
+
+export type PathContextStatus = "complete" | "partial" | "insufficient";
+export type PathPhaseType = "entry" | "scaling_in" | "scaling_out" | "exit";
+export type PathContextSegment = "pre_entry" | "episode" | "post_exit";
+export type QuantityAtObservationStatus = "available" | "ambiguous" | "unavailable";
+
+export interface DailyMarketObservationView {
+  observedAt: string;
+  price: number;
+  instrumentId: string;
+  priceType: string | null;
+  dataSource: string | null;
+  dataVersion: string | null;
+}
+
+export interface PreEntryMarketContextView {
+  status: PathContextStatus;
+  observations: DailyMarketObservationView[];
+  validObservationCount: number;
+  requestedObservationCount: number;
+  startObservation: DailyMarketObservationView | null;
+  endObservation: DailyMarketObservationView | null;
+  priceChange: number | null;
+  priceReturn: number | null;
+  methodVersion: string;
+}
+
+export interface MarketContextWindowView {
+  segment: PathContextSegment;
+  status: PathContextStatus;
+  observations: DailyMarketObservationView[];
+  validObservationCount: number;
+  requestedObservationCount: number | null;
+  dailyPathMax: DailyMarketObservationView | null;
+  dailyPathMin: DailyMarketObservationView | null;
+}
+
+export interface DailyPricePeakDrawdownView {
+  peakObservation: DailyMarketObservationView;
+  troughObservation: DailyMarketObservationView;
+  dailyPricePeakDrawdown: number;
+  quantityAtTroughStatus: QuantityAtObservationStatus;
+  quantityAtTrough: number | null;
+  quantityStatusReason: string | null;
+}
+
+export interface MarketPathSegmentView {
+  segmentId: string;
+  kind: "rise" | "drawdown" | "recovery" | "range";
+  validObservationCount: number;
+  priceChange: number;
+  priceReturn: number | null;
+}
+
+export interface DecisionPhaseView {
+  phaseId: string;
+  episodeId: string;
+  phaseType: PathPhaseType;
+  taxonomyVersion: string;
+  startedAt: string;
+  endedAt: string;
+  decisionEventIds: string[];
+  executionIds: string[];
+  quantityBefore: number;
+  quantityAfter: number;
+  averageCostBefore: number | null;
+  averageCostAfter: number | null;
+  stateBeforeRef: string;
+  stateAfterRef: string;
+  methodVersion: string;
+}
+
+export interface EpisodePatternObservationView {
+  patternId: string;
+  episodeId: string;
+  patternCode: string;
+  methodVersion: string;
+  decisionEventIds: string[];
+  phaseIds: string[];
+  evidenceIds: string[];
+  facts: Record<string, unknown>;
+}
+
+export interface PathPresentationItemView {
+  itemId: string;
+  kind: "phase" | "pattern";
+  phaseId: string | null;
+  patternId: string | null;
+  reasonCode: string;
+}
+
+export interface EpisodeMarketPathView {
+  episodeId: string;
+  preEntryContextStatus: PathContextStatus;
+  episodeContextStatus: PathContextStatus;
+  postExitContextStatus: PathContextStatus;
+  preEntryContext: PreEntryMarketContextView;
+  episodeMarketPath: MarketContextWindowView;
+  postExitContext: MarketContextWindowView;
+  dailyPricePeakDrawdown: DailyPricePeakDrawdownView | null;
+  marketPathSegments: MarketPathSegmentView[];
+  methodId: string;
+  methodVersion: string;
+  limitations: string[];
+}
+
+export interface EpisodePositionPathView {
+  episodeId: string;
+  maxQuantity: number;
+  maxQuantityAsOf: string;
+  maxQuantityStateId: string;
+}
+
+export interface EpisodePathAnalysisView {
+  episodeId: string;
+  methodId: string;
+  methodVersion: string;
+  marketPath: EpisodeMarketPathView;
+  positionPath: EpisodePositionPathView;
+  phases: DecisionPhaseView[];
+  patterns: EpisodePatternObservationView[];
+  phaseCounterfactuals: HistoricalCounterfactualView[];
+  presentationItems: PathPresentationItemView[];
+  limitations: string[];
+}
+
+const CONTEXT_STATUSES = ["complete", "partial", "insufficient"] as const;
+const PHASE_TYPES = ["entry", "scaling_in", "scaling_out", "exit"] as const;
+const SEGMENTS = ["pre_entry", "episode", "post_exit"] as const;
+const QUANTITY_STATUSES = ["available", "ambiguous", "unavailable"] as const;
+const PATTERN_CODES = [
+  "consecutive_scaling_in",
+  "consecutive_scaling_out",
+  "add_after_positive_market_move",
+  "reduce_after_negative_market_move",
+  "exit_after_negative_market_move",
+  "loss_state_addition_reused",
+  "high_quantity_during_daily_price_drawdown",
+  "price_following_scale_sequence",
+  "long_no_execution_interval",
+] as const;
+
+function pathObject(value: unknown, name: string): Record<string, unknown> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new Error(`Position episode ${name} must be an object.`);
+  }
+  return value as Record<string, unknown>;
+}
+
+function pathText(value: unknown, name: string): string {
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Error(`Position episode ${name} must be a non-empty string.`);
+  }
+  return value;
+}
+
+function pathTexts(value: unknown, name: string): string[] {
+  if (!Array.isArray(value)) throw new Error(`Position episode ${name} must be an array.`);
+  return value.map((item, index) => pathText(item, `${name}[${index}]`));
+}
+
+function pathTimestamp(value: unknown, name: string): string {
+  const result = pathText(value, name);
+  if (Number.isNaN(Date.parse(result))) throw new Error(`Position episode ${name} must be a timestamp.`);
+  return result;
+}
+
+function pathEnum<T extends string>(value: unknown, values: readonly T[], name: string): T {
+  if (typeof value !== "string" || !values.includes(value as T)) {
+    throw new Error(`Position episode ${name} is unsupported.`);
+  }
+  return value as T;
+}
+
+function pathNullable<T>(value: unknown, name: string, parse: (item: unknown, label: string) => T): T | null {
+  return value === null ? null : parse(value, name);
+}
+
+function observationView(value: unknown, name: string): DailyMarketObservationView {
+  const raw = pathObject(value, name);
+  return {
+    observedAt: pathTimestamp(raw.observed_at, `${name}.observed_at`),
+    price: finite(raw.price as number, `${name}.price`),
+    instrumentId: pathText(raw.instrument_id, `${name}.instrument_id`),
+    priceType: pathNullable(raw.price_type, `${name}.price_type`, pathText),
+    dataSource: pathNullable(raw.data_source, `${name}.data_source`, pathText),
+    dataVersion: pathNullable(raw.data_version, `${name}.data_version`, pathText),
+  };
+}
+
+function observations(value: unknown, name: string): DailyMarketObservationView[] {
+  if (!Array.isArray(value)) throw new Error(`Position episode ${name} must be an array.`);
+  return value.map((item, index) => observationView(item, `${name}[${index}]`));
+}
+
+function preEntryContext(value: unknown): PreEntryMarketContextView {
+  const raw = pathObject(value, "pre_entry_context");
+  return {
+    status: pathEnum(raw.status, CONTEXT_STATUSES, "pre_entry_context.status"),
+    observations: observations(raw.observations, "pre_entry_context.observations"),
+    validObservationCount: finite(raw.valid_observation_count as number, "pre_entry_context.valid_observation_count"),
+    requestedObservationCount: finite(raw.requested_observation_count as number, "pre_entry_context.requested_observation_count"),
+    startObservation: pathNullable(raw.start_observation, "pre_entry_context.start_observation", observationView),
+    endObservation: pathNullable(raw.end_observation, "pre_entry_context.end_observation", observationView),
+    priceChange: raw.price_change === null ? null : finite(raw.price_change as number, "pre_entry_context.price_change"),
+    priceReturn: raw.price_return === null ? null : finite(raw.price_return as number, "pre_entry_context.price_return"),
+    methodVersion: pathText(raw.method_version, "pre_entry_context.method_version"),
+  };
+}
+
+function marketWindow(value: unknown, name: string, expected: PathContextSegment): MarketContextWindowView {
+  const raw = pathObject(value, name);
+  const segment = pathEnum(raw.segment, SEGMENTS, `${name}.segment`);
+  if (segment !== expected) throw new Error(`Position episode ${name}.segment must be ${expected}.`);
+  return {
+    segment,
+    status: pathEnum(raw.status, CONTEXT_STATUSES, `${name}.status`),
+    observations: observations(raw.observations, `${name}.observations`),
+    validObservationCount: finite(raw.valid_observation_count as number, `${name}.valid_observation_count`),
+    requestedObservationCount: raw.requested_observation_count === null
+      ? null
+      : finite(raw.requested_observation_count as number, `${name}.requested_observation_count`),
+    dailyPathMax: pathNullable(raw.daily_path_max, `${name}.daily_path_max`, observationView),
+    dailyPathMin: pathNullable(raw.daily_path_min, `${name}.daily_path_min`, observationView),
+  };
+}
+
+function drawdownView(value: unknown): DailyPricePeakDrawdownView {
+  const raw = pathObject(value, "daily_price_peak_drawdown");
+  return {
+    peakObservation: observationView(raw.peak_observation, "daily_price_peak_drawdown.peak_observation"),
+    troughObservation: observationView(raw.trough_observation, "daily_price_peak_drawdown.trough_observation"),
+    dailyPricePeakDrawdown: finite(raw.daily_price_peak_drawdown as number, "daily_price_peak_drawdown.daily_price_peak_drawdown"),
+    quantityAtTroughStatus: pathEnum(raw.quantity_at_trough_status, QUANTITY_STATUSES, "daily_price_peak_drawdown.quantity_at_trough_status"),
+    quantityAtTrough: raw.quantity_at_trough === null ? null : finite(raw.quantity_at_trough as number, "daily_price_peak_drawdown.quantity_at_trough"),
+    quantityStatusReason: pathNullable(raw.quantity_status_reason, "daily_price_peak_drawdown.quantity_status_reason", pathText),
+  };
+}
+
+function marketPathSegments(value: unknown): MarketPathSegmentView[] {
+  if (!Array.isArray(value)) throw new Error("Position episode market_path_segments must be an array.");
+  return value.map((item, index) => {
+    const raw = pathObject(item, `market_path_segments[${index}]`);
+    return {
+      segmentId: pathText(raw.segment_id, `market_path_segments[${index}].segment_id`),
+      kind: pathEnum(raw.kind, ["rise", "drawdown", "recovery", "range"] as const, `market_path_segments[${index}].kind`),
+      validObservationCount: finite(raw.valid_observation_count as number, `market_path_segments[${index}].valid_observation_count`),
+      priceChange: finite(raw.price_change as number, `market_path_segments[${index}].price_change`),
+      priceReturn: raw.price_return === null ? null : finite(raw.price_return as number, `market_path_segments[${index}].price_return`),
+    };
+  });
+}
+
+function adaptPathAnalysis(
+  value: unknown,
+  context: DecisionOutcomeContext,
+  knownDecisionIds: Set<string>,
+): EpisodePathAnalysisView {
+  const raw = pathObject(value, "path_analysis");
+  if (pathText(raw.episode_id, "path_analysis.episode_id") !== context.episodeId) {
+    throw new Error("Position episode path_analysis belongs to another Episode.");
+  }
+  const marketRaw = pathObject(raw.market_path, "path_analysis.market_path");
+  if (pathText(marketRaw.episode_id, "market_path.episode_id") !== context.episodeId) {
+    throw new Error("Position episode market_path belongs to another Episode.");
+  }
+  const positionRaw = pathObject(raw.position_path, "path_analysis.position_path");
+  if (pathText(positionRaw.episode_id, "position_path.episode_id") !== context.episodeId) {
+    throw new Error("Position episode position_path belongs to another Episode.");
+  }
+  if (!Array.isArray(raw.phases)) throw new Error("Position episode path_analysis.phases must be an array.");
+  if (!Array.isArray(raw.patterns)) throw new Error("Position episode path_analysis.patterns must be an array.");
+  if (!Array.isArray(raw.phase_counterfactuals)) throw new Error("Position episode path_analysis.phase_counterfactuals must be an array.");
+  if (!Array.isArray(raw.presentation_items)) throw new Error("Position episode path_analysis.presentation_items must be an array.");
+  const phases = raw.phases.map((item, index): DecisionPhaseView => {
+    const phase = pathObject(item, `phases[${index}]`);
+    const decisionEventIds = pathTexts(phase.decision_event_ids, `phases[${index}].decision_event_ids`);
+    if (decisionEventIds.length === 0 || decisionEventIds.some((id) => !knownDecisionIds.has(id))) {
+      throw new Error(`Position episode phases[${index}] references unknown decisions.`);
+    }
+    if (pathText(phase.episode_id, `phases[${index}].episode_id`) !== context.episodeId) {
+      throw new Error(`Position episode phases[${index}] belongs to another Episode.`);
+    }
+    return {
+      phaseId: pathText(phase.phase_id, `phases[${index}].phase_id`),
+      episodeId: context.episodeId,
+      phaseType: pathEnum(phase.phase_type, PHASE_TYPES, `phases[${index}].phase_type`),
+      taxonomyVersion: pathText(phase.taxonomy_version, `phases[${index}].taxonomy_version`),
+      startedAt: pathTimestamp(phase.started_at, `phases[${index}].started_at`),
+      endedAt: pathTimestamp(phase.ended_at, `phases[${index}].ended_at`),
+      decisionEventIds,
+      executionIds: pathTexts(phase.execution_ids, `phases[${index}].execution_ids`),
+      quantityBefore: finite(phase.quantity_before as number, `phases[${index}].quantity_before`),
+      quantityAfter: finite(phase.quantity_after as number, `phases[${index}].quantity_after`),
+      averageCostBefore: phase.average_cost_before === null ? null : finite(phase.average_cost_before as number, `phases[${index}].average_cost_before`),
+      averageCostAfter: phase.average_cost_after === null ? null : finite(phase.average_cost_after as number, `phases[${index}].average_cost_after`),
+      stateBeforeRef: pathText(phase.state_before_ref, `phases[${index}].state_before_ref`),
+      stateAfterRef: pathText(phase.state_after_ref, `phases[${index}].state_after_ref`),
+      methodVersion: pathText(phase.method_version, `phases[${index}].method_version`),
+    };
+  });
+  const phaseIds = new Set(phases.map((item) => item.phaseId));
+  const patterns = raw.patterns.map((item, index): EpisodePatternObservationView => {
+    const pattern = pathObject(item, `patterns[${index}]`);
+    const decisionEventIds = pathTexts(pattern.decision_event_ids, `patterns[${index}].decision_event_ids`);
+    if (decisionEventIds.some((id) => !knownDecisionIds.has(id))) {
+      throw new Error(`Position episode patterns[${index}] references unknown decisions.`);
+    }
+    const linkedPhases = pathTexts(pattern.phase_ids, `patterns[${index}].phase_ids`);
+    if (linkedPhases.some((id) => !phaseIds.has(id))) {
+      throw new Error(`Position episode patterns[${index}] references unknown phases.`);
+    }
+    if (pathText(pattern.episode_id, `patterns[${index}].episode_id`) !== context.episodeId) {
+      throw new Error(`Position episode patterns[${index}] belongs to another Episode.`);
+    }
+    const factsRaw = pattern.facts;
+    if (typeof factsRaw !== "object" || factsRaw === null || Array.isArray(factsRaw)) {
+      throw new Error(`Position episode patterns[${index}].facts must be an object.`);
+    }
+    return {
+      patternId: pathText(pattern.pattern_id, `patterns[${index}].pattern_id`),
+      episodeId: context.episodeId,
+      patternCode: pathEnum(pattern.pattern_code, PATTERN_CODES, `patterns[${index}].pattern_code`),
+      methodVersion: pathText(pattern.method_version, `patterns[${index}].method_version`),
+      decisionEventIds,
+      phaseIds: linkedPhases,
+      evidenceIds: pathTexts(pattern.evidence_ids, `patterns[${index}].evidence_ids`),
+      facts: factsRaw as Record<string, unknown>,
+    };
+  });
+  const patternIds = new Set(patterns.map((item) => item.patternId));
+  const presentationItems = raw.presentation_items.map((item, index): PathPresentationItemView => {
+    const rawItem = pathObject(item, `presentation_items[${index}]`);
+    const kind = pathEnum(rawItem.kind, ["phase", "pattern"] as const, `presentation_items[${index}].kind`);
+    const phaseId = pathNullable(rawItem.phase_id, `presentation_items[${index}].phase_id`, pathText);
+    const patternId = pathNullable(rawItem.pattern_id, `presentation_items[${index}].pattern_id`, pathText);
+    if (kind === "phase" && (phaseId === null || !phaseIds.has(phaseId))) {
+      throw new Error(`Position episode presentation_items[${index}] references an unknown phase.`);
+    }
+    if (kind === "pattern" && (patternId === null || !patternIds.has(patternId))) {
+      throw new Error(`Position episode presentation_items[${index}] references an unknown pattern.`);
+    }
+    if (phaseId !== null && !phaseIds.has(phaseId)) {
+      throw new Error(`Position episode presentation_items[${index}] references an unknown phase.`);
+    }
+    return {
+      itemId: pathText(rawItem.item_id, `presentation_items[${index}].item_id`),
+      kind,
+      phaseId,
+      patternId,
+      reasonCode: pathText(rawItem.reason_code, `presentation_items[${index}].reason_code`),
+    };
+  });
+  return {
+    episodeId: context.episodeId,
+    methodId: pathText(raw.method_id, "path_analysis.method_id"),
+    methodVersion: pathText(raw.method_version, "path_analysis.method_version"),
+    marketPath: {
+      episodeId: context.episodeId,
+      preEntryContextStatus: pathEnum(marketRaw.pre_entry_context_status, CONTEXT_STATUSES, "market_path.pre_entry_context_status"),
+      episodeContextStatus: pathEnum(marketRaw.episode_context_status, CONTEXT_STATUSES, "market_path.episode_context_status"),
+      postExitContextStatus: pathEnum(marketRaw.post_exit_context_status, CONTEXT_STATUSES, "market_path.post_exit_context_status"),
+      preEntryContext: preEntryContext(marketRaw.pre_entry_context),
+      episodeMarketPath: marketWindow(marketRaw.episode_market_path, "episode_market_path", "episode"),
+      postExitContext: marketWindow(marketRaw.post_exit_context, "post_exit_context", "post_exit"),
+      dailyPricePeakDrawdown: pathNullable(marketRaw.daily_price_peak_drawdown, "daily_price_peak_drawdown", (item) => drawdownView(item)),
+      marketPathSegments: marketPathSegments(marketRaw.market_path_segments),
+      methodId: pathText(marketRaw.method_id, "market_path.method_id"),
+      methodVersion: pathText(marketRaw.method_version, "market_path.method_version"),
+      limitations: pathTexts(marketRaw.limitations, "market_path.limitations"),
+    },
+    positionPath: {
+      episodeId: context.episodeId,
+      maxQuantity: finite(positionRaw.max_quantity as number, "position_path.max_quantity"),
+      maxQuantityAsOf: pathTimestamp(positionRaw.max_quantity_as_of, "position_path.max_quantity_as_of"),
+      maxQuantityStateId: pathText(positionRaw.max_quantity_state_id, "position_path.max_quantity_state_id"),
+    },
+    phases,
+    patterns,
+    phaseCounterfactuals: raw.phase_counterfactuals.map((item, index) =>
+      adaptHistoricalCounterfactual(item, context, knownDecisionIds, `phase_counterfactuals[${index}]`),
+    ),
+    presentationItems,
+    limitations: pathTexts(raw.limitations, "path_analysis.limitations"),
+  };
+}
+
+export function selectPrimaryPathItems(path: EpisodePathAnalysisView): PathPresentationItemView[] {
+  return path.presentationItems.slice(0, 6);
 }
 
 function finite(value: number, name: string): number {
@@ -304,7 +699,7 @@ function adaptEntry(entry: BackendPositionEpisodeEntry, expectedTier: "synthetic
     };
   });
 
-  const outcomeStory = adaptDecisionOutcomeStory(entry.outcome_story, {
+  const outcomeContext = {
     subjectId: episode.subjectId,
     accountId: episode.accountId,
     instrumentId: episode.instrumentId,
@@ -316,7 +711,10 @@ function adaptEntry(entry: BackendPositionEpisodeEntry, expectedTier: "synthetic
       side: decision.side,
       eventType: decision.decisionType,
     })),
-  });
+  };
+  const outcomeStory = adaptDecisionOutcomeStory(entry.outcome_story, outcomeContext);
+  const knownDecisionIds = new Set(baseDecisions.map((decision) => decision.decisionId));
+  const pathAnalysis = adaptPathAnalysis(entry.path_analysis, outcomeContext, knownDecisionIds);
   const outcomeByDecision = new Map(
     outcomeStory.decisionOutcomes.map((outcome) => [outcome.decisionEventId, outcome]),
   );
@@ -383,7 +781,9 @@ function adaptEntry(entry: BackendPositionEpisodeEntry, expectedTier: "synthetic
     pricePoints: entry.price_points.map((point) => ({
       observedAt: point.observed_at,
       price: finite(point.price, "price point"),
+      segment: pathEnum(point.segment, SEGMENTS, "price_points.segment"),
     })),
+    pathAnalysis,
     outcomeStory,
   };
 }

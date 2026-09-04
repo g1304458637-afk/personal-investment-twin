@@ -17,6 +17,7 @@ export type CounterfactualFeasibility =
 export type CounterfactualScenario =
   | "omit_event_until_next_decision_v1"
   | "omit_event_preserve_later_executions_v1"
+  | "omit_decision_phase_until_next_decision_v1"
   | "existing_exit_evidence_reuse_v1";
 export type OutcomeComparisonStatus =
   | "complete"
@@ -336,6 +337,72 @@ function exitFollowup(value: unknown): ExitFollowupView | null {
   };
 }
 
+export function adaptHistoricalCounterfactual(
+  value: unknown,
+  context: DecisionOutcomeContext,
+  knownDecisionIds: Set<string>,
+  name = "counterfactual",
+): HistoricalCounterfactualView {
+  const item = object(value, name);
+  assertOwnership(item, context, name);
+  const decisionEventId = text(item.decision_event_id, `${name}.decision_event_id`);
+  if (!knownDecisionIds.has(decisionEventId)) {
+    throw new Error(`Decision Outcome counterfactual references unknown event ${decisionEventId}.`);
+  }
+  const intervention = object(item.intervention, `${name}.intervention`);
+  const parsedComparison = comparison(item.comparison);
+  const actualResult = item.actual_result === null ? null : result(item.actual_result, `${name}.actual_result`);
+  const counterfactualResult = item.counterfactual_result === null
+    ? null
+    : result(item.counterfactual_result, `${name}.counterfactual_result`);
+  if (parsedComparison.status === "complete" && (!actualResult || !counterfactualResult)) {
+    throw new Error("Decision Outcome complete counterfactual requires both backend results.");
+  }
+  return {
+    counterfactualId: text(item.counterfactual_id, `${name}.counterfactual_id`),
+    subjectId: context.subjectId,
+    accountId: context.accountId,
+    instrumentId: context.instrumentId,
+    episodeId: context.episodeId,
+    decisionEventId,
+    scenarioId: enumValue(item.scenario_id, [
+      "omit_event_until_next_decision_v1",
+      "omit_event_preserve_later_executions_v1",
+      "omit_decision_phase_until_next_decision_v1",
+      "existing_exit_evidence_reuse_v1",
+    ], `${name}.scenario_id`),
+    scenarioVersion: text(item.scenario_version, `${name}.scenario_version`),
+    methodId: text(item.method_id, `${name}.method_id`),
+    methodVersion: text(item.method_version, `${name}.method_version`),
+    calculationCodeVersion: text(item.calculation_code_version, `${name}.calculation_code_version`),
+    relationType: enumValue(item.relation_type, ["historical_counterfactual", "registered_baseline_comparison"], `${name}.relation_type`),
+    analysisAsOf: timestamp(item.analysis_as_of, `${name}.analysis_as_of`),
+    decisionAt: timestamp(item.decision_at, `${name}.decision_at`),
+    evaluationEnd: nullableTimestamp(item.evaluation_end, `${name}.evaluation_end`),
+    intervention: {
+      changedAction: text(intervention.changed_action, `${name}.changed_action`),
+      changedExecutionRefs: texts(intervention.changed_execution_refs, `${name}.changed_execution_refs`),
+    },
+    heldConstant: texts(item.held_constant, `${name}.held_constant`),
+    downstreamOrderPolicy: text(item.downstream_order_policy, `${name}.downstream_order_policy`),
+    priceBasis: text(item.price_basis, `${name}.price_basis`),
+    frictionBasis: text(item.friction_basis, `${name}.friction_basis`),
+    feasibilityStatus: enumValue(item.feasibility_status, [
+      "complete", "infeasible_downstream_execution", "insufficient_counterfactual_data", "unsupported_scenario",
+    ], `${name}.feasibility_status`),
+    infeasibleReason: item.infeasible_reason === null ? null : text(item.infeasible_reason, `${name}.infeasible_reason`),
+    firstConflictingExecutionId: item.first_conflicting_execution_id === null
+      ? null
+      : text(item.first_conflicting_execution_id, `${name}.first_conflicting_execution_id`),
+    actualResult,
+    counterfactualResult,
+    comparison: parsedComparison,
+    baselineEvidenceRef: item.baseline_evidence_ref === null ? null : text(item.baseline_evidence_ref, `${name}.baseline_evidence_ref`),
+    dataTier: enumValue(item.data_tier, ["synthetic", "authorized_beta"], `${name}.data_tier`),
+    limitations: texts(item.limitations, `${name}.limitations`),
+  };
+}
+
 export function adaptDecisionOutcomeStory(
   value: unknown,
   context: DecisionOutcomeContext,
@@ -422,45 +489,9 @@ export function adaptDecisionOutcomeStory(
     throw new Error("Decision Outcome event coverage or Episode result reference is incomplete.");
   }
   if (!Array.isArray(raw.counterfactuals)) throw new Error("Decision Outcome counterfactuals must be an array.");
-  const counterfactuals = raw.counterfactuals.map((value, index): HistoricalCounterfactualView => {
-    const item = object(value, `counterfactuals[${index}]`);
-    assertOwnership(item, context, `counterfactuals[${index}]`);
-    const decisionEventId = text(item.decision_event_id, "counterfactual.decision_event_id");
-    if (!known.has(decisionEventId)) throw new Error(`Decision Outcome counterfactual references unknown event ${decisionEventId}.`);
-    const intervention = object(item.intervention, "counterfactual.intervention");
-    const parsedComparison = comparison(item.comparison);
-    const actualResult = item.actual_result === null ? null : result(item.actual_result, "counterfactual.actual_result");
-    const counterfactualResult = item.counterfactual_result === null ? null : result(item.counterfactual_result, "counterfactual.counterfactual_result");
-    if (parsedComparison.status === "complete" && (!actualResult || !counterfactualResult)) {
-      throw new Error("Decision Outcome complete counterfactual requires both backend results.");
-    }
-    return {
-      counterfactualId: text(item.counterfactual_id, "counterfactual.counterfactual_id"),
-      subjectId: context.subjectId, accountId: context.accountId, instrumentId: context.instrumentId,
-      episodeId: context.episodeId, decisionEventId,
-      scenarioId: enumValue(item.scenario_id, ["omit_event_until_next_decision_v1", "omit_event_preserve_later_executions_v1", "existing_exit_evidence_reuse_v1"], "counterfactual.scenario_id"),
-      scenarioVersion: text(item.scenario_version, "counterfactual.scenario_version"),
-      methodId: text(item.method_id, "counterfactual.method_id"),
-      methodVersion: text(item.method_version, "counterfactual.method_version"),
-      calculationCodeVersion: text(item.calculation_code_version, "counterfactual.calculation_code_version"),
-      relationType: enumValue(item.relation_type, ["historical_counterfactual", "registered_baseline_comparison"], "counterfactual.relation_type"),
-      analysisAsOf: timestamp(item.analysis_as_of, "counterfactual.analysis_as_of"),
-      decisionAt: timestamp(item.decision_at, "counterfactual.decision_at"),
-      evaluationEnd: nullableTimestamp(item.evaluation_end, "counterfactual.evaluation_end"),
-      intervention: { changedAction: text(intervention.changed_action, "counterfactual.changed_action"), changedExecutionRefs: texts(intervention.changed_execution_refs, "counterfactual.changed_execution_refs") },
-      heldConstant: texts(item.held_constant, "counterfactual.held_constant"),
-      downstreamOrderPolicy: text(item.downstream_order_policy, "counterfactual.downstream_order_policy"),
-      priceBasis: text(item.price_basis, "counterfactual.price_basis"),
-      frictionBasis: text(item.friction_basis, "counterfactual.friction_basis"),
-      feasibilityStatus: enumValue(item.feasibility_status, ["complete", "infeasible_downstream_execution", "insufficient_counterfactual_data", "unsupported_scenario"], "counterfactual.feasibility_status"),
-      infeasibleReason: item.infeasible_reason === null ? null : text(item.infeasible_reason, "counterfactual.infeasible_reason"),
-      firstConflictingExecutionId: item.first_conflicting_execution_id === null ? null : text(item.first_conflicting_execution_id, "counterfactual.first_conflicting_execution_id"),
-      actualResult, counterfactualResult, comparison: parsedComparison,
-      baselineEvidenceRef: item.baseline_evidence_ref === null ? null : text(item.baseline_evidence_ref, "counterfactual.baseline_evidence_ref"),
-      dataTier: enumValue(item.data_tier, ["synthetic", "authorized_beta"], "counterfactual.data_tier"),
-      limitations: texts(item.limitations, "counterfactual.limitations"),
-    };
-  });
+  const counterfactuals = raw.counterfactuals.map((value, index) =>
+    adaptHistoricalCounterfactual(value, context, new Set(known.keys()), `counterfactuals[${index}]`),
+  );
   const followup = exitFollowup(raw.exit_followup);
   if (followup && !counterfactuals.some((item) => item.baselineEvidenceRef === followup.evidenceId)) {
     throw new Error("Decision Outcome Exit follow-up is not backed by the registered baseline reference.");
@@ -478,6 +509,7 @@ export function selectPrimaryCounterfactuals(
     if (decision.eventType === "open_position") continue;
     const candidates = items.filter((item) =>
       item.decisionEventId === decision.decisionId
+      && item.scenarioId !== "omit_decision_phase_until_next_decision_v1"
       && item.relationType !== "registered_baseline_comparison"
       && item.feasibilityStatus === "complete"
       && item.comparison.status === "complete"

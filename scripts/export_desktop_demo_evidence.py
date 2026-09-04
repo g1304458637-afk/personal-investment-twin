@@ -12,6 +12,7 @@ import json
 import shutil
 import sys
 import tempfile
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +32,8 @@ DEMO_INSTRUMENT_NAMES = {
     "600000.SH": "Demo Security F",
     "SYN_EXIT_UP": "Demo Security G",
     "SYN_PRODUCT": "Demo Security H",
+    "SYN_LONG_CLOSED": "Demo Security I",
+    "SYN_LONG_OPEN": "Demo Security J",
 }
 
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -70,6 +73,7 @@ from src.episodes.position_episode import (  # noqa: E402
     PositionEpisodeLifecycle,
     build_position_episode_lifecycle,
 )
+from src.path.analysis import build_episode_path_analysis  # noqa: E402
 from src.history.metric_series import (  # noqa: E402
     build_portfolio_hhi_history_with_records,
     build_turnover_history,
@@ -95,7 +99,7 @@ def _json_value(value: object) -> Any:
             field.name: _json_value(getattr(value, field.name))
             for field in dataclasses.fields(value)
         }
-    if isinstance(value, dict):
+    if isinstance(value, Mapping) and not isinstance(value, (str, bytes)):
         return {str(key): _json_value(item) for key, item in value.items()}
     if isinstance(value, (tuple, list)):
         return [_json_value(item) for item in value]
@@ -278,6 +282,7 @@ def _position_episode_entry(
     lifecycle: PositionEpisodeLifecycle,
     *,
     episode_id: str,
+    executions: pd.DataFrame,
     market_prices: pd.DataFrame,
     outcome_story: dict[str, object],
 ) -> dict[str, object]:
@@ -312,20 +317,25 @@ def _position_episode_entry(
         for item in lifecycle.evidence_references
         if item.evidence_id in evidence_ids
     )
-
-    dates = pd.to_datetime(market_prices["date"], errors="raise")
-    timeline_end = episode.closed_at or lifecycle.as_of
-    price_rows = market_prices.loc[
-        (market_prices["instrument"] == episode.instrument_id)
-        & (dates.dt.normalize() >= episode.opened_at.normalize())
-        & (dates.dt.normalize() <= timeline_end.normalize())
-    ].sort_values("date", kind="stable")
+    analysis = build_episode_path_analysis(
+        lifecycle,
+        executions,
+        market_prices,
+        episode_id=episode_id,
+        init_cash=INITIAL_CASH,
+    )
     price_points = tuple(
         {
-            "observed_at": pd.Timestamp(row["date"]),
-            "price": float(row["close"]),
+            "observed_at": item.observed_at,
+            "price": item.price,
+            "segment": segment,
         }
-        for _, row in price_rows.iterrows()
+        for segment, observations in (
+            ("pre_entry", analysis.market_path.pre_entry_context.observations),
+            ("episode", analysis.market_path.episode_market_path.observations),
+            ("post_exit", analysis.market_path.post_exit_context.observations),
+        )
+        for item in observations
     )
     return {
         "instrument": {
@@ -343,6 +353,7 @@ def _position_episode_entry(
         "states_by_ref": states,
         "evidence_references": evidence_references,
         "price_points": price_points,
+        "path_analysis": analysis,
         "outcome_story": outcome_story,
     }
 
@@ -563,6 +574,58 @@ def build_export() -> dict[str, object]:
         account_id="demo-account:product-story",
         analysis_as_of=product_lifecycle.as_of,
     )
+    closed_long_executions = load_normalized_csv(
+        PROJECT_ROOT / "data" / "sample" / "long_horizon_closed_executions_v1.csv"
+    )
+    closed_long_prices = pd.read_csv(
+        PROJECT_ROOT / "data" / "sample" / "long_horizon_closed_market_prices_v1.csv"
+    )
+    closed_long_lifecycle = build_position_episode_lifecycle(
+        closed_long_executions,
+        closed_long_prices,
+        subject_id="demo-user:long-horizon-closed",
+        account_id="demo-account:long-horizon-closed",
+        as_of=pd.Timestamp("2025-07-16 23:59:00"),
+        init_cash=INITIAL_CASH,
+        data_tier="synthetic",
+        calculation_code_version=CALCULATION_CODE_VERSION,
+    )
+    closed_long_episode = closed_long_lifecycle.episodes[0]
+    closed_long_story = _position_episode_story(
+        closed_long_lifecycle,
+        closed_long_executions,
+        closed_long_prices,
+        episode_id=closed_long_episode.episode_id,
+        subject_id=closed_long_lifecycle.subject_id,
+        account_id="demo-account:long-horizon-closed",
+        analysis_as_of=closed_long_lifecycle.as_of,
+    )
+    open_long_executions = load_normalized_csv(
+        PROJECT_ROOT / "data" / "sample" / "long_horizon_open_executions_v1.csv"
+    )
+    open_long_prices = pd.read_csv(
+        PROJECT_ROOT / "data" / "sample" / "long_horizon_open_market_prices_v1.csv"
+    )
+    open_long_lifecycle = build_position_episode_lifecycle(
+        open_long_executions,
+        open_long_prices,
+        subject_id="demo-user:long-horizon-open",
+        account_id="demo-account:long-horizon-open",
+        as_of=pd.Timestamp("2026-01-15 23:59:00"),
+        init_cash=INITIAL_CASH,
+        data_tier="synthetic",
+        calculation_code_version=CALCULATION_CODE_VERSION,
+    )
+    open_long_episode = open_long_lifecycle.episodes[0]
+    open_long_story = _position_episode_story(
+        open_long_lifecycle,
+        open_long_executions,
+        open_long_prices,
+        episode_id=open_long_episode.episode_id,
+        subject_id=open_long_lifecycle.subject_id,
+        account_id="demo-account:long-horizon-open",
+        analysis_as_of=open_long_lifecycle.as_of,
+    )
     behavior_stories = {
         episode.episode_id: _position_episode_story(
             behavior_lifecycle,
@@ -748,12 +811,28 @@ def build_export() -> dict[str, object]:
                 _position_episode_entry(
                     product_lifecycle,
                     episode_id=product_episode.episode_id,
+                    executions=product_executions,
                     market_prices=product_market_prices,
                     outcome_story=product_story,
                 ),
                 _position_episode_entry(
+                    closed_long_lifecycle,
+                    episode_id=closed_long_episode.episode_id,
+                    executions=closed_long_executions,
+                    market_prices=closed_long_prices,
+                    outcome_story=closed_long_story,
+                ),
+                _position_episode_entry(
+                    open_long_lifecycle,
+                    episode_id=open_long_episode.episode_id,
+                    executions=open_long_executions,
+                    market_prices=open_long_prices,
+                    outcome_story=open_long_story,
+                ),
+                _position_episode_entry(
                     selected_lifecycle,
                     episode_id=selected_position_episode.episode_id,
+                    executions=sample_executions,
                     market_prices=selected_market_prices,
                     outcome_story=selected_story,
                 ),
@@ -761,6 +840,7 @@ def build_export() -> dict[str, object]:
                     _position_episode_entry(
                         behavior_lifecycle,
                         episode_id=episode.episode_id,
+                        executions=behavior_executions,
                         market_prices=behavior_prices,
                         outcome_story=behavior_stories[episode.episode_id],
                     )
@@ -769,6 +849,7 @@ def build_export() -> dict[str, object]:
                 _position_episode_entry(
                     exit_lifecycle,
                     episode_id=exit_position_episode.episode_id,
+                    executions=exit_executions,
                     market_prices=exit_lifecycle_prices,
                     outcome_story=exit_story,
                 ),

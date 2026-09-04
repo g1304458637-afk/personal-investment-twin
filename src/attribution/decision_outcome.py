@@ -1369,10 +1369,10 @@ def _first_downstream_conflict(
     counterfactual_frame: pd.DataFrame,
     price_rows: pd.DataFrame,
     *,
-    decision: DecisionEvent,
+    pivot_execution_id: str,
 ) -> str | None:
     actual_order = list(scope.frame["execution_id"].astype(str))
-    selected_index = actual_order.index(decision.execution_id)
+    selected_index = actual_order.index(pivot_execution_id)
     downstream = set(actual_order[selected_index + 1 :])
     for index, row in counterfactual_frame.reset_index(drop=True).iterrows():
         execution_id = str(row["execution_id"])
@@ -1387,48 +1387,28 @@ def _first_downstream_conflict(
     return None
 
 
-def _evaluate_replay_scenario(
+def _evaluate_omit_frame(
     scope: _ScopedReplay,
     *,
     episode: PositionEpisode,
     decision: DecisionEvent,
     scenario: CounterfactualScenarioDefinition,
+    evaluation_end: pd.Timestamp,
+    actual_frame: pd.DataFrame,
+    changed_execution_refs: tuple[str, ...],
+    conflict_pivot_execution_id: str,
 ) -> HistoricalCounterfactualResult:
-    next_decision = _next_episode_decision(scope, decision)
-    if scenario.scenario_id == _LOCAL_SCENARIO.scenario_id:
-        if next_decision is not None:
-            evaluation_end = next_decision.occurred_at
-            actual_frame = scope.frame.loc[
-                scope.frame["event_time"] < evaluation_end
-            ].copy()
-        elif episode.status == "open":
-            evaluation_end = scope.analysis_as_of
-            actual_frame = scope.frame.loc[
-                scope.frame["event_time"] <= evaluation_end
-            ].copy()
-        else:
-            return _unsupported(
-                scope=scope,
-                episode=episode,
-                decision=decision,
-                scenario_id=scenario.scenario_id,
-                reason="A closed Episode event has no later Decision horizon",
-                scenario=scenario,
-            )
-    else:
-        evaluation_end = episode.closed_at or scope.analysis_as_of
-        actual_frame = scope.frame.loc[
-            scope.frame["event_time"] <= evaluation_end
-        ].copy()
-
     if evaluation_end > scope.analysis_as_of:
         raise OutcomeAttributionError("evaluation_end cannot exceed analysis_as_of")
+    omitted = {str(item) for item in changed_execution_refs}
+    if not omitted:
+        raise OutcomeAttributionError("changed_execution_refs must not be empty")
     counterfactual_frame = actual_frame.loc[
-        actual_frame["execution_id"].astype(str) != decision.execution_id
+        ~actual_frame["execution_id"].astype(str).isin(omitted)
     ].copy()
     intervention = CounterfactualIntervention(
         changed_action=scenario.changed_action,
-        changed_execution_refs=(decision.execution_id,),
+        changed_execution_refs=tuple(changed_execution_refs),
     )
     held_constant = (
         "all other execution timestamps",
@@ -1475,7 +1455,7 @@ def _evaluate_replay_scenario(
                 scope,
                 counterfactual_frame,
                 scope.market_prices,
-                decision=decision,
+                pivot_execution_id=conflict_pivot_execution_id,
             )
         status: FeasibilityStatus = (
             "infeasible_downstream_execution"
@@ -1529,6 +1509,110 @@ def _evaluate_replay_scenario(
         baseline_evidence_ref=None,
         provenance=provenance,
         limitations=scenario.feasibility_conditions,
+    )
+
+
+def _evaluate_replay_scenario(
+    scope: _ScopedReplay,
+    *,
+    episode: PositionEpisode,
+    decision: DecisionEvent,
+    scenario: CounterfactualScenarioDefinition,
+) -> HistoricalCounterfactualResult:
+    next_decision = _next_episode_decision(scope, decision)
+    if scenario.scenario_id == _LOCAL_SCENARIO.scenario_id:
+        if next_decision is not None:
+            evaluation_end = next_decision.occurred_at
+            actual_frame = scope.frame.loc[
+                scope.frame["event_time"] < evaluation_end
+            ].copy()
+        elif episode.status == "open":
+            evaluation_end = scope.analysis_as_of
+            actual_frame = scope.frame.loc[
+                scope.frame["event_time"] <= evaluation_end
+            ].copy()
+        else:
+            return _unsupported(
+                scope=scope,
+                episode=episode,
+                decision=decision,
+                scenario_id=scenario.scenario_id,
+                reason="A closed Episode event has no later Decision horizon",
+                scenario=scenario,
+            )
+    else:
+        evaluation_end = episode.closed_at or scope.analysis_as_of
+        actual_frame = scope.frame.loc[
+            scope.frame["event_time"] <= evaluation_end
+        ].copy()
+    return _evaluate_omit_frame(
+        scope,
+        episode=episode,
+        decision=decision,
+        scenario=scenario,
+        evaluation_end=evaluation_end,
+        actual_frame=actual_frame,
+        changed_execution_refs=(decision.execution_id,),
+        conflict_pivot_execution_id=decision.execution_id,
+    )
+
+
+def evaluate_omit_executions_counterfactual(
+    lifecycle: PositionEpisodeLifecycle,
+    executions: pd.DataFrame,
+    market_prices: pd.DataFrame,
+    *,
+    subject_id: str,
+    account_id: str,
+    analysis_as_of: pd.Timestamp,
+    init_cash: float | Mapping[str, float],
+    episode_id: str,
+    anchor_decision_event_id: str,
+    changed_execution_refs: Sequence[str],
+    scenario: CounterfactualScenarioDefinition,
+    evaluation_end: pd.Timestamp,
+    include_evaluation_end_executions: bool,
+) -> HistoricalCounterfactualResult:
+    """Replay actual vs omitted executions through the same vectorbt engine.
+
+    Path Intelligence may omit multiple executions.  This helper does not know
+    DecisionPhase; callers supply the execution refs and horizon.
+    """
+
+    scope = _prepare_scope(
+        lifecycle,
+        executions,
+        market_prices,
+        subject_id=subject_id,
+        account_id=account_id,
+        analysis_as_of=analysis_as_of,
+        init_cash=init_cash,
+    )
+    episode = _episode(scope, episode_id)
+    selected = [
+        item
+        for item in scope.decisions
+        if item.decision_id == _required_text(anchor_decision_event_id, "anchor_decision_event_id")
+    ]
+    if len(selected) != 1:
+        raise OutcomeAttributionError("anchor_decision_event_id is unknown or ambiguous")
+    decision = selected[0]
+    if decision.episode_id != episode.episode_id:
+        raise OutcomeAttributionError("anchor Decision does not belong to the Episode")
+    refs = tuple(_required_text(item, "changed_execution_ref") for item in changed_execution_refs)
+    if include_evaluation_end_executions:
+        actual_frame = scope.frame.loc[scope.frame["event_time"] <= evaluation_end].copy()
+    else:
+        actual_frame = scope.frame.loc[scope.frame["event_time"] < evaluation_end].copy()
+    return _evaluate_omit_frame(
+        scope,
+        episode=episode,
+        decision=decision,
+        scenario=scenario,
+        evaluation_end=evaluation_end,
+        actual_frame=actual_frame,
+        changed_execution_refs=refs,
+        conflict_pivot_execution_id=refs[-1],
     )
 
 
