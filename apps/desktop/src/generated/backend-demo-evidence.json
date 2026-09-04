@@ -4461,27 +4461,295 @@
       "behavior_evidence_refs": [
         {
           "available_at": "2025-01-08T00:00:00",
+          "calculation_code_version": "desktop-demo-evidence-v1",
           "evidence_id": "ev_51f0a6831a2c4937f00adb3d20eb2a2a06aaaf192a5795b153ad01f676f1a19d",
+          "evidence_kind": "behavior_evidence",
+          "evidence_reason": null,
           "evidence_status": "complete",
-          "metric_id": "portfolio_concentration_hhi"
+          "method_id": "hhi_security_weights_v1",
+          "method_version": "1",
+          "metric_id": "portfolio_concentration_hhi",
+          "provenance": [
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_LOSS_SOLD",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_NEUTRAL",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_PAPER_LOSS",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_PAPER_WIN",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_WIN_SOLD",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            }
+          ]
         },
         {
           "available_at": "2025-01-08T00:00:00",
+          "calculation_code_version": "desktop-demo-evidence-v1",
           "evidence_id": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
+          "evidence_kind": "behavior_evidence",
+          "evidence_reason": null,
           "evidence_status": "complete",
-          "metric_id": "mean_daily_turnover"
+          "method_id": "pyfolio_portfolio_value_turnover_v1",
+          "method_version": "1",
+          "metric_id": "mean_daily_turnover",
+          "provenance": [
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_LOSS_SOLD",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_NEUTRAL",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_PAPER_LOSS",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_PAPER_WIN",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_WIN_SOLD",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            }
+          ]
         },
         {
           "available_at": "2025-01-08T00:00:00",
+          "calculation_code_version": "desktop-demo-evidence-v1",
           "evidence_id": "ev_97b9cf058c2ea4e7ff75087d24fa0ec2316dc0372bc82df274c7eacac779dcbe",
+          "evidence_kind": "behavior_evidence",
+          "evidence_reason": null,
           "evidence_status": "complete",
-          "metric_id": "disposition_effect"
+          "method_id": "odean_pgr_plr_v1",
+          "method_version": "1",
+          "metric_id": "disposition_effect",
+          "provenance": [
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_LOSS_SOLD",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_NEUTRAL",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_PAPER_LOSS",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_PAPER_WIN",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_WIN_SOLD",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            }
+          ]
         },
         {
           "available_at": "2025-01-08T00:00:00",
+          "calculation_code_version": "desktop-demo-evidence-v1",
           "evidence_id": "ev_ab1adc897379041b5d2406d7290eca2d03a07033f2c0ae042db8fa4f39e8cc0c",
+          "evidence_kind": "behavior_evidence",
+          "evidence_reason": null,
           "evidence_status": "complete",
-          "metric_id": "loss_averaging_event_rate"
+          "method_id": "loss_state_add_v1",
+          "method_version": "1",
+          "metric_id": "loss_averaging_event_rate",
+          "provenance": [
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_LOSS_SOLD",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_NEUTRAL",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_PAPER_LOSS",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_PAPER_WIN",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_WIN_SOLD",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            }
+          ]
         }
       ],
       "behavior_state": [
@@ -4518,52 +4786,142 @@
           "value": 0.5
         }
       ],
+      "calculation_code_version": "desktop-demo-evidence-v1",
       "data_quality_summary": {
         "available_behavior_metric_count": 4,
-        "complete_evidence_count": 8,
+        "closed_episode_count": 0,
+        "complete_evidence_count": 5,
         "expected_evidence_count": 8,
+        "experimental_evidence_count": 0,
         "insufficient_evidence_count": 0,
+        "issue_count": 0,
+        "issues": [],
         "missing_behavior_metrics": [],
-        "referenced_evidence_count": 8
+        "missing_evidence_metrics": [
+          "selection_episode_asset_return",
+          "exit_timing_post_exit_asset_return",
+          "recorded_trading_friction_comparison"
+        ],
+        "open_episode_count": 0,
+        "partial_evidence_count": 0,
+        "portfolio_state_status": "unavailable",
+        "referenced_evidence_count": 5
       },
       "data_tier": "synthetic",
+      "decision_event_refs": [],
       "decision_evidence_refs": [
         {
-          "available_at": "2025-05-20T10:05:00",
-          "evidence_id": "ev_2a2dcff8f0f0c8afb1283545f11fbc99a04015ce4ff0f0f52b3bc90e11f6012a",
-          "evidence_status": "complete",
-          "metric_id": "selection_episode_asset_return"
-        },
-        {
           "available_at": "2025-01-03T00:00:00",
+          "calculation_code_version": "desktop-demo-evidence-v1",
           "evidence_id": "ev_d2d9e3247e3090e8319e6645f72c0de7bf8c82e23144f9258e434ad821f8ff48",
+          "evidence_kind": "decision_evidence",
+          "evidence_reason": null,
           "evidence_status": "complete",
-          "metric_id": "sizing_equal_weight_comparison"
-        },
-        {
-          "available_at": "2025-06-30T00:00:00",
-          "evidence_id": "ev_baf6473080afc51c489ef1b33d35e61b4499d2810c0d3765ccc8890ef4654053",
-          "evidence_status": "complete",
-          "metric_id": "exit_timing_post_exit_asset_return"
-        },
-        {
-          "available_at": "2025-05-20T10:05:00",
-          "evidence_id": "ev_969d3f6763de43156f1d3fbe9c39a7f03e6b89b4689013076fe2ab97ddf7f791",
-          "evidence_status": "complete",
-          "metric_id": "recorded_trading_friction_comparison"
+          "method_id": "equal_weight_sizing_counterfactual_v1",
+          "method_version": "1",
+          "metric_id": "sizing_equal_weight_comparison",
+          "provenance": []
         }
       ],
+      "episode_refs": {
+        "closed": [],
+        "open": []
+      },
+      "evidence_summary": {
+        "complete": 5,
+        "experimental": 0,
+        "insufficient": 0,
+        "partial": 0,
+        "total": 5,
+        "unavailable_metric_ids": [
+          "selection_episode_asset_return",
+          "exit_timing_post_exit_asset_return",
+          "recorded_trading_friction_comparison"
+        ]
+      },
+      "input_version_refs": [
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_LOSS_SOLD",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_NEUTRAL",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_PAPER_LOSS",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_PAPER_WIN",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        },
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "benchmark_id": null,
+          "data_version": "v1",
+          "instrument": "SYN_WIN_SOLD",
+          "is_synthetic": true,
+          "price_type": "synthetic",
+          "source_id": null,
+          "source_name": "local_behavior_fixture",
+          "source_type": "price_series"
+        }
+      ],
+      "intervention_history_ref": null,
       "limitations": [
         "A detected event only means that quantity was added while the position was below average cost. It is not evidence of revenge trading, irrationality, greed, fear, FOMO, investment skill, or whether the decision was good or bad.",
         "Cash is excluded from security weights. This evidence applies no high/medium/low threshold, benchmark judgment, behavior score, or claim that concentration is good or bad.",
-        "Includes recorded explicit fees only; it does not estimate tax, slippage, spread, market impact, or opportunity cost.",
-        "SelectionEvidence is comparative episode evidence, not alpha or a conclusion about durable selection skill.",
+        "Daily market data cannot prove that a final close was available intraday.",
+        "Personal Twin is a derived point-in-time read model, not a financial ledger.",
+        "Self baseline, peer context, notable changes, and intervention history are unavailable in v1.",
         "The historical counterfactual is not sizing skill, alpha, causal attribution, or a recommendation.",
-        "This is a retrospective fixed-horizon counterfactual. The 20-session horizon is a fixed project policy, not an optimal or industry-standard horizon, and does not imply that subsequent price changes were knowable at the actual exit time.",
         "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
         "Turnover Intensity is descriptive and is not an overtrading label, skill score, or psychological inference. It uses double-sided filled dollars, excludes fees from traded value, and is sensitive to low portfolio values."
       ],
-      "snapshot_at": "2025-06-30T00:00:00",
+      "notable_change_refs": [],
+      "peer_context_refs": [],
+      "portfolio_state": {
+        "as_of": "2025-01-08T00:00:00",
+        "positions": [],
+        "reason": "No replay-backed Position Episode lifecycle was supplied",
+        "replay_method_id": null,
+        "status": "unavailable"
+      },
+      "projection_method_id": "personal_twin_point_in_time_projection_v1",
+      "projection_method_version": "1",
+      "schema_version": "1",
+      "self_baseline_refs": [],
+      "snapshot_at": "2025-01-08T00:00:00",
+      "snapshot_id": "tw_2b292b448cf3ab5124c43ebfb0c2e10f59e86b274d0f13ba4f8bea6c7745ba11",
       "subject_id": "demo-user:synthetic-behavior"
     },
     "data_tier": "synthetic",
@@ -4578,34 +4936,85 @@
             "observation_count": 1,
             "source_evidence_id": "ev_0809e259c6bfcc0911b5ad2b417ae2cf512092878dfdec65182f05141e318a7d",
             "value": 0.3079584775086505
-          },
-          {
-            "as_of": "2025-01-02T00:00:00",
-            "evidence_status": "complete",
-            "metric_id": "mean_daily_turnover",
-            "observation_count": 1,
-            "source_evidence_id": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
-            "value": 0.085
           }
         ],
+        "calculation_code_version": "desktop-demo-evidence-v1",
         "data_quality_summary": {
-          "available_behavior_metric_count": 2,
+          "available_behavior_metric_count": 1,
+          "closed_episode_count": 0,
           "complete_evidence_count": 0,
           "expected_evidence_count": 8,
+          "experimental_evidence_count": 0,
           "insufficient_evidence_count": 0,
+          "issue_count": 0,
+          "issues": [],
           "missing_behavior_metrics": [
+            "mean_daily_turnover",
             "disposition_effect",
             "loss_averaging_event_rate"
           ],
+          "missing_evidence_metrics": [
+            "selection_episode_asset_return",
+            "sizing_equal_weight_comparison",
+            "exit_timing_post_exit_asset_return",
+            "recorded_trading_friction_comparison",
+            "portfolio_concentration_hhi",
+            "mean_daily_turnover",
+            "disposition_effect",
+            "loss_averaging_event_rate"
+          ],
+          "open_episode_count": 0,
+          "partial_evidence_count": 0,
+          "portfolio_state_status": "unavailable",
           "referenced_evidence_count": 0
         },
         "data_tier": "synthetic",
+        "decision_event_refs": [],
         "decision_evidence_refs": [],
+        "episode_refs": {
+          "closed": [],
+          "open": []
+        },
+        "evidence_summary": {
+          "complete": 0,
+          "experimental": 0,
+          "insufficient": 0,
+          "partial": 0,
+          "total": 0,
+          "unavailable_metric_ids": [
+            "selection_episode_asset_return",
+            "sizing_equal_weight_comparison",
+            "exit_timing_post_exit_asset_return",
+            "recorded_trading_friction_comparison",
+            "portfolio_concentration_hhi",
+            "mean_daily_turnover",
+            "disposition_effect",
+            "loss_averaging_event_rate"
+          ]
+        },
+        "input_version_refs": [],
+        "intervention_history_ref": null,
         "limitations": [
           "Cash is excluded from security weights. This evidence applies no high/medium/low threshold, benchmark judgment, behavior score, or claim that concentration is good or bad.",
-          "Turnover Intensity is descriptive and is not an overtrading label, skill score, or psychological inference. It uses double-sided filled dollars, excludes fees from traded value, and is sensitive to low portfolio values."
+          "Daily market data cannot prove that a final close was available intraday.",
+          "Personal Twin is a derived point-in-time read model, not a financial ledger.",
+          "Self baseline, peer context, notable changes, and intervention history are unavailable in v1."
         ],
+        "notable_change_refs": [],
+        "peer_context_refs": [],
+        "portfolio_state": {
+          "as_of": "2025-01-02T00:00:00",
+          "positions": [],
+          "reason": "No replay-backed Position Episode lifecycle was supplied",
+          "replay_method_id": null,
+          "status": "unavailable"
+        },
+        "projection_method_id": "personal_twin_point_in_time_projection_v1",
+        "projection_method_version": "1",
+        "schema_version": "1",
+        "self_baseline_refs": [],
         "snapshot_at": "2025-01-02T00:00:00",
+        "snapshot_id": "tw_43270abf2bc622586a6ef31ab7d9ac0f2766b2596054114454d429314dc5204f",
         "subject_id": "demo-user:synthetic-behavior"
       },
       {
@@ -4618,42 +5027,97 @@
             "observation_count": 1,
             "source_evidence_id": "ev_69074db46427c6b6a5119e31207614a288f3cc454ff56e71897951fc37dbbb54",
             "value": 0.3268950437317783
-          },
-          {
-            "as_of": "2025-01-03T00:00:00",
-            "evidence_status": "complete",
-            "metric_id": "mean_daily_turnover",
-            "observation_count": 1,
-            "source_evidence_id": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
-            "value": 0.009970089730807577
           }
         ],
+        "calculation_code_version": "desktop-demo-evidence-v1",
         "data_quality_summary": {
-          "available_behavior_metric_count": 2,
+          "available_behavior_metric_count": 1,
+          "closed_episode_count": 0,
           "complete_evidence_count": 1,
           "expected_evidence_count": 8,
+          "experimental_evidence_count": 0,
           "insufficient_evidence_count": 0,
+          "issue_count": 0,
+          "issues": [],
           "missing_behavior_metrics": [
+            "mean_daily_turnover",
             "disposition_effect",
             "loss_averaging_event_rate"
           ],
+          "missing_evidence_metrics": [
+            "selection_episode_asset_return",
+            "exit_timing_post_exit_asset_return",
+            "recorded_trading_friction_comparison",
+            "portfolio_concentration_hhi",
+            "mean_daily_turnover",
+            "disposition_effect",
+            "loss_averaging_event_rate"
+          ],
+          "open_episode_count": 0,
+          "partial_evidence_count": 0,
+          "portfolio_state_status": "unavailable",
           "referenced_evidence_count": 1
         },
         "data_tier": "synthetic",
+        "decision_event_refs": [],
         "decision_evidence_refs": [
           {
             "available_at": "2025-01-03T00:00:00",
+            "calculation_code_version": "desktop-demo-evidence-v1",
             "evidence_id": "ev_d2d9e3247e3090e8319e6645f72c0de7bf8c82e23144f9258e434ad821f8ff48",
+            "evidence_kind": "decision_evidence",
+            "evidence_reason": null,
             "evidence_status": "complete",
-            "metric_id": "sizing_equal_weight_comparison"
+            "method_id": "equal_weight_sizing_counterfactual_v1",
+            "method_version": "1",
+            "metric_id": "sizing_equal_weight_comparison",
+            "provenance": []
           }
         ],
+        "episode_refs": {
+          "closed": [],
+          "open": []
+        },
+        "evidence_summary": {
+          "complete": 1,
+          "experimental": 0,
+          "insufficient": 0,
+          "partial": 0,
+          "total": 1,
+          "unavailable_metric_ids": [
+            "selection_episode_asset_return",
+            "exit_timing_post_exit_asset_return",
+            "recorded_trading_friction_comparison",
+            "portfolio_concentration_hhi",
+            "mean_daily_turnover",
+            "disposition_effect",
+            "loss_averaging_event_rate"
+          ]
+        },
+        "input_version_refs": [],
+        "intervention_history_ref": null,
         "limitations": [
           "Cash is excluded from security weights. This evidence applies no high/medium/low threshold, benchmark judgment, behavior score, or claim that concentration is good or bad.",
-          "The historical counterfactual is not sizing skill, alpha, causal attribution, or a recommendation.",
-          "Turnover Intensity is descriptive and is not an overtrading label, skill score, or psychological inference. It uses double-sided filled dollars, excludes fees from traded value, and is sensitive to low portfolio values."
+          "Daily market data cannot prove that a final close was available intraday.",
+          "Personal Twin is a derived point-in-time read model, not a financial ledger.",
+          "Self baseline, peer context, notable changes, and intervention history are unavailable in v1.",
+          "The historical counterfactual is not sizing skill, alpha, causal attribution, or a recommendation."
         ],
+        "notable_change_refs": [],
+        "peer_context_refs": [],
+        "portfolio_state": {
+          "as_of": "2025-01-03T00:00:00",
+          "positions": [],
+          "reason": "No replay-backed Position Episode lifecycle was supplied",
+          "replay_method_id": null,
+          "status": "unavailable"
+        },
+        "projection_method_id": "personal_twin_point_in_time_projection_v1",
+        "projection_method_version": "1",
+        "schema_version": "1",
+        "self_baseline_refs": [],
         "snapshot_at": "2025-01-03T00:00:00",
+        "snapshot_id": "tw_cfa51424e41645de8de8672cab33c1a4e4a26453638c205c7ee9714de45d9ec4",
         "subject_id": "demo-user:synthetic-behavior"
       },
       {
@@ -4666,42 +5130,97 @@
             "observation_count": 1,
             "source_evidence_id": "ev_e5e5cb9c3d3077c5f604c0ef230fc8d4f18a95380deb03765296f56f3951157b",
             "value": 0.3389322518110397
-          },
-          {
-            "as_of": "2025-01-06T00:00:00",
-            "evidence_status": "complete",
-            "metric_id": "mean_daily_turnover",
-            "observation_count": 1,
-            "source_evidence_id": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
-            "value": 0.0
           }
         ],
+        "calculation_code_version": "desktop-demo-evidence-v1",
         "data_quality_summary": {
-          "available_behavior_metric_count": 2,
+          "available_behavior_metric_count": 1,
+          "closed_episode_count": 0,
           "complete_evidence_count": 1,
           "expected_evidence_count": 8,
+          "experimental_evidence_count": 0,
           "insufficient_evidence_count": 0,
+          "issue_count": 0,
+          "issues": [],
           "missing_behavior_metrics": [
+            "mean_daily_turnover",
             "disposition_effect",
             "loss_averaging_event_rate"
           ],
+          "missing_evidence_metrics": [
+            "selection_episode_asset_return",
+            "exit_timing_post_exit_asset_return",
+            "recorded_trading_friction_comparison",
+            "portfolio_concentration_hhi",
+            "mean_daily_turnover",
+            "disposition_effect",
+            "loss_averaging_event_rate"
+          ],
+          "open_episode_count": 0,
+          "partial_evidence_count": 0,
+          "portfolio_state_status": "unavailable",
           "referenced_evidence_count": 1
         },
         "data_tier": "synthetic",
+        "decision_event_refs": [],
         "decision_evidence_refs": [
           {
             "available_at": "2025-01-03T00:00:00",
+            "calculation_code_version": "desktop-demo-evidence-v1",
             "evidence_id": "ev_d2d9e3247e3090e8319e6645f72c0de7bf8c82e23144f9258e434ad821f8ff48",
+            "evidence_kind": "decision_evidence",
+            "evidence_reason": null,
             "evidence_status": "complete",
-            "metric_id": "sizing_equal_weight_comparison"
+            "method_id": "equal_weight_sizing_counterfactual_v1",
+            "method_version": "1",
+            "metric_id": "sizing_equal_weight_comparison",
+            "provenance": []
           }
         ],
+        "episode_refs": {
+          "closed": [],
+          "open": []
+        },
+        "evidence_summary": {
+          "complete": 1,
+          "experimental": 0,
+          "insufficient": 0,
+          "partial": 0,
+          "total": 1,
+          "unavailable_metric_ids": [
+            "selection_episode_asset_return",
+            "exit_timing_post_exit_asset_return",
+            "recorded_trading_friction_comparison",
+            "portfolio_concentration_hhi",
+            "mean_daily_turnover",
+            "disposition_effect",
+            "loss_averaging_event_rate"
+          ]
+        },
+        "input_version_refs": [],
+        "intervention_history_ref": null,
         "limitations": [
           "Cash is excluded from security weights. This evidence applies no high/medium/low threshold, benchmark judgment, behavior score, or claim that concentration is good or bad.",
-          "The historical counterfactual is not sizing skill, alpha, causal attribution, or a recommendation.",
-          "Turnover Intensity is descriptive and is not an overtrading label, skill score, or psychological inference. It uses double-sided filled dollars, excludes fees from traded value, and is sensitive to low portfolio values."
+          "Daily market data cannot prove that a final close was available intraday.",
+          "Personal Twin is a derived point-in-time read model, not a financial ledger.",
+          "Self baseline, peer context, notable changes, and intervention history are unavailable in v1.",
+          "The historical counterfactual is not sizing skill, alpha, causal attribution, or a recommendation."
         ],
+        "notable_change_refs": [],
+        "peer_context_refs": [],
+        "portfolio_state": {
+          "as_of": "2025-01-06T00:00:00",
+          "positions": [],
+          "reason": "No replay-backed Position Episode lifecycle was supplied",
+          "replay_method_id": null,
+          "status": "unavailable"
+        },
+        "projection_method_id": "personal_twin_point_in_time_projection_v1",
+        "projection_method_version": "1",
+        "schema_version": "1",
+        "self_baseline_refs": [],
         "snapshot_at": "2025-01-06T00:00:00",
+        "snapshot_id": "tw_d527eb7edcec06511d8178ae5a5d7ac687bdcd271796e89a4f4b4d2e219eea05",
         "subject_id": "demo-user:synthetic-behavior"
       },
       {
@@ -4714,69 +5233,392 @@
             "observation_count": 1,
             "source_evidence_id": "ev_823c80599b1529a5aafaf307a8251b4e8954c7531c04d2882e54aa4d3a9bf64f",
             "value": 0.38171745152354564
-          },
-          {
-            "as_of": "2025-01-07T00:00:00",
-            "evidence_status": "complete",
-            "metric_id": "mean_daily_turnover",
-            "observation_count": 1,
-            "source_evidence_id": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
-            "value": 0.005964214711729622
           }
         ],
+        "calculation_code_version": "desktop-demo-evidence-v1",
         "data_quality_summary": {
-          "available_behavior_metric_count": 2,
+          "available_behavior_metric_count": 1,
+          "closed_episode_count": 0,
           "complete_evidence_count": 1,
           "expected_evidence_count": 8,
+          "experimental_evidence_count": 0,
           "insufficient_evidence_count": 0,
+          "issue_count": 0,
+          "issues": [],
           "missing_behavior_metrics": [
+            "mean_daily_turnover",
             "disposition_effect",
             "loss_averaging_event_rate"
           ],
+          "missing_evidence_metrics": [
+            "selection_episode_asset_return",
+            "exit_timing_post_exit_asset_return",
+            "recorded_trading_friction_comparison",
+            "portfolio_concentration_hhi",
+            "mean_daily_turnover",
+            "disposition_effect",
+            "loss_averaging_event_rate"
+          ],
+          "open_episode_count": 0,
+          "partial_evidence_count": 0,
+          "portfolio_state_status": "unavailable",
           "referenced_evidence_count": 1
         },
         "data_tier": "synthetic",
+        "decision_event_refs": [],
         "decision_evidence_refs": [
           {
             "available_at": "2025-01-03T00:00:00",
+            "calculation_code_version": "desktop-demo-evidence-v1",
             "evidence_id": "ev_d2d9e3247e3090e8319e6645f72c0de7bf8c82e23144f9258e434ad821f8ff48",
+            "evidence_kind": "decision_evidence",
+            "evidence_reason": null,
             "evidence_status": "complete",
-            "metric_id": "sizing_equal_weight_comparison"
+            "method_id": "equal_weight_sizing_counterfactual_v1",
+            "method_version": "1",
+            "metric_id": "sizing_equal_weight_comparison",
+            "provenance": []
           }
         ],
+        "episode_refs": {
+          "closed": [],
+          "open": []
+        },
+        "evidence_summary": {
+          "complete": 1,
+          "experimental": 0,
+          "insufficient": 0,
+          "partial": 0,
+          "total": 1,
+          "unavailable_metric_ids": [
+            "selection_episode_asset_return",
+            "exit_timing_post_exit_asset_return",
+            "recorded_trading_friction_comparison",
+            "portfolio_concentration_hhi",
+            "mean_daily_turnover",
+            "disposition_effect",
+            "loss_averaging_event_rate"
+          ]
+        },
+        "input_version_refs": [],
+        "intervention_history_ref": null,
         "limitations": [
           "Cash is excluded from security weights. This evidence applies no high/medium/low threshold, benchmark judgment, behavior score, or claim that concentration is good or bad.",
-          "The historical counterfactual is not sizing skill, alpha, causal attribution, or a recommendation.",
-          "Turnover Intensity is descriptive and is not an overtrading label, skill score, or psychological inference. It uses double-sided filled dollars, excludes fees from traded value, and is sensitive to low portfolio values."
+          "Daily market data cannot prove that a final close was available intraday.",
+          "Personal Twin is a derived point-in-time read model, not a financial ledger.",
+          "Self baseline, peer context, notable changes, and intervention history are unavailable in v1.",
+          "The historical counterfactual is not sizing skill, alpha, causal attribution, or a recommendation."
         ],
+        "notable_change_refs": [],
+        "peer_context_refs": [],
+        "portfolio_state": {
+          "as_of": "2025-01-07T00:00:00",
+          "positions": [],
+          "reason": "No replay-backed Position Episode lifecycle was supplied",
+          "replay_method_id": null,
+          "status": "unavailable"
+        },
+        "projection_method_id": "personal_twin_point_in_time_projection_v1",
+        "projection_method_version": "1",
+        "schema_version": "1",
+        "self_baseline_refs": [],
         "snapshot_at": "2025-01-07T00:00:00",
+        "snapshot_id": "tw_6e52ba592e4a059d76c38c06b08668c16a6c0608ff49029c80ed5e1873a3ef94",
         "subject_id": "demo-user:synthetic-behavior"
       },
       {
         "behavior_evidence_refs": [
           {
             "available_at": "2025-01-08T00:00:00",
+            "calculation_code_version": "desktop-demo-evidence-v1",
             "evidence_id": "ev_51f0a6831a2c4937f00adb3d20eb2a2a06aaaf192a5795b153ad01f676f1a19d",
+            "evidence_kind": "behavior_evidence",
+            "evidence_reason": null,
             "evidence_status": "complete",
-            "metric_id": "portfolio_concentration_hhi"
+            "method_id": "hhi_security_weights_v1",
+            "method_version": "1",
+            "metric_id": "portfolio_concentration_hhi",
+            "provenance": [
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_LOSS_SOLD",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              },
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_NEUTRAL",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              },
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_PAPER_LOSS",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              },
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_PAPER_WIN",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              },
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_WIN_SOLD",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              }
+            ]
           },
           {
             "available_at": "2025-01-08T00:00:00",
+            "calculation_code_version": "desktop-demo-evidence-v1",
             "evidence_id": "ev_a28eb5ee1a45038efd58ad4a8b9c8702c8634cc64f07740b275a60f758542387",
+            "evidence_kind": "behavior_evidence",
+            "evidence_reason": null,
             "evidence_status": "complete",
-            "metric_id": "mean_daily_turnover"
+            "method_id": "pyfolio_portfolio_value_turnover_v1",
+            "method_version": "1",
+            "metric_id": "mean_daily_turnover",
+            "provenance": [
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_LOSS_SOLD",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              },
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_NEUTRAL",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              },
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_PAPER_LOSS",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              },
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_PAPER_WIN",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              },
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_WIN_SOLD",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              }
+            ]
           },
           {
             "available_at": "2025-01-08T00:00:00",
+            "calculation_code_version": "desktop-demo-evidence-v1",
             "evidence_id": "ev_97b9cf058c2ea4e7ff75087d24fa0ec2316dc0372bc82df274c7eacac779dcbe",
+            "evidence_kind": "behavior_evidence",
+            "evidence_reason": null,
             "evidence_status": "complete",
-            "metric_id": "disposition_effect"
+            "method_id": "odean_pgr_plr_v1",
+            "method_version": "1",
+            "metric_id": "disposition_effect",
+            "provenance": [
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_LOSS_SOLD",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              },
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_NEUTRAL",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              },
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_PAPER_LOSS",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              },
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_PAPER_WIN",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              },
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_WIN_SOLD",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              }
+            ]
           },
           {
             "available_at": "2025-01-08T00:00:00",
+            "calculation_code_version": "desktop-demo-evidence-v1",
             "evidence_id": "ev_ab1adc897379041b5d2406d7290eca2d03a07033f2c0ae042db8fa4f39e8cc0c",
+            "evidence_kind": "behavior_evidence",
+            "evidence_reason": null,
             "evidence_status": "complete",
-            "metric_id": "loss_averaging_event_rate"
+            "method_id": "loss_state_add_v1",
+            "method_version": "1",
+            "metric_id": "loss_averaging_event_rate",
+            "provenance": [
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_LOSS_SOLD",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              },
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_NEUTRAL",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              },
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_PAPER_LOSS",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              },
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_PAPER_WIN",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              },
+              {
+                "as_of": "2025-01-08T00:00:00",
+                "attributes": {},
+                "benchmark_id": null,
+                "data_version": "v1",
+                "instrument": "SYN_WIN_SOLD",
+                "is_synthetic": true,
+                "price_type": "synthetic",
+                "source_id": null,
+                "source_name": "local_behavior_fixture",
+                "source_type": "price_series"
+              }
+            ]
           }
         ],
         "behavior_state": [
@@ -4813,31 +5655,142 @@
             "value": 0.5
           }
         ],
+        "calculation_code_version": "desktop-demo-evidence-v1",
         "data_quality_summary": {
           "available_behavior_metric_count": 4,
+          "closed_episode_count": 0,
           "complete_evidence_count": 5,
           "expected_evidence_count": 8,
+          "experimental_evidence_count": 0,
           "insufficient_evidence_count": 0,
+          "issue_count": 0,
+          "issues": [],
           "missing_behavior_metrics": [],
+          "missing_evidence_metrics": [
+            "selection_episode_asset_return",
+            "exit_timing_post_exit_asset_return",
+            "recorded_trading_friction_comparison"
+          ],
+          "open_episode_count": 0,
+          "partial_evidence_count": 0,
+          "portfolio_state_status": "unavailable",
           "referenced_evidence_count": 5
         },
         "data_tier": "synthetic",
+        "decision_event_refs": [],
         "decision_evidence_refs": [
           {
             "available_at": "2025-01-03T00:00:00",
+            "calculation_code_version": "desktop-demo-evidence-v1",
             "evidence_id": "ev_d2d9e3247e3090e8319e6645f72c0de7bf8c82e23144f9258e434ad821f8ff48",
+            "evidence_kind": "decision_evidence",
+            "evidence_reason": null,
             "evidence_status": "complete",
-            "metric_id": "sizing_equal_weight_comparison"
+            "method_id": "equal_weight_sizing_counterfactual_v1",
+            "method_version": "1",
+            "metric_id": "sizing_equal_weight_comparison",
+            "provenance": []
           }
         ],
+        "episode_refs": {
+          "closed": [],
+          "open": []
+        },
+        "evidence_summary": {
+          "complete": 5,
+          "experimental": 0,
+          "insufficient": 0,
+          "partial": 0,
+          "total": 5,
+          "unavailable_metric_ids": [
+            "selection_episode_asset_return",
+            "exit_timing_post_exit_asset_return",
+            "recorded_trading_friction_comparison"
+          ]
+        },
+        "input_version_refs": [
+          {
+            "as_of": "2025-01-08T00:00:00",
+            "benchmark_id": null,
+            "data_version": "v1",
+            "instrument": "SYN_LOSS_SOLD",
+            "is_synthetic": true,
+            "price_type": "synthetic",
+            "source_id": null,
+            "source_name": "local_behavior_fixture",
+            "source_type": "price_series"
+          },
+          {
+            "as_of": "2025-01-08T00:00:00",
+            "benchmark_id": null,
+            "data_version": "v1",
+            "instrument": "SYN_NEUTRAL",
+            "is_synthetic": true,
+            "price_type": "synthetic",
+            "source_id": null,
+            "source_name": "local_behavior_fixture",
+            "source_type": "price_series"
+          },
+          {
+            "as_of": "2025-01-08T00:00:00",
+            "benchmark_id": null,
+            "data_version": "v1",
+            "instrument": "SYN_PAPER_LOSS",
+            "is_synthetic": true,
+            "price_type": "synthetic",
+            "source_id": null,
+            "source_name": "local_behavior_fixture",
+            "source_type": "price_series"
+          },
+          {
+            "as_of": "2025-01-08T00:00:00",
+            "benchmark_id": null,
+            "data_version": "v1",
+            "instrument": "SYN_PAPER_WIN",
+            "is_synthetic": true,
+            "price_type": "synthetic",
+            "source_id": null,
+            "source_name": "local_behavior_fixture",
+            "source_type": "price_series"
+          },
+          {
+            "as_of": "2025-01-08T00:00:00",
+            "benchmark_id": null,
+            "data_version": "v1",
+            "instrument": "SYN_WIN_SOLD",
+            "is_synthetic": true,
+            "price_type": "synthetic",
+            "source_id": null,
+            "source_name": "local_behavior_fixture",
+            "source_type": "price_series"
+          }
+        ],
+        "intervention_history_ref": null,
         "limitations": [
           "A detected event only means that quantity was added while the position was below average cost. It is not evidence of revenge trading, irrationality, greed, fear, FOMO, investment skill, or whether the decision was good or bad.",
           "Cash is excluded from security weights. This evidence applies no high/medium/low threshold, benchmark judgment, behavior score, or claim that concentration is good or bad.",
+          "Daily market data cannot prove that a final close was available intraday.",
+          "Personal Twin is a derived point-in-time read model, not a financial ledger.",
+          "Self baseline, peer context, notable changes, and intervention history are unavailable in v1.",
           "The historical counterfactual is not sizing skill, alpha, causal attribution, or a recommendation.",
           "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
           "Turnover Intensity is descriptive and is not an overtrading label, skill score, or psychological inference. It uses double-sided filled dollars, excludes fees from traded value, and is sensitive to low portfolio values."
         ],
+        "notable_change_refs": [],
+        "peer_context_refs": [],
+        "portfolio_state": {
+          "as_of": "2025-01-08T00:00:00",
+          "positions": [],
+          "reason": "No replay-backed Position Episode lifecycle was supplied",
+          "replay_method_id": null,
+          "status": "unavailable"
+        },
+        "projection_method_id": "personal_twin_point_in_time_projection_v1",
+        "projection_method_version": "1",
+        "schema_version": "1",
+        "self_baseline_refs": [],
         "snapshot_at": "2025-01-08T00:00:00",
+        "snapshot_id": "tw_2b292b448cf3ab5124c43ebfb0c2e10f59e86b274d0f13ba4f8bea6c7745ba11",
         "subject_id": "demo-user:synthetic-behavior"
       }
     ]

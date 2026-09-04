@@ -375,20 +375,29 @@ def build_export() -> dict[str, object]:
         parent_record=turnover_record,
     )
     histories = (hhi_history, turnover_history)
-    snapshot_at = latest_twin_snapshot_at(records, histories)
+    twin_records = tuple(
+        record for record in records if record.subject_id == behavior_subject
+    )
+    snapshot_at = latest_twin_snapshot_at(
+        twin_records,
+        histories,
+        subject_id=behavior_subject,
+    )
     current_twin = build_twin_snapshot(
-        records,
+        twin_records,
         histories,
         subject_id=behavior_subject,
         snapshot_at=snapshot_at,
         data_tier="synthetic",
+        calculation_code_version=CALCULATION_CODE_VERSION,
     )
     historical_twins = build_historical_twin_snapshots(
-        records,
+        twin_records,
         histories,
         subject_id=behavior_subject,
         snapshot_at=snapshot_at,
         data_tier="synthetic",
+        calculation_code_version=CALCULATION_CODE_VERSION,
     )
     peer_benchmark = build_synthetic_peer_benchmark(
         subject_id=behavior_subject,

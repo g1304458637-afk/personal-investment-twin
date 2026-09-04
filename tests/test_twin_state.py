@@ -70,27 +70,32 @@ def _series(values: list[float | None]) -> HistoricalMetricSeries:
 
 def test_twin_snapshot_is_deterministic_and_historical_snapshots_are_chronological():
     payload = build_export()
-    records = payload["evidence_records"]
     histories = list(payload["historical_series"].values())
+    subject_id = histories[0].subject_id
+    records = [
+        record
+        for record in payload["evidence_records"]
+        if record.subject_id == subject_id
+    ]
 
     first = build_twin_snapshot(
         records,
         histories,
-        subject_id=SUBJECT_ID,
+        subject_id=subject_id,
         snapshot_at=SNAPSHOT_AT,
         data_tier="synthetic",
     )
     second = build_twin_snapshot(
         records,
         histories,
-        subject_id=SUBJECT_ID,
+        subject_id=subject_id,
         snapshot_at=SNAPSHOT_AT,
         data_tier="synthetic",
     )
     snapshots = build_historical_twin_snapshots(
         records,
         histories,
-        subject_id=SUBJECT_ID,
+        subject_id=subject_id,
         snapshot_at=SNAPSHOT_AT,
         data_tier="synthetic",
     )
@@ -183,10 +188,16 @@ def test_no_valid_history_is_insufficient():
 def test_past_twin_excludes_evidence_not_yet_available():
     payload = build_export()
     histories = list(payload["historical_series"].values())
+    subject_id = histories[0].subject_id
+    records = [
+        record
+        for record in payload["evidence_records"]
+        if record.subject_id == subject_id
+    ]
     snapshot = build_twin_snapshot(
-        payload["evidence_records"],
+        records,
         histories,
-        subject_id=SUBJECT_ID,
+        subject_id=subject_id,
         snapshot_at=SNAPSHOT_AT,
         data_tier="synthetic",
     )
