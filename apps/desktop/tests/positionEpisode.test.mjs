@@ -23,6 +23,90 @@ function state(id, overrides = {}) {
   };
 }
 
+function source(kind, id, executionRefs) {
+  return {
+    source_kind: kind,
+    source_record_id: id,
+    replay_scope_id: "scope-test",
+    vectorbt_record_id: 0,
+    execution_refs: executionRefs,
+  };
+}
+
+function result(kind, status, pnl, sourceValue) {
+  return {
+    result_kind: kind,
+    result_basis: "net_pnl",
+    pnl,
+    return_value: kind === "counterfactual" ? null : 0.1,
+    result_sign: pnl > 0 ? "profit" : pnl < 0 ? "loss" : "flat",
+    position_status: status,
+    recorded_entry_fees: 0,
+    recorded_exit_fees: 0,
+    valuation_at: status === "open" ? "2025-01-08T00:00:00" : null,
+    valuation_price: status === "open" ? 10 : null,
+    source: sourceValue,
+  };
+}
+
+function outcomeStory(entry) {
+  const episodeResult = result("marked", "open", 100, source("vectorbt_position", "position-0", ["execution-1", "execution-2"]));
+  const episodeOutcome = {
+    outcome_id: "outcome-episode",
+    episode_id: "episode-open",
+    subject_id: "demo-user",
+    account_id: "demo-account",
+    instrument_id: "SYN",
+    episode_status: "open",
+    analysis_as_of: "2025-01-08T23:59:00",
+    relation_type: "marked_position_result",
+    actual_result: episodeResult,
+    decision_event_refs: ["decision-open", "decision-reduce"],
+    execution_refs: ["execution-1", "execution-2"],
+    duration_days: 6,
+    duration_kind: "so_far",
+    method_id: "historical_decision_outcome_v1",
+    method_version: "1",
+    calculation_code_version: "test-v1",
+    limitations: ["Recorded history only."],
+  };
+  return {
+    episode_outcome: episodeOutcome,
+    decision_outcomes: entry.decisions.map((decision) => {
+      const before = entry.states_by_ref[decision.state_before_ref];
+      const after = entry.states_by_ref[decision.state_after_ref];
+      return {
+        outcome_id: `outcome-${decision.decision_id}`,
+        subject_id: "demo-user",
+        account_id: "demo-account",
+        instrument_id: "SYN",
+        episode_id: "episode-open",
+        decision_event_id: decision.decision_id,
+        event_type: decision.decision_type,
+        event_time: decision.occurred_at,
+        relation_types: decision.side === "SELL" ? ["deterministic_state_transition", "accounting_realized_result"] : ["deterministic_state_transition"],
+        before: { state_ref: before.state_id, quantity: before.quantity, average_cost: before.average_cost, position_status: before.quantity === 0 ? "flat" : "open" },
+        execution_id: decision.execution_id,
+        side: decision.side,
+        executed_quantity: decision.executed_quantity,
+        execution_price: decision.execution_price,
+        execution_fee: decision.fees,
+        execution_source: source("vectorbt_order", `order-${decision.execution_id}`, [decision.execution_id]),
+        after: { state_ref: after.state_id, quantity: after.quantity, average_cost: after.average_cost, position_status: after.quantity === 0 ? "flat" : "open" },
+        immediate_result: decision.side === "SELL" ? result("realized", "closed", 100, source("vectorbt_exit_trade", "trade-0", [decision.execution_id])) : null,
+        episode_result_ref: "outcome-episode",
+        evidence_refs: [],
+        method_id: "historical_decision_outcome_v1",
+        method_version: "1",
+        calculation_code_version: "test-v1",
+        limitations: ["Recorded history only."],
+      };
+    }),
+    counterfactuals: [],
+    exit_followup: null,
+  };
+}
+
 function demo(overrides = {}) {
   const before = state("state-before", {
     boundary: "before_execution",
@@ -41,7 +125,7 @@ function demo(overrides = {}) {
     valuation_price: 10,
     market_value: 500,
   });
-  return {
+  const payload = {
     data_tier: "synthetic",
     default_episode_id: "episode-open",
     entries: [
@@ -131,6 +215,8 @@ function demo(overrides = {}) {
     ],
     ...overrides,
   };
+  payload.entries[0].outcome_story = outcomeStory(payload.entries[0]);
+  return payload;
 }
 
 test("position episode adapter preserves backend decision order, refs, and explicit evidence state", () => {
@@ -168,7 +254,7 @@ test("adapter rejects invalid open lifecycle semantics and missing state referen
 
   const closeDecision = demo();
   closeDecision.entries[0].decisions[1].decision_type = "close_position";
-  assert.throws(() => adaptPositionEpisodeDemo(closeDecision), /must not contain a close decision/);
+  assert.throws(() => adaptPositionEpisodeDemo(closeDecision), /does not resolve|must not contain a close decision/);
 
   const missingState = demo();
   missingState.entries[0].decisions[0].state_after_ref = "not-present";
@@ -234,8 +320,8 @@ test("Episode UI uses backend facts and labels current valuation as not an exit"
 
   assert.equal(page.includes("@/demo/fixture"), false);
   assert.equal(page.includes("dangerouslySetInnerHTML"), false);
-  assert.match(page, /stateBefore\.quantity/);
-  assert.match(page, /stateAfter\.quantity/);
+  assert.match(page, /outcome\.before\.quantity/);
+  assert.match(page, /outcome\.after\.quantity/);
   assert.match(chart, /seriesId !== "decision-events"/);
   assert.match(chart, /silent: true/);
   assert.match(chinese, /"Open position": "建仓"/);

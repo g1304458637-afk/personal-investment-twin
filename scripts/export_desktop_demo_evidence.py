@@ -29,11 +29,16 @@ DEMO_INSTRUMENT_NAMES = {
     "SYN_PAPER_LOSS": "Demo Security D",
     "SYN_NEUTRAL": "Demo Security E",
     "600000.SH": "Demo Security F",
+    "SYN_EXIT_UP": "Demo Security G",
 }
 
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.attribution.exit_timing_evidence import build_exit_timing_evidence  # noqa: E402
+from src.attribution.decision_outcome import (  # noqa: E402
+    build_actual_outcomes,
+    evaluate_historical_counterfactual,
+)
 from src.attribution.friction_evidence import build_friction_evidence  # noqa: E402
 from src.attribution.selection_evidence import build_selection_evidence  # noqa: E402
 from src.attribution.sizing_evidence import build_sizing_evidence  # noqa: E402
@@ -162,7 +167,110 @@ def _build_exit_episode(root: Path):
     records = portfolio.positions.records_readable
     if len(records) != 1:
         raise RuntimeError("Synthetic exit demo must produce exactly one Position")
-    return from_vectorbt_position_record(records.iloc[0])
+    return from_vectorbt_position_record(records.iloc[0]), executions, rows
+
+
+def _position_episode_story(
+    lifecycle: PositionEpisodeLifecycle,
+    executions: pd.DataFrame,
+    market_prices: pd.DataFrame,
+    *,
+    episode_id: str,
+    subject_id: str,
+    account_id: str,
+    analysis_as_of: pd.Timestamp,
+    exit_evidence: object | None = None,
+) -> dict[str, object]:
+    """Project frozen Outcome facts into one Desktop Episode story payload."""
+
+    actual = build_actual_outcomes(
+        lifecycle,
+        executions,
+        market_prices,
+        subject_id=subject_id,
+        account_id=account_id,
+        analysis_as_of=analysis_as_of,
+        init_cash=INITIAL_CASH,
+    )
+    episode_outcome = next(
+        item for item in actual.episode_outcomes if item.episode_id == episode_id
+    )
+    decision_outcomes = tuple(
+        item for item in actual.decision_outcomes if item.episode_id == episode_id
+    )
+    counterfactuals = []
+    for decision in decision_outcomes:
+        if decision.event_type in {"open_position", "add_position", "reduce_position"}:
+            counterfactuals.append(
+                evaluate_historical_counterfactual(
+                    lifecycle,
+                    executions,
+                    market_prices,
+                    subject_id=subject_id,
+                    account_id=account_id,
+                    decision_event_id=decision.decision_event_id,
+                    scenario_id="omit_event_until_next_decision_v1",
+                    analysis_as_of=analysis_as_of,
+                    init_cash=INITIAL_CASH,
+                )
+            )
+        if decision.event_type in {"add_position", "reduce_position"}:
+            counterfactuals.append(
+                evaluate_historical_counterfactual(
+                    lifecycle,
+                    executions,
+                    market_prices,
+                    subject_id=subject_id,
+                    account_id=account_id,
+                    decision_event_id=decision.decision_event_id,
+                    scenario_id="omit_event_preserve_later_executions_v1",
+                    analysis_as_of=analysis_as_of,
+                    init_cash=INITIAL_CASH,
+                )
+            )
+        if decision.event_type == "close_position" and exit_evidence is not None:
+            counterfactuals.append(
+                evaluate_historical_counterfactual(
+                    lifecycle,
+                    executions,
+                    market_prices,
+                    subject_id=subject_id,
+                    account_id=account_id,
+                    decision_event_id=decision.decision_event_id,
+                    scenario_id="existing_exit_evidence_reuse_v1",
+                    analysis_as_of=analysis_as_of,
+                    init_cash=INITIAL_CASH,
+                    exit_evidence=exit_evidence,
+                )
+            )
+    exit_followup = None
+    if exit_evidence is not None:
+        exit_followup = {
+            "evidence_id": exit_evidence.evidence_id,
+            "evidence_status": exit_evidence.evidence_status,
+            "evidence_reason": exit_evidence.evidence_reason,
+            "actual_exit_price": exit_evidence.attributes.get("actual_exit_price"),
+            "exit_session_market_price": exit_evidence.attributes.get(
+                "exit_session_market_price"
+            ),
+            "counterfactual_exit_price": exit_evidence.attributes.get(
+                "counterfactual_exit_price"
+            ),
+            "counterfactual_exit_time": exit_evidence.attributes.get(
+                "counterfactual_exit_time"
+            ),
+            "post_exit_asset_return": exit_evidence.value,
+            "comparison": exit_evidence.attributes.get("comparison"),
+            "policy_id": exit_evidence.attributes.get("policy_id"),
+            "policy_sessions": exit_evidence.attributes.get("policy_sessions"),
+            "limitations": exit_evidence.limitations,
+        }
+    return {
+        "episode_outcome": episode_outcome,
+        "decision_outcomes": decision_outcomes,
+        "counterfactuals": tuple(counterfactuals),
+        "exit_followup": exit_followup,
+    }
 
 
 def _position_episode_entry(
@@ -170,6 +278,7 @@ def _position_episode_entry(
     *,
     episode_id: str,
     market_prices: pd.DataFrame,
+    outcome_story: dict[str, object],
 ) -> dict[str, object]:
     episode = next(item for item in lifecycle.episodes if item.episode_id == episode_id)
     decisions = tuple(
@@ -233,6 +342,7 @@ def _position_episode_entry(
         "states_by_ref": states,
         "evidence_references": evidence_references,
         "price_points": price_points,
+        "outcome_story": outcome_story,
     }
 
 
@@ -242,7 +352,10 @@ def _exit_provider(root: Path, exit_prices: pd.DataFrame) -> LocalMarketDataProv
         for name in ("industry_membership.csv", "benchmark_mapping.csv"):
             shutil.copyfile(root / "data" / "reference" / name, temporary_root / name)
         reference_prices = pd.read_csv(root / "data" / "reference" / "prices.csv")
-        pd.concat([reference_prices, exit_prices], ignore_index=True).to_csv(
+        reference_prices["date"] = pd.to_datetime(reference_prices["date"])
+        normalized_exit_prices = exit_prices.copy()
+        normalized_exit_prices["date"] = pd.to_datetime(normalized_exit_prices["date"])
+        pd.concat([reference_prices, normalized_exit_prices], ignore_index=True).to_csv(
             temporary_root / "prices.csv",
             index=False,
         )
@@ -307,9 +420,32 @@ def build_export() -> dict[str, object]:
         init_cash=INITIAL_CASH,
     )
 
-    exit_episode = _build_exit_episode(PROJECT_ROOT)
-    exit_price_rows = pd.read_csv(
-        PROJECT_ROOT / "data" / "sample" / "synthetic_exit_timing_prices.csv"
+    raw_exit_episode, exit_executions, exit_price_rows = _build_exit_episode(PROJECT_ROOT)
+    exit_entry_price_row = exit_price_rows.loc[
+        exit_price_rows["instrument"] == raw_exit_episode.symbol
+    ].iloc[[0]].copy()
+    exit_entry_price_row.loc[:, "date"] = "2025-06-01"
+    exit_lifecycle_prices = pd.concat(
+        [exit_entry_price_row, exit_price_rows],
+        ignore_index=True,
+    )
+    exit_subject = "demo-user:synthetic-exit"
+    exit_account = "demo-account:exit"
+    exit_as_of = pd.Timestamp("2025-06-30 23:59:00")
+    exit_lifecycle = build_position_episode_lifecycle(
+        exit_executions,
+        exit_lifecycle_prices,
+        subject_id=exit_subject,
+        account_id=exit_account,
+        as_of=exit_as_of,
+        init_cash=INITIAL_CASH,
+        data_tier="synthetic",
+        calculation_code_version=CALCULATION_CODE_VERSION,
+    )
+    exit_position_episode = exit_lifecycle.episodes[0]
+    exit_episode = dataclasses.replace(
+        raw_exit_episode,
+        episode_id=exit_position_episode.episode_id,
     )
     exit = build_exit_timing_evidence(
         exit_episode,
@@ -329,7 +465,7 @@ def build_export() -> dict[str, object]:
     records = [
         _adapt(selection, selected_episode.episode_id),
         _adapt(sizing, behavior_subject),
-        _adapt(exit, exit_episode.episode_id),
+        _adapt(exit, exit_subject),
         _adapt(friction, selected_episode.episode_id),
         _adapt(turnover, behavior_subject),
         _adapt(concentration, behavior_subject),
@@ -363,6 +499,26 @@ def build_export() -> dict[str, object]:
     )
     selected_position_episode = selected_lifecycle.episodes[0]
 
+    exit_record = next(
+        record for record in records if record.metric_id == "exit_timing_post_exit_asset_return"
+    )
+    exit_lifecycle = build_position_episode_lifecycle(
+        exit_executions,
+        exit_lifecycle_prices,
+        subject_id=exit_subject,
+        account_id=exit_account,
+        as_of=exit_as_of,
+        init_cash=INITIAL_CASH,
+        data_tier="synthetic",
+        calculation_code_version=CALCULATION_CODE_VERSION,
+        decision_evidence={
+            exit_position_episode.closing_execution_id: (exit_record,)
+        },
+        episode_evidence={
+            exit_position_episode.opening_execution_id: (exit_record,)
+        },
+    )
+
     behavior_lifecycle = build_position_episode_lifecycle(
         behavior_executions,
         behavior_prices,
@@ -372,6 +528,37 @@ def build_export() -> dict[str, object]:
         init_cash=INITIAL_CASH,
         data_tier="synthetic",
         calculation_code_version=CALCULATION_CODE_VERSION,
+    )
+    selected_story = _position_episode_story(
+        selected_lifecycle,
+        sample_executions,
+        selected_market_prices,
+        episode_id=selected_position_episode.episode_id,
+        subject_id=selected_lifecycle.subject_id,
+        account_id="demo-account:selected",
+        analysis_as_of=selected_lifecycle.as_of,
+    )
+    behavior_stories = {
+        episode.episode_id: _position_episode_story(
+            behavior_lifecycle,
+            behavior_executions,
+            behavior_prices,
+            episode_id=episode.episode_id,
+            subject_id=behavior_subject,
+            account_id="demo-account:behavior",
+            analysis_as_of=behavior_lifecycle.as_of,
+        )
+        for episode in behavior_lifecycle.episodes
+    }
+    exit_story = _position_episode_story(
+        exit_lifecycle,
+        exit_executions,
+        exit_lifecycle_prices,
+        episode_id=exit_position_episode.episode_id,
+        subject_id=exit_subject,
+        account_id=exit_account,
+        analysis_as_of=exit_as_of,
+        exit_evidence=exit_record,
     )
     turnover_record = next(
         record for record in records if record.metric_id == "mean_daily_turnover"
@@ -537,14 +724,22 @@ def build_export() -> dict[str, object]:
                     selected_lifecycle,
                     episode_id=selected_position_episode.episode_id,
                     market_prices=selected_market_prices,
+                    outcome_story=selected_story,
                 ),
                 *(
                     _position_episode_entry(
                         behavior_lifecycle,
                         episode_id=episode.episode_id,
                         market_prices=behavior_prices,
+                        outcome_story=behavior_stories[episode.episode_id],
                     )
                     for episode in behavior_lifecycle.episodes
+                ),
+                _position_episode_entry(
+                    exit_lifecycle,
+                    episode_id=exit_position_episode.episode_id,
+                    market_prices=exit_lifecycle_prices,
+                    outcome_story=exit_story,
                 ),
             ),
         },

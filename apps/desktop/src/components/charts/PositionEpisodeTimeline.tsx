@@ -30,9 +30,11 @@ function escapeHtml(value: string): string {
 
 export function PositionEpisodeTimeline({
   entry,
+  selectedDecisionId,
   onSelectDecision,
 }: {
   entry: PositionEpisodeEntryView;
+  selectedDecisionId: string | null;
   onSelectDecision: (decisionId: string) => void;
 }) {
   const { locale, t, formatCurrency, formatNumber } = useLocale();
@@ -71,12 +73,16 @@ export function PositionEpisodeTimeline({
       afterQuantity: decision.stateAfter.quantity,
       occurredAt: decision.occurredAt,
       symbol: markerStyle[decision.decisionType].symbol,
-      symbolSize: decision.decisionType === "close_position" ? 15 : 14,
+      symbolSize: decision.decisionId === selectedDecisionId
+        ? 19
+        : decision.decisionType === "close_position" ? 15 : 14,
       itemStyle: {
-        color: markerStyle[decision.decisionType].color,
+        color: decision.decisionId === selectedDecisionId
+          ? "#f4fbff"
+          : markerStyle[decision.decisionType].color,
         borderColor: "rgba(7, 14, 24, .82)",
         borderWidth: 2,
-        shadowBlur: 14,
+        shadowBlur: decision.decisionId === selectedDecisionId ? 22 : 14,
         shadowColor: `${markerStyle[decision.decisionType].color}55`,
       },
       label: {
@@ -87,6 +93,10 @@ export function PositionEpisodeTimeline({
         fontSize: 11,
         formatter: decisionLabel(decision.decisionType),
       },
+    }));
+    const averageCost = entry.decisions.map((decision) => ({
+      value: [decision.occurredAt, decision.outcome.after.averageCost],
+      decisionId: decision.decisionId,
     }));
     const current = entry.snapshot?.positionState;
     const valuation =
@@ -132,7 +142,7 @@ export function PositionEpisodeTimeline({
           const point = params as {
             seriesId?: string;
             data?: Record<string, unknown>;
-            value?: [string, number];
+            value?: [string, number | null];
           };
           const data = point.data ?? {};
           if (point.seriesId === "decision-events") {
@@ -151,6 +161,12 @@ export function PositionEpisodeTimeline({
               `${escapeHtml(t("Valuation price"))}: ${escapeHtml(formatCurrency(Number(data.valuationPrice)))}`,
               escapeHtml(t("This mark is not an exit or sale.")),
             ].join("<br/>");
+          }
+          if (point.seriesId === "average-cost") {
+            const value = point.value;
+            return value && value[1] !== null
+              ? `${escapeHtml(dateFormatter.format(new Date(value[0])))}<br/>${escapeHtml(t("Average cost"))}: ${escapeHtml(formatCurrency(Number(value[1])))}`
+              : "";
           }
           const value = point.value;
           return value
@@ -193,6 +209,18 @@ export function PositionEpisodeTimeline({
           z: 2,
         },
         {
+          id: "average-cost",
+          name: t("Average cost"),
+          type: "line",
+          data: averageCost,
+          step: "end",
+          smooth: false,
+          showSymbol: false,
+          connectNulls: false,
+          lineStyle: { color: "rgba(188, 169, 255, .78)", width: 1.6, type: "dashed" },
+          z: 3,
+        },
+        {
           id: "decision-events",
           name: t("Actual executions"),
           type: "scatter",
@@ -209,7 +237,7 @@ export function PositionEpisodeTimeline({
         },
       ],
     };
-  }, [decisionLabel, entry, formatCurrency, formatNumber, locale, t]);
+  }, [decisionLabel, entry, formatCurrency, formatNumber, locale, selectedDecisionId, t]);
 
   const handleClick = useCallback(
     (event: ECElementEvent) => {
@@ -230,6 +258,10 @@ export function PositionEpisodeTimeline({
         <span className="inline-flex items-center gap-2">
           <span className="size-2.5 rounded-full bg-[#bca9ff]" aria-hidden="true" />
           {t("Actual execution")}
+        </span>
+        <span className="inline-flex items-center gap-2">
+          <span className="w-5 border-t border-dashed border-[#bca9ff]" aria-hidden="true" />
+          {t("Average cost")}
         </span>
         {entry.snapshot ? (
           <span className="inline-flex items-center gap-2 text-accent">

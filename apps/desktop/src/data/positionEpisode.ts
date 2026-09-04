@@ -1,5 +1,11 @@
 import type { EvidenceStatus } from "@/demo/types";
 
+import {
+  adaptDecisionOutcomeStory,
+  type DecisionImmediateOutcomeView,
+  type DecisionOutcomeStoryView,
+} from "./decisionOutcome.ts";
+
 export type PositionEpisodeStatus = "open" | "closed";
 export type PositionDecisionType =
   | "open_position"
@@ -88,6 +94,7 @@ export interface BackendPositionEpisodeEntry {
   snapshot: BackendPositionEpisodeSnapshot | null;
   evidence_references: BackendPositionEvidenceReference[];
   price_points: Array<{ observed_at: string; price: number }>;
+  outcome_story: unknown;
 }
 
 export interface BackendPositionEpisodeDemo {
@@ -137,6 +144,7 @@ export interface PositionDecisionView {
   stateBefore: PositionStateView;
   stateAfter: PositionStateView;
   evidenceRefs: string[];
+  outcome: DecisionImmediateOutcomeView;
 }
 
 export interface PositionEpisodeView {
@@ -180,6 +188,7 @@ export interface PositionEpisodeEntryView {
   snapshot: PositionEpisodeSnapshotView | null;
   evidenceReferences: PositionEvidenceReferenceView[];
   pricePoints: Array<{ observedAt: string; price: number }>;
+  outcomeStory: DecisionOutcomeStoryView;
 }
 
 export interface PositionEpisodeDemoView {
@@ -275,7 +284,7 @@ function adaptEntry(entry: BackendPositionEpisodeEntry): PositionEpisodeEntryVie
     && entry.instrument.display_name.trim().length > 0
     ? entry.instrument.display_name.trim()
     : episode.instrumentId;
-  const decisions = entry.decisions.map((decision) => {
+  const baseDecisions = entry.decisions.map((decision) => {
     if (decision.episode_id !== episode.episodeId) {
       throw new Error(`Position episode decision ${decision.decision_id} belongs to another Episode.`);
     }
@@ -295,6 +304,35 @@ function adaptEntry(entry: BackendPositionEpisodeEntry): PositionEpisodeEntryVie
       stateAfter: requiredState(statesByRef, decision.state_after_ref, decision.decision_id),
       evidenceRefs: decision.evidence_refs,
     };
+  });
+
+  const outcomeStory = adaptDecisionOutcomeStory(entry.outcome_story, {
+    subjectId: episode.subjectId,
+    accountId: episode.accountId,
+    instrumentId: episode.instrumentId,
+    episodeId: episode.episodeId,
+    episodeStatus: episode.status,
+    decisions: baseDecisions.map((decision) => ({
+      decisionId: decision.decisionId,
+      executionId: decision.executionId,
+      side: decision.side,
+      eventType: decision.decisionType,
+    })),
+  });
+  const outcomeByDecision = new Map(
+    outcomeStory.decisionOutcomes.map((outcome) => [outcome.decisionEventId, outcome]),
+  );
+  const decisions: PositionDecisionView[] = baseDecisions.map((decision) => {
+    const outcome = outcomeByDecision.get(decision.decisionId);
+    if (!outcome) throw new Error(`Position episode decision ${decision.decisionId} has no Outcome.`);
+    if (
+      outcome.before.stateRef !== decision.stateBeforeRef
+      || outcome.after.stateRef !== decision.stateAfterRef
+      || outcome.executedQuantity !== decision.executedQuantity
+      || outcome.executionPrice !== decision.executionPrice
+      || outcome.executionFee !== decision.fees
+    ) throw new Error(`Position episode decision ${decision.decisionId} Outcome does not match replay facts.`);
+    return { ...decision, outcome };
   });
 
   if (episode.status === "open") {
@@ -348,6 +386,7 @@ function adaptEntry(entry: BackendPositionEpisodeEntry): PositionEpisodeEntryVie
       observedAt: point.observed_at,
       price: finite(point.price, "price point"),
     })),
+    outcomeStory,
   };
 }
 
