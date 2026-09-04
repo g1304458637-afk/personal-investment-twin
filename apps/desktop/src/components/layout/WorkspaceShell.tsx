@@ -11,6 +11,7 @@ import { InspectorProvider } from "@/components/inspector/InspectorContext";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { demoUser } from "@/demo/fixture";
+import { useDataMode } from "@/data/DataModeProvider";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/locales/LocaleProvider";
 import {
@@ -30,6 +31,7 @@ function WorkspaceShellContent() {
   const { t } = useLocale();
   const [agentOpen, setAgentOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+  const data = useDataMode();
   const currentRouteId = activeNavigationRouteId(location.pathname);
   const exactRouteId = activeRouteId(location.pathname);
   const currentGroup = activeNavigationGroup(location.pathname);
@@ -84,11 +86,11 @@ function WorkspaceShellContent() {
 
         <nav className="workspace-nav">
           <span className="workspace-nav__label">{t("Work")}</span>
-          {navigationItems.map((item) => {
+          {navigationItems.map((item, index) => {
             if (item.type === "route") {
               return (
                 <div key={item.id} className={cn(item.section === "manage" && "workspace-nav__manage")}>
-                  {item.section === "manage" ? <span className="workspace-nav__label">{t("Manage")}</span> : null}
+                  {item.section === "manage" && navigationItems[index - 1]?.section !== "manage" ? <span className="workspace-nav__label">{t("Manage")}</span> : null}
                   {navigationLink(item)}
                 </div>
               );
@@ -112,9 +114,7 @@ function WorkspaceShellContent() {
         </nav>
 
         <div className="workspace-sidebar__footer">
-          <DemoBadge />
-          <p>{t("Offline fixture · {tier}", { tier: t(demoUser.dataTier) })}</p>
-          <span>ui-demo-v1</span>
+          {data.mode === "demo" ? <><DemoBadge /><p>{t("Offline fixture · {tier}", { tier: t(demoUser.dataTier) })}</p><span>ui-demo-v1</span></> : <><span className="rounded-full border border-positive/30 bg-positive/10 px-2 py-1 text-[10px] text-positive">{t("My data")}</span><p>{data.activeAccount?.display_name ?? t("No real account imported yet.")}</p><span>{t("Local deterministic data")}</span></>}
         </div>
       </aside>
 

@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { WorkspaceShell } from "@/components/layout/WorkspaceShell";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LocaleProvider, useLocale } from "@/locales/LocaleProvider";
+import { DataModeProvider } from "@/data/DataModeProvider";
 import {
   legacyRoutePaths,
   productRoutes,
@@ -22,6 +23,7 @@ const BehaviorPage = lazy(async () => ({ default: (await import("@/pages/Behavio
 const DecisionCheckPage = lazy(async () => ({ default: (await import("@/pages/DecisionCheckPage")).DecisionCheckPage }));
 const DecisionsPage = lazy(async () => ({ default: (await import("@/pages/DecisionsPage")).DecisionsPage }));
 const PositionEpisodePage = lazy(async () => ({ default: (await import("@/pages/PositionEpisodePage")).PositionEpisodePage }));
+const DataAccountsPage = lazy(async () => ({ default: (await import("@/pages/DataAccountsPage")).DataAccountsPage }));
 
 const routeElements: Partial<Record<ProductRouteId, React.ReactNode>> = {
   overview: <OverviewPage />,
@@ -34,6 +36,7 @@ const routeElements: Partial<Record<ProductRouteId, React.ReactNode>> = {
   settings: <SettingsPage />,
   advanced_evidence: <EvidencePage />,
   investment_episode: <PositionEpisodePage />,
+  data_accounts: <DataAccountsPage />,
 };
 
 function load(page: React.ReactNode) {
@@ -54,7 +57,7 @@ function LegacyRouteRedirect() {
 export default function App() {
   return (
     <LocaleProvider>
-      <ThemeProvider>
+      <DataModeProvider><ThemeProvider>
         <MotionConfig reducedMotion="user">
           <TooltipProvider delayDuration={360} skipDelayDuration={120}>
             <HashRouter>
@@ -74,7 +77,7 @@ export default function App() {
             </HashRouter>
           </TooltipProvider>
         </MotionConfig>
-      </ThemeProvider>
+      </ThemeProvider></DataModeProvider>
     </LocaleProvider>
   );
 }

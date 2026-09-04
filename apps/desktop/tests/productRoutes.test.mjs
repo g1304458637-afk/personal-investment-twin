@@ -51,10 +51,10 @@ test("primary sidebar derives only ready routes from metadata", () => {
       ? [entry.route.id]
       : [entry.route.id, ...entry.children.map((child) => child.id)],
   );
-  assert.deepEqual(ids, ["overview", "investments", "review", "review_decisions", "review_patterns", "twin", "pretrade", "settings"]);
+  assert.deepEqual(ids, ["overview", "investments", "review", "review_decisions", "review_patterns", "twin", "pretrade", "data_accounts", "settings"]);
   assert.equal(ids.includes("advanced_evidence"), false);
   assert.equal(ids.includes("investments"), true);
-  assert.equal(ids.includes("data_accounts"), false);
+  assert.equal(ids.includes("data_accounts"), true);
   assert.equal(entries.some((entry) => entry.type === "group" && entry.id === "review"), true);
   const review = entries.find((entry) => entry.type === "group" && entry.id === "review");
   assert.equal(review.route.path, "/review");

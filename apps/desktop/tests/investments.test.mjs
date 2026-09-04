@@ -95,8 +95,9 @@ test("Investments and Overview render backend view models without financial calc
   const adapter = await readFile(new URL("../src/data/investments.ts", import.meta.url), "utf8");
   const source = `${page}\n${overview}\n${row}\n${adapter}`;
 
-  assert.match(page, /investments\.openEpisodes/);
-  assert.match(page, /investments\.closedEpisodes/);
+  assert.match(page, /view\.openEpisodes/);
+  assert.match(page, /view\.closedEpisodes/);
+  assert.match(page, /realUserApi\.investments/);
   assert.match(row, /to=\{`\/investments\/episodes\/\$\{episode\.episodeId\}`\}/);
   assert.equal(source.includes("@/demo/fixture"), false);
   assert.equal(source.includes("dangerouslySetInnerHTML"), false);

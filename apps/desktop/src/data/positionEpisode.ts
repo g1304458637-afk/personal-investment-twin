@@ -71,7 +71,7 @@ export interface BackendPositionEpisode {
   duration_kind: "final" | "so_far";
   replay_method_id: string;
   calculation_code_version: string;
-  data_tier: "synthetic";
+  data_tier: "synthetic" | "authorized_beta";
   limitations: string[];
 }
 
@@ -86,7 +86,7 @@ export interface BackendPositionEpisodeEntry {
     instrument_id: string;
     display_name: string | null;
     is_synthetic: boolean;
-    data_tier: "synthetic";
+    data_tier: "synthetic" | "authorized_beta";
   };
   episode: BackendPositionEpisode;
   decisions: BackendPositionEpisodeDecision[];
@@ -164,7 +164,7 @@ export interface PositionEpisodeView {
   durationKind: "final" | "so_far";
   replayMethodId: string;
   calculationCodeVersion: string;
-  dataTier: "synthetic";
+  dataTier: "synthetic" | "authorized_beta";
   limitations: string[];
 }
 
@@ -179,8 +179,8 @@ export interface PositionEpisodeEntryView {
   instrument: {
     instrumentId: string;
     displayName: string;
-    isSynthetic: true;
-    dataTier: "synthetic";
+    isSynthetic: boolean;
+    dataTier: "synthetic" | "authorized_beta";
   };
   episode: PositionEpisodeView;
   decisions: PositionDecisionView[];
@@ -192,7 +192,7 @@ export interface PositionEpisodeEntryView {
 }
 
 export interface PositionEpisodeDemoView {
-  dataTier: "synthetic";
+  dataTier: "synthetic" | "authorized_beta";
   defaultEpisodeId: string;
   entries: PositionEpisodeEntryView[];
 }
@@ -246,10 +246,8 @@ function requiredState(
   return state;
 }
 
-function adaptEntry(entry: BackendPositionEpisodeEntry): PositionEpisodeEntryView {
-  if (entry.episode.data_tier !== "synthetic") {
-    throw new Error("Desktop position episode demo must remain explicitly synthetic.");
-  }
+function adaptEntry(entry: BackendPositionEpisodeEntry, expectedTier: "synthetic" | "authorized_beta" = "synthetic"): PositionEpisodeEntryView {
+  if (entry.episode.data_tier !== expectedTier) throw new Error("Position episode data tier does not match its transport.");
   const statesByRef = Object.fromEntries(
     Object.entries(entry.states_by_ref).map(([ref, state]) => [ref, stateView(state)]),
   );
@@ -275,8 +273,8 @@ function adaptEntry(entry: BackendPositionEpisodeEntry): PositionEpisodeEntryVie
   };
   if (
     entry.instrument.instrument_id !== episode.instrumentId
-    || entry.instrument.data_tier !== "synthetic"
-    || entry.instrument.is_synthetic !== true
+    || entry.instrument.data_tier !== expectedTier
+    || entry.instrument.is_synthetic !== (expectedTier === "synthetic")
   ) {
     throw new Error("Position episode instrument metadata must match its synthetic Episode.");
   }
@@ -374,8 +372,8 @@ function adaptEntry(entry: BackendPositionEpisodeEntry): PositionEpisodeEntryVie
     instrument: {
       instrumentId: episode.instrumentId,
       displayName,
-      isSynthetic: true,
-      dataTier: "synthetic",
+      isSynthetic: entry.instrument.is_synthetic,
+      dataTier: expectedTier,
     },
     episode,
     decisions,
@@ -394,7 +392,7 @@ export function adaptPositionEpisodeDemo(value: BackendPositionEpisodeDemo): Pos
   if (value.data_tier !== "synthetic") {
     throw new Error("Desktop position episode demo must remain explicitly synthetic.");
   }
-  const entries = value.entries.map(adaptEntry);
+  const entries = value.entries.map((entry) => adaptEntry(entry));
   if (!entries.some((entry) => entry.episode.episodeId === value.default_episode_id)) {
     throw new Error("Position episode demo default episode is missing.");
   }
@@ -403,4 +401,8 @@ export function adaptPositionEpisodeDemo(value: BackendPositionEpisodeDemo): Pos
     defaultEpisodeId: value.default_episode_id,
     entries,
   };
+}
+
+export function adaptRuntimePositionEpisodeEntry(value: unknown): PositionEpisodeEntryView {
+  return adaptEntry(value as BackendPositionEpisodeEntry, "authorized_beta");
 }

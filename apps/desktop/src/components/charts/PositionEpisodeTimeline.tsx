@@ -132,14 +132,18 @@ export function PositionEpisodeTimeline({
       animationEasing: "cubicOut",
       grid: { left: 58, right: entry.snapshot ? 116 : 30, top: 48, bottom: 48 },
       tooltip: {
-        trigger: "item",
+        trigger: "axis",
+        axisPointer: { type: "cross" },
         borderWidth: 1,
         borderColor: "rgba(142, 220, 255, .2)",
         backgroundColor: "rgba(8, 16, 27, .94)",
         textStyle: { color: "#eaf3fb", fontSize: 12 },
         extraCssText: "border-radius:10px;box-shadow:0 18px 50px rgba(0,0,0,.35);",
         formatter: (params: unknown) => {
-          const point = params as {
+          const source = Array.isArray(params)
+            ? (params.find((item) => (item as { seriesId?: string }).seriesId === "decision-events") ?? params[0])
+            : params;
+          const point = source as {
             seriesId?: string;
             data?: Record<string, unknown>;
             value?: [string, number | null];
@@ -194,6 +198,7 @@ export function PositionEpisodeTimeline({
         },
         splitLine: { lineStyle: { color: "rgba(148, 177, 204, .09)" } },
       },
+      dataZoom: [{ type: "inside", xAxisIndex: 0, filterMode: "none" }],
       series: [
         {
           id: "market-price",
@@ -202,7 +207,7 @@ export function PositionEpisodeTimeline({
           data: entry.pricePoints.map((point) => [point.observedAt, point.price]),
           showSymbol: false,
           connectNulls: false,
-          smooth: 0.22,
+          smooth: false,
           lineStyle: { color: "rgba(142, 220, 255, .72)", width: 2 },
           areaStyle: { color: "rgba(91, 179, 221, .08)" },
           emphasis: { focus: "series" },

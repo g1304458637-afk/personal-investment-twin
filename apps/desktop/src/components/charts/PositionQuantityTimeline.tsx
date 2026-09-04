@@ -41,13 +41,15 @@ export function PositionQuantityTimeline({
       animationDuration: 360,
       grid: { left: 54, right: 24, top: 16, bottom: 38 },
       tooltip: {
-        trigger: "item",
+        trigger: "axis",
+        axisPointer: { type: "cross" },
         borderWidth: 1,
         borderColor: "rgba(142, 220, 255, .2)",
         backgroundColor: "rgba(8, 16, 27, .94)",
         textStyle: { color: "#eaf3fb", fontSize: 12 },
         formatter: (params: unknown) => {
-          const point = params as { value?: [string, number] };
+          const source = Array.isArray(params) ? params[0] : params;
+          const point = source as { value?: [string, number] };
           return point.value
             ? `${date.format(new Date(point.value[0]))}<br/>${t("Position quantity")}: ${formatNumber(point.value[1], 0)}`
             : "";
@@ -67,6 +69,7 @@ export function PositionQuantityTimeline({
         axisLabel: { color: "rgba(177, 196, 214, .72)", formatter: (value: number) => formatNumber(value, 0) },
         splitLine: { lineStyle: { color: "rgba(148, 177, 204, .09)" } },
       },
+      dataZoom: [{ type: "inside", xAxisIndex: 0, filterMode: "none" }],
       series: [
         {
           id: "position-quantity",

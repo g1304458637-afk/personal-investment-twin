@@ -15,6 +15,18 @@ const PROTOCOL_VERSION: &str = "1";
 #[cfg(not(debug_assertions))]
 const SIDECAR_NAME: &str = "toujing-core";
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
+const STARTUP_TIMEOUT: Duration = Duration::from_secs(90);
+const PRODUCT_METHODS: &[&str] = &[
+    "ingestion.preview_trade_csv",
+    "ingestion.commit_trade_import",
+    "market.preview_price_csv",
+    "market.commit_price_import",
+    "account.list",
+    "account.get_data_status",
+    "investments.list",
+    "episode.get",
+    "data.delete_account",
+];
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct RuntimeError {
@@ -103,16 +115,27 @@ fn route_stdout(pending: &Pending, bytes: &[u8]) {
 
 impl RuntimeManager {
     pub async fn start(app: &AppHandle) -> Result<Self, String> {
+        let app_data = app
+            .path()
+            .app_data_dir()
+            .map_err(|error| format!("app data directory unavailable: {error}"))?;
+        std::fs::create_dir_all(&app_data)
+            .map_err(|error| format!("cannot create app data directory: {error}"))?;
+        let db_path = app_data.join("toujing-v1.sqlite3");
+        let db_arg = db_path.to_string_lossy().into_owned();
         #[cfg(debug_assertions)]
         let command = {
             let root = project_root();
             let python = root.join(".venv/bin/python");
             if !python.is_file() {
-                return Err(format!("development Python runtime missing at {}", python.display()));
+                return Err(format!(
+                    "development Python runtime missing at {}",
+                    python.display()
+                ));
             }
             app.shell()
                 .command(python)
-                .args(["-m", "toujing_core_runtime"])
+                .args(["-m", "toujing_core_runtime", "--db-path", db_arg.as_str()])
                 .current_dir(root)
         };
 
@@ -120,7 +143,8 @@ impl RuntimeManager {
         let command = app
             .shell()
             .sidecar(SIDECAR_NAME)
-            .map_err(|error| format!("bundled runtime unavailable: {error}"))?;
+            .map_err(|error| format!("bundled runtime unavailable: {error}"))?
+            .args(["--db-path", db_arg.as_str()]);
 
         let (mut events, child) = command
             .spawn()
@@ -158,7 +182,9 @@ impl RuntimeManager {
             alive,
             next_request: AtomicU64::new(1),
         };
-        let handshake = manager.request("runtime.handshake", json!({})).await?;
+        let handshake = manager
+            .request_with_timeout("runtime.handshake", json!({}), STARTUP_TIMEOUT)
+            .await?;
         if !handshake.ok
             || handshake
                 .result
@@ -174,6 +200,16 @@ impl RuntimeManager {
     }
 
     pub async fn request(&self, method: &str, params: Value) -> Result<RuntimeResponse, String> {
+        self.request_with_timeout(method, params, REQUEST_TIMEOUT)
+            .await
+    }
+
+    async fn request_with_timeout(
+        &self,
+        method: &str,
+        params: Value,
+        timeout: Duration,
+    ) -> Result<RuntimeResponse, String> {
         if !self.alive.load(Ordering::SeqCst) {
             return Err("core runtime is unavailable".to_owned());
         }
@@ -203,14 +239,20 @@ impl RuntimeManager {
             .ok_or_else(|| "core runtime is unavailable".to_owned())?
             .write(&bytes);
         if let Err(error) = write_result {
-            self.pending.lock().ok().and_then(|mut values| values.remove(&request_id));
+            self.pending
+                .lock()
+                .ok()
+                .and_then(|mut values| values.remove(&request_id));
             return Err(format!("failed to write runtime request: {error}"));
         }
-        match tokio::time::timeout(REQUEST_TIMEOUT, receiver).await {
+        match tokio::time::timeout(timeout, receiver).await {
             Ok(Ok(response)) => Ok(response),
             Ok(Err(_)) => Err("core runtime response channel closed".to_owned()),
             Err(_) => {
-                self.pending.lock().ok().and_then(|mut values| values.remove(&request_id));
+                self.pending
+                    .lock()
+                    .ok()
+                    .and_then(|mut values| values.remove(&request_id));
                 Err("core runtime request timed out".to_owned())
             }
         }
@@ -230,7 +272,11 @@ impl RuntimeManager {
                 let _ = child.kill();
             }
         }
-        fail_pending(&self.pending, "runtime_shutdown", "the core runtime was stopped");
+        fail_pending(
+            &self.pending,
+            "runtime_shutdown",
+            "the core runtime was stopped",
+        );
     }
 }
 
@@ -241,7 +287,9 @@ impl Drop for RuntimeManager {
 }
 
 #[tauri::command]
-pub async fn runtime_health(manager: tauri::State<'_, RuntimeManager>) -> Result<RuntimeResponse, String> {
+pub async fn runtime_health(
+    manager: tauri::State<'_, RuntimeManager>,
+) -> Result<RuntimeResponse, String> {
     manager.request("runtime.health", json!({})).await
 }
 
@@ -252,15 +300,29 @@ pub async fn runtime_core_smoke(
     manager.request("runtime.core_smoke", json!({})).await
 }
 
+#[tauri::command]
+pub async fn runtime_product_request(
+    method: String,
+    params: Value,
+    manager: tauri::State<'_, RuntimeManager>,
+) -> Result<RuntimeResponse, String> {
+    if !PRODUCT_METHODS.contains(&method.as_str()) {
+        return Ok(RuntimeResponse::error(
+            None,
+            "method_not_allowed",
+            "the desktop command only permits registered product methods",
+        ));
+    }
+    manager.request(&method, params).await
+}
+
 pub fn install(builder: tauri::Builder<tauri::Wry>) -> tauri::Builder<tauri::Wry> {
-    builder
-        .plugin(tauri_plugin_shell::init())
-        .setup(|app| {
-            let manager = tauri::async_runtime::block_on(RuntimeManager::start(app.handle()))
-                .map_err(std::io::Error::other)?;
-            app.manage(manager);
-            Ok(())
-        })
+    builder.plugin(tauri_plugin_shell::init()).setup(|app| {
+        let manager = tauri::async_runtime::block_on(RuntimeManager::start(app.handle()))
+            .map_err(std::io::Error::other)?;
+        app.manage(manager);
+        Ok(())
+    })
 }
 
 #[cfg(test)]
@@ -271,7 +333,10 @@ mod tests {
     fn malformed_response_fails_all_pending_requests() {
         let pending: Pending = Arc::new(Mutex::new(HashMap::new()));
         let (sender, receiver) = oneshot::channel();
-        pending.lock().unwrap().insert("request-1".to_owned(), sender);
+        pending
+            .lock()
+            .unwrap()
+            .insert("request-1".to_owned(), sender);
         route_stdout(&pending, b"not-json");
         let response = receiver.blocking_recv().unwrap();
         assert_eq!(response.error.unwrap().code, "runtime_protocol_error");
@@ -282,7 +347,10 @@ mod tests {
     fn response_is_routed_by_request_id() {
         let pending: Pending = Arc::new(Mutex::new(HashMap::new()));
         let (sender, receiver) = oneshot::channel();
-        pending.lock().unwrap().insert("request-1".to_owned(), sender);
+        pending
+            .lock()
+            .unwrap()
+            .insert("request-1".to_owned(), sender);
         route_stdout(
             &pending,
             br#"{"request_id":"request-1","ok":true,"result":{"status":"ok"},"error":null}"#,
@@ -298,7 +366,10 @@ mod tests {
         let mut receivers = Vec::new();
         for request_id in ["one", "two"] {
             let (sender, receiver) = oneshot::channel();
-            pending.lock().unwrap().insert(request_id.to_owned(), sender);
+            pending
+                .lock()
+                .unwrap()
+                .insert(request_id.to_owned(), sender);
             receivers.push(receiver);
         }
         fail_pending(&pending, "runtime_process_exited", "exited");
@@ -309,5 +380,12 @@ mod tests {
                 "runtime_process_exited"
             );
         }
+    }
+
+    #[test]
+    fn product_allowlist_excludes_shell_and_sql() {
+        assert!(!PRODUCT_METHODS.contains(&"shell.execute"));
+        assert!(!PRODUCT_METHODS.contains(&"sql.query"));
+        assert!(PRODUCT_METHODS.contains(&"episode.get"));
     }
 }

@@ -1,0 +1,6 @@
+date,local_symbol,market,security_type,price,price_type,currency,source_label
+2025-01-02,600000,XSHG,equity,10.00,adjusted_close,CNY,Runtime lifecycle fixture
+2025-01-03,600000,XSHG,equity,11.00,adjusted_close,CNY,Runtime lifecycle fixture
+2025-01-04,600000,XSHG,equity,12.00,adjusted_close,CNY,Runtime lifecycle fixture
+2025-01-05,600000,XSHG,equity,13.00,adjusted_close,CNY,Runtime lifecycle fixture
+2025-01-06,600000,XSHG,equity,12.50,adjusted_close,CNY,Runtime lifecycle fixture

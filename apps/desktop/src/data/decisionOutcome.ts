@@ -148,7 +148,7 @@ export interface HistoricalCounterfactualView {
   counterfactualResult: OutcomeResultView | null;
   comparison: OutcomeComparisonView;
   baselineEvidenceRef: string | null;
-  dataTier: "synthetic";
+  dataTier: "synthetic" | "authorized_beta";
   limitations: string[];
 }
 
@@ -457,7 +457,7 @@ export function adaptDecisionOutcomeStory(
       firstConflictingExecutionId: item.first_conflicting_execution_id === null ? null : text(item.first_conflicting_execution_id, "counterfactual.first_conflicting_execution_id"),
       actualResult, counterfactualResult, comparison: parsedComparison,
       baselineEvidenceRef: item.baseline_evidence_ref === null ? null : text(item.baseline_evidence_ref, "counterfactual.baseline_evidence_ref"),
-      dataTier: enumValue(item.data_tier, ["synthetic"], "counterfactual.data_tier"),
+      dataTier: enumValue(item.data_tier, ["synthetic", "authorized_beta"], "counterfactual.data_tier"),
       limitations: texts(item.limitations, "counterfactual.limitations"),
     };
   });
@@ -466,4 +466,34 @@ export function adaptDecisionOutcomeStory(
     throw new Error("Decision Outcome Exit follow-up is not backed by the registered baseline reference.");
   }
   return { episodeOutcome, decisionOutcomes, counterfactuals, exitFollowup: followup };
+}
+
+export function selectPrimaryCounterfactuals(
+  items: HistoricalCounterfactualView[],
+  decisions: Array<{ decisionId: string; eventType: string }>,
+): HistoricalCounterfactualView[] {
+  const typeById = new Map(decisions.map((item) => [item.decisionId, item.eventType]));
+  const chosen: HistoricalCounterfactualView[] = [];
+  for (const decision of decisions) {
+    if (decision.eventType === "open_position") continue;
+    const candidates = items.filter((item) =>
+      item.decisionEventId === decision.decisionId
+      && item.relationType !== "registered_baseline_comparison"
+      && item.feasibilityStatus === "complete"
+      && item.comparison.status === "complete"
+      && item.actualResult !== null
+      && item.counterfactualResult !== null,
+    );
+    const unique = new Map<string, HistoricalCounterfactualView>();
+    for (const item of candidates) {
+      const key = JSON.stringify([item.actualResult?.pnl, item.counterfactualResult?.pnl,
+        item.comparison.pnlDifference, item.comparison.resultTransition]);
+      if (!unique.has(key) || item.scenarioId === "omit_event_until_next_decision_v1") unique.set(key, item);
+    }
+    const primary = [...unique.values()].sort((left, right) =>
+      Number(right.scenarioId === "omit_event_until_next_decision_v1")
+      - Number(left.scenarioId === "omit_event_until_next_decision_v1"))[0];
+    if (primary && typeById.has(primary.decisionEventId)) chosen.push(primary);
+  }
+  return chosen;
 }

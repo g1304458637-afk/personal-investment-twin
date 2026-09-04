@@ -30,6 +30,7 @@ DEMO_INSTRUMENT_NAMES = {
     "SYN_NEUTRAL": "Demo Security E",
     "600000.SH": "Demo Security F",
     "SYN_EXIT_UP": "Demo Security G",
+    "SYN_PRODUCT": "Demo Security H",
 }
 
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -480,7 +481,7 @@ def build_export() -> dict[str, object]:
         for record in records
         if record.metric_id == "recorded_trading_friction_comparison"
     )
-    selected_market_prices = pd.read_csv(PROJECT_ROOT / "data" / "reference" / "prices.csv")
+    selected_market_prices = pd.read_csv(PROJECT_ROOT / "data" / "sample" / "product_demo_market_prices_v1.csv")
     selected_lifecycle = build_position_episode_lifecycle(
         sample_executions,
         selected_market_prices,
@@ -537,6 +538,30 @@ def build_export() -> dict[str, object]:
         subject_id=selected_lifecycle.subject_id,
         account_id="demo-account:selected",
         analysis_as_of=selected_lifecycle.as_of,
+    )
+    product_executions = load_normalized_csv(
+        PROJECT_ROOT / "data" / "sample" / "product_demo_executions_v1.csv"
+    )
+    product_market_prices = selected_market_prices.assign(instrument="SYN_PRODUCT")
+    product_lifecycle = build_position_episode_lifecycle(
+        product_executions,
+        product_market_prices,
+        subject_id="demo-user:product-story",
+        account_id="demo-account:product-story",
+        as_of=pd.Timestamp("2025-05-20 23:59:00"),
+        init_cash=INITIAL_CASH,
+        data_tier="synthetic",
+        calculation_code_version=CALCULATION_CODE_VERSION,
+    )
+    product_episode = product_lifecycle.episodes[0]
+    product_story = _position_episode_story(
+        product_lifecycle,
+        product_executions,
+        product_market_prices,
+        episode_id=product_episode.episode_id,
+        subject_id=product_lifecycle.subject_id,
+        account_id="demo-account:product-story",
+        analysis_as_of=product_lifecycle.as_of,
     )
     behavior_stories = {
         episode.episode_id: _position_episode_story(
@@ -718,8 +743,14 @@ def build_export() -> dict[str, object]:
         },
         "position_episode_demo": {
             "data_tier": "synthetic",
-            "default_episode_id": selected_position_episode.episode_id,
+            "default_episode_id": product_episode.episode_id,
             "entries": (
+                _position_episode_entry(
+                    product_lifecycle,
+                    episode_id=product_episode.episode_id,
+                    market_prices=product_market_prices,
+                    outcome_story=product_story,
+                ),
                 _position_episode_entry(
                     selected_lifecycle,
                     episode_id=selected_position_episode.episode_id,

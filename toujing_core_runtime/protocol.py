@@ -11,12 +11,19 @@ from typing import Any, TextIO
 PROTOCOL_VERSION = "1"
 RUNTIME_VERSION = "1.0.0"
 CORE_VERSION = "1.0.0"
-SUPPORTED_METHODS = (
+BASE_METHODS = (
     "runtime.handshake",
     "runtime.health",
     "runtime.core_smoke",
     "runtime.shutdown",
 )
+PRODUCT_METHODS = (
+    "ingestion.preview_trade_csv", "ingestion.commit_trade_import",
+    "market.preview_price_csv", "market.commit_price_import",
+    "account.list", "account.get_data_status", "investments.list", "episode.get",
+    "data.delete_account",
+)
+SUPPORTED_METHODS = (*BASE_METHODS, *PRODUCT_METHODS)
 
 
 class RuntimeRequestError(ValueError):
@@ -100,7 +107,35 @@ _METHODS: dict[str, Callable[[object], Mapping[str, object]]] = {
 }
 
 
-def handle_request(request: object) -> tuple[dict[str, object], bool]:
+def _product_methods(db_path: str | None) -> tuple[dict[str, Callable[[object], Mapping[str, object]]], object | None]:
+    if db_path is None:
+        return {}, None
+    from .product import ProductRuntime
+    product = ProductRuntime(db_path)
+    def checked(fn: Callable[[Mapping[str, object]], Mapping[str, object]]) -> Callable[[object], Mapping[str, object]]:
+        def call(params: object) -> Mapping[str, object]:
+            if not isinstance(params, Mapping):
+                raise RuntimeRequestError("invalid_params", "params must be an object")
+            try:
+                return fn(params)
+            except (TypeError, ValueError) as exc:
+                raise RuntimeRequestError("invalid_params", str(exc)) from exc
+        return call
+    methods = {
+        "ingestion.preview_trade_csv": checked(product.preview_trade),
+        "ingestion.commit_trade_import": checked(product.commit_trade),
+        "market.preview_price_csv": checked(product.preview_market),
+        "market.commit_price_import": checked(product.commit_market),
+        "account.list": checked(product.accounts),
+        "account.get_data_status": checked(product.data_status),
+        "investments.list": checked(product.investments),
+        "episode.get": checked(product.episode),
+        "data.delete_account": checked(product.delete_account),
+    }
+    return methods, product
+
+
+def handle_request(request: object, methods: Mapping[str, Callable[[object], Mapping[str, object]]] | None = None) -> tuple[dict[str, object], bool]:
     if not isinstance(request, Mapping):
         return _error(None, "invalid_request", "request must be a JSON object"), False
     request_id = request.get("request_id")
@@ -115,10 +150,11 @@ def handle_request(request: object) -> tuple[dict[str, object], bool]:
     if request.get("protocol_version") != PROTOCOL_VERSION:
         return _error(request_id, "protocol_incompatible", "unsupported protocol_version"), False
     method = request.get("method")
-    if not isinstance(method, str) or method not in _METHODS:
+    handlers = methods or _METHODS
+    if not isinstance(method, str) or method not in handlers:
         return _error(request_id, "unknown_method", "method is not supported"), False
     try:
-        result = _METHODS[method](request.get("params"))
+        result = handlers[method](request.get("params"))
     except RuntimeRequestError as exc:
         return _error(request_id, exc.code, str(exc)), False
     except Exception as exc:  # process boundary: never leak a traceback to stdout
@@ -127,9 +163,11 @@ def handle_request(request: object) -> tuple[dict[str, object], bool]:
     return _response(request_id, result), method == "runtime.shutdown"
 
 
-def run(stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout) -> int:
+def run(stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout, *, db_path: str | None = None) -> int:
     """Serve requests until EOF or an acknowledged shutdown request."""
 
+    product_methods, product = _product_methods(db_path)
+    methods = {**_METHODS, **product_methods}
     for raw_line in stdin:
         try:
             request = json.loads(raw_line)
@@ -139,9 +177,13 @@ def run(stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout) -> int:
                 False,
             )
         else:
-            response, should_stop = handle_request(request)
+            response, should_stop = handle_request(request, methods)
         stdout.write(json.dumps(response, ensure_ascii=False, separators=(",", ":"), allow_nan=False) + "\n")
         stdout.flush()
         if should_stop:
+            if product is not None:
+                product.close()  # type: ignore[attr-defined]
             return 0
+    if product is not None:
+        product.close()  # type: ignore[attr-defined]
     return 0

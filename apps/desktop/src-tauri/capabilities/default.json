@@ -3,5 +3,5 @@
   "identifier": "main-capability",
   "description": "Minimal capability for the 投镜 workspace window",
   "windows": ["main"],
-  "permissions": ["core:default"]
+  "permissions": ["core:default", "dialog:default"]
 }

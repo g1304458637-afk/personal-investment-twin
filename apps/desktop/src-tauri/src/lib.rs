@@ -242,10 +242,12 @@ async fn run_pretrade_check(request: PretradeBridgeRequest) -> PretradeBridgeRes
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let app = runtime::install(tauri::Builder::default())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             run_pretrade_check,
             runtime::runtime_health,
-            runtime::runtime_core_smoke
+            runtime::runtime_core_smoke,
+            runtime::runtime_product_request
         ])
         .build(tauri::generate_context!())
         .expect("error while running the 投镜 desktop application");

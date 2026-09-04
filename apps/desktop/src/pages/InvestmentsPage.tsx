@@ -1,23 +1,50 @@
 import { Database, History } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 import { FinancialObjectRow } from "@/components/investments/FinancialObjectRow";
 import { PageHeader, SectionHeading } from "@/components/common/PageHeader";
 import { StateNotice } from "@/components/common/StateNotice";
 import { investments } from "@/data/backendEvidence";
+import { useDataMode } from "@/data/DataModeProvider";
+import { realUserApi, type RuntimeInvestments } from "@/data/runtimeService";
 import { useLocale } from "@/locales/LocaleProvider";
 
 export function InvestmentsPage() {
   const { locale, t, formatNumber } = useLocale();
+  const data = useDataMode();
+  const [runtime, setRuntime] = useState<RuntimeInvestments | null>(null);
+  const [runtimeError, setRuntimeError] = useState<string | null>(null);
+  useEffect(() => {
+    if (data.mode !== "real_user" || !data.activeAccount) { setRuntime(null); return; }
+    void realUserApi.investments(data.activeAccount.subject_id, data.activeAccount.account_id)
+      .then(setRuntime).catch((value) => setRuntimeError(String(value)));
+  }, [data.mode, data.activeAccount]);
+  const view = useMemo(() => {
+    if (data.mode !== "real_user" || !runtime) return investments;
+    const rows = runtime.episodes.map((episode) => ({ episodeId: episode.episode_id,
+      subjectId: runtime.subject_id, instrumentId: episode.instrument_id, displayName: episode.display_name,
+      isSynthetic: false, status: episode.status, openedAt: episode.opened_at, closedAt: episode.closed_at,
+      durationDays: episode.duration_days, durationKind: episode.duration_kind,
+      quantity: episode.quantity, averageCost: episode.average_cost, valuationAt: episode.valuation_at,
+      valuationPrice: episode.valuation_price, marketValue: episode.market_value }));
+    return { subjectId: runtime.subject_id, asOf: runtime.as_of, dataTier: runtime.data_tier,
+      portfolioState: { status: runtime.portfolio_state_status === "available" ? "available" as const : "unavailable" as const, reason: runtime.portfolio_state_reason },
+      summary: { openEpisodeCount: runtime.summary.open_episode_count, closedEpisodeCount: runtime.summary.closed_episode_count, currentPositionCount: runtime.summary.current_position_count },
+      openEpisodes: rows.filter((x) => x.status === "open"), closedEpisodes: rows.filter((x) => x.status === "closed") };
+  }, [data.mode, runtime]);
+  if (data.mode === "real_user" && !data.activeAccount) return <div className="page"><PageHeader showDemo={false} eyebrow={t("Investment experience")} title={t("My Investments")} description={t("Browse the position Episodes formed from actual executions. Current marks are valuations, not exits or predictions.")} /><StateNotice state="empty" title={t("No real account imported yet.")} detail={t("Import transactions from Data & Accounts before opening real-user investments.")} /></div>;
+  if (data.mode === "real_user" && !runtime) return <div className="page"><PageHeader showDemo={false} eyebrow={t("Investment experience")} title={t("My Investments")} description={t("Browse the position Episodes formed from actual executions. Current marks are valuations, not exits or predictions.")} /><StateNotice state={runtimeError ? "disconnected" : "loading"} title={runtimeError ? t("Portfolio state is unavailable") : t("Loading…")} detail={runtimeError ?? t("Rebuilding from local canonical facts.")} /></div>;
   const asOf = new Intl.DateTimeFormat(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
-  }).format(new Date(investments.asOf));
-  const portfolioAvailable = investments.portfolioState.status === "available";
+  }).format(new Date(view.asOf));
+  const portfolioAvailable = view.portfolioState.status === "available";
 
   return (
     <div className="page investments-page">
       <PageHeader
+        showDemo={data.mode === "demo"}
         eyebrow={t("Investment experience")}
         title={t("My Investments")}
         description={t("Browse the position Episodes formed from actual executions. Current marks are valuations, not exits or predictions.")}
@@ -34,15 +61,15 @@ export function InvestmentsPage() {
           <dl className="product-fact-strip">
             <div>
               <dt>{t("Current positions")}</dt>
-              <dd>{formatNumber(investments.summary.currentPositionCount)}</dd>
+              <dd>{formatNumber(view.summary.currentPositionCount)}</dd>
             </div>
             <div>
               <dt>{t("Open Episodes")}</dt>
-              <dd>{formatNumber(investments.summary.openEpisodeCount)}</dd>
+              <dd>{formatNumber(view.summary.openEpisodeCount)}</dd>
             </div>
             <div>
               <dt>{t("Closed Episodes")}</dt>
-              <dd>{formatNumber(investments.summary.closedEpisodeCount)}</dd>
+              <dd>{formatNumber(view.summary.closedEpisodeCount)}</dd>
             </div>
             <div>
               <dt>{t("Portfolio state")}</dt>
@@ -51,9 +78,9 @@ export function InvestmentsPage() {
           </dl>
         ) : (
           <StateNotice
-            state={investments.portfolioState.status === "not_started" ? "empty" : "disconnected"}
-            title={t(investments.portfolioState.status === "not_started" ? "No investment records yet" : "Portfolio state is unavailable")}
-            detail={t(investments.portfolioState.reason ?? "The current position state cannot be shown from the available facts.")}
+            state={view.portfolioState.status === "not_started" ? "empty" : "disconnected"}
+            title={t(view.portfolioState.status === "not_started" ? "No investment records yet" : "Portfolio state is unavailable")}
+            detail={runtimeError ?? t(view.portfolioState.reason ?? "The current position state cannot be shown from the available facts.")}
           />
         )}
       </section>
@@ -64,9 +91,9 @@ export function InvestmentsPage() {
           title={t("Open Investment Episodes")}
           description={t("Each row is an ongoing position lifecycle. Its quantity, average cost, and valuation are backend replay facts.")}
         />
-        {investments.openEpisodes.length > 0 ? (
+        {view.openEpisodes.length > 0 ? (
           <div className="financial-object-list">
-            {investments.openEpisodes.map((episode) => (
+            {view.openEpisodes.map((episode) => (
               <FinancialObjectRow key={episode.episodeId} episode={episode} />
             ))}
           </div>
@@ -86,9 +113,9 @@ export function InvestmentsPage() {
           title={t("Closed Investment Episodes")}
           description={t("A closed Episode requires a real closing execution; a current market mark never closes an Episode.")}
         />
-        {investments.closedEpisodes.length > 0 ? (
+        {view.closedEpisodes.length > 0 ? (
           <div className="financial-object-list">
-            {investments.closedEpisodes.map((episode) => (
+            {view.closedEpisodes.map((episode) => (
               <FinancialObjectRow key={episode.episodeId} episode={episode} />
             ))}
           </div>
@@ -105,8 +132,8 @@ export function InvestmentsPage() {
       <div className="product-provenance-note">
         <Database aria-hidden="true" />
         <p>
-          <strong>{t("Synthetic presentation data")}</strong>
-          {t("Display names are neutral demo metadata. Canonical instrument IDs and Episode references remain unchanged.")}
+          <strong>{t(data.mode === "demo" ? "Synthetic presentation data" : "Local deterministic data")}</strong>
+          {t(data.mode === "demo" ? "Display names are neutral demo metadata. Canonical instrument IDs and Episode references remain unchanged." : "Real-user facts are loaded from the local Python runtime; generated Demo JSON is not used.")}
         </p>
         <History aria-hidden="true" />
       </div>

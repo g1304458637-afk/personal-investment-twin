@@ -9,6 +9,16 @@ def _entries():
     }
 
 
+def test_product_demo_primary_episode_has_a_mature_unsmoothed_daily_path():
+    entry = _entries()["SYN_PRODUCT"]
+    assert 60 <= len(entry["price_points"]) <= 90
+    assert [item["decision_type"] for item in entry["decisions"]] == [
+        "open_position", "add_position", "add_position", "reduce_position",
+        "add_position", "close_position",
+    ]
+    assert entry["instrument"]["is_synthetic"] is True
+
+
 def test_episode_story_exports_authoritative_actual_outcomes_for_every_lifecycle():
     entries = _entries()
 

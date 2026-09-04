@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const { adaptDecisionOutcomeStory } = await import("../src/data/decisionOutcome.ts");
+const { adaptDecisionOutcomeStory, selectPrimaryCounterfactuals } = await import("../src/data/decisionOutcome.ts");
 const generated = JSON.parse(await readFile(new URL("../src/generated/backend-demo-evidence.json", import.meta.url), "utf8"));
 
 function context(entry) {
@@ -31,6 +31,29 @@ test("valid generated stories preserve Closed realized and Open marked Episode o
   assert.equal(open.actualResult.resultKind, "marked");
   assert.equal(open.actualResult.positionStatus, "open");
   assert.equal(open.actualResult.pnl, -400);
+});
+
+test("product relevance hides structural opening omissions and keeps at most one primary result", () => {
+  const entry = generated.position_episode_demo.entries.find((item) => item.instrument.instrument_id === "600000.SH");
+  const story = adapt(entry);
+  const decisions = story.decisionOutcomes.map((item) => ({ decisionId: item.decisionEventId, eventType: item.eventType }));
+  const primary = selectPrimaryCounterfactuals(story.counterfactuals, decisions);
+  assert.equal(primary.some((item) => decisions.find((decision) => decision.decisionId === item.decisionEventId)?.eventType === "open_position"), false);
+  assert.equal(new Set(primary.map((item) => item.decisionEventId)).size, primary.length);
+  assert.ok(primary.some((item) => decisions.find((decision) => decision.decisionId === item.decisionEventId)?.eventType === "add_position"));
+  assert.ok(primary.some((item) => decisions.find((decision) => decision.decisionId === item.decisionEventId)?.eventType === "reduce_position"));
+});
+
+test("primary counterfactual selection preserves backend result values unchanged", () => {
+  const entry = generated.position_episode_demo.entries.find((item) => item.instrument.instrument_id === "600000.SH");
+  const story = adapt(entry);
+  const primary = selectPrimaryCounterfactuals(story.counterfactuals, story.decisionOutcomes.map((item) => ({ decisionId: item.decisionEventId, eventType: item.eventType })));
+  for (const item of primary) {
+    const source = story.counterfactuals.find((candidate) => candidate.counterfactualId === item.counterfactualId);
+    assert.equal(item.actualResult?.pnl, source.actualResult?.pnl);
+    assert.equal(item.counterfactualResult?.pnl, source.counterfactualResult?.pnl);
+    assert.equal(item.comparison.pnlDifference, source.comparison.pnlDifference);
+  }
 });
 
 test("SELL outcomes preserve authoritative realized PnL while BUY outcomes have none", () => {

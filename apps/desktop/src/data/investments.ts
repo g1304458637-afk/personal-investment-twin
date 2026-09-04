@@ -26,7 +26,7 @@ export interface InvestmentEpisodeRowView {
   subjectId: string;
   instrumentId: string;
   displayName: string;
-  isSynthetic: true;
+  isSynthetic: boolean;
   status: PositionEpisodeStatus;
   openedAt: string;
   closedAt: string | null;
@@ -42,7 +42,7 @@ export interface InvestmentEpisodeRowView {
 export interface InvestmentsView {
   subjectId: string;
   asOf: string;
-  dataTier: "synthetic";
+  dataTier: "synthetic" | "authorized_beta";
   portfolioState: {
     status: InvestmentsPortfolioStatus;
     reason: string | null;
