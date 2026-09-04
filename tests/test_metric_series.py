@@ -144,8 +144,16 @@ def test_desktop_export_is_byte_deterministic_and_contains_real_dates():
     )
     episode_demo = payload["position_episode_demo"]
     assert episode_demo["data_tier"] == "synthetic"
-    assert len(episode_demo["entries"]) == 2
     assert {entry["episode"]["status"] for entry in episode_demo["entries"]} == {
         "open",
         "closed",
     }
+    exported_episode_ids = {
+        entry["episode"]["episode_id"] for entry in episode_demo["entries"]
+    }
+    current_twin = payload["twin"]["current_snapshot"]
+    assert {
+        reference["episode_id"]
+        for status in ("open", "closed")
+        for reference in current_twin["episode_refs"][status]
+    } <= exported_episode_ids

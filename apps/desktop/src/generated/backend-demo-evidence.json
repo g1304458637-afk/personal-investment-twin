@@ -4338,6 +4338,876 @@
             "valuation_price": 12.0
           }
         }
+      },
+      {
+        "decisions": [
+          {
+            "decision_id": "de_de8d30643b9ad94c0c86d8c4be7be2d0b3c1bd2ffdd332ab99f68aeb16c88815",
+            "decision_type": "open_position",
+            "episode_id": "pe_460a70738da94f7dca7f03f18c47168c855a0f23bde32111af10e8d74612b9bf",
+            "evidence_refs": [],
+            "executed_quantity": 100.0,
+            "execution_id": "INT-d78200392ed0a1eb",
+            "execution_price": 20.0,
+            "fees": 0.0,
+            "occurred_at": "2025-01-02T00:00:00",
+            "side": "BUY",
+            "state_after_ref": "ps_30b1e6c4263c8958fc46cc83de85ce53cf8b9b0ec9a9bf6df24482d603f15680",
+            "state_before_ref": "ps_0d29f36ccb0583c545f64aa26e82e2f3bf8b48a7f4a5f892ecb870afd26bb30b"
+          },
+          {
+            "decision_id": "de_c74c4dd56838b259772b2a774cf1ec239f95016186603d4fa02eca3aad9cd842",
+            "decision_type": "reduce_position",
+            "episode_id": "pe_460a70738da94f7dca7f03f18c47168c855a0f23bde32111af10e8d74612b9bf",
+            "evidence_refs": [],
+            "executed_quantity": 50.0,
+            "execution_id": "INT-a3170e2505c6780c",
+            "execution_price": 16.0,
+            "fees": 0.0,
+            "occurred_at": "2025-01-08T00:00:00",
+            "side": "SELL",
+            "state_after_ref": "ps_79010f381fd816a10ae40f10ac5ef3a8592afc151f6fd904c047edb03437ceac",
+            "state_before_ref": "ps_166aa9910ae0f1eee8f9814a16dde17f1cc289caeeb0a03330f1e073d56d99f4"
+          }
+        ],
+        "episode": {
+          "account_id": "demo-account:behavior",
+          "calculation_code_version": "desktop-demo-evidence-v1",
+          "closed_at": null,
+          "closing_execution_id": null,
+          "data_tier": "synthetic",
+          "decision_refs": [
+            "de_de8d30643b9ad94c0c86d8c4be7be2d0b3c1bd2ffdd332ab99f68aeb16c88815",
+            "de_c74c4dd56838b259772b2a774cf1ec239f95016186603d4fa02eca3aad9cd842"
+          ],
+          "duration_days": 6,
+          "duration_kind": "so_far",
+          "episode_id": "pe_460a70738da94f7dca7f03f18c47168c855a0f23bde32111af10e8d74612b9bf",
+          "evidence_refs": [],
+          "execution_refs": [
+            "INT-d78200392ed0a1eb",
+            "INT-a3170e2505c6780c"
+          ],
+          "instrument_id": "SYN_LOSS_SOLD",
+          "limitations": [
+            "Position Episode v1 supports only normalized long-only BUY/SELL executions.",
+            "Corporate actions and transfers are unsupported and must not be encoded as executions.",
+            "Open-position valuation is a replay mark at its stated valuation time, not an exit."
+          ],
+          "opened_at": "2025-01-02T00:00:00",
+          "opening_execution_id": "INT-d78200392ed0a1eb",
+          "provenance": [
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_LOSS_SOLD",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_NEUTRAL",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_PAPER_LOSS",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_PAPER_WIN",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_WIN_SOLD",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            }
+          ],
+          "replay_method_id": "vectorbt_portfolio_replay_v1",
+          "status": "open",
+          "subject_id": "demo-user:synthetic-behavior"
+        },
+        "evidence_references": [],
+        "price_points": [
+          {
+            "observed_at": "2025-01-02T00:00:00",
+            "price": 20.0
+          },
+          {
+            "observed_at": "2025-01-03T00:00:00",
+            "price": 19.0
+          },
+          {
+            "observed_at": "2025-01-06T00:00:00",
+            "price": 18.0
+          },
+          {
+            "observed_at": "2025-01-07T00:00:00",
+            "price": 18.0
+          },
+          {
+            "observed_at": "2025-01-08T00:00:00",
+            "price": 16.0
+          }
+        ],
+        "snapshot": {
+          "as_of": "2025-01-08T23:59:00",
+          "episode_id": "pe_460a70738da94f7dca7f03f18c47168c855a0f23bde32111af10e8d74612b9bf",
+          "position_state_ref": "ps_16a636bb85a383d0f937c95563118cfea05436144a505116d4377a01f4d995ba"
+        },
+        "states_by_ref": {
+          "ps_0d29f36ccb0583c545f64aa26e82e2f3bf8b48a7f4a5f892ecb870afd26bb30b": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-02T00:00:00",
+            "average_cost": null,
+            "boundary": "before_execution",
+            "execution_id": "INT-d78200392ed0a1eb",
+            "instrument_id": "SYN_LOSS_SOLD",
+            "market_value": null,
+            "quantity": 0.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_0d29f36ccb0583c545f64aa26e82e2f3bf8b48a7f4a5f892ecb870afd26bb30b",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-02T00:00:00",
+            "valuation_price": null
+          },
+          "ps_166aa9910ae0f1eee8f9814a16dde17f1cc289caeeb0a03330f1e073d56d99f4": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-08T00:00:00",
+            "average_cost": 20.0,
+            "boundary": "before_execution",
+            "execution_id": "INT-a3170e2505c6780c",
+            "instrument_id": "SYN_LOSS_SOLD",
+            "market_value": 1600.0,
+            "quantity": 100.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_166aa9910ae0f1eee8f9814a16dde17f1cc289caeeb0a03330f1e073d56d99f4",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-08T00:00:00",
+            "valuation_price": 16.0
+          },
+          "ps_16a636bb85a383d0f937c95563118cfea05436144a505116d4377a01f4d995ba": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-08T23:59:00",
+            "average_cost": 20.0,
+            "boundary": "as_of_valuation",
+            "execution_id": null,
+            "instrument_id": "SYN_LOSS_SOLD",
+            "market_value": 800.0,
+            "quantity": 50.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_16a636bb85a383d0f937c95563118cfea05436144a505116d4377a01f4d995ba",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-08T00:00:00",
+            "valuation_price": 16.0
+          },
+          "ps_30b1e6c4263c8958fc46cc83de85ce53cf8b9b0ec9a9bf6df24482d603f15680": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-02T00:00:00",
+            "average_cost": 20.0,
+            "boundary": "after_execution",
+            "execution_id": "INT-d78200392ed0a1eb",
+            "instrument_id": "SYN_LOSS_SOLD",
+            "market_value": 2000.0,
+            "quantity": 100.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_30b1e6c4263c8958fc46cc83de85ce53cf8b9b0ec9a9bf6df24482d603f15680",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-02T00:00:00",
+            "valuation_price": 20.0
+          },
+          "ps_79010f381fd816a10ae40f10ac5ef3a8592afc151f6fd904c047edb03437ceac": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-08T00:00:00",
+            "average_cost": 20.0,
+            "boundary": "after_execution",
+            "execution_id": "INT-a3170e2505c6780c",
+            "instrument_id": "SYN_LOSS_SOLD",
+            "market_value": 800.0,
+            "quantity": 50.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_79010f381fd816a10ae40f10ac5ef3a8592afc151f6fd904c047edb03437ceac",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-08T00:00:00",
+            "valuation_price": 16.0
+          }
+        }
+      },
+      {
+        "decisions": [
+          {
+            "decision_id": "de_d9689d5e2420dcdbb3aed17ba73e14af329fe600405a1ebb91ac9281da9e8d7b",
+            "decision_type": "open_position",
+            "episode_id": "pe_db1d299a07e8c15c234076633709dc5996d4fa6c8ee6757bc805b1db4179a213",
+            "evidence_refs": [],
+            "executed_quantity": 400.0,
+            "execution_id": "INT-f01ea7c012a774db",
+            "execution_price": 10.0,
+            "fees": 0.0,
+            "occurred_at": "2025-01-02T00:00:00",
+            "side": "BUY",
+            "state_after_ref": "ps_9217b696bba6e948e4a9c0d6d78ad6e494b62254b49b28bfc79d2769a91af384",
+            "state_before_ref": "ps_c162d6f3932dea589511c687cea1083c936d1211e3a1dee66ea8b229bbe50c9e"
+          },
+          {
+            "decision_id": "de_5dd37b237500653fb5230bb067bde393605f9b1934874bb03047195196351ce9",
+            "decision_type": "add_position",
+            "episode_id": "pe_db1d299a07e8c15c234076633709dc5996d4fa6c8ee6757bc805b1db4179a213",
+            "evidence_refs": [],
+            "executed_quantity": 50.0,
+            "execution_id": "INT-6f010c88f1373b79",
+            "execution_price": 11.0,
+            "fees": 0.0,
+            "occurred_at": "2025-01-03T00:00:00",
+            "side": "BUY",
+            "state_after_ref": "ps_fc7d49871514c6182b8b87078202e9635dd146cf9c491486800c988844f9b287",
+            "state_before_ref": "ps_b45de690edc2482c8707330fe6ca50cf16337b4d3c7f3ae2f905a3976dd6a0f6"
+          }
+        ],
+        "episode": {
+          "account_id": "demo-account:behavior",
+          "calculation_code_version": "desktop-demo-evidence-v1",
+          "closed_at": null,
+          "closing_execution_id": null,
+          "data_tier": "synthetic",
+          "decision_refs": [
+            "de_d9689d5e2420dcdbb3aed17ba73e14af329fe600405a1ebb91ac9281da9e8d7b",
+            "de_5dd37b237500653fb5230bb067bde393605f9b1934874bb03047195196351ce9"
+          ],
+          "duration_days": 6,
+          "duration_kind": "so_far",
+          "episode_id": "pe_db1d299a07e8c15c234076633709dc5996d4fa6c8ee6757bc805b1db4179a213",
+          "evidence_refs": [],
+          "execution_refs": [
+            "INT-f01ea7c012a774db",
+            "INT-6f010c88f1373b79"
+          ],
+          "instrument_id": "SYN_PAPER_WIN",
+          "limitations": [
+            "Position Episode v1 supports only normalized long-only BUY/SELL executions.",
+            "Corporate actions and transfers are unsupported and must not be encoded as executions.",
+            "Open-position valuation is a replay mark at its stated valuation time, not an exit."
+          ],
+          "opened_at": "2025-01-02T00:00:00",
+          "opening_execution_id": "INT-f01ea7c012a774db",
+          "provenance": [
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_LOSS_SOLD",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_NEUTRAL",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_PAPER_LOSS",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_PAPER_WIN",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_WIN_SOLD",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            }
+          ],
+          "replay_method_id": "vectorbt_portfolio_replay_v1",
+          "status": "open",
+          "subject_id": "demo-user:synthetic-behavior"
+        },
+        "evidence_references": [],
+        "price_points": [
+          {
+            "observed_at": "2025-01-02T00:00:00",
+            "price": 10.0
+          },
+          {
+            "observed_at": "2025-01-03T00:00:00",
+            "price": 11.0
+          },
+          {
+            "observed_at": "2025-01-06T00:00:00",
+            "price": 11.5
+          },
+          {
+            "observed_at": "2025-01-07T00:00:00",
+            "price": 12.0
+          },
+          {
+            "observed_at": "2025-01-08T00:00:00",
+            "price": 13.0
+          }
+        ],
+        "snapshot": {
+          "as_of": "2025-01-08T23:59:00",
+          "episode_id": "pe_db1d299a07e8c15c234076633709dc5996d4fa6c8ee6757bc805b1db4179a213",
+          "position_state_ref": "ps_50762d64173b04df73fe33eb64a2ceb77005608679279571ed2b561ece5ae22b"
+        },
+        "states_by_ref": {
+          "ps_50762d64173b04df73fe33eb64a2ceb77005608679279571ed2b561ece5ae22b": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-08T23:59:00",
+            "average_cost": 10.11111111111111,
+            "boundary": "as_of_valuation",
+            "execution_id": null,
+            "instrument_id": "SYN_PAPER_WIN",
+            "market_value": 5850.0,
+            "quantity": 450.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_50762d64173b04df73fe33eb64a2ceb77005608679279571ed2b561ece5ae22b",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-08T00:00:00",
+            "valuation_price": 13.0
+          },
+          "ps_9217b696bba6e948e4a9c0d6d78ad6e494b62254b49b28bfc79d2769a91af384": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-02T00:00:00",
+            "average_cost": 10.0,
+            "boundary": "after_execution",
+            "execution_id": "INT-f01ea7c012a774db",
+            "instrument_id": "SYN_PAPER_WIN",
+            "market_value": 4000.0,
+            "quantity": 400.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_9217b696bba6e948e4a9c0d6d78ad6e494b62254b49b28bfc79d2769a91af384",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-02T00:00:00",
+            "valuation_price": 10.0
+          },
+          "ps_b45de690edc2482c8707330fe6ca50cf16337b4d3c7f3ae2f905a3976dd6a0f6": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-03T00:00:00",
+            "average_cost": 10.0,
+            "boundary": "before_execution",
+            "execution_id": "INT-6f010c88f1373b79",
+            "instrument_id": "SYN_PAPER_WIN",
+            "market_value": 4400.0,
+            "quantity": 400.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_b45de690edc2482c8707330fe6ca50cf16337b4d3c7f3ae2f905a3976dd6a0f6",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-03T00:00:00",
+            "valuation_price": 11.0
+          },
+          "ps_c162d6f3932dea589511c687cea1083c936d1211e3a1dee66ea8b229bbe50c9e": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-02T00:00:00",
+            "average_cost": null,
+            "boundary": "before_execution",
+            "execution_id": "INT-f01ea7c012a774db",
+            "instrument_id": "SYN_PAPER_WIN",
+            "market_value": null,
+            "quantity": 0.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_c162d6f3932dea589511c687cea1083c936d1211e3a1dee66ea8b229bbe50c9e",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-02T00:00:00",
+            "valuation_price": null
+          },
+          "ps_fc7d49871514c6182b8b87078202e9635dd146cf9c491486800c988844f9b287": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-03T00:00:00",
+            "average_cost": 10.11111111111111,
+            "boundary": "after_execution",
+            "execution_id": "INT-6f010c88f1373b79",
+            "instrument_id": "SYN_PAPER_WIN",
+            "market_value": 4950.0,
+            "quantity": 450.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_fc7d49871514c6182b8b87078202e9635dd146cf9c491486800c988844f9b287",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-03T00:00:00",
+            "valuation_price": 11.0
+          }
+        }
+      },
+      {
+        "decisions": [
+          {
+            "decision_id": "de_1a8291e602e6381b7355b63e2d63fdb4acc6f9fca4c3535ed0646b20cf40605a",
+            "decision_type": "open_position",
+            "episode_id": "pe_cb215cbf858c71448eeb04b0268b5883a82404eb8d17b73f8e752de01bef28e5",
+            "evidence_refs": [],
+            "executed_quantity": 100.0,
+            "execution_id": "INT-b32520b60fff75a7",
+            "execution_price": 10.0,
+            "fees": 0.0,
+            "occurred_at": "2025-01-02T00:00:00",
+            "side": "BUY",
+            "state_after_ref": "ps_972480e805d9619af730149d336c1900cb6b32d93e24bac229cf54bf9813c427",
+            "state_before_ref": "ps_4b05625c89fb8d52267cd99372924380b3615aab822d406c25afb9bd26c3dc95"
+          },
+          {
+            "decision_id": "de_e67430b0a2a3e05e25960a2e78c1a774f8227f342433cb2379b38fb204189a33",
+            "decision_type": "add_position",
+            "episode_id": "pe_cb215cbf858c71448eeb04b0268b5883a82404eb8d17b73f8e752de01bef28e5",
+            "evidence_refs": [],
+            "executed_quantity": 50.0,
+            "execution_id": "INT-2ceb6308626ad5af",
+            "execution_price": 9.0,
+            "fees": 0.0,
+            "occurred_at": "2025-01-03T00:00:00",
+            "side": "BUY",
+            "state_after_ref": "ps_8a72329de4f44041b2fc7c491b5622a1b4461ea2d9473d3fb30c369c1688d0aa",
+            "state_before_ref": "ps_de15afaa20b5ade0deaea2fdc0cbb373cb4e3df60ae19276bd3b8843ea5da39d"
+          }
+        ],
+        "episode": {
+          "account_id": "demo-account:behavior",
+          "calculation_code_version": "desktop-demo-evidence-v1",
+          "closed_at": null,
+          "closing_execution_id": null,
+          "data_tier": "synthetic",
+          "decision_refs": [
+            "de_1a8291e602e6381b7355b63e2d63fdb4acc6f9fca4c3535ed0646b20cf40605a",
+            "de_e67430b0a2a3e05e25960a2e78c1a774f8227f342433cb2379b38fb204189a33"
+          ],
+          "duration_days": 6,
+          "duration_kind": "so_far",
+          "episode_id": "pe_cb215cbf858c71448eeb04b0268b5883a82404eb8d17b73f8e752de01bef28e5",
+          "evidence_refs": [],
+          "execution_refs": [
+            "INT-b32520b60fff75a7",
+            "INT-2ceb6308626ad5af"
+          ],
+          "instrument_id": "SYN_PAPER_LOSS",
+          "limitations": [
+            "Position Episode v1 supports only normalized long-only BUY/SELL executions.",
+            "Corporate actions and transfers are unsupported and must not be encoded as executions.",
+            "Open-position valuation is a replay mark at its stated valuation time, not an exit."
+          ],
+          "opened_at": "2025-01-02T00:00:00",
+          "opening_execution_id": "INT-b32520b60fff75a7",
+          "provenance": [
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_LOSS_SOLD",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_NEUTRAL",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_PAPER_LOSS",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_PAPER_WIN",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_WIN_SOLD",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            }
+          ],
+          "replay_method_id": "vectorbt_portfolio_replay_v1",
+          "status": "open",
+          "subject_id": "demo-user:synthetic-behavior"
+        },
+        "evidence_references": [],
+        "price_points": [
+          {
+            "observed_at": "2025-01-02T00:00:00",
+            "price": 10.0
+          },
+          {
+            "observed_at": "2025-01-03T00:00:00",
+            "price": 9.0
+          },
+          {
+            "observed_at": "2025-01-06T00:00:00",
+            "price": 8.5
+          },
+          {
+            "observed_at": "2025-01-07T00:00:00",
+            "price": 8.0
+          },
+          {
+            "observed_at": "2025-01-08T00:00:00",
+            "price": 7.0
+          }
+        ],
+        "snapshot": {
+          "as_of": "2025-01-08T23:59:00",
+          "episode_id": "pe_cb215cbf858c71448eeb04b0268b5883a82404eb8d17b73f8e752de01bef28e5",
+          "position_state_ref": "ps_b17ab2a4dbe91cb19aa1f17867781241a6948effd406720fb28c6c4aa24530d6"
+        },
+        "states_by_ref": {
+          "ps_4b05625c89fb8d52267cd99372924380b3615aab822d406c25afb9bd26c3dc95": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-02T00:00:00",
+            "average_cost": null,
+            "boundary": "before_execution",
+            "execution_id": "INT-b32520b60fff75a7",
+            "instrument_id": "SYN_PAPER_LOSS",
+            "market_value": null,
+            "quantity": 0.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_4b05625c89fb8d52267cd99372924380b3615aab822d406c25afb9bd26c3dc95",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-02T00:00:00",
+            "valuation_price": null
+          },
+          "ps_8a72329de4f44041b2fc7c491b5622a1b4461ea2d9473d3fb30c369c1688d0aa": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-03T00:00:00",
+            "average_cost": 9.666666666666666,
+            "boundary": "after_execution",
+            "execution_id": "INT-2ceb6308626ad5af",
+            "instrument_id": "SYN_PAPER_LOSS",
+            "market_value": 1350.0,
+            "quantity": 150.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_8a72329de4f44041b2fc7c491b5622a1b4461ea2d9473d3fb30c369c1688d0aa",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-03T00:00:00",
+            "valuation_price": 9.0
+          },
+          "ps_972480e805d9619af730149d336c1900cb6b32d93e24bac229cf54bf9813c427": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-02T00:00:00",
+            "average_cost": 10.0,
+            "boundary": "after_execution",
+            "execution_id": "INT-b32520b60fff75a7",
+            "instrument_id": "SYN_PAPER_LOSS",
+            "market_value": 1000.0,
+            "quantity": 100.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_972480e805d9619af730149d336c1900cb6b32d93e24bac229cf54bf9813c427",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-02T00:00:00",
+            "valuation_price": 10.0
+          },
+          "ps_b17ab2a4dbe91cb19aa1f17867781241a6948effd406720fb28c6c4aa24530d6": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-08T23:59:00",
+            "average_cost": 9.666666666666666,
+            "boundary": "as_of_valuation",
+            "execution_id": null,
+            "instrument_id": "SYN_PAPER_LOSS",
+            "market_value": 1050.0,
+            "quantity": 150.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_b17ab2a4dbe91cb19aa1f17867781241a6948effd406720fb28c6c4aa24530d6",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-08T00:00:00",
+            "valuation_price": 7.0
+          },
+          "ps_de15afaa20b5ade0deaea2fdc0cbb373cb4e3df60ae19276bd3b8843ea5da39d": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-03T00:00:00",
+            "average_cost": 10.0,
+            "boundary": "before_execution",
+            "execution_id": "INT-2ceb6308626ad5af",
+            "instrument_id": "SYN_PAPER_LOSS",
+            "market_value": 900.0,
+            "quantity": 100.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_de15afaa20b5ade0deaea2fdc0cbb373cb4e3df60ae19276bd3b8843ea5da39d",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-03T00:00:00",
+            "valuation_price": 9.0
+          }
+        }
+      },
+      {
+        "decisions": [
+          {
+            "decision_id": "de_65a8b2fa9116e8a4be7ece3b8ec3f526648d0b63f71c98d5f68cc9ec7f3f9cce",
+            "decision_type": "open_position",
+            "episode_id": "pe_dc5c9dff3dbb79eb92f1d19cfe799bc5d97bfe04ecba00dadb9bad27e05ac657",
+            "evidence_refs": [],
+            "executed_quantity": 100.0,
+            "execution_id": "INT-1e3bfc818d361ed7",
+            "execution_price": 5.0,
+            "fees": 0.0,
+            "occurred_at": "2025-01-02T00:00:00",
+            "side": "BUY",
+            "state_after_ref": "ps_c1b19ddead57bca17fa48d6ae34ea7ea63c8d4ebfa8f76530809535ea2a7ab5d",
+            "state_before_ref": "ps_a8fb21f2297744a1aa329e1d7daab09053d6e8e0194f51936e1d5e7c1ba16397"
+          }
+        ],
+        "episode": {
+          "account_id": "demo-account:behavior",
+          "calculation_code_version": "desktop-demo-evidence-v1",
+          "closed_at": null,
+          "closing_execution_id": null,
+          "data_tier": "synthetic",
+          "decision_refs": [
+            "de_65a8b2fa9116e8a4be7ece3b8ec3f526648d0b63f71c98d5f68cc9ec7f3f9cce"
+          ],
+          "duration_days": 6,
+          "duration_kind": "so_far",
+          "episode_id": "pe_dc5c9dff3dbb79eb92f1d19cfe799bc5d97bfe04ecba00dadb9bad27e05ac657",
+          "evidence_refs": [],
+          "execution_refs": [
+            "INT-1e3bfc818d361ed7"
+          ],
+          "instrument_id": "SYN_NEUTRAL",
+          "limitations": [
+            "Position Episode v1 supports only normalized long-only BUY/SELL executions.",
+            "Corporate actions and transfers are unsupported and must not be encoded as executions.",
+            "Open-position valuation is a replay mark at its stated valuation time, not an exit."
+          ],
+          "opened_at": "2025-01-02T00:00:00",
+          "opening_execution_id": "INT-1e3bfc818d361ed7",
+          "provenance": [
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_LOSS_SOLD",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_NEUTRAL",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_PAPER_LOSS",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_PAPER_WIN",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            },
+            {
+              "as_of": "2025-01-08T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "v1",
+              "instrument": "SYN_WIN_SOLD",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "local_behavior_fixture",
+              "source_type": "price_series"
+            }
+          ],
+          "replay_method_id": "vectorbt_portfolio_replay_v1",
+          "status": "open",
+          "subject_id": "demo-user:synthetic-behavior"
+        },
+        "evidence_references": [],
+        "price_points": [
+          {
+            "observed_at": "2025-01-02T00:00:00",
+            "price": 5.0
+          },
+          {
+            "observed_at": "2025-01-03T00:00:00",
+            "price": 5.0
+          },
+          {
+            "observed_at": "2025-01-06T00:00:00",
+            "price": 5.0
+          },
+          {
+            "observed_at": "2025-01-07T00:00:00",
+            "price": 5.0
+          },
+          {
+            "observed_at": "2025-01-08T00:00:00",
+            "price": 5.0
+          }
+        ],
+        "snapshot": {
+          "as_of": "2025-01-08T23:59:00",
+          "episode_id": "pe_dc5c9dff3dbb79eb92f1d19cfe799bc5d97bfe04ecba00dadb9bad27e05ac657",
+          "position_state_ref": "ps_19cdbec25b1fd505e9013ac5bf42b9a8fd7424bdb3ee8ce79dbecbe67d872877"
+        },
+        "states_by_ref": {
+          "ps_19cdbec25b1fd505e9013ac5bf42b9a8fd7424bdb3ee8ce79dbecbe67d872877": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-08T23:59:00",
+            "average_cost": 5.0,
+            "boundary": "as_of_valuation",
+            "execution_id": null,
+            "instrument_id": "SYN_NEUTRAL",
+            "market_value": 500.0,
+            "quantity": 100.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_19cdbec25b1fd505e9013ac5bf42b9a8fd7424bdb3ee8ce79dbecbe67d872877",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-08T00:00:00",
+            "valuation_price": 5.0
+          },
+          "ps_a8fb21f2297744a1aa329e1d7daab09053d6e8e0194f51936e1d5e7c1ba16397": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-02T00:00:00",
+            "average_cost": null,
+            "boundary": "before_execution",
+            "execution_id": "INT-1e3bfc818d361ed7",
+            "instrument_id": "SYN_NEUTRAL",
+            "market_value": null,
+            "quantity": 0.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_a8fb21f2297744a1aa329e1d7daab09053d6e8e0194f51936e1d5e7c1ba16397",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-02T00:00:00",
+            "valuation_price": null
+          },
+          "ps_c1b19ddead57bca17fa48d6ae34ea7ea63c8d4ebfa8f76530809535ea2a7ab5d": {
+            "account_id": "demo-account:behavior",
+            "as_of": "2025-01-02T00:00:00",
+            "average_cost": 5.0,
+            "boundary": "after_execution",
+            "execution_id": "INT-1e3bfc818d361ed7",
+            "instrument_id": "SYN_NEUTRAL",
+            "market_value": 500.0,
+            "quantity": 100.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_id": "ps_c1b19ddead57bca17fa48d6ae34ea7ea63c8d4ebfa8f76530809535ea2a7ab5d",
+            "subject_id": "demo-user:synthetic-behavior",
+            "valuation_at": "2025-01-02T00:00:00",
+            "valuation_price": 5.0
+          }
+        }
       }
     ]
   },
@@ -4802,13 +5672,23 @@
           "exit_timing_post_exit_asset_return",
           "recorded_trading_friction_comparison"
         ],
-        "open_episode_count": 0,
+        "open_episode_count": 5,
         "partial_evidence_count": 0,
-        "portfolio_state_status": "unavailable",
+        "portfolio_state_status": "available",
         "referenced_evidence_count": 5
       },
       "data_tier": "synthetic",
-      "decision_event_refs": [],
+      "decision_event_refs": [
+        "de_6425ff7c23809c2d2cc4e5cdb4fbf1e1359e103a44f0b137c2e473a5bab9b405",
+        "de_de8d30643b9ad94c0c86d8c4be7be2d0b3c1bd2ffdd332ab99f68aeb16c88815",
+        "de_d9689d5e2420dcdbb3aed17ba73e14af329fe600405a1ebb91ac9281da9e8d7b",
+        "de_1a8291e602e6381b7355b63e2d63fdb4acc6f9fca4c3535ed0646b20cf40605a",
+        "de_65a8b2fa9116e8a4be7ece3b8ec3f526648d0b63f71c98d5f68cc9ec7f3f9cce",
+        "de_5dd37b237500653fb5230bb067bde393605f9b1934874bb03047195196351ce9",
+        "de_e67430b0a2a3e05e25960a2e78c1a774f8227f342433cb2379b38fb204189a33",
+        "de_a6cf7f78b148900225a94de0d7892b324656b9eb749def671a1e1568a2c9a158",
+        "de_c74c4dd56838b259772b2a774cf1ec239f95016186603d4fa02eca3aad9cd842"
+      ],
       "decision_evidence_refs": [
         {
           "available_at": "2025-01-03T00:00:00",
@@ -4825,7 +5705,106 @@
       ],
       "episode_refs": {
         "closed": [],
-        "open": []
+        "open": [
+          {
+            "account_id": "demo-account:behavior",
+            "closed_at": null,
+            "closing_execution_id": null,
+            "current_position_state_ref": "ps_16a636bb85a383d0f937c95563118cfea05436144a505116d4377a01f4d995ba",
+            "decision_refs": [
+              "de_de8d30643b9ad94c0c86d8c4be7be2d0b3c1bd2ffdd332ab99f68aeb16c88815",
+              "de_c74c4dd56838b259772b2a774cf1ec239f95016186603d4fa02eca3aad9cd842"
+            ],
+            "episode_id": "pe_460a70738da94f7dca7f03f18c47168c855a0f23bde32111af10e8d74612b9bf",
+            "evidence_refs": [],
+            "execution_refs": [
+              "INT-d78200392ed0a1eb",
+              "INT-a3170e2505c6780c"
+            ],
+            "instrument_id": "SYN_LOSS_SOLD",
+            "opened_at": "2025-01-02T00:00:00",
+            "opening_execution_id": "INT-d78200392ed0a1eb",
+            "status": "open"
+          },
+          {
+            "account_id": "demo-account:behavior",
+            "closed_at": null,
+            "closing_execution_id": null,
+            "current_position_state_ref": "ps_367bec00cd9aae1621061833ce473c24185cf98bce5408565c229b457aead998",
+            "decision_refs": [
+              "de_6425ff7c23809c2d2cc4e5cdb4fbf1e1359e103a44f0b137c2e473a5bab9b405",
+              "de_a6cf7f78b148900225a94de0d7892b324656b9eb749def671a1e1568a2c9a158"
+            ],
+            "episode_id": "pe_8aa45542d79249f41b272e6efb46dec7a11119b7eac854ed6005ebf3e8b4b7d0",
+            "evidence_refs": [],
+            "execution_refs": [
+              "INT-efff5042a3c07a0d",
+              "INT-d4586f80fa439c5b"
+            ],
+            "instrument_id": "SYN_WIN_SOLD",
+            "opened_at": "2025-01-02T00:00:00",
+            "opening_execution_id": "INT-efff5042a3c07a0d",
+            "status": "open"
+          },
+          {
+            "account_id": "demo-account:behavior",
+            "closed_at": null,
+            "closing_execution_id": null,
+            "current_position_state_ref": "ps_b17ab2a4dbe91cb19aa1f17867781241a6948effd406720fb28c6c4aa24530d6",
+            "decision_refs": [
+              "de_1a8291e602e6381b7355b63e2d63fdb4acc6f9fca4c3535ed0646b20cf40605a",
+              "de_e67430b0a2a3e05e25960a2e78c1a774f8227f342433cb2379b38fb204189a33"
+            ],
+            "episode_id": "pe_cb215cbf858c71448eeb04b0268b5883a82404eb8d17b73f8e752de01bef28e5",
+            "evidence_refs": [],
+            "execution_refs": [
+              "INT-b32520b60fff75a7",
+              "INT-2ceb6308626ad5af"
+            ],
+            "instrument_id": "SYN_PAPER_LOSS",
+            "opened_at": "2025-01-02T00:00:00",
+            "opening_execution_id": "INT-b32520b60fff75a7",
+            "status": "open"
+          },
+          {
+            "account_id": "demo-account:behavior",
+            "closed_at": null,
+            "closing_execution_id": null,
+            "current_position_state_ref": "ps_50762d64173b04df73fe33eb64a2ceb77005608679279571ed2b561ece5ae22b",
+            "decision_refs": [
+              "de_d9689d5e2420dcdbb3aed17ba73e14af329fe600405a1ebb91ac9281da9e8d7b",
+              "de_5dd37b237500653fb5230bb067bde393605f9b1934874bb03047195196351ce9"
+            ],
+            "episode_id": "pe_db1d299a07e8c15c234076633709dc5996d4fa6c8ee6757bc805b1db4179a213",
+            "evidence_refs": [],
+            "execution_refs": [
+              "INT-f01ea7c012a774db",
+              "INT-6f010c88f1373b79"
+            ],
+            "instrument_id": "SYN_PAPER_WIN",
+            "opened_at": "2025-01-02T00:00:00",
+            "opening_execution_id": "INT-f01ea7c012a774db",
+            "status": "open"
+          },
+          {
+            "account_id": "demo-account:behavior",
+            "closed_at": null,
+            "closing_execution_id": null,
+            "current_position_state_ref": "ps_19cdbec25b1fd505e9013ac5bf42b9a8fd7424bdb3ee8ce79dbecbe67d872877",
+            "decision_refs": [
+              "de_65a8b2fa9116e8a4be7ece3b8ec3f526648d0b63f71c98d5f68cc9ec7f3f9cce"
+            ],
+            "episode_id": "pe_dc5c9dff3dbb79eb92f1d19cfe799bc5d97bfe04ecba00dadb9bad27e05ac657",
+            "evidence_refs": [],
+            "execution_refs": [
+              "INT-1e3bfc818d361ed7"
+            ],
+            "instrument_id": "SYN_NEUTRAL",
+            "opened_at": "2025-01-02T00:00:00",
+            "opening_execution_id": "INT-1e3bfc818d361ed7",
+            "status": "open"
+          }
+        ]
       },
       "evidence_summary": {
         "complete": 5,
@@ -4840,6 +5819,17 @@
         ]
       },
       "input_version_refs": [
+        {
+          "as_of": "2025-01-08T00:00:00",
+          "benchmark_id": null,
+          "data_version": "a12c610a22c826565506d38acfdee24d0a275a848d3c36d0344f77dc8b5085e0",
+          "instrument": null,
+          "is_synthetic": true,
+          "price_type": null,
+          "source_id": "demo-account:behavior",
+          "source_name": "twin_snapshot_execution_prefix",
+          "source_type": "normalized_executions"
+        },
         {
           "as_of": "2025-01-08T00:00:00",
           "benchmark_id": null,
@@ -4900,8 +5890,11 @@
       "limitations": [
         "A detected event only means that quantity was added while the position was below average cost. It is not evidence of revenge trading, irrationality, greed, fear, FOMO, investment skill, or whether the decision was good or bad.",
         "Cash is excluded from security weights. This evidence applies no high/medium/low threshold, benchmark judgment, behavior score, or claim that concentration is good or bad.",
+        "Corporate actions and transfers are unsupported and must not be encoded as executions.",
         "Daily market data cannot prove that a final close was available intraday.",
+        "Open-position valuation is a replay mark at its stated valuation time, not an exit.",
         "Personal Twin is a derived point-in-time read model, not a financial ledger.",
+        "Position Episode v1 supports only normalized long-only BUY/SELL executions.",
         "Self baseline, peer context, notable changes, and intervention history are unavailable in v1.",
         "The historical counterfactual is not sizing skill, alpha, causal attribution, or a recommendation.",
         "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
@@ -4910,18 +5903,74 @@
       "notable_change_refs": [],
       "peer_context_refs": [],
       "portfolio_state": {
-        "as_of": "2025-01-08T00:00:00",
-        "positions": [],
-        "reason": "No replay-backed Position Episode lifecycle was supplied",
-        "replay_method_id": null,
-        "status": "unavailable"
+        "as_of": "2025-01-08T23:59:00",
+        "positions": [
+          {
+            "account_id": "demo-account:behavior",
+            "average_cost": 20.0,
+            "instrument_id": "SYN_LOSS_SOLD",
+            "market_value": 800.0,
+            "quantity": 50.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_ref": "ps_16a636bb85a383d0f937c95563118cfea05436144a505116d4377a01f4d995ba",
+            "valuation_at": "2025-01-08T00:00:00",
+            "valuation_price": 16.0
+          },
+          {
+            "account_id": "demo-account:behavior",
+            "average_cost": 5.0,
+            "instrument_id": "SYN_NEUTRAL",
+            "market_value": 500.0,
+            "quantity": 100.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_ref": "ps_19cdbec25b1fd505e9013ac5bf42b9a8fd7424bdb3ee8ce79dbecbe67d872877",
+            "valuation_at": "2025-01-08T00:00:00",
+            "valuation_price": 5.0
+          },
+          {
+            "account_id": "demo-account:behavior",
+            "average_cost": 9.666666666666666,
+            "instrument_id": "SYN_PAPER_LOSS",
+            "market_value": 1050.0,
+            "quantity": 150.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_ref": "ps_b17ab2a4dbe91cb19aa1f17867781241a6948effd406720fb28c6c4aa24530d6",
+            "valuation_at": "2025-01-08T00:00:00",
+            "valuation_price": 7.0
+          },
+          {
+            "account_id": "demo-account:behavior",
+            "average_cost": 10.11111111111111,
+            "instrument_id": "SYN_PAPER_WIN",
+            "market_value": 5850.0,
+            "quantity": 450.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_ref": "ps_50762d64173b04df73fe33eb64a2ceb77005608679279571ed2b561ece5ae22b",
+            "valuation_at": "2025-01-08T00:00:00",
+            "valuation_price": 13.0
+          },
+          {
+            "account_id": "demo-account:behavior",
+            "average_cost": 10.0,
+            "instrument_id": "SYN_WIN_SOLD",
+            "market_value": 500.0,
+            "quantity": 50.0,
+            "replay_method_id": "vectorbt_portfolio_replay_v1",
+            "state_ref": "ps_367bec00cd9aae1621061833ce473c24185cf98bce5408565c229b457aead998",
+            "valuation_at": "2025-01-08T00:00:00",
+            "valuation_price": 10.0
+          }
+        ],
+        "reason": null,
+        "replay_method_id": "vectorbt_portfolio_replay_v1",
+        "status": "available"
       },
       "projection_method_id": "personal_twin_point_in_time_projection_v1",
       "projection_method_version": "1",
       "schema_version": "1",
       "self_baseline_refs": [],
-      "snapshot_at": "2025-01-08T00:00:00",
-      "snapshot_id": "tw_2b292b448cf3ab5124c43ebfb0c2e10f59e86b274d0f13ba4f8bea6c7745ba11",
+      "snapshot_at": "2025-01-08T23:59:00",
+      "snapshot_id": "tw_322fcf99b514315918afa12d8fc8af7f9c04003435a55ab702ca72d6a1b5b72b",
       "subject_id": "demo-user:synthetic-behavior"
     },
     "data_tier": "synthetic",

@@ -228,3 +228,32 @@ def test_twin_export_is_byte_deterministic():
     assert first == second
     assert exported["twin"]["data_tier"] == "synthetic"
     assert len(exported["twin"]["historical_snapshots"]) == 5
+
+
+def test_desktop_current_twin_is_replay_backed_and_every_episode_is_resolvable():
+    exported = _json_value(build_export())
+    snapshot = exported["twin"]["current_snapshot"]
+    episode_entries = exported["position_episode_demo"]["entries"]
+    episodes_by_id = {
+        item["episode"]["episode_id"]: item["episode"] for item in episode_entries
+    }
+
+    assert snapshot["portfolio_state"]["status"] == "available"
+    assert snapshot["portfolio_state"]["replay_method_id"] == "vectorbt_portfolio_replay_v1"
+    assert len(snapshot["portfolio_state"]["positions"]) == 5
+    assert len(snapshot["episode_refs"]["open"]) == 5
+    assert snapshot["episode_refs"]["closed"] == []
+    assert all(
+        episodes_by_id[item["episode_id"]]["subject_id"] == snapshot["subject_id"]
+        for state in ("open", "closed")
+        for item in snapshot["episode_refs"][state]
+    )
+    assert all(
+        record["subject_id"] == snapshot["subject_id"]
+        for reference in (
+            *snapshot["decision_evidence_refs"],
+            *snapshot["behavior_evidence_refs"],
+        )
+        for record in exported["evidence_records"]
+        if record["evidence_id"] == reference["evidence_id"]
+    )

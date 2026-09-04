@@ -1,11 +1,18 @@
-import { ArrowUpRight, CircleCheck, Database, History, Layers3, ShieldCheck } from "lucide-react";
+import { ArrowRight, Braces, CircleCheck, Database, ShieldCheck } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { GlassPanel } from "@/components/common/GlassPanel";
 import { MirrorOrb } from "@/components/common/MirrorOrb";
-import { PageHeader, SectionHeading } from "@/components/common/PageHeader";
+import { EvidenceExplainButton } from "@/components/evidence/EvidenceInspector";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { twinState } from "@/data/backendEvidence";
-import type { TwinMetricComparisonView, TwinMetricStateView } from "@/data/twinState";
+import {
+  explainabilityForConcept,
+  explainabilityForEvidence,
+  getEvidenceRecordById,
+  twinState,
+} from "@/data/backendEvidence";
+import type { TwinEpisodeRefView, TwinEvidenceRefView, TwinMetricStateView } from "@/data/twinState";
+import type { DemoEvidenceRecord } from "@/demo/types";
 import { useLocale } from "@/locales/LocaleProvider";
 
 const metricLabels: Record<string, string> = {
@@ -25,164 +32,164 @@ function shortEvidenceId(value: string) {
 
 export default function MyTwinPage() {
   const { locale, t, formatNumber, formatPercent } = useLocale();
-  const { currentSnapshot, historicalSnapshots, comparisons } = twinState;
+  const { currentSnapshot } = twinState;
   const date = (value: string) => new Intl.DateTimeFormat(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
   }).format(new Date(value));
-  const metricState = (metricId: string) =>
-    currentSnapshot.behaviorState.find((item) => item.metricId === metricId);
-  const hhi = metricState("portfolio_concentration_hhi");
-  const turnover = metricState("mean_daily_turnover");
+
   const metricValue = (metric: TwinMetricStateView) => {
     if (metric.value === null) return t("Not available");
     if (metric.metricId === "portfolio_concentration_hhi") return formatNumber(metric.value, 4);
     return formatPercent(metric.value, metric.metricId === "mean_daily_turnover" ? 2 : 1);
   };
-  const comparisonValue = (comparison: TwinMetricComparisonView, value: number | null) => {
-    if (value === null) return t("Not available");
-    return comparison.metricId === "portfolio_concentration_hhi"
-      ? formatNumber(value, 4)
-      : formatPercent(value, 2);
+
+  const evidenceValue = (reference: TwinEvidenceRefView, record: DemoEvidenceRecord | null) => {
+    const state = currentSnapshot.behaviorState.find((item) => item.sourceEvidenceId === reference.evidenceId);
+    if (state) return metricValue(state);
+    if (!record || record.value === null) return t("Not available");
+    if (typeof record.value === "number") return formatNumber(record.value, 4);
+    const labels: Record<string, string> = {
+      outperformed_baseline: "Above registered baseline",
+      underperformed_baseline: "Below registered baseline",
+      matched_baseline: "Matched registered baseline",
+    };
+    return t(labels[String(record.value)] ?? String(record.value));
   };
-  const absoluteChange = (comparison: TwinMetricComparisonView) => {
-    if (comparison.absoluteChange === null) return t("Not available");
-    return comparison.metricId === "portfolio_concentration_hhi"
-      ? formatNumber(comparison.absoluteChange, 4)
-      : `${formatNumber(comparison.absoluteChange * 100, 2)} pp`;
-  };
-  const statusText = (status: TwinMetricStateView["status"]) => {
-    const labels = {
-      complete: "Complete",
-      partial: "Partial",
-      insufficient_evidence: "Insufficient evidence",
-      experimental: "Experimental",
-    } as const;
-    return t(labels[status]);
+
+  const episodeRow = (episode: TwinEpisodeRefView) => {
+    const state = episode.currentPositionState;
+    return (
+      <Link className="twin-episode-row" key={episode.episodeId} to={`/decisions/episodes/${episode.episodeId}`}>
+        <div className="twin-episode-row__identity">
+          <strong>{episode.instrumentId}</strong>
+          <span>{date(episode.openedAt)} → {episode.closedAt ? date(episode.closedAt) : t("Present")}</span>
+        </div>
+        <dl className="twin-episode-row__facts">
+          <div><dt>{t("Quantity")}</dt><dd>{state ? formatNumber(state.quantity, 2) : t("Not available")}</dd></div>
+          <div><dt>{t("Average cost")}</dt><dd>{state?.averageCost === null || !state ? t("Not available") : formatNumber(state.averageCost, 2)}</dd></div>
+          <div><dt>{t("Valuation price")}</dt><dd>{state?.valuationPrice === null || !state ? t("Not available") : formatNumber(state.valuationPrice, 2)}</dd></div>
+        </dl>
+        <span className="twin-episode-row__status">{t(episode.status === "open" ? "In progress" : "Closed")}<ArrowRight aria-hidden="true" /></span>
+      </Link>
+    );
   };
 
   return (
     <div className="page twin-page">
-      <PageHeader
-        eyebrow={t("My Twin · Demo Snapshot")}
-        title={t("A living evidence profile")}
-        description={t("A deterministic point-in-time view of registered evidence—not a score, prediction, or persistent investor identity.")}
-      />
-
-      <GlassPanel className="twin-identity glass-reflection">
-        <div className="twin-identity__orb"><MirrorOrb size="lg" state="idle" /></div>
-        <div className="twin-identity__copy">
-          <span className="eyebrow">{t("Current snapshot")}</span>
-          <h2>{currentSnapshot.subjectId}</h2>
-          <p>{t("Deterministic point-in-time evidence view")}</p>
-          <div>
-            <span><CircleCheck /> {t("Deterministic backend export")}</span>
-            <span><ShieldCheck /> {t("Synthetic provenance")}</span>
-            <span><History /> {t("Snapshot date {date}", { date: date(currentSnapshot.snapshotAt) })}</span>
-          </div>
+      <GlassPanel className="twin-archive-hero glass-reflection">
+        <div className="twin-archive-hero__orb"><MirrorOrb size="md" state="idle" /></div>
+        <div className="twin-archive-hero__copy">
+          <span className="eyebrow">{t("My Twin · Point-in-time archive")}</span>
+          <h1>{t("What the evidence can say about me now")}</h1>
+          <p>{t("This is the state formed from facts available by {date}. It is not an investor type, score, or prediction.", { date: date(currentSnapshot.snapshotAt) })}</p>
         </div>
-        <dl className="twin-identity__quality">
-          <div>
-            <dt>HHI</dt>
-            <dd>{hhi ? metricValue(hhi) : "—"}</dd>
-            <span>{hhi ? t("as of {date}", { date: date(hhi.asOf) }) : t("Not available")}</span>
-          </div>
-          <div>
-            <dt>{t("Latest daily turnover")}</dt>
-            <dd>{turnover ? metricValue(turnover) : "—"}</dd>
-            <span>{turnover ? t("as of {date}", { date: date(turnover.asOf) }) : t("Not available")}</span>
-          </div>
-        </dl>
+        <div className="twin-archive-hero__asof">
+          <span>{t("As of")}</span>
+          <strong>{date(currentSnapshot.snapshotAt)}</strong>
+          <small><ShieldCheck aria-hidden="true" /> {t("Synthetic / Demo")}</small>
+        </div>
       </GlassPanel>
 
-      <section className="twin-periods">
-        <div className="twin-periods__header">
-          <SectionHeading
-            eyebrow={t("Self history")}
-            title={t("Rebuildable point-in-time snapshots")}
-            description={t("Only HHI and Turnover currently have registered historical series; later evidence is excluded from earlier snapshots.")}
-          />
-        </div>
-        <div className="twin-period-grid">
-          <GlassPanel className="twin-period-summary">
-            <span className="eyebrow">{t("Historical coverage")}</span>
-            <h3>{historicalSnapshots.length > 0 ? `${date(historicalSnapshots[0].snapshotAt)} – ${date(historicalSnapshots.at(-1)!.snapshotAt)}` : t("Not available")}</h3>
-            <dl>
-              <div><dt>{t("Snapshots")}</dt><dd>{historicalSnapshots.length}</dd></div>
-              <div><dt>{t("Historical metrics")}</dt><dd>2</dd></div>
-            </dl>
-          </GlassPanel>
-          <GlassPanel className="twin-notes">
-            {comparisons.map((comparison) => (
-              <div className="twin-note-column" key={comparison.metricId}>
-                <span className="eyebrow">{t(metricLabels[comparison.metricId])}</span>
-                <p><ArrowUpRight aria-hidden="true" />{t("{past} on {pastDate} → {current} on {currentDate}", {
-                  past: comparisonValue(comparison, comparison.pastValue),
-                  pastDate: comparison.referenceDate ? date(comparison.referenceDate) : "—",
-                  current: comparisonValue(comparison, comparison.currentValue),
-                  currentDate: comparison.currentDate ? date(comparison.currentDate) : "—",
-                })}</p>
-                <p>{t("Absolute change {change}; relative change {relative}.", {
-                  change: absoluteChange(comparison),
-                  relative: comparison.relativeChange === null ? "—" : formatPercent(comparison.relativeChange, 1),
-                })}</p>
-              </div>
-            ))}
-          </GlassPanel>
+      <section className="twin-section" aria-labelledby="twin-now-heading">
+        <header className="twin-section__heading">
+          <div><span className="eyebrow">01</span><h2 id="twin-now-heading">{t("My state now")}</h2></div>
+          <p>{t("A point-in-time summary copied from the deterministic TwinSnapshot.")}</p>
+        </header>
+        <dl className="twin-fact-strip">
+          <div><dt>{t("Active investment experiences")}</dt><dd>{currentSnapshot.dataQuality.openEpisodeCount}</dd></div>
+          <div><dt>{t("Closed investment experiences")}</dt><dd>{currentSnapshot.dataQuality.closedEpisodeCount}</dd></div>
+          <div><dt>{t("Complete evidence")}</dt><dd>{currentSnapshot.evidenceSummary.complete}</dd></div>
+          <div><dt>{t("Evidence still maturing")}</dt><dd>{currentSnapshot.evidenceSummary.insufficient}</dd></div>
+          <div><dt>{t("Portfolio state")}</dt><dd className="twin-fact-strip__status">{t(currentSnapshot.portfolioState.status === "available" ? "Available" : currentSnapshot.portfolioState.status === "not_started" ? "Not started" : "Not available")}</dd></div>
+        </dl>
+      </section>
+
+      <section className="twin-section" aria-labelledby="twin-open-heading">
+        <header className="twin-section__heading">
+          <div><span className="eyebrow">02</span><h2 id="twin-open-heading">{t("Investment experiences in progress")}</h2></div>
+          <p>{t("Open marks are current valuation facts, not exits.")}</p>
+        </header>
+        <div className="twin-row-list">
+          {currentSnapshot.episodes.open.length > 0
+            ? currentSnapshot.episodes.open.map(episodeRow)
+            : <div className="twin-empty-row"><CircleCheck aria-hidden="true" /><span>{t("No open investment experiences at this snapshot.")}</span></div>}
         </div>
       </section>
 
-      <div className="twin-profile-grid">
-        <GlassPanel>
-          <SectionHeading eyebrow={t("Decision profile")} title={t("Current evidence references")} />
-          <div className="profile-list">
-            {currentSnapshot.decisionEvidenceRefs.map((reference) => (
-              <div key={reference.evidenceId}>
-                <span>{t(metricLabels[reference.metricId])}</span>
-                <strong className="font-mono" title={reference.evidenceId}>{shortEvidenceId(reference.evidenceId)}</strong>
-                <StatusBadge status={reference.status} compact />
-              </div>
-            ))}
+      <section className="twin-section" aria-labelledby="twin-closed-heading">
+        <header className="twin-section__heading">
+          <div><span className="eyebrow">03</span><h2 id="twin-closed-heading">{t("Recently completed investment experiences")}</h2></div>
+          <p>{t("Only Episodes referenced by this snapshot are shown.")}</p>
+        </header>
+        <div className="twin-row-list">
+          {currentSnapshot.episodes.closed.length > 0
+            ? currentSnapshot.episodes.closed.slice(0, 3).map(episodeRow)
+            : <div className="twin-empty-row"><CircleCheck aria-hidden="true" /><span>{t("No closed investment experiences are available for this subject at this snapshot.")}</span></div>}
+        </div>
+      </section>
+
+      <section className="twin-section" aria-labelledby="twin-evidence-heading">
+        <header className="twin-section__heading">
+          <div><span className="eyebrow">04</span><h2 id="twin-evidence-heading">{t("Observations supported by evidence")}</h2></div>
+          <p>{t("These are observations, not scores, diagnoses, or permanent traits.")}</p>
+        </header>
+        <div className="twin-evidence-list">
+          {[...currentSnapshot.decisionEvidenceRefs, ...currentSnapshot.behaviorEvidenceRefs].map((reference) => {
+            const record = getEvidenceRecordById(reference.evidenceId);
+            const view = explainabilityForEvidence(reference.evidenceId) ?? explainabilityForConcept(reference.metricId);
+            return (
+              <article className="twin-evidence-row" key={reference.evidenceId}>
+                <div><span>{t(reference.evidenceKind === "decision_evidence" ? "Decision evidence" : "Behavior evidence")}</span><h3>{t(metricLabels[reference.metricId] ?? reference.metricId)}</h3></div>
+                <strong>{evidenceValue(reference, record)}</strong>
+                <div className="twin-evidence-row__meta"><StatusBadge status={reference.status} compact /><span>{t("N={count}", { count: record?.observation_count ?? "—" })}</span></div>
+                <EvidenceExplainButton
+                  view={view}
+                  context={{ label: t("Evidence"), title: t(metricLabels[reference.metricId] ?? reference.metricId), detail: shortEvidenceId(reference.evidenceId) }}
+                  label="View evidence"
+                />
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <div className="twin-detail-grid">
+        <section className="twin-section twin-section--compact" aria-labelledby="twin-quality-heading">
+          <header className="twin-section__heading"><div><span className="eyebrow">05</span><h2 id="twin-quality-heading">{t("Evidence maturity")}</h2></div></header>
+          <dl className="twin-quality-rows">
+            <div><dt>{t("Evidence coverage")}</dt><dd>{currentSnapshot.dataQuality.referencedEvidenceCount} / {currentSnapshot.dataQuality.expectedEvidenceCount}</dd></div>
+            <div><dt>{t("Complete")}</dt><dd>{currentSnapshot.evidenceSummary.complete}</dd></div>
+            <div><dt>{t("Partial")}</dt><dd>{currentSnapshot.evidenceSummary.partial}</dd></div>
+            <div><dt>{t("Insufficient evidence")}</dt><dd>{currentSnapshot.evidenceSummary.insufficient}</dd></div>
+            <div><dt>{t("Data quality issues")}</dt><dd>{currentSnapshot.dataQuality.issueCount}</dd></div>
+          </dl>
+          {currentSnapshot.dataQuality.missingEvidenceMetrics.length > 0 ? <p className="twin-section__note">{t("Unavailable evidence: {metrics}", { metrics: currentSnapshot.dataQuality.missingEvidenceMetrics.map((item) => t(metricLabels[item] ?? item)).join(" · ") })}</p> : null}
+        </section>
+
+        <section className="twin-section twin-section--compact" aria-labelledby="twin-unknown-heading">
+          <header className="twin-section__heading"><div><span className="eyebrow">06</span><h2 id="twin-unknown-heading">{t("Not formed yet")}</h2></div></header>
+          <div className="twin-unknown-list">
+            <div><span>{t("Changes versus my past")}</span><small>{t("Self vs Past is not connected yet")}</small></div>
+            <div><span>{t("Position among comparable accounts")}</span><small>{t("Comparable-account context is not connected yet")}</small></div>
+            <div><span>{t("Long-term notable changes")}</span><small>{t("No registered notable-change evidence yet")}</small></div>
           </div>
-        </GlassPanel>
-        <GlassPanel>
-          <SectionHeading eyebrow={t("Behavior profile")} title={t("Current evidence references")} />
-          <div className="profile-list">
-            {currentSnapshot.behaviorEvidenceRefs.map((reference) => (
-              <div key={reference.evidenceId}>
-                <span>{t(metricLabels[reference.metricId])}</span>
-                <strong className="font-mono" title={reference.evidenceId}>{shortEvidenceId(reference.evidenceId)}</strong>
-                <StatusBadge status={reference.status} compact />
-              </div>
-            ))}
-          </div>
-        </GlassPanel>
+        </section>
       </div>
 
-      <div className="twin-bottom-grid">
-        <GlassPanel>
-          <SectionHeading eyebrow={t("Behavior state")} title={t("Observed, not scored")} />
-          <div className="change-list">
-            {currentSnapshot.behaviorState.map((metric) => (
-              <div key={metric.metricId}>
-                <span>{t(metricLabels[metric.metricId])}</span>
-                <strong>{metricValue(metric)}</strong>
-                <p>{t("as of {date}", { date: date(metric.asOf) })} · N={metric.observationCount ?? "—"} · {statusText(metric.status)}</p>
-              </div>
-            ))}
-          </div>
-        </GlassPanel>
-        <GlassPanel>
-          <SectionHeading eyebrow={t("Data quality")} title={t("Evidence coverage and limitations")} />
-          <div className="quality-list">
-            <div><Database /><span><strong>{currentSnapshot.dataQuality.referencedEvidenceCount} / {currentSnapshot.dataQuality.expectedEvidenceCount} {t("evidence references")}</strong><small>{currentSnapshot.dataQuality.completeEvidenceCount} {t("Complete")}</small></span></div>
-            <div><Layers3 /><span><strong>{currentSnapshot.dataQuality.availableBehaviorMetricCount} / 4 {t("behavior metrics available")}</strong><small>{currentSnapshot.dataQuality.missingBehaviorMetrics.length === 0 ? t("No missing behavior state") : currentSnapshot.dataQuality.missingBehaviorMetrics.join(", ")}</small></span></div>
-            <div><ShieldCheck /><span><strong>{t("Synthetic / Demo")}</strong><small>{currentSnapshot.limitations.length} {t("registered limitations")}</small></span></div>
-          </div>
-          <p className="mt-3 text-xs leading-5 text-muted">{currentSnapshot.limitations.slice(0, 2).map((item) => t(item)).join(" ")}</p>
-        </GlassPanel>
-      </div>
+      <details className="twin-technical-details">
+        <summary><Braces aria-hidden="true" />{t("Method and snapshot details")}</summary>
+        <dl>
+          <div><dt>{t("Snapshot ID")}</dt><dd>{currentSnapshot.snapshotId}</dd></div>
+          <div><dt>{t("Subject ID")}</dt><dd>{currentSnapshot.subjectId}</dd></div>
+          <div><dt>{t("Schema version")}</dt><dd>{currentSnapshot.schemaVersion}</dd></div>
+          <div><dt>{t("Projection method")}</dt><dd>{currentSnapshot.projectionMethodId} · v{currentSnapshot.projectionMethodVersion}</dd></div>
+          <div><dt>{t("Calculation code")}</dt><dd>{currentSnapshot.calculationCodeVersion}</dd></div>
+          <div><dt>{t("Replay method")}</dt><dd>{currentSnapshot.portfolioState.replayMethodId ?? t("Not available")}</dd></div>
+        </dl>
+        <div className="twin-technical-details__limitations"><Database aria-hidden="true" /><p>{currentSnapshot.limitations.map((item) => t(item)).join(" ")}</p></div>
+      </details>
     </div>
   );
 }

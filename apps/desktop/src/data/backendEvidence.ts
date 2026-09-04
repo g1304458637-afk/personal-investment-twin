@@ -60,6 +60,7 @@ interface BackendEvidenceExport {
 }
 
 interface BackendHistoricalMetricSeries {
+  subject_id: string;
   metric_id: string;
   method_id: string;
   method_version: string;
@@ -106,16 +107,36 @@ export const behaviorHistory = {
   hhi: historyView(backend.historical_series.portfolio_hhi),
   turnover: historyView(backend.historical_series.turnover),
 };
-export const twinState = adaptTwinPayload(backend.twin);
 export const peerBenchmark = adaptPeerBenchmarkPayload(backend.peer_benchmark);
 export const pretradeDemo = adaptPretradeImpact(backend.pretrade_demo);
 export const positionEpisodeDemo: PositionEpisodeDemoView = adaptPositionEpisodeDemo(
   backend.position_episode_demo,
 );
+export const twinState = adaptTwinPayload(
+  backend.twin,
+  [
+    ...evidenceRecords,
+    ...Object.values(backend.historical_series).flatMap((series) =>
+      series.points.map((point) => ({
+        evidence_id: point.source_evidence_id,
+        subject_id: series.subject_id,
+      })),
+    ),
+  ],
+  positionEpisodeDemo.entries.map((entry) => ({
+    episodeId: entry.episode.episodeId,
+    subjectId: entry.episode.subjectId,
+    status: entry.episode.status,
+  })),
+);
 export const explainability = adaptExplainabilityPayload(backend.explainability);
 
 export function explainabilityForEvidence(evidenceId: string): ExplainabilityView | null {
   return explainability.evidenceViews.find((item) => item.evidenceId === evidenceId) ?? null;
+}
+
+export function getEvidenceRecordById(evidenceId: string): DemoEvidenceRecord | null {
+  return evidenceRecords.find((item) => item.evidence_id === evidenceId) ?? null;
 }
 
 export function explainabilityForConcept(conceptId: string): ExplainabilityView | null {

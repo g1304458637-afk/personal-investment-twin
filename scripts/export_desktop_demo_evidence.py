@@ -66,7 +66,7 @@ from src.pretrade.impact import (  # noqa: E402
 from src.twin.state import (  # noqa: E402
     build_historical_twin_snapshots,
     build_twin_metric_comparison,
-    build_twin_snapshot,
+    build_twin_snapshot_from_facts,
     latest_twin_snapshot_at,
 )
 
@@ -354,11 +354,6 @@ def build_export() -> dict[str, object]:
         data_tier="synthetic",
         calculation_code_version=CALCULATION_CODE_VERSION,
     )
-    open_position_episode = next(
-        item
-        for item in behavior_lifecycle.episodes
-        if item.instrument_id == "SYN_WIN_SOLD"
-    )
     turnover_record = next(
         record for record in records if record.metric_id == "mean_daily_turnover"
     )
@@ -383,11 +378,15 @@ def build_export() -> dict[str, object]:
         histories,
         subject_id=behavior_subject,
     )
-    current_twin = build_twin_snapshot(
+    current_twin = build_twin_snapshot_from_facts(
+        behavior_executions,
+        behavior_prices,
         twin_records,
         histories,
         subject_id=behavior_subject,
-        snapshot_at=snapshot_at,
+        account_id="demo-account:behavior",
+        as_of=behavior_lifecycle.as_of,
+        init_cash=INITIAL_CASH,
         data_tier="synthetic",
         calculation_code_version=CALCULATION_CODE_VERSION,
     )
@@ -492,10 +491,13 @@ def build_export() -> dict[str, object]:
                     episode_id=selected_position_episode.episode_id,
                     market_prices=selected_market_prices,
                 ),
-                _position_episode_entry(
-                    behavior_lifecycle,
-                    episode_id=open_position_episode.episode_id,
-                    market_prices=behavior_prices,
+                *(
+                    _position_episode_entry(
+                        behavior_lifecycle,
+                        episode_id=episode.episode_id,
+                        market_prices=behavior_prices,
+                    )
+                    for episode in behavior_lifecycle.episodes
                 ),
             ),
         },
