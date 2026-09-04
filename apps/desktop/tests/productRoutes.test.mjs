@@ -47,19 +47,27 @@ test("legacy product URLs resolve to the confirmed Phase 1 routes", () => {
 test("primary sidebar derives only ready routes from metadata", () => {
   const entries = getSidebarNavigation();
   const ids = entries.flatMap((entry) =>
-    entry.type === "route" ? [entry.route.id] : entry.children.map((child) => child.id),
+    entry.type === "route"
+      ? [entry.route.id]
+      : [entry.route.id, ...entry.children.map((child) => child.id)],
   );
-  assert.deepEqual(ids, ["overview", "investments", "review_decisions", "review_patterns", "twin", "pretrade", "settings"]);
+  assert.deepEqual(ids, ["overview", "investments", "review", "review_decisions", "review_patterns", "twin", "pretrade", "settings"]);
   assert.equal(ids.includes("advanced_evidence"), false);
   assert.equal(ids.includes("investments"), true);
   assert.equal(ids.includes("data_accounts"), false);
   assert.equal(entries.some((entry) => entry.type === "group" && entry.id === "review"), true);
+  const review = entries.find((entry) => entry.type === "group" && entry.id === "review");
+  assert.equal(review.route.path, "/review");
 });
 
 test("review children, titles, and active state share route metadata", () => {
+  assert.equal(activeNavigationGroup("/review"), "review");
   assert.equal(activeNavigationGroup("/review/decisions"), "review");
   assert.equal(activeNavigationGroup("/review/patterns"), "review");
+  assert.equal(activeRouteId("/review"), "review");
   assert.equal(activeRouteId("/review/decisions"), "review_decisions");
+  assert.equal(activeNavigationRouteId("/review/decisions"), "review");
+  assert.equal(activeNavigationRouteId("/review/patterns"), "review");
   assert.equal(activeRouteId("/investments/episodes/episode_123"), "investment_episode");
   assert.equal(activeNavigationRouteId("/investments/episodes/episode_123"), "investments");
   assert.equal(pageTitleKey("/pretrade"), "Trade impact check");
@@ -75,6 +83,7 @@ test("App, Sidebar, and Command Palette consume the metadata source", async () =
   assert.match(navigation, /getSidebarNavigation\(\)/);
   assert.match(palette, /commandNavigationItems/);
   assert.match(shell, /pageTitleKey\(location\.pathname\)/);
+  assert.match(shell, /to=\{item\.path\}/);
   assert.match(shell, /AgentPanel/);
   assert.match(shell, /Ask Twin/);
 });

@@ -16,6 +16,7 @@ import { useLocale } from "@/locales/LocaleProvider";
 import {
   activeNavigationGroup,
   activeNavigationRouteId,
+  activeRouteId,
   pageTitleKey,
 } from "@/routing/productRoutes";
 
@@ -30,13 +31,14 @@ function WorkspaceShellContent() {
   const [agentOpen, setAgentOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const currentRouteId = activeNavigationRouteId(location.pathname);
+  const exactRouteId = activeRouteId(location.pathname);
   const currentGroup = activeNavigationGroup(location.pathname);
   const title = t(pageTitleKey(location.pathname));
   const nextTheme = theme === "dark" ? "light" : "dark";
 
   const navigationLink = (item: NavigationRouteItem, child = false) => {
     const Icon = item.icon;
-    const isActive = currentRouteId === item.id;
+    const isActive = child ? exactRouteId === item.id : currentRouteId === item.id;
     return (
       <Tooltip key={item.path} delayDuration={480}>
         <TooltipTrigger asChild>
@@ -94,10 +96,13 @@ function WorkspaceShellContent() {
             const GroupIcon = item.icon;
             return (
               <div key={item.id} className="workspace-nav__group" role="group" aria-label={t(item.label)}>
-                <div className={cn("workspace-nav__group-title", currentGroup === item.id && "workspace-nav__group-title--active")}>
+                <NavLink
+                  to={item.path}
+                  className={cn("workspace-nav__group-title", currentGroup === item.id && "workspace-nav__group-title--active")}
+                >
                   <GroupIcon aria-hidden="true" />
                   <span>{t(item.label)}</span>
-                </div>
+                </NavLink>
                 <div className="workspace-nav__children">
                   {item.children.map((child) => navigationLink(child, true))}
                 </div>

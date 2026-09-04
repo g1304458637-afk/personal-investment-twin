@@ -25,6 +25,7 @@ import {
   type PositionEpisodeDemoView,
 } from "./positionEpisode";
 import { adaptPretradeImpact, type BackendPretradeImpact } from "./pretradeImpact";
+import { buildReviewView } from "./review";
 import {
   adaptSelfBaselinePayload,
   type BackendSelfBaselinePayload,
@@ -427,5 +428,13 @@ export const behaviorMetrics: EvidenceMetric[] = [
     { rate: percent(recordValue(lossAveragingRecord), 1) },
   ),
 ];
+
+export const reviewView = buildReviewView({
+  decisionMetrics,
+  behaviorMetrics,
+  evidenceRecords,
+  explainability,
+  episodes: positionEpisodeDemo.entries,
+});
 
 export { selectionRecord, sizingRecord, exitRecord, frictionRecord };

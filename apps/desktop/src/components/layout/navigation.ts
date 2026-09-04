@@ -35,6 +35,8 @@ export interface NavigationGroupItem {
   readonly id: NavigationGroupId;
   readonly label: string;
   readonly icon: LucideIcon;
+  readonly path: string;
+  readonly description: string;
   readonly section: NavigationSection;
   readonly children: readonly NavigationRouteItem[];
 }
@@ -70,6 +72,8 @@ export const navigationItems: readonly NavigationItem[] = getSidebarNavigation()
     id: entry.id,
     label: entry.labelKey,
     icon: icons[entry.icon],
+    path: entry.route.path,
+    description: entry.route.descriptionKey,
     section: entry.navigationSection,
     children: entry.children.map((child) => ({
       type: "route",
@@ -84,5 +88,16 @@ export const navigationItems: readonly NavigationItem[] = getSidebarNavigation()
 });
 
 export const commandNavigationItems: readonly NavigationRouteItem[] = navigationItems.flatMap(
-  (item) => item.type === "route" ? [item] : item.children,
+  (item) => item.type === "route" ? [item] : [
+    {
+      type: "route",
+      id: item.id,
+      label: item.label,
+      path: item.path,
+      icon: item.icon,
+      description: item.description,
+      section: item.section,
+    },
+    ...item.children,
+  ],
 );

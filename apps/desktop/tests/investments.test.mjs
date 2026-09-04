@@ -120,9 +120,10 @@ test("Overview is a current-state entry point, not a module-card or attention-ra
 test("Decision review retains Evidence but no longer owns the Episode browser", async () => {
   const decisions = await readFile(new URL("../src/pages/DecisionsPage.tsx", import.meta.url), "utf8");
   const episode = await readFile(new URL("../src/pages/PositionEpisodePage.tsx", import.meta.url), "utf8");
+  const row = await readFile(new URL("../src/components/review/EvidenceObservationRow.tsx", import.meta.url), "utf8");
 
-  assert.match(decisions, /decisionMetrics/);
-  assert.match(decisions, /EvidenceExplainButton/);
+  assert.match(decisions, /reviewView\.decisions/);
+  assert.match(row, /EvidenceExplainButton/);
   assert.doesNotMatch(decisions, /positionEpisodeDemo\.entries/);
   assert.match(decisions, /to="\/investments"/);
   assert.match(episode, /to="\/investments"/);

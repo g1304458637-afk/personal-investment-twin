@@ -1,92 +1,22 @@
-import { BriefcaseBusiness, Database, Hash, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { ArrowRight, BetweenHorizontalStart, BriefcaseBusiness, ReceiptText } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import { EvidenceTrendChart } from "@/components/charts/EvidenceTrendChart";
-import { GlassPanel } from "@/components/common/GlassPanel";
 import { PageHeader, SectionHeading } from "@/components/common/PageHeader";
-import { StatusBadge } from "@/components/common/StatusBadge";
-import { EvidenceExplainButton } from "@/components/evidence/EvidenceInspector";
+import { DemoBadge } from "@/components/common/StatusBadge";
+import { EvidenceObservationRow } from "@/components/review/EvidenceObservationRow";
 import { Button } from "@/components/ui/button";
-import {
-  decisionMetrics,
-  evidenceRecords,
-  explainabilityForConcept,
-  explainabilityForEvidence,
-  translateEvidenceText,
-} from "@/data/backendEvidence";
-import type { DemoEvidenceRecord, EvidenceMetric } from "@/demo/types";
-import { cn } from "@/lib/utils";
-import { useLocale, type TranslationValues } from "@/locales/LocaleProvider";
-
-function findEvidence(metric: EvidenceMetric): DemoEvidenceRecord {
-  const record = evidenceRecords.find((item) => item.evidence_id === metric.evidenceId);
-  if (!record) throw new Error(`Missing deterministic fixture evidence for ${metric.id}.`);
-  return record;
-}
-
-function EvidenceDetail({ record, metric, t }: { record: DemoEvidenceRecord; metric: EvidenceMetric; t: (value: string, values?: TranslationValues) => string }) {
-  const confidence = t(metric.confidence ?? "CI not available for this registered method");
-  const conceptIds: Record<string, string> = {
-    selection: "selection_episode_asset_return",
-    sizing: "sizing_equal_weight_comparison",
-    exit: "post_exit_fixed_window_return",
-    friction: "recorded_trading_friction",
-  };
-  const view = explainabilityForEvidence(record.evidence_id)
-    ?? explainabilityForConcept(conceptIds[metric.id]);
-
-  return (
-    <div className="border-t border-border/70 pt-3">
-      <div className="grid gap-2 text-xs text-muted sm:grid-cols-3">
-        <span><strong className="mr-1 font-medium text-foreground">N</strong>{metric.observationCount ?? t("Not available")}</span>
-        <span><strong className="mr-1 font-medium text-foreground">{t("Uncertainty")}</strong>{confidence}</span>
-        <span><strong className="mr-1 font-medium text-foreground">{t("As of")}</strong>{t("31 Mar 2025")}</span>
-      </div>
-      <EvidenceExplainButton
-        view={view}
-        className="mt-2 -ml-3"
-        label="View evidence"
-        context={{ label: t("Decision evidence"), title: t(metric.label), detail: t("Synthetic offline fixture") }}
-      />
-    </div>
-  );
-}
-
-function DecisionModule({ metric, selected, onSelect, t }: { metric: EvidenceMetric; selected: boolean; onSelect: () => void; t: (value: string, values?: TranslationValues) => string }) {
-  const record = findEvidence(metric);
-  return (
-    <article className={cn("rounded-lg border p-4 transition-colors", selected ? "border-accent/45 bg-accent/[0.07]" : "border-border/75 bg-white/[0.025] hover:bg-white/[0.045]")}>
-      <button type="button" className="w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas" onClick={onSelect} aria-pressed={selected}>
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">{t(metric.eyebrow)}</p>
-            <h3 className="mt-1 text-[15px] font-semibold text-foreground">{t(metric.label)}</h3>
-          </div>
-          <StatusBadge status={metric.status} compact />
-        </div>
-        <p className="mt-4 font-mono text-[23px] font-semibold tracking-tight text-foreground tabular-nums">{translateEvidenceText(t, metric.primary, metric.primaryValues)}</p>
-        <p className="mt-2 text-sm leading-5 text-muted">{translateEvidenceText(t, metric.description, metric.descriptionValues)}</p>
-      </button>
-      <div className="mt-4">
-        <EvidenceDetail record={record} metric={metric} t={t} />
-      </div>
-    </article>
-  );
-}
+import { reviewView } from "@/data/backendEvidence";
+import { useLocale } from "@/locales/LocaleProvider";
 
 export function DecisionsPage() {
   const { t } = useLocale();
-  const [selectedId, setSelectedId] = useState(decisionMetrics[0].id);
-  const selectedMetric = decisionMetrics.find((metric) => metric.id === selectedId) ?? decisionMetrics[0];
-  const selectedRecord = findEvidence(selectedMetric);
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="page review-detail-page">
       <PageHeader
-        eyebrow={t("Decision evidence")}
-        title={t("What the observed decisions show")}
-        description={t("Deterministic evidence from a synthetic offline fixture. These observations are not a trading score, prediction, or recommendation.")}
+        eyebrow={t("Review")}
+        title={t("Decision review")}
+        description={t("Review deterministic evidence about asset choice, position sizing, and completed exits without turning outcomes into a score or recommendation.")}
         actions={
           <Button asChild variant="quiet" size="sm">
             <Link to="/investments"><BriefcaseBusiness />{t("View investment experiences")}</Link>
@@ -94,36 +24,56 @@ export function DecisionsPage() {
         }
       />
 
-      <GlassPanel className="p-5 md:p-6">
-        <SectionHeading eyebrow={t("Four decision lenses")} title={t("Evidence, not a black-box score")} description={t("Select a lens to inspect its fixed observation trend and registered evidence boundary.")} />
-        <div className="mt-5 grid gap-3 lg:grid-cols-2">
-          {decisionMetrics.map((metric) => <DecisionModule key={metric.id} metric={metric} t={t} selected={metric.id === selectedId} onSelect={() => setSelectedId(metric.id)} />)}
+      <section className="product-section" aria-labelledby="decision-evidence-heading">
+        <SectionHeading
+          eyebrow={t("Decision evidence")}
+          title={t("What the recorded decisions support")}
+          description={t("The order follows a stable product taxonomy—asset choice, sizing, then completed exit—not result direction or magnitude.")}
+        />
+        <div className="review-observation-list" id="decision-evidence-heading">
+          {reviewView.decisions.map((observation) => (
+            <EvidenceObservationRow
+              key={observation.id}
+              observation={observation}
+              inspectorContext="Decision evidence"
+            />
+          ))}
         </div>
-      </GlassPanel>
+      </section>
 
-      <GlassPanel className="overflow-hidden p-5 md:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2"><Sparkles className="size-4 text-accent" aria-hidden="true" /><span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">{t("Selected deterministic series")}</span></div>
-            <h2 className="mt-2 text-lg font-semibold text-foreground">{t(selectedMetric.label)} {t("observation trend")}</h2>
-            <p className="mt-1 max-w-2xl text-sm leading-5 text-muted">{translateEvidenceText(t, selectedMetric.description, selectedMetric.descriptionValues)}</p>
-          </div>
-          <StatusBadge status={selectedMetric.status} />
+      <section className="product-section" aria-labelledby="execution-evidence-heading">
+        <SectionHeading
+          eyebrow={t("Execution record")}
+          title={t("Recorded execution costs")}
+          description={t("Recorded explicit fees describe execution friction. They are kept separate because they are not a decision category such as selection, sizing, or exit.")}
+        />
+        <div className="review-observation-list" id="execution-evidence-heading">
+          {reviewView.execution.map((observation) => (
+            <EvidenceObservationRow
+              key={observation.id}
+              observation={observation}
+              inspectorContext="Execution evidence"
+            />
+          ))}
         </div>
-        <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-end">
-          <EvidenceTrendChart metric={selectedMetric} />
-          <dl className="grid grid-cols-2 gap-x-3 gap-y-4 rounded-md border border-border/70 bg-white/[0.025] p-4 text-xs">
-            <div><dt className="text-muted">{t("Observations")}</dt><dd className="mt-1 font-mono text-base text-foreground tabular-nums">N={selectedMetric.observationCount ?? "—"}</dd></div>
-            <div><dt className="text-muted">{t("Uncertainty")}</dt><dd className="mt-1 text-foreground">{selectedMetric.confidence ? t(selectedMetric.confidence) : t("Not available")}</dd></div>
-            <div className="col-span-2"><dt className="flex items-center gap-1 text-muted"><Database className="size-3" aria-hidden="true" />{t("Provenance")}</dt><dd className="mt-1 text-foreground">{t("Synthetic offline fixture")} · {t(selectedRecord.data_tier)}</dd></div>
-          </dl>
-        </div>
-      </GlassPanel>
+      </section>
 
-      <div className="flex items-start gap-3 rounded-lg border border-border/70 bg-white/[0.025] p-4 text-xs leading-5 text-muted">
-        <Hash className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
-        <p><strong className="font-medium text-foreground">{t("Traceable demo evidence.")}</strong> {t("Each displayed value has a fixed evidence ID, method version, observation count, status, and stated limitation. Missing uncertainty is shown as missing; it is never filled with an inferred confidence interval.")}</p>
-      </div>
+      <section className="review-boundary-strip" aria-label={t("Decision Event and Evidence are separate")}>
+        <BetweenHorizontalStart aria-hidden="true" />
+        <div>
+          <strong>{t("Decision Event and Evidence are separate")}</strong>
+          <p>{t("An Episode records when a position was opened, added to, reduced, or closed. Evidence is produced only where a registered method supports an observation, and may describe an Episode rather than one individual execution.")}</p>
+        </div>
+        <Button asChild size="sm" variant="quiet">
+          <Link to="/investments">{t("Browse Episodes")} <ArrowRight /></Link>
+        </Button>
+      </section>
+
+      <p className="review-method-note">
+        <ReceiptText aria-hidden="true" />
+        {t("Complete, insufficient, and experimental describe evidence availability—not whether a decision was good or bad.")}
+      </p>
+      <p className="overview-provenance"><DemoBadge compact />{t("Synthetic offline fixture; no real investor account is represented.")}</p>
     </div>
   );
 }

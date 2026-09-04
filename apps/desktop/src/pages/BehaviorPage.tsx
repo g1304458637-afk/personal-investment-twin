@@ -1,128 +1,135 @@
-import { CircleHelp, FlaskConical, Hash } from "lucide-react";
+import { ArrowRight, CircleHelp, FlaskConical } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 import { HistoricalMetricChart } from "@/components/charts/HistoricalMetricChart";
-import { GlassPanel } from "@/components/common/GlassPanel";
-import { EvidenceExplainButton } from "@/components/evidence/EvidenceInspector";
 import { PageHeader, SectionHeading } from "@/components/common/PageHeader";
-import { StateNotice } from "@/components/common/StateNotice";
 import { DemoBadge, StatusBadge } from "@/components/common/StatusBadge";
+import { EvidenceObservationRow } from "@/components/review/EvidenceObservationRow";
+import { Button } from "@/components/ui/button";
 import {
   behaviorHistory,
   behaviorMetrics,
-  evidenceRecords,
-  explainabilityForConcept,
-  explainabilityForEvidence,
+  reviewView,
   translateEvidenceText,
 } from "@/data/backendEvidence";
-import type { DemoEvidenceRecord, EvidenceMetric } from "@/demo/types";
 import { cn } from "@/lib/utils";
-import { useLocale, type TranslationValues } from "@/locales/LocaleProvider";
+import { useLocale } from "@/locales/LocaleProvider";
 
-const methodExplanations: Record<string, string> = {
-  hhi: "HHI sums squared portfolio weights at each observed snapshot. It describes concentration in this fixture; it does not prescribe diversification.",
-  turnover: "Turnover intensity summarizes observed position changes across complete windows. It does not estimate unrecorded costs or future activity.",
-  disposition: "PGR and PLR compare the registered realized-outcome categories. Their difference is descriptive evidence; it is experimental because the synthetic sample is limited and does not establish a trait.",
-  "loss-averaging": "Loss averaging counts observed additions below the recorded prior cost basis. An event is descriptive evidence, not a claim about intent or decision quality.",
+type HistoricalPatternId = "hhi" | "turnover";
+
+const historyExplanations: Record<HistoricalPatternId, string> = {
+  hhi: "HHI history shows deterministic portfolio-concentration snapshots. It does not judge whether concentration is good or bad.",
+  turnover: "Turnover history shows the registered daily turnover observations. It does not infer motive or future trading activity.",
 };
-
-function evidenceFor(metric: EvidenceMetric): DemoEvidenceRecord {
-  const record = evidenceRecords.find((item) => item.evidence_id === metric.evidenceId);
-  if (!record) throw new Error(`Missing deterministic fixture evidence for ${metric.id}.`);
-  return record;
-}
-
-function BehaviorDetail({ metric, record, t }: { metric: EvidenceMetric; record: DemoEvidenceRecord; t: (value: string, values?: TranslationValues) => string }) {
-  const conceptIds: Record<string, string> = {
-    hhi: "portfolio_concentration_hhi",
-    turnover: "turnover_intensity",
-    disposition: "disposition_effect",
-    "loss-averaging": "loss_state_addition",
-  };
-  const view = explainabilityForEvidence(record.evidence_id)
-    ?? explainabilityForConcept(conceptIds[metric.id]);
-  return (
-    <div className="border-t border-border/70 pt-3">
-      <div className="grid grid-cols-2 gap-2 text-xs text-muted">
-        <span><strong className="mr-1 font-medium text-foreground">N</strong>{metric.observationCount ?? t("Not available")}</span>
-        <span><strong className="mr-1 font-medium text-foreground">{t("Range / CI")}</strong>{metric.confidence ? t(metric.confidence) : t("Not available")}</span>
-      </div>
-      <EvidenceExplainButton
-        view={view}
-        className="mt-2 -ml-3"
-        context={{ label: t("Behavior evidence"), title: t(metric.label), detail: t("Synthetic offline fixture") }}
-      />
-    </div>
-  );
-}
-
-function BehaviorModule({ metric, selected, onSelect, t }: { metric: EvidenceMetric; selected: boolean; onSelect: () => void; t: (value: string, values?: TranslationValues) => string }) {
-  const record = evidenceFor(metric);
-  return (
-    <article className={cn("rounded-lg border p-4 transition-colors", selected ? "border-accent/45 bg-accent/[0.07]" : "border-border/75 bg-white/[0.025] hover:bg-white/[0.045]")}>
-      <button type="button" onClick={onSelect} aria-pressed={selected} className="w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
-        <div className="flex items-start justify-between gap-3"><div><p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">{t(metric.eyebrow)}</p><h3 className="mt-1 text-[15px] font-semibold text-foreground">{t(metric.label)}</h3></div><StatusBadge status={metric.status} compact /></div>
-        <p className="mt-4 font-mono text-[23px] font-semibold tracking-tight text-foreground tabular-nums">{translateEvidenceText(t, metric.primary, metric.primaryValues)}</p>
-        <p className="mt-2 text-sm leading-5 text-muted">{translateEvidenceText(t, metric.description, metric.descriptionValues)}</p>
-      </button>
-      <div className="mt-4"><BehaviorDetail metric={metric} record={record} t={t} /></div>
-    </article>
-  );
-}
 
 export function BehaviorPage() {
   const { t } = useLocale();
-  const [selectedId, setSelectedId] = useState(behaviorMetrics[0].id);
-  const selectedMetric = behaviorMetrics.find((metric) => metric.id === selectedId) ?? behaviorMetrics[0];
-  const selectedHistory = selectedMetric.id === "hhi"
-    ? behaviorHistory.hhi
-    : selectedMetric.id === "turnover"
-      ? behaviorHistory.turnover
-      : null;
+  const [historicalId, setHistoricalId] = useState<HistoricalPatternId>("hhi");
+  const selectedObservation = reviewView.patterns.find((item) => item.id === historicalId)!;
+  const selectedMetric = behaviorMetrics.find((item) => item.id === historicalId)!;
+  const selectedHistory = historicalId === "hhi" ? behaviorHistory.hhi : behaviorHistory.turnover;
 
   return (
-    <div className="space-y-6 pb-8">
-      <PageHeader eyebrow={t("Behavior observations")} title={t("Patterns in the recorded fixture")} description={t("A transparent view of deterministic, synthetic observations—not an investor personality label or predictive behavior score.")} actions={<DemoBadge />} />
+    <div className="page review-detail-page">
+      <PageHeader
+        eyebrow={t("Review")}
+        title={t("Investment patterns")}
+        description={t("Observe portfolio structure and recorded trading patterns without inferring personality, motivation, skill, or future behavior.")}
+        actions={<DemoBadge />}
+      />
 
-      <GlassPanel className="p-5 md:p-6">
-        <SectionHeading eyebrow={t("Four descriptive measures")} title={t("Read the method with the metric")} description={t("Each measure exposes its observation count, evidence status, uncertainty boundary, and expandable method explanation.")} />
-        <div className="mt-5 grid gap-3 lg:grid-cols-2">
-          {behaviorMetrics.map((metric) => <BehaviorModule key={metric.id} metric={metric} t={t} selected={metric.id === selectedId} onSelect={() => setSelectedId(metric.id)} />)}
+      <section className="product-section" aria-labelledby="portfolio-structure-heading">
+        <SectionHeading
+          eyebrow={t("Portfolio structure")}
+          title={t("How holdings were distributed")}
+          description={t("A point-in-time concentration observation copied from the deterministic portfolio snapshot.")}
+        />
+        <div className="review-observation-list" id="portfolio-structure-heading">
+          <EvidenceObservationRow observation={reviewView.patterns[0]} inspectorContext="Investment pattern evidence" />
         </div>
-      </GlassPanel>
+      </section>
 
-      <GlassPanel className="p-5 md:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div><p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">{t("Selected synthetic history")}</p><h2 className="mt-2 text-lg font-semibold text-foreground">{t(selectedMetric.label)}</h2><p className="mt-1 text-sm leading-5 text-muted">{t(methodExplanations[selectedMetric.id])}</p></div>
-          <StatusBadge status={selectedMetric.status} />
+      <section className="product-section" aria-labelledby="trading-activity-heading">
+        <SectionHeading
+          eyebrow={t("Trading activity")}
+          title={t("How much recorded trading occurred")}
+          description={t("A multi-day turnover observation over the registered window; it does not estimate unrecorded costs.")}
+        />
+        <div className="review-observation-list" id="trading-activity-heading">
+          <EvidenceObservationRow observation={reviewView.patterns[1]} inspectorContext="Investment pattern evidence" />
         </div>
-        <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_240px] lg:items-end">
-          {selectedHistory ? (
+      </section>
+
+      <section className="product-section" aria-labelledby="sale-observation-heading">
+        <SectionHeading
+          eyebrow={t("Sale observations")}
+          title={t("How eligible realized outcomes were recorded")}
+          description={t("PGR, PLR, and their backend-provided difference describe eligible sale observations only.")}
+        />
+        <div className="review-observation-list" id="sale-observation-heading">
+          <EvidenceObservationRow observation={reviewView.patterns[2]} inspectorContext="Investment pattern evidence" />
+        </div>
+      </section>
+
+      <section className="product-section" aria-labelledby="addition-observation-heading">
+        <SectionHeading
+          eyebrow={t("Addition observations")}
+          title={t("Additions made below prior average cost")}
+          description={t("The registered event count is descriptive and does not establish intent or decision quality.")}
+        />
+        <div className="review-observation-list" id="addition-observation-heading">
+          <EvidenceObservationRow observation={reviewView.patterns[3]} inspectorContext="Investment pattern evidence" />
+        </div>
+      </section>
+
+      <section className="product-section review-history" aria-labelledby="recorded-history-heading">
+        <SectionHeading
+          eyebrow={t("Recorded history")}
+          title={t("Historical observations with real backend series")}
+          description={t("Only HHI and Turnover have historical series in v1. Self-relative percentile context remains in My Twin.")}
+          action={<Button asChild size="sm" variant="quiet"><Link to="/twin">{t("View against my past")} <ArrowRight /></Link></Button>}
+        />
+        <div className="review-history__tabs" role="group" aria-label={t("Historical pattern")}>
+          {(["hhi", "turnover"] as const).map((id) => (
+            <button
+              type="button"
+              key={id}
+              className={cn(id === historicalId && "is-active")}
+              aria-pressed={id === historicalId}
+              onClick={() => setHistoricalId(id)}
+            >
+              {t(id === "hhi" ? "Portfolio concentration" : "Turnover intensity")}
+            </button>
+          ))}
+        </div>
+        <div className="review-history__surface">
+          <div>
+            <div className="review-history__heading">
+              <span>{t(selectedObservation.eyebrowKey)}</span>
+              <h3>{t(selectedObservation.titleKey)}</h3>
+              <p>{t(historyExplanations[historicalId])}</p>
+            </div>
             <HistoricalMetricChart
               series={selectedHistory}
-              label={t(selectedMetric.label)}
+              label={t(selectedObservation.titleKey)}
               singleValueLabel={translateEvidenceText(t, selectedMetric.primary, selectedMetric.primaryValues)}
-              percent={selectedMetric.id === "turnover"}
+              percent={historicalId === "turnover"}
             />
-          ) : (
-            <StateNotice
-              state="insufficient"
-              title={translateEvidenceText(t, selectedMetric.primary, selectedMetric.primaryValues)}
-              detail={t("Historical series is not available for this metric in v1.")}
-            />
-          )}
-          <div className="rounded-md border border-border/70 bg-white/[0.025] p-4 text-xs leading-5">
-            <p className="text-muted">{t("Displayed metric")}</p><p className="mt-1 font-mono text-xl font-semibold text-foreground tabular-nums">{translateEvidenceText(t, selectedMetric.primary, selectedMetric.primaryValues)}</p>
-            <p className="mt-4 text-muted">{t("Evidence coverage")}</p><p className="text-foreground">N={selectedMetric.observationCount ?? "—"} · {selectedMetric.confidence ? t(selectedMetric.confidence) : t("No CI / range registered")}</p>
-            <p className="mt-4 text-muted">{t("Data context")}</p><p className="flex items-center gap-1 text-foreground"><FlaskConical className="size-3.5 text-accent" aria-hidden="true" />{t("Demo / Synthetic")} · {t("as of 31 Mar 2025")}</p>
           </div>
+          <dl>
+            <div><dt>{t("Current observation")}</dt><dd>{translateEvidenceText(t, selectedMetric.primary, selectedMetric.primaryValues)}</dd></div>
+            <div><dt>{t("Evidence coverage")}</dt><dd>N={selectedMetric.observationCount ?? "—"}</dd></div>
+            <div><dt>{t("Status")}</dt><dd><StatusBadge status={selectedMetric.status} compact /></dd></div>
+            <div><dt>{t("Data context")}</dt><dd><FlaskConical aria-hidden="true" />{t("Demo / Synthetic")}</dd></div>
+          </dl>
         </div>
-      </GlassPanel>
+      </section>
 
-      <div className="grid gap-3 md:grid-cols-2">
-        <div className="flex gap-3 rounded-lg border border-border/70 bg-white/[0.025] p-4 text-xs leading-5 text-muted"><CircleHelp className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" /><p><strong className="font-medium text-foreground">{t("Method boundary.")}</strong> {t("A behavior observation describes the recorded fixture only. It does not infer motivation, quality, risk tolerance, or a future action.")}</p></div>
-        <div className="flex gap-3 rounded-lg border border-border/70 bg-white/[0.025] p-4 text-xs leading-5 text-muted"><Hash className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" /><p><strong className="font-medium text-foreground">{t("Traceability.")}</strong> {t("Values are linked to a fixed method version and evidence ID. Missing CI values remain explicit rather than being modeled or filled.")}</p></div>
-      </div>
+      <p className="review-method-note">
+        <CircleHelp aria-hidden="true" />
+        {t("These observations describe recorded data. They do not infer aggressiveness, fear, discipline, risk tolerance, or any other personality trait.")}
+      </p>
     </div>
   );
 }

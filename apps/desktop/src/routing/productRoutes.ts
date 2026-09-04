@@ -3,6 +3,7 @@ import type { LocaleMessage } from "@/locales/en-US";
 export const PRODUCT_ROUTE_IDS = [
   "overview",
   "investments",
+  "review",
   "review_decisions",
   "review_patterns",
   "twin",
@@ -57,6 +58,7 @@ export interface ProductNavigationGroup {
   readonly icon: ProductIconKey;
   readonly navigationSection: NavigationSection;
   readonly navigationOrder: number;
+  readonly route: ProductRouteDefinition;
   readonly children: readonly ProductRouteDefinition[];
 }
 
@@ -98,6 +100,22 @@ export const productRoutes: readonly ProductRouteDefinition[] = [
     inspectorPolicy: "supported",
   }),
   route({
+    id: "review",
+    path: "/review",
+    legacyPaths: [],
+    labelKey: "Review",
+    pageTitleKey: "Review",
+    descriptionKey: "Review decisions and observable investment patterns",
+    icon: "review",
+    navigationSection: "work",
+    navigationGroup: "review",
+    navigationOrder: 20,
+    showInSidebar: true,
+    availability: "available",
+    parentId: null,
+    inspectorPolicy: "supported",
+  }),
+  route({
     id: "review_decisions",
     path: "/review/decisions",
     legacyPaths: ["/decisions"],
@@ -107,10 +125,10 @@ export const productRoutes: readonly ProductRouteDefinition[] = [
     icon: "review",
     navigationSection: "work",
     navigationGroup: "review",
-    navigationOrder: 20,
+    navigationOrder: 21,
     showInSidebar: true,
     availability: "available",
-    parentId: null,
+    parentId: "review",
     inspectorPolicy: "supported",
   }),
   route({
@@ -123,10 +141,10 @@ export const productRoutes: readonly ProductRouteDefinition[] = [
     icon: "review",
     navigationSection: "work",
     navigationGroup: "review",
-    navigationOrder: 21,
+    navigationOrder: 22,
     showInSidebar: true,
     availability: "available",
-    parentId: null,
+    parentId: "review",
     inspectorPolicy: "supported",
   }),
   route({
@@ -227,7 +245,7 @@ export const productRoutes: readonly ProductRouteDefinition[] = [
   }),
 ] as const;
 
-export const navigationGroups: Readonly<Record<NavigationGroupId, Omit<ProductNavigationGroup, "type" | "children">>> = {
+export const navigationGroups: Readonly<Record<NavigationGroupId, Omit<ProductNavigationGroup, "type" | "children" | "route">>> = {
   review: {
     id: "review",
     labelKey: "Review",
@@ -294,11 +312,14 @@ export function getSidebarNavigation(): readonly ProductNavigationEntry[] {
     if (grouped.has(definition.navigationGroup)) continue;
     grouped.add(definition.navigationGroup);
     const group = navigationGroups[definition.navigationGroup];
+    const groupRoute = visible.find((candidate) => candidate.id === group.id);
+    if (!groupRoute) throw new Error(`Navigation group ${group.id} is missing its route.`);
     entries.push({
       type: "group",
       ...group,
+      route: groupRoute,
       children: visible
-        .filter((candidate) => candidate.navigationGroup === definition.navigationGroup)
+        .filter((candidate) => candidate.parentId === groupRoute.id)
         .sort((a, b) => a.navigationOrder - b.navigationOrder),
     });
   }
