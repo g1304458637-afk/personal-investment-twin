@@ -1,0 +1,6 @@
+account,symbol,market,security_type,event_time,side,quantity,price,fee,currency,source_execution_id,source_order_id,execution_sequence
+ACC-1,600000,XSHG,equity,2025-01-02 09:30:00,BUY,100,10.00,1.00,CNY,A-1,AO-1,1
+ACC-1,600000,XSHG,equity,2025-01-03 09:30:00,BUY,50,11.00,1.00,CNY,A-2,AO-2,1
+ACC-1,600000,XSHG,equity,2025-01-04 09:30:00,SELL,30,12.00,1.00,CNY,A-3,AO-3,1
+ACC-1,600000,XSHG,equity,2025-01-05 09:30:00,SELL,120,13.00,1.00,CNY,A-4,AO-4,1
+ACC-1,600000,XSHG,equity,2025-01-06 09:30:00,BUY,20,12.50,1.00,CNY,A-5,AO-5,1

@@ -1,0 +1,2 @@
+symbol,market,security_type,event_time,side,quantity,price,fee,source_execution_id
+600000,XSHG,equity,2025-01-02 09:30:00,BUY,10,10.00,0,G-1

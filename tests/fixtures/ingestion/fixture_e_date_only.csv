@@ -1,0 +1,3 @@
+symbol,market,security_type,event_time,time_precision,side,quantity,price,fee,execution_sequence
+600000,XSHG,equity,2025-01-02,date,BUY,10,10.00,0,1
+600000,XSHG,equity,2025-01-02,date,BUY,5,10.10,0,2

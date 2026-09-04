@@ -1,0 +1,4 @@
+symbol,market,security_type,event_time,side,quantity,price,fee,source_execution_id
+600000,XSHG,equity,2025-01-02 09:30:00,BUY,10,10.00,1.25,C-1
+600000,XSHG,equity,2025-01-03 09:30:00,BUY,10,10.00,0,C-2
+600000,XSHG,equity,2025-01-04 09:30:00,SELL,10,11.00,,C-3

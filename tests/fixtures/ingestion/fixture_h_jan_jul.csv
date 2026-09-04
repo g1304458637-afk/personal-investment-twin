@@ -1,0 +1,4 @@
+symbol,market,security_type,event_time,side,quantity,price,fee,source_execution_id
+A,X,equity,2025-01-02 09:30:00,BUY,10,10.00,0,H-JAN
+A,X,equity,2025-06-02 09:30:00,SELL,5,11.00,0,H-JUN
+A,X,equity,2025-07-02 09:30:00,BUY,2,12.00,0,H-JUL

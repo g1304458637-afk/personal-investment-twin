@@ -1,0 +1,11 @@
+symbol,market,security_type,event_time,side,quantity,price,fee,source_execution_id,execution_sequence
+A,X,equity,2025-02-01 09:30:00,BUY,1,10,0,N1,
+A,X,equity,2025-02-02 09:30:00,BUY,1,10,,N2,
+U,,equity,2025-02-03 09:30:00,BUY,1,10,0,N3,
+A,X,equity,2025-02-04 09:30:00,HOLD,1,10,0,N4,
+A,X,equity,2025-02-05 09:30:00,BUY,0,10,0,N5,
+A,X,equity,2025-01-01 09:30:00,BUY,1,10,0,E1,
+A,X,equity,2025-01-02 09:30:00,BUY,1,10.01,0,E2,
+A,X,equity,2025-01-03 09:30:00,BUY,1,10,1,,
+B,X,equity,2025-02-06 10:00:00,BUY,1,10,0,N9,1
+B,X,equity,2025-02-06 10:00:00,BUY,1,11,0,N10,
