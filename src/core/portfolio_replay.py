@@ -6,13 +6,26 @@ does not calculate positions, cash, exposure, returns, or PnL itself.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from typing import Final
 
 import numpy as np
 import pandas as pd
 import vectorbt as vbt
-from vectorbt.portfolio.enums import RejectedOrderError, SizeType
+from numba import njit
+from vectorbt.portfolio.enums import (
+    Direction,
+    NoOrder,
+    RejectedOrderError,
+    SizeType,
+)
+from vectorbt.portfolio.nb import order_nb
+
+from src.core.canonical_execution import (
+    CanonicalExecutionV2,
+    canonical_executions_to_frame,
+)
 
 
 NORMALIZED_EXECUTION_COLUMNS: Final[tuple[str, ...]] = (
@@ -31,6 +44,45 @@ _SIDE_SIGN: Final[dict[str, float]] = {"BUY": 1.0, "SELL": -1.0}
 
 class PortfolioReplayError(ValueError):
     """Input cannot be represented by the bounded long-only replay adapter."""
+
+
+@dataclass(frozen=True, slots=True)
+class ReplayExecutionLink:
+    """Verified link from one accepted execution to vectorbt records."""
+
+    execution_id: str
+    vectorbt_order_record_id: int
+    vectorbt_exit_trade_record_id: int | None
+    vectorbt_position_record_id: int | None
+
+
+@dataclass(frozen=True, slots=True)
+class PortfolioReplayResult:
+    """Authoritative portfolio plus its execution-level record links."""
+
+    portfolio: vbt.Portfolio
+    execution_links: tuple[ReplayExecutionLink, ...]
+
+
+@njit(cache=True)
+def _flex_execution_order_nb(c, counts, columns, sizes, prices, fixed_fees):
+    """Emit accepted broker fills in the adapter's canonical sequence."""
+
+    if c.call_idx >= counts[c.i]:
+        return -1, NoOrder
+    slot = c.call_idx
+    return columns[c.i, slot], order_nb(
+        size=sizes[c.i, slot],
+        price=prices[c.i, slot],
+        size_type=SizeType.Amount,
+        direction=Direction.LongOnly,
+        fees=0.0,
+        fixed_fees=fixed_fees[c.i, slot],
+        slippage=0.0,
+        reject_prob=0.0,
+        allow_partial=False,
+        raise_reject=True,
+    )
 
 
 def _validated_prices(valuation_prices: pd.DataFrame) -> pd.DataFrame:
@@ -83,7 +135,7 @@ def _validated_executions(executions: pd.DataFrame) -> pd.DataFrame:
     if executions.empty:
         raise PortfolioReplayError("At least one execution is required")
 
-    frame = executions.loc[:, NORMALIZED_EXECUTION_COLUMNS].copy()
+    frame = executions.copy()
     required_facts = (
         "event_time",
         "symbol",
@@ -124,43 +176,223 @@ def _validated_executions(executions: pd.DataFrame) -> pd.DataFrame:
         raise PortfolioReplayError("fee must be non-negative")
     if frame["execution_id"].duplicated().any():
         raise PortfolioReplayError("execution_id must be unique")
-    if frame.duplicated(["event_time", "symbol"]).any():
-        raise PortfolioReplayError(
-            "Portfolio replay accepts at most one execution per symbol at a timestamp"
+    if "execution_sequence" in frame.columns:
+        numeric_sequence = pd.to_numeric(frame["execution_sequence"], errors="coerce")
+        for _, rows in frame.assign(_sequence=numeric_sequence).groupby(
+            "event_time", sort=False
+        ):
+            values = rows["_sequence"]
+            if len(rows) > 1 and (
+                values.isna().any() or values.duplicated().any()
+            ):
+                raise PortfolioReplayError(
+                    "ambiguous_execution_order: same-time executions require unique sequence"
+                )
+        if numeric_sequence.isna().any():
+            singleton_times = (
+                frame.groupby("event_time")["event_time"].transform("size") == 1
+            )
+            numeric_sequence = numeric_sequence.where(~singleton_times, 0)
+        if numeric_sequence.isna().any() or (numeric_sequence < 0).any():
+            raise PortfolioReplayError("execution_sequence must be a non-negative number")
+        if not np.equal(numeric_sequence, np.floor(numeric_sequence)).all():
+            raise PortfolioReplayError("execution_sequence must contain integers")
+        frame["execution_sequence"] = numeric_sequence.astype(np.int64)
+        frame = frame.sort_values(
+            ["event_time", "execution_sequence"], kind="stable"
         )
-    return frame.sort_values("event_time", kind="stable")
+    else:
+        # Legacy frames retain their established physical order, but cannot
+        # claim a reliable order for colliding fills of the same instrument.
+        if frame.duplicated(["event_time", "symbol"]).any():
+            raise PortfolioReplayError(
+                "Portfolio replay accepts at most one execution per symbol at a timestamp "
+                "for legacy inputs; ambiguous_execution_order requires explicit sequence"
+            )
+        frame = frame.sort_values("event_time", kind="stable")
+    return frame.reset_index(drop=True)
 
 
-def _execution_call_sequence(
+def _flex_order_arrays(
     frame: pd.DataFrame,
     marks: pd.DataFrame,
     symbols: list[str],
-) -> np.ndarray:
-    """Preserve normalized row order within each execution timestamp."""
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Build compact flexible-order arrays without aggregating any fill."""
 
-    default = np.arange(len(symbols), dtype=np.int64)
-    call_sequence = np.tile(default, (len(marks.index), 1))
+    per_bar = frame.groupby("event_time", sort=False).size()
+    max_orders_per_bar = int(per_bar.max())
+    counts = np.zeros(len(marks.index), dtype=np.int64)
+    columns = np.zeros((len(marks.index), max_orders_per_bar), dtype=np.int64)
+    sizes = np.zeros((len(marks.index), max_orders_per_bar), dtype=np.float64)
+    prices = np.zeros((len(marks.index), max_orders_per_bar), dtype=np.float64)
+    fees = np.zeros((len(marks.index), max_orders_per_bar), dtype=np.float64)
     symbol_position = {symbol: position for position, symbol in enumerate(symbols)}
     for timestamp, rows in frame.groupby("event_time", sort=False):
-        executed = [symbol_position[symbol] for symbol in rows["symbol"]]
-        executed_set = set(executed)
-        inactive = [position for position in default if position not in executed_set]
-        call_sequence[marks.index.get_loc(timestamp)] = executed + inactive
-    return call_sequence
+        bar = int(marks.index.get_loc(timestamp))
+        counts[bar] = len(rows)
+        for slot, (_, row) in enumerate(rows.iterrows()):
+            columns[bar, slot] = symbol_position[str(row["symbol"])]
+            sizes[bar, slot] = float(row["executed_quantity"]) * _SIDE_SIGN[str(row["side"])]
+            prices[bar, slot] = float(row["executed_price"])
+            fees[bar, slot] = float(row["fee"])
+    return counts, columns, sizes, prices, fees
 
 
-def replay_multi_asset_executions(
+def _same_float(left: object, right: object) -> bool:
+    try:
+        return bool(np.isclose(float(left), float(right), rtol=1e-9, atol=1e-8))
+    except (TypeError, ValueError):
+        return False
+
+
+def _verified_execution_links(
+    portfolio: vbt.Portfolio,
+    frame: pd.DataFrame,
+) -> tuple[ReplayExecutionLink, ...]:
+    orders = portfolio.orders.records_readable.sort_values("Order Id", kind="stable")
+    if len(orders) != len(frame):
+        raise PortfolioReplayError(
+            "Replay link verification failed: accepted order count differs from execution count"
+        )
+
+    mutable: dict[str, dict[str, int | str | None]] = {}
+    order_by_id: dict[int, pd.Series] = {}
+    for (_, execution), (_, order) in zip(frame.iterrows(), orders.iterrows()):
+        execution_id = str(execution["execution_id"])
+        order_id = int(order["Order Id"])
+        expected_side = "Buy" if execution["side"] == "BUY" else "Sell"
+        if (
+            str(order["Column"]) != str(execution["symbol"])
+            or pd.Timestamp(order["Timestamp"]) != pd.Timestamp(execution["event_time"])
+            or str(order["Side"]) != expected_side
+            or not _same_float(order["Size"], execution["executed_quantity"])
+            or not _same_float(order["Price"], execution["executed_price"])
+            or not _same_float(order["Fees"], execution["fee"])
+        ):
+            raise PortfolioReplayError(
+                f"Replay link verification failed for execution {execution_id}"
+            )
+        mutable[execution_id] = {
+            "execution_id": execution_id,
+            "vectorbt_order_record_id": order_id,
+            "vectorbt_exit_trade_record_id": None,
+            "vectorbt_position_record_id": None,
+        }
+        order_by_id[order_id] = order
+
+    # In vectorbt 1.1.0 get_exit_trades_nb, each long-position SELL order
+    # produces one closed Exit Trade while scanning per-column Order Ids in
+    # ascending order.  Validate every public field that links the two records.
+    exits = portfolio.exit_trades.closed.records_readable
+    for symbol in sorted(frame["symbol"].unique()):
+        sell_ids = [
+            int(row["Order Id"])
+            for _, row in orders[
+                (orders["Column"].astype(str) == symbol)
+                & (orders["Side"].astype(str) == "Sell")
+            ].iterrows()
+        ]
+        symbol_exits = exits[exits["Column"].astype(str) == symbol].sort_values(
+            "Exit Trade Id", kind="stable"
+        )
+        if len(sell_ids) != len(symbol_exits):
+            raise PortfolioReplayError(
+                f"outcome_mapping_unavailable: SELL/Exit Trade count differs for {symbol}"
+            )
+        for order_id, (_, exit_record) in zip(sell_ids, symbol_exits.iterrows()):
+            order = order_by_id[order_id]
+            if (
+                pd.Timestamp(exit_record["Exit Timestamp"])
+                != pd.Timestamp(order["Timestamp"])
+                or not _same_float(exit_record["Size"], order["Size"])
+                or not _same_float(exit_record["Avg Exit Price"], order["Price"])
+                or not _same_float(exit_record["Exit Fees"], order["Fees"])
+            ):
+                raise PortfolioReplayError(
+                    f"outcome_mapping_unavailable: Exit Trade mismatch for order {order_id}"
+                )
+            execution_id = next(
+                key
+                for key, value in mutable.items()
+                if value["vectorbt_order_record_id"] == order_id
+            )
+            mutable[execution_id]["vectorbt_exit_trade_record_id"] = int(
+                exit_record["Exit Trade Id"]
+            )
+            mutable[execution_id]["vectorbt_position_record_id"] = int(
+                exit_record["Position Id"]
+            )
+
+    positions = portfolio.positions.records_readable.sort_values(
+        ["Column", "Position Id"], kind="stable"
+    )
+    order_to_execution = {
+        int(value["vectorbt_order_record_id"]): key for key, value in mutable.items()
+    }
+    for symbol in sorted(frame["symbol"].unique()):
+        symbol_positions = positions[
+            positions["Column"].astype(str) == symbol
+        ].sort_values("Position Id", kind="stable")
+        position_ids = [int(value) for value in symbol_positions["Position Id"]]
+        closed_position_ids = {
+            int(row["Position Id"])
+            for _, row in symbol_positions.iterrows()
+            if str(row["Status"]) == "Closed"
+        }
+        closing_order_by_position: dict[int, int] = {}
+        for value in mutable.values():
+            position_id = value["vectorbt_position_record_id"]
+            if position_id is None:
+                continue
+            order_id = int(value["vectorbt_order_record_id"])
+            if int(position_id) in closed_position_ids:
+                closing_order_by_position[int(position_id)] = max(
+                    order_id,
+                    closing_order_by_position.get(int(position_id), -1),
+                )
+        position_index = 0
+        current_position_id: int | None = None
+        symbol_orders = orders[orders["Column"].astype(str) == symbol].sort_values(
+            "Order Id", kind="stable"
+        )
+        for _, order in symbol_orders.iterrows():
+            order_id = int(order["Order Id"])
+            if current_position_id is None:
+                if position_index >= len(position_ids):
+                    raise PortfolioReplayError(
+                        f"Replay Position link verification failed for {symbol}"
+                    )
+                current_position_id = position_ids[position_index]
+                position_index += 1
+            execution_id = order_to_execution[order_id]
+            existing = mutable[execution_id]["vectorbt_position_record_id"]
+            if existing is not None and int(existing) != current_position_id:
+                raise PortfolioReplayError(
+                    f"Replay Position link mismatch for execution {execution_id}"
+                )
+            mutable[execution_id]["vectorbt_position_record_id"] = current_position_id
+            if closing_order_by_position.get(current_position_id) == order_id:
+                current_position_id = None
+        if position_index != len(position_ids):
+            raise PortfolioReplayError(
+                f"Replay Position link count mismatch for {symbol}"
+            )
+    return tuple(
+        ReplayExecutionLink(**item)  # type: ignore[arg-type]
+        for item in mutable.values()
+    )
+
+
+def replay_multi_asset_executions_with_links(
     executions: pd.DataFrame,
     valuation_prices: pd.DataFrame,
     *,
     init_cash: float,
-) -> vbt.Portfolio:
-    """Replay normalized long-only executions with shared cash through vectorbt.
-
-    Broker order and execution identifiers remain in the normalized input as an
-    audit sidecar; vectorbt does not need them for portfolio calculations.  For
-    executions sharing a timestamp, DataFrame row order is the execution order.
-    """
+    _cash_sharing: bool = True,
+    _freq: str | None = None,
+) -> PortfolioReplayResult:
+    """Replay every fill through one flexible vectorbt engine and verify links."""
 
     frame = _validated_executions(executions)
     marks = _validated_prices(valuation_prices)
@@ -184,55 +416,70 @@ def replay_multi_asset_executions(
         )
 
     marks = marks.loc[:, symbols]
-    indexed = frame.assign(
-        signed_size=frame["executed_quantity"] * frame["side"].map(_SIDE_SIGN)
-    ).set_index(["event_time", "symbol"])
-    size = (
-        indexed["signed_size"]
-        .unstack("symbol")
-        .reindex(index=marks.index, columns=symbols)
-    )
-    # In vectorbt 1.1.0's long-only Amount replay, an inactive zero after a full
-    # close enters the reduce/close path and is rejected; NaN skips the order.
-    order_price = (
-        indexed["executed_price"]
-        .unstack("symbol")
-        .reindex(index=marks.index, columns=symbols)
-        .fillna(marks)
-    )
-    fixed_fees = (
-        indexed["fee"]
-        .unstack("symbol")
-        .reindex(index=marks.index, columns=symbols)
-        .fillna(0.0)
-    )
-    # Keep vectorbt broadcasting on one asset axis.  ``unstack`` otherwise
-    # retains a column-axis name that vectorbt treats as a second index level.
-    size.columns.name = marks.columns.name
-    order_price.columns.name = marks.columns.name
-    fixed_fees.columns.name = marks.columns.name
-    call_sequence = _execution_call_sequence(frame, marks, symbols)
-
+    counts, columns, sizes, prices, fees = _flex_order_arrays(frame, marks, symbols)
     try:
-        return vbt.Portfolio.from_orders(
-            close=marks,
-            size=size,
-            size_type=SizeType.Amount,
-            direction="longonly",
-            price=order_price,
-            fees=0.0,
-            fixed_fees=fixed_fees,
-            slippage=0.0,
-            reject_prob=0.0,
-            allow_partial=False,
-            raise_reject=True,
+        portfolio = vbt.Portfolio.from_order_func(
+            marks,
+            _flex_execution_order_nb,
+            counts,
+            columns,
+            sizes,
+            prices,
+            fees,
+            flexible=True,
+            max_orders=len(frame),
             init_cash=normalized_init_cash,
-            cash_sharing=True,
-            group_by=True,
-            call_seq=call_sequence,
+            cash_sharing=_cash_sharing,
+            group_by=True if _cash_sharing else False,
+            update_value=False,
+            ffill_val_price=True,
+            freq=_freq,
         )
     except (RejectedOrderError, ValueError) as exc:
         raise PortfolioReplayError(f"vectorbt could not replay executions: {exc}") from exc
+    return PortfolioReplayResult(
+        portfolio=portfolio,
+        execution_links=_verified_execution_links(portfolio, frame),
+    )
+
+
+def replay_multi_asset_executions(
+    executions: pd.DataFrame,
+    valuation_prices: pd.DataFrame,
+    *,
+    init_cash: float,
+) -> vbt.Portfolio:
+    """Replay normalized long-only executions with shared cash through vectorbt.
+
+    Broker order and execution identifiers remain an audit sidecar. Explicit
+    ``execution_sequence`` controls same-time v2 ordering. Legacy frames retain
+    stable row order only where the old contract is unambiguous.
+    """
+
+    return replay_multi_asset_executions_with_links(
+        executions,
+        valuation_prices,
+        init_cash=init_cash,
+    ).portfolio
+
+
+def replay_canonical_executions(
+    executions: Sequence[CanonicalExecutionV2],
+    valuation_prices: pd.DataFrame,
+    *,
+    init_cash: float,
+) -> PortfolioReplayResult:
+    """Replay CanonicalExecutionV2 facts through the same financial core."""
+
+    try:
+        frame = canonical_executions_to_frame(executions)
+    except ValueError as exc:
+        raise PortfolioReplayError(str(exc)) from exc
+    return replay_multi_asset_executions_with_links(
+        frame,
+        valuation_prices,
+        init_cash=init_cash,
+    )
 
 
 def simulate_target_weight_interval(

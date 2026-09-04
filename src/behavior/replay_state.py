@@ -15,8 +15,10 @@ from src.attribution.selection_evidence import (
 )
 from src.core.portfolio_replay import (
     PortfolioReplayError,
+    ReplayExecutionLink,
     _validated_executions,
     replay_multi_asset_executions,
+    replay_multi_asset_executions_with_links,
 )
 from src.data.local_market_data_provider import PRICE_COLUMNS
 
@@ -33,6 +35,7 @@ class BehaviorReplayContext:
     daily_prices: pd.DataFrame
     valuation_prices: pd.DataFrame
     portfolio: object
+    execution_links: tuple[ReplayExecutionLink, ...]
     init_cash: float
     provenance: tuple[PriceProvenance, ...]
 
@@ -80,7 +83,15 @@ def _market_panel(
 
     rows["calendar_date"] = rows["date"].dt.normalize()
     symbols = tuple(sorted(executions["symbol"].unique()))
-    start_date = pd.Timestamp(executions["event_time"].min()).normalize()
+    if "market_date" in executions.columns:
+        try:
+            start_date = pd.to_datetime(
+                executions["market_date"], errors="raise"
+            ).min().normalize()
+        except (TypeError, ValueError) as exc:
+            raise BehaviorReplayError("execution market_date must contain dates") from exc
+    else:
+        start_date = pd.Timestamp(executions["event_time"].min()).normalize()
     selected = rows[
         rows["instrument"].isin(symbols) & (rows["calendar_date"] >= start_date)
     ].copy()
@@ -131,7 +142,18 @@ def _market_panel(
     daily_prices.index.name = "event_time"
     daily_prices.columns.name = None
 
-    execution_dates = pd.DatetimeIndex(executions["event_time"]).normalize().unique()
+    if "market_date" in executions.columns:
+        try:
+            execution_market_dates = pd.to_datetime(
+                executions["market_date"], errors="raise"
+            ).dt.normalize()
+        except (TypeError, ValueError) as exc:
+            raise BehaviorReplayError("execution market_date must contain dates") from exc
+        if execution_market_dates.isna().any():
+            raise BehaviorReplayError("execution market_date cannot contain NaT")
+    else:
+        execution_market_dates = executions["event_time"].dt.normalize()
+    execution_dates = pd.DatetimeIndex(execution_market_dates).unique()
     missing_execution_dates = execution_dates.difference(daily_prices.index)
     if not missing_execution_dates.empty:
         raise BehaviorReplayError(
@@ -142,8 +164,19 @@ def _market_panel(
     valuation_times = daily_prices.index.union(
         pd.DatetimeIndex(executions["event_time"].unique())
     ).sort_values()
+    market_date_by_time = {
+        pd.Timestamp(event_time): pd.Timestamp(market_date)
+        for event_time, market_date in zip(
+            executions["event_time"], execution_market_dates
+        )
+    }
     valuation_prices = pd.DataFrame(
-        [daily_prices.loc[timestamp.normalize()].to_numpy() for timestamp in valuation_times],
+        [
+            daily_prices.loc[
+                market_date_by_time.get(pd.Timestamp(timestamp), timestamp.normalize())
+            ].to_numpy()
+            for timestamp in valuation_times
+        ],
         index=valuation_times,
         columns=daily_prices.columns,
     )
@@ -165,7 +198,7 @@ def prepare_behavior_replay(
             frame,
             market_prices,
         )
-        portfolio = replay_multi_asset_executions(
+        replay = replay_multi_asset_executions_with_links(
             frame,
             valuation_prices,
             init_cash=init_cash,
@@ -177,7 +210,8 @@ def prepare_behavior_replay(
         executions=frame,
         daily_prices=daily_prices,
         valuation_prices=valuation_prices,
-        portfolio=portfolio,
+        portfolio=replay.portfolio,
+        execution_links=replay.execution_links,
         init_cash=float(init_cash),
         provenance=provenance,
     )

@@ -22,6 +22,7 @@ import pandas as pd
 from src.behavior.replay_state import BehaviorReplayError, prepare_behavior_replay
 from src.core.portfolio_replay import (
     PortfolioReplayError,
+    ReplayExecutionLink,
     _validated_executions,
 )
 from src.evidence.adapters import adapt_price_provenance
@@ -344,6 +345,7 @@ class _ScopedReplay:
     frame: pd.DataFrame
     market_prices: pd.DataFrame
     portfolio: object
+    execution_links: dict[str, ReplayExecutionLink]
     episodes: tuple[PositionEpisode, ...]
     decisions: tuple[DecisionEvent, ...]
     states: dict[str, ReplayPositionState]
@@ -615,6 +617,7 @@ def _prepare_scope(
         frame=frame,
         market_prices=price_rows,
         portfolio=context.portfolio,
+        execution_links={item.execution_id: item for item in context.execution_links},
         episodes=episodes,
         decisions=decisions,
         states=states,
@@ -665,11 +668,14 @@ def _source_ref(
 
 def _order_record(scope: _ScopedReplay, decision: DecisionEvent) -> pd.Series:
     records = scope.portfolio.orders.records_readable
-    timestamps = pd.to_datetime(records["Timestamp"])
+    link = scope.execution_links.get(decision.execution_id)
+    if link is None:
+        raise OutcomeAttributionError(
+            f"Execution {decision.execution_id} has no verified replay link"
+        )
     record = _unique(
         records,
-        (records["Column"].astype(str) == _episode(scope, decision.episode_id).instrument_id)
-        & (timestamps == decision.occurred_at),
+        records["Order Id"] == link.vectorbt_order_record_id,
         f"order for execution {decision.execution_id}",
     )
     expected_side = "Buy" if decision.side == "BUY" else "Sell"
@@ -687,12 +693,14 @@ def _order_record(scope: _ScopedReplay, decision: DecisionEvent) -> pd.Series:
 
 def _exit_trade_record(scope: _ScopedReplay, decision: DecisionEvent) -> pd.Series:
     records = scope.portfolio.exit_trades.records_readable
-    timestamps = pd.to_datetime(records["Exit Timestamp"])
-    episode = _episode(scope, decision.episode_id)
+    link = scope.execution_links.get(decision.execution_id)
+    if link is None or link.vectorbt_exit_trade_record_id is None:
+        raise OutcomeAttributionError(
+            f"outcome_mapping_unavailable for execution {decision.execution_id}"
+        )
     record = _unique(
         records,
-        (records["Column"].astype(str) == episode.instrument_id)
-        & (timestamps == decision.occurred_at)
+        (records["Exit Trade Id"] == link.vectorbt_exit_trade_record_id)
         & (records["Status"].astype(str) == "Closed"),
         f"closed exit trade for execution {decision.execution_id}",
     )
@@ -718,15 +726,28 @@ def _position_record(
     portfolio: object,
     *,
     episode: PositionEpisode,
+    execution_links: Mapping[str, ReplayExecutionLink] | None = None,
 ) -> pd.Series | None:
     records = portfolio.positions.records_readable
     if records.empty:
         return None
-    entry_times = pd.to_datetime(records["Entry Timestamp"])
-    matched = records.loc[
-        (records["Column"].astype(str) == episode.instrument_id)
-        & (entry_times == episode.opened_at)
-    ]
+    position_id: int | None = None
+    if execution_links is not None:
+        link = execution_links.get(episode.opening_execution_id)
+        if link is not None:
+            position_id = link.vectorbt_position_record_id
+    if position_id is None and execution_links is None:
+        position_id = episode.vectorbt_position_record_id
+    if position_id is not None:
+        matched = records.loc[records["Position Id"] == position_id]
+    else:
+        # A long-only replay has at most one currently open position per
+        # instrument.  This fallback is for counterfactual scopes whose record
+        # IDs may differ from the actual Episode.
+        matched = records.loc[
+            (records["Column"].astype(str) == episode.instrument_id)
+            & (records["Status"].astype(str) == "Open")
+        ]
     if len(matched) > 1:
         raise OutcomeAttributionError(
             f"Episode {episode.episode_id} maps to multiple vectorbt Position records"
@@ -851,7 +872,11 @@ def build_actual_outcomes(
     episode_outcomes: list[EpisodeOutcome] = []
     episode_outcome_id_by_id: dict[str, str] = {}
     for episode in scope.episodes:
-        record = _position_record(scope.portfolio, episode=episode)
+        record = _position_record(
+            scope.portfolio,
+            episode=episode,
+            execution_links=scope.execution_links,
+        )
         if record is None:
             raise OutcomeAttributionError(
                 f"Episode {episode.episode_id} has no vectorbt Position record"
@@ -1095,7 +1120,11 @@ def _replayed_result(
         provenance=provenance,
         label=label,
     )
-    record = _position_record(context.portfolio, episode=episode)
+    record = _position_record(
+        context.portfolio,
+        episode=episode,
+        execution_links={item.execution_id: item for item in context.execution_links},
+    )
     if record is None:
         source = _source_ref(
             "vectorbt_replay_position_absent",

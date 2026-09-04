@@ -23,7 +23,6 @@ from src.behavior.replay_state import (
     prepare_behavior_replay,
 )
 from src.core.portfolio_replay import (
-    NORMALIZED_EXECUTION_COLUMNS,
     PortfolioReplayError,
     _validated_executions,
     replay_multi_asset_executions,
@@ -134,6 +133,7 @@ class PositionEpisode:
     provenance: tuple[EvidenceProvenance, ...]
     data_tier: DataTier
     limitations: tuple[str, ...]
+    vectorbt_position_record_id: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -302,7 +302,11 @@ def _validated_account_executions(
         frame = _validated_executions(rows)
     except (KeyError, PortfolioReplayError) as exc:
         raise PositionEpisodeError(str(exc)) from exc
-    frame["_source_ordinal"] = frame["execution_id"].map(ordinal_by_execution)
+    if "execution_sequence" in frame.columns:
+        # v2 order is a contract fact and must not inherit physical input order.
+        frame["_source_ordinal"] = np.arange(len(frame), dtype=int)
+    else:
+        frame["_source_ordinal"] = frame["execution_id"].map(ordinal_by_execution)
     return frame.reset_index(drop=True)
 
 
@@ -352,7 +356,7 @@ def _state_from_replay(
         raise PositionEpisodeError("No replay valuation is available at state as_of")
     try:
         portfolio = replay_multi_asset_executions(
-            frame.iloc[:prefix_count].loc[:, NORMALIZED_EXECUTION_COLUMNS],
+            frame.iloc[:prefix_count].drop(columns="_source_ordinal", errors="ignore"),
             valuation_prices,
             init_cash=context.init_cash,
         )
@@ -473,6 +477,7 @@ def _final_episode(
     data_tier: DataTier,
     calculation_code_version: str,
     evidence_refs: tuple[str, ...],
+    vectorbt_position_record_id: int,
 ) -> PositionEpisode:
     status: EpisodeStatus = "closed" if draft.closed_at is not None else "open"
     duration_end = draft.closed_at if draft.closed_at is not None else as_of
@@ -497,6 +502,7 @@ def _final_episode(
         provenance=provenance,
         data_tier=data_tier,
         limitations=POSITION_EPISODE_LIMITATIONS,
+        vectorbt_position_record_id=vectorbt_position_record_id,
     )
 
 
@@ -682,6 +688,32 @@ def build_position_episode_lifecycle(
                 as_of=normalized_as_of,
                 registry=reference_registry,
             )
+            if draft.closing_execution_id is not None:
+                closing_links = [
+                    item
+                    for item in context.execution_links
+                    if item.execution_id == draft.closing_execution_id
+                ]
+                if (
+                    len(closing_links) != 1
+                    or closing_links[0].vectorbt_position_record_id is None
+                ):
+                    raise PositionEpisodeError(
+                        f"Closed Episode {draft.episode_id} has no verified vectorbt Position link"
+                    )
+                position_record_id = int(
+                    closing_links[0].vectorbt_position_record_id
+                )
+            else:
+                open_records = context.portfolio.positions.open.records_readable
+                matched = open_records[
+                    open_records["Column"].astype(str) == draft.instrument_id
+                ]
+                if len(matched) != 1:
+                    raise PositionEpisodeError(
+                        f"Open Episode {draft.episode_id} has no unique vectorbt Position link"
+                    )
+                position_record_id = int(matched.iloc[0]["Position Id"])
             episode_items.append(
                 (
                     draft.opening_ordinal,
@@ -692,6 +724,7 @@ def build_position_episode_lifecycle(
                         data_tier=data_tier,
                         calculation_code_version=normalized_version,
                         evidence_refs=evidence_refs,
+                        vectorbt_position_record_id=position_record_id,
                     ),
                 )
             )

@@ -1,5 +1,9 @@
 # Normalized Executions Contract
 
+> 本文记录 legacy/demo v1 DataFrame。新的真实数据接入必须先遵守
+> `CANONICAL_EXECUTION_CONTRACT_V2.md`；v1 的裸 symbol、已知 fee 和时间语义
+> 不能被当作生产事实契约。
+
 Personal Investment Twin 的 Broker Adapter 输出统一为 pandas DataFrame。
 
 第一版最小字段：

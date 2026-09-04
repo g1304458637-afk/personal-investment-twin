@@ -278,6 +278,64 @@ def test_final_sell_becomes_closed_and_uses_second_exit_trade():
     assert analysis.episode_outcomes[0].actual_result.pnl == pytest.approx(-46.0)
 
 
+def test_same_timestamp_identical_sells_map_by_verified_execution_link():
+    executions = _executions(
+        [
+            ("2025-01-01 10:00", "A", "BUY", 40, 10),
+            ("2025-01-02 10:00", "A", "SELL", 20, 12),
+            ("2025-01-02 10:00", "A", "SELL", 20, 12),
+        ],
+        fees=[1.0, 1.0, 1.0],
+    )
+    executions["execution_sequence"] = [0, 1, 2]
+    executions["sequence_source"] = "broker_sequence"
+    prices = _prices({"A": [10, 12]}, ["2025-01-01", "2025-01-02"])
+
+    lifecycle, analysis = _actual(executions, prices, as_of="2025-01-02 23:59")
+    first_sell, second_sell = analysis.decision_outcomes[1:]
+
+    assert first_sell.event_time == second_sell.event_time
+    assert first_sell.execution_price == second_sell.execution_price
+    assert first_sell.executed_quantity == second_sell.executed_quantity
+    assert first_sell.execution_source.vectorbt_record_id == 1
+    assert second_sell.execution_source.vectorbt_record_id == 2
+    assert first_sell.immediate_result.source.vectorbt_record_id == 0
+    assert second_sell.immediate_result.source.vectorbt_record_id == 1
+    assert first_sell.immediate_result.pnl == pytest.approx(38.5)
+    assert second_sell.immediate_result.pnl == pytest.approx(38.5)
+    assert lifecycle.episodes[0].execution_refs == ("EXE-0", "EXE-1", "EXE-2")
+    assert analysis.episode_outcomes[0].execution_refs == (
+        "EXE-0",
+        "EXE-1",
+        "EXE-2",
+    )
+
+
+def test_same_timestamp_close_reopen_maps_two_distinct_position_outcomes():
+    executions = _executions(
+        [
+            ("2025-01-02 10:00", "A", "BUY", 100, 10),
+            ("2025-01-02 10:00", "A", "SELL", 100, 11),
+            ("2025-01-02 10:00", "A", "BUY", 50, 12),
+        ]
+    )
+    executions["execution_sequence"] = [1, 2, 3]
+    executions["sequence_source"] = "broker_sequence"
+    prices = _prices({"A": [13]}, ["2025-01-02"])
+
+    lifecycle, analysis = _actual(executions, prices, as_of="2025-01-02 23:59")
+
+    assert [item.status for item in lifecycle.episodes] == ["closed", "open"]
+    assert [item.actual_result.position_status for item in analysis.episode_outcomes] == [
+        "closed",
+        "open",
+    ]
+    assert [item.actual_result.source.vectorbt_record_id for item in analysis.episode_outcomes] == [
+        0,
+        1,
+    ]
+
+
 def test_local_omit_add_uses_two_replays_and_expected_marked_results():
     executions = _executions(
         [("2025-01-02 09:30", "A", "BUY", 100, 10),

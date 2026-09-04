@@ -201,6 +201,60 @@ def test_same_calendar_day_close_then_reopen_remains_two_episodes():
     ]
 
 
+def test_same_timestamp_close_then_reopen_uses_execution_sequence():
+    executions = _executions(
+        [
+            ("2025-01-02 10:00", "A", "BUY", 100.0, 10.0),
+            ("2025-01-02 10:00", "A", "SELL", 100.0, 11.0),
+            ("2025-01-02 10:00", "A", "BUY", 50.0, 12.0),
+        ]
+    )
+    executions["execution_sequence"] = [1, 2, 3]
+    executions["sequence_source"] = "broker_sequence"
+    prices = _prices({"A": [12.5]}, ["2025-01-02"])
+
+    lifecycle = _build(executions, prices, as_of="2025-01-02 23:59")
+
+    assert [item.status for item in lifecycle.episodes] == ["closed", "open"]
+    assert [item.decision_type for item in lifecycle.decisions] == [
+        "open_position",
+        "close_position",
+        "open_position",
+    ]
+    assert lifecycle.episodes[0].execution_refs == ("EXE-0", "EXE-1")
+    assert lifecycle.episodes[1].execution_refs == ("EXE-2",)
+    assert lifecycle.episodes[0].vectorbt_position_record_id == 0
+    assert lifecycle.episodes[1].vectorbt_position_record_id == 1
+
+
+def test_same_timestamp_buy_buy_is_open_then_add_and_row_order_is_irrelevant():
+    executions = _executions(
+        [
+            ("2025-01-02 10:00", "A", "BUY", 30.0, 10.0),
+            ("2025-01-02 10:00", "A", "BUY", 20.0, 11.0),
+        ]
+    )
+    executions["execution_sequence"] = [1, 2]
+    executions["sequence_source"] = "broker_sequence"
+    prices = _prices({"A": [12.0]}, ["2025-01-02"])
+
+    first = _build(executions, prices, as_of="2025-01-02 23:59")
+    reordered = _build(
+        executions.iloc[::-1].reset_index(drop=True),
+        prices,
+        as_of="2025-01-02 23:59",
+    )
+
+    assert [item.decision_type for item in first.decisions] == [
+        "open_position",
+        "add_position",
+    ]
+    assert first == reordered
+    current = _state(first, first.snapshots[0].position_state_ref)
+    assert current.quantity == pytest.approx(50.0)
+    assert current.average_cost == pytest.approx(10.4)
+
+
 def test_multiple_partial_sells_keep_one_episode_open():
     executions = _executions(
         [

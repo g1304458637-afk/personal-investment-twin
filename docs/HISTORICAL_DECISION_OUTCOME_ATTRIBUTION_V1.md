@@ -36,22 +36,22 @@ Source references used during the audit:
 
 ## 3. PnL truth source and record mapping
 
-The fixed project adapter accepts at most one execution per `(event_time,
-symbol)`. It preserves DataFrame row order among different symbols sharing a
-timestamp. Under that bounded contract, a SELL execution can be mapped without
-ambiguity to one closed vectorbt Exit Trade by:
-
-`Column == symbol` and `Exit Timestamp == event_time`, followed by exact checks
-of Size, Avg Exit Price, and Exit Fees.
+Canonical Execution Contract v2 supersedes the original timestamp-unique
+adapter limitation. Same-time fills are emitted in explicit account-level
+`execution_sequence`. The replay adapter verifies a `ReplayExecutionLink` from
+each execution ID to its vectorbt Order ID. For long-only SELLs, it follows
+vectorbt's per-column ascending Order sequence to the corresponding closed Exit
+Trade and validates timestamp, size, exit price, and exit fee. Timestamp is a
+validation field, never the identity or lookup key.
 
 | 投镜 object | vectorbt authoritative record | Mapping key and validation | Cardinality in the current contract | Safe product use |
 |---|---|---|---|---|
-| Execution | Order | symbol + timestamp; side, size, price, fee must match | 1:1 | Executed facts and recorded fee |
-| BUY Decision Event | Order; it also contributes to Entry Trade and Position aggregation | Order mapping above | Order is 1:1; the execution can also participate in later aggregate records | State transition only; no invented realized PnL |
-| Partial SELL Decision Event | closed Exit Trade | symbol + exit timestamp; size, exit price, exit fee must match | 1:1 under the current unique symbol/timestamp replay contract | Realized PnL, Return, allocated Entry Fees, Exit Fees |
-| Final SELL / `close_position` | closed Exit Trade, and closes the containing Position | same Exit Trade mapping plus existing Episode lifecycle boundary | SELL→Exit Trade is 1:1; multiple Exit Trades→one Position | Event realized result from Exit Trade; Episode result from Position |
-| Open Episode | Open Position | symbol + Episode opening timestamp | one Position per Episode; Position aggregates all entry/exit trades so far | Marked PnL/Return only, never final realized PnL |
-| Closed Episode | Closed Position | symbol + Episode opening timestamp; status must match lifecycle | one Position per Episode; many Exit Trades may aggregate into it | Final Episode PnL, Return, entry/exit fees |
+| Execution | Order | verified replay emission link; side, size, price, fee, column, and index must match | 1:1 | Executed facts and recorded fee |
+| BUY Decision Event | Order; it also contributes to Entry Trade and Position aggregation | execution ID → verified Order ID | Order is 1:1; the execution can also participate in later aggregate records | State transition only; no invented realized PnL |
+| Partial SELL Decision Event | closed Exit Trade | execution ID → verified Order ID → verified Exit Trade ID | 1:1 in supported long-only replay | Realized PnL, Return, allocated Entry Fees, Exit Fees |
+| Final SELL / `close_position` | closed Exit Trade, and closes the containing Position | verified Exit Trade parent Position ID | SELL→Exit Trade is 1:1; multiple Exit Trades→one Position | Event realized result from Exit Trade; Episode result from Position |
+| Open Episode | Open Position | verified opening execution Position link; unique current open record fallback only in changed counterfactual scope | one Position per Episode; Position aggregates all entry/exit trades so far | Marked PnL/Return only, never final realized PnL |
+| Closed Episode | Closed Position | verified Episode `vectorbt_position_record_id`; status must match lifecycle | one Position per Episode; many Exit Trades may aggregate into it | Final Episode PnL, Return, entry/exit fees |
 
 A single execution therefore may participate in several representations: its
 Order, an Entry or Exit Trade, and the aggregate Position. Those are not
@@ -293,8 +293,8 @@ than silently changing the fixture or orders.
 
 - Long-only normalized executions only; no short, margin, corporate-action, or
   transfer outcome attribution.
-- At most one execution per symbol and timestamp, inherited from the replay
-  contract.
+- Same-time replay requires an explicit unambiguous account-level sequence;
+  unknown ordering remains ineligible rather than being guessed.
 - Daily market marks cannot establish intraday price availability.
 - No tax-lot explanation beyond vectorbt's authoritative aggregate/exit records.
 - Exit Evidence provides later asset performance, not a comparable user PnL.
