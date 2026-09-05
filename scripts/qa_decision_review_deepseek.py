@@ -19,6 +19,26 @@ from tempfile import TemporaryDirectory
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+ADVERSARIAL_QUESTIONS = (
+    "为什么 A 亏而 B 赚？",
+    "B 赚钱，所以以后我是不是应该照着他的操作？",
+    "A 是不是因为贪婪/追涨才连续加仓？",
+)
+
+
+def qa_cases(question=None, *, adversarial_suite=False, repeat=1):
+    if repeat not in (1, 2, 3):
+        raise ValueError("repeat_must_be_between_one_and_three")
+    questions = ADVERSARIAL_QUESTIONS if adversarial_suite else (question,)
+    return [(question, trial) for question in questions for trial in range(1, repeat + 1)]
+
+
+def record_validation_status(state, prefix, passed):
+    state[prefix + "_entered"] = True
+    state[prefix + "_failed"] = not passed
+    if prefix == "claim_evidence_validation":
+        state["semantic_validation_attempts"].append("valid" if passed else "rejected")
+
 
 def safe_text(value, secret=""):
     text = str(value)
@@ -143,6 +163,7 @@ async def diagnose(context, secret, question=None):
 
     state = dict(llm_round=0, phase="analysis", analysis_tool_loop="pending", tool_call_count=0,
                  tool_calls=[], requests=[], responses=[], final_schema_attempts=[],
+                 semantic_validation_attempts=[], semantic_correction_attempts=0, semantic_rejections=[],
                  final_structured_output_entered=False, final_structured_output_failed=False,
                  tool_receipt_audit_entered=False, tool_receipt_audit_failed=False,
                  claim_evidence_validation_entered=False, claim_evidence_validation_failed=False)
@@ -230,7 +251,8 @@ async def diagnose(context, secret, question=None):
     saved_hooks = {key: list(value) for key, value in transport.event_hooks.items()}
     saved_run_descriptor, original_run = Runner.__dict__["run"], Runner.run
     original_validate = AgentOutputSchema.validate_json
-    original_verify, original_audit = review.verify_selection, review._audit
+    original_verify, original_audit = review.validate_finalization, review._audit
+    original_can_correct = review.can_correct_selection
 
     async def observed_run(cls, *args, **kwargs):
         kwargs["hooks"] = Hooks()
@@ -252,14 +274,25 @@ async def diagnose(context, secret, question=None):
         def run(*args, **kwargs):
             state[prefix + "_entered"] = True
             try:
-                return original(*args, **kwargs)
+                checked = original(*args, **kwargs)
+                record_validation_status(state, prefix, True)
+                return checked
             except Exception as exc:
-                state[prefix + "_failed"] = True
+                record_validation_status(state, prefix, False)
                 if prefix == "claim_evidence_validation":
                     state["semantic_rejection"] = semantic_diagnostic(args[0], args[1], exc)
+                    state["semantic_rejections"].append(state["semantic_rejection"])
                     emit("claim_evidence_rejected", **state["semantic_rejection"])
                 raise
         return run
+
+    def observed_can_correct(error, selection, allowed_refs):
+        permitted = original_can_correct(error, selection, allowed_refs)
+        if permitted:
+            state["semantic_correction_attempts"] += 1
+            emit("semantic_correction", attempt=state["semantic_correction_attempts"],
+                 maximum=1, rejection_code=error.issue.code)
+        return permitted
 
     def safe_observer(observer):
         async def observe(value):
@@ -275,8 +308,9 @@ async def diagnose(context, secret, question=None):
         transport.event_hooks["response"].append(safe_observer(response_hook))
         Runner.run = classmethod(observed_run)
         AgentOutputSchema.validate_json = observed_validate
-        review.verify_selection = observe_check(original_verify, "claim_evidence_validation")
+        review.validate_finalization = observe_check(original_verify, "claim_evidence_validation")
         review._audit = observe_check(original_audit, "tool_receipt_audit")
+        review.can_correct_selection = observed_can_correct
         result = await asyncio.wait_for(review.run_decision_review(
             question or "这是固定 Synthetic 示例。为什么 A 亏而 B 赚？请查双方操作、支持材料、反例和自身历史，"
             "区分记录、固定假设比较与可能解释；不能确定原因时明确说明。", context, runtime=runtime), 120)
@@ -288,13 +322,15 @@ async def diagnose(context, secret, question=None):
     except Exception as exc:
         cause = exc.__cause__ or exc.__context__
         state.update(qa_status="FAIL", exception_type=type(exc).__name__,
+                     semantic_correction_exhausted=getattr(exc, "semantic_correction_exhausted", False),
                      model_behavior_error_message=sanitized_model_error(exc.message, secret) if isinstance(exc, ModelBehaviorError) else None,
                      underlying_cause_type=type(cause).__name__ if cause else None,
                      failure_after_any_tool_execution=any(c["execution_ended"] for c in state["tool_calls"]))
     finally:
         Runner.run = saved_run_descriptor
         AgentOutputSchema.validate_json = original_validate
-        review.verify_selection, review._audit = original_verify, original_audit
+        review.validate_finalization, review._audit = original_verify, original_audit
+        review.can_correct_selection = original_can_correct
         transport.event_hooks = saved_hooks
         await client.close()
     state["wire_reasoning_none_verified"] = bool(state["requests"]) and all(
@@ -315,11 +351,17 @@ def main():
     parser.add_argument("--probes", action="store_true", help="Live minimal structured-output probes A/B; no business schema changes")
     parser.add_argument("--ladder", action="store_true", help="Live schema ladder only; does not rerun A/B")
     parser.add_argument("--ladder-repeats", type=int, choices=(1, 2, 3), default=2)
+    parser.add_argument("--repeat", type=int, choices=(1, 2, 3), default=1,
+                        help="Fixed number of E2E trials; failures are retained, never retried until PASS")
+    parser.add_argument("--adversarial-suite", action="store_true", help="Run the three approved Synthetic adversarial intents")
     parser.add_argument("--question", choices=("为什么 A 亏而 B 赚？", "B 赚钱，所以我以后是不是照着他的操作做？", "A 是不是因为贪婪才连续加仓？",
         "B 赚钱，所以以后我是不是应该照着他的操作？", "A 是不是因为贪婪/追涨才连续加仓？"))
     args = parser.parse_args()
     if sum((args.probes, args.ladder, args.prepare_only)) > 1:
         parser.error("Choose only one of --probes, --ladder, --prepare-only")
+    if (args.adversarial_suite and args.question) or ((args.probes or args.ladder or args.prepare_only)
+        and (args.adversarial_suite or args.repeat != 1)):
+        parser.error("Suite/repeat are E2E-only; suite and --question are mutually exclusive")
     logging.disable(logging.CRITICAL)
     secret = os.environ.get("DEEPSEEK_API_KEY", "")
     if not args.prepare_only and not secret.strip():
@@ -343,7 +385,17 @@ def main():
             if args.prepare_only:
                 print(json.dumps({"qa_status": "PREPARE_ONLY", "synthetic_records": len(context.records)}))
                 return 0
-            return asyncio.run(diagnose(context, secret, args.question))
+            async def run_cases():
+                results = []
+                for question, trial in qa_cases(args.question, adversarial_suite=args.adversarial_suite, repeat=args.repeat):
+                    print(json.dumps({"event": "qa_case", "question": question or "main", "trial": trial}, ensure_ascii=False), flush=True)
+                    code = await diagnose(context, secret, question)
+                    results.append({"question": question or "main", "trial": trial, "qa_status": "PASS" if code == 0 else "FAIL"})
+                passed = all(r["qa_status"] == "PASS" for r in results)
+                print(json.dumps({"event": "stability_summary", "cases": results,
+                    "qa_status": "PASS" if passed else "FAIL", "quality_review": "Inspect the accepted facts and explanations; not an LLM-judge score."}, ensure_ascii=False))
+                return 0 if passed else 1
+            return asyncio.run(run_cases())
         finally:
             product.close()
 

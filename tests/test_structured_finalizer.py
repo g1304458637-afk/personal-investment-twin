@@ -47,8 +47,10 @@ def test_prose_is_internal_and_finalizer_has_no_tools_same_schema(pair):
     assert first["model_settings"].tool_choice == "required" and first["tools"]
     assert last["tools"] == [] and last["model_settings"].tool_choice == "none"
     assert last["model_settings"].reasoning.effort == "none"
-    assert last["output_schema"].json_schema() == AgentOutputSchema(ReviewSelection).json_schema()
-    assert "claim_evidence_contract" in str(model.inputs[-1])
+    wire_schema = last["output_schema"].json_schema()
+    assert wire_schema["$defs"]["Hypothesis"]["properties"]["kind"]["enum"] == ["unknown"]
+    assert wire_schema["required"] == AgentOutputSchema(ReviewSelection).json_schema()["required"]
+    assert "candidate_space" in str(model.inputs[-1])
     assert "eligible_support_refs" in str(model.inputs[-1])
     assert model.calls == len(calls()) + 2
 
@@ -85,16 +87,16 @@ def test_psychological_prose_cannot_launder_as_supported_claim(pair):
         supporting_evidence_refs=[pair.a.outcome.outcome_id], contradictory_evidence_refs=[],
         alternative_explanations=["prior_staged_plan"], missing_information=["contemporaneous_plan"])])
     with pytest.raises(ReviewVerificationError, match="does_not_support"):
-        run(context, "A追涨且贪婪。候选 price_influence_possible。", [final])
+        run(context, "A追涨且贪婪。候选 price_influence_possible。", [final, final])
 
 
-def test_finalizer_cannot_add_an_unproposed_inference(pair):
+def test_finalizer_cannot_accept_an_inadmissible_inference(pair):
     context = build_review_catalog(pair.a)
     final = selection(context, possible_explanations=[Hypothesis(kind="price_influence_possible",
         supporting_evidence_refs=[], contradictory_evidence_refs=[],
         alternative_explanations=["unknown"], missing_information=["contemporaneous_plan"])])
-    with pytest.raises(StructuredFinalizationUnavailable, match="added_inference"):
-        run(context, "无法判断。unknown。", [final])
+    with pytest.raises(ReviewVerificationError, match="does_not_support"):
+        run(context, "无法判断。unknown。", [final, final])
 
 
 def receipt_input(pair, *, status="complete", change_record=False):
@@ -111,7 +113,7 @@ def receipt_input(pair, *, status="complete", change_record=False):
     receipt = ToolCallOutputItem(agent=agent, raw_item={"type": "function_call_output", "call_id": "call-1", "output": output}, output=output)
     result = SimpleNamespace(final_output="unknown", new_items=[call, receipt])
     kwargs = dict(question="synthetic", scope={}, records=records, retrieved_refs=set(records),
-                  tool_names={"get_episode_facts"}, hypothesis_kinds={"unknown"})
+                  tool_names={"get_episode_facts"})
     return result, kwargs
 
 

@@ -29,22 +29,29 @@ tests verify enforcement, not live-model behavioral quality.
 The analysis run retains those tools and required initial tool use, but its
 bounded free text is internal, untrusted candidate material, never a rendered
 answer or immutable Evidence/Twin fact. A separate `StructuredFinalizer` uses
-the same configured model/client with no tools, reasoning `none`, and the
-unchanged strict `ReviewSelection` schema. No new provider integration exists.
+the same configured model/client with no tools and reasoning `none`. The
+production `ReviewSelection` shape is unchanged; its wire enums are narrowed to
+the current admissible kinds and scoped references. No new provider integration exists.
 
 Only paired, completed SDK tool receipts whose records match the authorized
 catalog admit references. Context retrieval flags alone are insufficient.
 The finalizer receives scoped record metadata and bounded analysis, not another
-retrieval capability. It may retain only explicitly proposed existing hypothesis
-kind identifiers (or abstain with `unknown`); psychological prose cannot confer
+retrieval capability. The application derives admissible kinds and role-specific
+references from completed receipts, not kind tokens in prose. Psychological prose cannot confer
 evidentiary support. All selected references and relationships still pass the
 original receipt audit and claim/evidence verification before rendering.
 
-Strict JSON/schema failure permits one formatting-only retry, without the failed
-output, new tools, or repeated analysis. No fence stripping or JSON extraction
-is used. Exhausted retries fail closed. Permissions are rechecked around each
+Strict JSON/schema failure permits one formatting-only retry across Stage 2.
+A typed, model-correctable semantic rejection permits one separate correction
+against the same candidate space; receipts and the full validator run again.
+Unknown/unread refs never authorize correction. Neither budget resets the other.
+No new tools, repeated analysis, fence stripping or JSON extraction is used.
+Exhausted retries fail closed. Permissions are rechecked around each
 finalizer call. These are generic analysis/finalization boundaries; live provider
 qualification currently targets the existing DeepSeek configuration.
+
+See [adversarial stability closure](AGENT_SEMANTIC_STABILITY_V1.md) for exact
+failure cases, bounded budgets and the repeated live acceptance command.
 
 Actual facts, registered historical alternatives and revisable interpretations
 remain separate. Scenario definitions/versions come from the existing registry.

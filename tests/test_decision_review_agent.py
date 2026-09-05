@@ -75,6 +75,7 @@ def execute(context, final, *, contradict=True, question="帮我分析这轮"):
         script.append(("get_same_stock_comparison", {}))
     script.append(final)
     script.append(final)  # Separate no-tools finalization, not another tool loop.
+    script.append(final)  # If rejected, the one semantic correction may still fail.
     model = ScriptedModel(script)
     return asyncio.run(run_decision_review(question, context, runtime=runtime(model))), model
 

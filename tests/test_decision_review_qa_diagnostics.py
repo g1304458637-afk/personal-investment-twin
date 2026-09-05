@@ -140,3 +140,23 @@ def test_semantic_diagnostic_has_exact_path_and_masks_unknown_refs():
     from dataclasses import replace
     context.records[ref] = replace(context.records[ref], subject_id="REAL_SUBJECT")
     assert semantic_diagnostic(candidate, context, caught.value) == {"reason": "diagnostic_scope_not_allowed"}
+
+
+def test_qa_revalidation_preserves_rejection_history_but_accepts_valid_correction():
+    from scripts.qa_decision_review_deepseek import record_validation_status
+    state = {"semantic_validation_attempts": []}
+    record_validation_status(state, "claim_evidence_validation", False)
+    assert state["claim_evidence_validation_failed"] is True
+    record_validation_status(state, "claim_evidence_validation", True)
+    assert state["claim_evidence_validation_entered"] is True
+    assert state["claim_evidence_validation_failed"] is False
+    assert state["semantic_validation_attempts"] == ["rejected", "valid"]
+
+
+def test_qa_repeat_plan_is_fixed_and_covers_all_three_intents():
+    from scripts.qa_decision_review_deepseek import ADVERSARIAL_QUESTIONS, qa_cases
+    assert qa_cases(repeat=2) == [(None, 1), (None, 2)]
+    assert qa_cases(adversarial_suite=True, repeat=2) == [
+        (question, trial) for question in ADVERSARIAL_QUESTIONS for trial in (1, 2)]
+    with pytest.raises(ValueError):
+        qa_cases(repeat=4)

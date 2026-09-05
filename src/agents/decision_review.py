@@ -11,7 +11,7 @@ from __future__ import annotations
 import copy
 import json
 from dataclasses import asdict
-from typing import Literal, get_args
+from typing import Literal
 
 from agents import Agent, Runner, RunContextWrapper, ToolCallItem, ToolCallOutputItem, function_tool
 from pydantic import BaseModel, ConfigDict, Field
@@ -19,8 +19,9 @@ from pydantic import BaseModel, ConfigDict, Field
 from src.agents.investment_coach import create_model_runtime, CoachModelRuntime
 from src.agents.review_catalog import ReviewContext
 from src.agents.structured_finalizer import StructuredFinalizer, build_finalization_input
-from src.agents.claim_contract import (CLAIM_RULES, ReviewVerificationError, build_claim_contract,
-                                       counter_material_refs, scope_of, supports_claim)
+from src.agents.claim_contract import (CLAIM_RULES, ReviewVerificationError, build_claim_candidates,
+                                       can_correct_selection, counter_material_refs, scope_of,
+                                       supports_claim, verify_claim_candidates)
 
 REVIEW_VERSION = "evidence_grounded_review_v1"
 INSTRUCTIONS = """
@@ -179,6 +180,12 @@ def verify_selection(selection: ReviewSelection, context: ReviewContext) -> None
                    expected=f"Retain alternatives and {rule.missing}; {rule.boundary}")
 
 
+def validate_finalization(selection, context, candidate_space):
+    """Both gates must pass, on initial output and on any correction."""
+    verify_selection(selection, context)
+    verify_claim_candidates(selection, candidate_space)
+
+
 def _audit(result, context):
     raw_calls = [item.raw_item.model_dump() if isinstance(item.raw_item, BaseModel) else item.raw_item
                  for item in result.new_items if isinstance(item, ToolCallItem)]
@@ -226,18 +233,30 @@ async def run_decision_review(question: str, context: ReviewContext, *, runtime:
     payload = build_finalization_input(result, question=question,
         scope={"subject_id": local.own.episode.subject_id, "account_id": local.own.episode.account_id,
                "episode_id": local.own.episode.episode_id, "comparison_id": local.comparison_id},
-        records=records, retrieved_refs=local.retrieved, tool_names={t.name for t in TOOLS},
-        hypothesis_kinds=get_args(Hypothesis.model_fields["kind"].annotation))
+        records=records, retrieved_refs=local.retrieved, tool_names={t.name for t in TOOLS})
     # A retrieval flag without a paired successful receipt must never authorize
     # a final reference. No new reads occur in the finalization stage.
     local.retrieved = set(payload["allowed_evidence_refs"])
-    payload["claim_evidence_contract"] = build_claim_contract(local, local.retrieved)
-    selection = await StructuredFinalizer(runtime).finalize(payload, ReviewSelection,
-                                                          access_allowed=local.access_allowed)
-    executed = _audit(result, local)
-    if not isinstance(selection, ReviewSelection):
-        raise ReviewVerificationError("invalid_review_output")
-    verify_selection(selection, local)
+    payload["candidate_space"] = build_claim_candidates(local, local.retrieved)
+    finalizer = StructuredFinalizer(runtime)
+    correction = None
+    for semantic_attempt in range(2):
+        selection = await finalizer.finalize(payload, ReviewSelection,
+            access_allowed=local.access_allowed, semantic_correction=correction)
+        # Missing/failed receipts never authorize correction, and the original
+        # Stage 1 receipts are re-audited after every candidate, including repair.
+        executed = _audit(result, local)
+        if not isinstance(selection, ReviewSelection):
+            raise ReviewVerificationError("invalid_review_output")
+        try:
+            validate_finalization(selection, local, payload["candidate_space"])
+        except ReviewVerificationError as exc:
+            if semantic_attempt or not can_correct_selection(exc, selection, local.retrieved):
+                exc.semantic_correction_exhausted = bool(semantic_attempt)
+                raise
+            correction = asdict(exc.issue)  # Typed feedback only; no prose or new retrieval.
+            continue
+        break
     claims = {
         "price_influence_possible": "追加与此前记录的上涨相邻，价格变化可能参与了决定；仅凭时序不能确认追涨，原定分批计划仍是另一种解释。",
         "planned_staging_possible": "用户提供了分批计划这一解释；它是用户陈述，不自动证明该计划在成交前已经存在。",
