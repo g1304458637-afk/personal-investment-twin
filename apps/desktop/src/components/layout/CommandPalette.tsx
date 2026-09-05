@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { useLocale } from "@/locales/LocaleProvider";
 
 import { commandNavigationItems } from "./navigation";
+import { isClassicWorkspace, workspaceDestinations } from "@/workspace/workspaceMode";
+import { useWorkspaceCopy } from "@/workspace/copy";
 
 export function CommandPalette({
   open,
@@ -24,6 +26,7 @@ export function CommandPalette({
 }) {
   const navigate = useNavigate();
   const { t } = useLocale();
+  const copy = useWorkspaceCopy();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -55,7 +58,7 @@ export function CommandPalette({
               {t("No workspace page found.")}
             </CommandEmpty>
             <CommandGroup heading={t("Workspace")}>
-              {commandNavigationItems.map((item) => {
+              {!isClassicWorkspace() ? [...workspaceDestinations, {path:"/ask",label:"ask" as const}].map((item) => <CommandItem key={item.path} value={copy[item.label]} onSelect={() => selectRoute(item.path)}><div><strong>{copy[item.label]}</strong></div><CornerDownLeft className="ml-auto opacity-45" /></CommandItem>) : commandNavigationItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <CommandItem

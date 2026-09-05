@@ -1,8 +1,7 @@
 
+import { Search, ArrowUpRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { FinancialObjectRow } from "@/components/investments/FinancialObjectRow";
-import { PageHeader } from "@/components/common/PageHeader";
 import { StateNotice } from "@/components/common/StateNotice";
 import { positionEpisodeDemo } from "@/data/backendEvidence";
 import { adaptDemoInvestmentsCatalog, archiveRows } from "@/data/investments";
@@ -11,7 +10,24 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useDataMode } from "@/data/DataModeProvider";
 import { realUserApi, type RuntimeInvestments } from "@/data/runtimeService";
+import { formatCurrencyValue } from "@/lib/format";
 import { useLocale } from "@/locales/LocaleProvider";
+
+import "./episode-workspace.css";
+
+function InvestmentRow({ episode }: { episode: import("@/data/investments").InvestmentEpisodeRowView }) {
+  const { locale, t, formatPercent } = useLocale();
+  const date = (value: string) => new Intl.DateTimeFormat(locale, { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value));
+  const outcome = episode.outcome;
+  const pnl = outcome.pnl;
+  const resultAvailable = outcome.availability === "available" && pnl !== null;
+  return <Link className="iw-investment-row" to={`/investments/episodes/${episode.episodeId}`}>
+    <div><strong className="iw-row-name">{t(episode.displayName)}</strong><span className="iw-row-meta">{episode.instrumentId} · {t("One investment experience")}</span></div>
+    <div><span className="iw-status" data-open={episode.status === "open" || undefined}>{t(episode.status === "open" ? "Holding" : "Closed")}</span><span className="iw-row-meta">{date(episode.openedAt)} → {episode.closedAt ? date(episode.closedAt) : t("Present")}</span></div>
+    <div className="iw-result">{resultAvailable && pnl !== null ? <><strong className={`iw-result-value ${pnl < 0 ? "text-negative" : pnl > 0 ? "text-positive" : "text-foreground"}`}>{formatCurrencyValue(pnl, locale, episode.currency)}</strong><p className="iw-result-label">{t(outcome.result_kind === "marked" ? "Current marked result" : "Final realized result")}{outcome.return_value !== null ? ` · ${formatPercent(outcome.return_value, 2)}` : ""}</p></> : <><strong className="text-sm text-foreground">{t("Result unavailable")}</strong><p className="iw-result-label">{t(outcome.reason ?? "No authoritative result is available.")}</p></>}</div>
+    <ArrowUpRight className="size-4 text-muted" aria-hidden="true" />
+  </Link>;
+}
 
 export function InvestmentsPage() {
   const { locale, t } = useLocale();
@@ -47,26 +63,23 @@ export function InvestmentsPage() {
       openEpisodes: rows.filter((x) => x.status === "open"), closedEpisodes: rows.filter((x) => x.status === "closed"),
       primaryEpisodeId: null };
   }, [data.mode, runtime, data.exampleAccount]);
-  if (data.mode === "real_user" && !data.activeAccount) return <div className="page space-y-6"><PageHeader showDemo={false} title={t("Toujing · Personal investment review")} description={t("See how your decisions changed historical results. Compare same-stock paths using recorded facts.")} /><p className="text-sm text-muted">{t("Historical prices are needed for valuation and parts of the review.")}</p>{data.accountsLoading || data.accountError ? <StateNotice state={data.accountError ? "error" : "loading"} title={t(data.accountError ? "Could not read local accounts" : "Loading…")} detail={data.accountError ?? t("Opening view…")} /> : null}<div className="flex flex-wrap gap-3"><Button asChild variant="primary"><Link to="/data">{t("Import data")}</Link></Button><Button asChild variant="quiet"><Link to="/investments/compare-example">{t("View a same-stock comparison example")}</Link></Button><Button variant="quiet" onClick={() => data.setMode("demo")}>{t("View example account")}</Button></div></div>;
-  if (data.mode === "real_user" && !runtime) return <div className="page"><PageHeader showDemo={false} eyebrow={t("Investment experience")} title={t("My Investments")} description={t("Browse the position Episodes formed from actual executions. Current marks are valuations, not exits or predictions.")} /><StateNotice state={runtimeError ? "disconnected" : "loading"} title={runtimeError ? t("Portfolio state is unavailable") : t("Loading…")} detail={runtimeError ?? t("Rebuilding from local canonical facts.")} /></div>;
+  if (data.mode === "real_user" && !data.activeAccount) return <div className="page iw-investments iw-investments--empty">
+    <header className="iw-investments-head"><div><p className="iw-kicker">{t("Investment intelligence")}</p><h1 className="iw-investments-title">{t("Start with recorded facts")}</h1><p className="iw-subtle mt-3 max-w-xl">{t("Choose a local account or import executions to reconstruct investment experiences. Nothing is estimated, sent to a model, or written back from this workspace.")}</p></div></header>
+    <section className="iw-onboarding iw-inset"><div><p className="iw-kicker">{t("Account required")}</p><h2>{t("Open your investment workspace")}</h2><p className="iw-subtle mt-2">{t("An account context is required before authoritative investment experiences can be shown.")}</p></div><div className="iw-onboarding-actions"><div><span>01</span><strong>{t("Import recorded executions")}</strong><p>{t("Create a local account context from your own files, then review each complete investment path.")}</p><Button asChild variant="primary"><Link to="/data">{t("Import data")}</Link></Button></div><div><span>02</span><strong>{t("Explore a synthetic preview")}</strong><p>{t("Preview data is clearly labelled, stays separate from your account, and never writes to your records.")}</p><Button variant="quiet" onClick={() => data.setMode("demo")}>{t("View example account")}</Button></div></div></section>
+    {data.accountsLoading || data.accountError ? <div className="mt-4"><StateNotice compact state={data.accountError ? "error" : "loading"} title={t(data.accountError ? "Could not read local accounts" : "Opening local accounts…")} detail={data.accountError ?? t("Checking the local account directory.")} /></div> : null}
+  </div>;
+  if (data.mode === "real_user" && !runtime) return <div className="page"><StateNotice state={runtimeError ? "disconnected" : "loading"} title={runtimeError ? t("Portfolio state is unavailable") : t("Opening investment workspace…")} detail={runtimeError ?? t("Rebuilding from local canonical facts.")} /></div>;
   const date = (value: string) => Number.isNaN(Date.parse(value)) ? "—" : new Intl.DateTimeFormat(locale, { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value));
   const rows = archiveRows([...view.openEpisodes, ...view.closedEpisodes], filter, query);
   const hasInvestments = view.openEpisodes.length > 0 || view.closedEpisodes.length > 0;
-  return <div className="page investments-page">
-    <PageHeader showDemo={false} title={t("My Investments")}
-      description={t("Complete investment experiences reconstructed from your records.")}
-      actions={<div className="text-right text-xs text-muted"><p className="mb-1 text-foreground">{data.mode === "demo" ? t("Example account · Synthetic") : data.activeAccount?.display_name}</p>{t("Data as of {date}", {date: date(view.asOf)})}</div>} />
+  const accountName = data.mode === "demo" ? t("Example account · Synthetic") : data.activeAccount?.display_name ?? t("Selected account");
+  return <div className="page iw-investments">
+    <header className="iw-investments-head"><div><p className="iw-kicker">{t("Investment intelligence")}</p><h1 className="iw-investments-title">{t("My Investments")}</h1><p className="iw-subtle mt-3 max-w-2xl">{t("Every entry is one complete investment experience reconstructed from recorded executions — including later re-entries in the same security.")}</p></div><div className="iw-context"><span><strong>{accountName}</strong></span><span>{t("Data as of {date}", {date: date(view.asOf)})}</span><span>{view.dataTier === "synthetic" ? t("Synthetic preview") : t("Authorized account")}</span></div></header>
     {view.portfolioState.status !== "available" ? <StateNotice state="insufficient" title={t("Portfolio state is unavailable")} detail={t(view.portfolioState.reason ?? "The current position state cannot be shown from the available facts.")} /> : null}
-    <div className="mt-7 mb-3 flex flex-wrap items-center justify-between gap-3">
-      <div className="flex gap-1" role="group" aria-label={t("Investment status")}>
-        {(["open", "closed", "all"] as const).map((value) => <Button key={value} variant={filter === value ? "primary" : "quiet"} aria-pressed={filter === value} onClick={() => setFilter(value)}>{t({open: "Holding", closed: "Closed", all: "All investments"}[value])}</Button>)}
-      </div>
-      <input className="rounded-md border border-border bg-background px-3 py-2 text-sm" aria-label={t("Search securities")} placeholder={t("Search securities")} value={query} onChange={(event) => setQuery(event.target.value)} />
-    </div>
-    <p className="mb-3 text-[11px] text-muted">{t("Newest start date first · one row per investment")}</p>
-    <div className="archive-column-head"><span>{t("Instrument")}</span><span>{t("Investment period")}</span><span>{t("Investment result")}</span></div>
-    <div className="financial-object-list">{rows.map((episode) => <FinancialObjectRow key={episode.episodeId} episode={episode} />)}</div>
-    {!rows.length && view.portfolioState.status === "available" ? <div className="py-8"><StateNotice compact state="empty"
+    <dl className="iw-account-deck iw-inset"><div><dt>{t("Account context")}</dt><dd className="iw-account-name">{accountName}</dd><p className="iw-account-note">{t("Results remain authoritative only where an Outcome record is available.")}</p></div><div><dt>{t("Currently holding")}</dt><dd>{view.summary.openEpisodeCount}</dd><p className="iw-account-note">{t("Open investment experiences")}</p></div><div><dt>{t("Current positions")}</dt><dd>{view.summary.currentPositionCount}</dd><p className="iw-account-note">{t("Available portfolio projection")}</p></div><div><dt>{t("Completed")}</dt><dd>{view.summary.closedEpisodeCount}</dd><p className="iw-account-note">{t("Closed investment experiences")}</p></div></dl>
+    <div className="iw-listbar"><div><div className="iw-filter" role="group" aria-label={t("Investment status")}>{(["open", "closed", "all"] as const).map((value) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)}>{t({open: "Holding", closed: "Closed", all: "All investments"}[value])}</button>)}</div><p className="iw-subtle mt-2">{t("Newest start date first · select an investment to review its path")}</p></div><label className="iw-search"><Search className="size-3.5" aria-hidden="true" /><input aria-label={t("Search securities")} placeholder={t("Search securities")} value={query} onChange={(event) => setQuery(event.target.value)} /></label></div>
+    <section className="iw-episode-list" aria-label={t("Investment experiences")}>{rows.map((episode) => <InvestmentRow key={episode.episodeId} episode={episode} />)}</section>
+    {!rows.length && view.portfolioState.status === "available" ? <div className="mt-5"><StateNotice compact state="empty"
       title={t(!hasInvestments ? "No investment records yet" : query ? "No matching investments" : filter === "open" ? "No investment experiences are currently in progress" : "No closed investment experiences yet")}
       detail={t(hasInvestments ? "Change the filter to see other investments." : "Import executions to reconstruct complete investment experiences.")} />
       {hasInvestments ? <Button className="mt-3" variant="quiet" onClick={() => {setFilter("all"); setQuery("");}}>{t("All investments")}</Button> : <Button asChild className="mt-3"><Link to="/data">{t("Import data")}</Link></Button>}

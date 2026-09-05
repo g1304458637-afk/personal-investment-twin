@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { LocaleProvider, useLocale } from "@/locales/LocaleProvider";
 import { StateNotice } from "@/components/common/StateNotice";
 import { DataModeProvider, useDataMode } from "@/data/DataModeProvider";
+import { isClassicWorkspace } from "@/workspace/workspaceMode";
 import {
   legacyRoutePaths,
   productRoutes,
@@ -25,6 +26,11 @@ const DecisionCheckPage = lazy(async () => ({ default: (await import("@/pages/De
 const DecisionsPage = lazy(async () => ({ default: (await import("@/pages/DecisionsPage")).DecisionsPage }));
 const PositionEpisodePage = lazy(async () => ({ default: (await import("@/pages/PositionEpisodePage")).PositionEpisodePage }));
 const DataAccountsPage = lazy(async () => ({ default: (await import("@/pages/DataAccountsPage")).DataAccountsPage }));
+const HistoryWorkspace = lazy(async () => ({ default: (await import("@/workspace/HistoryWorkspace")).HistoryWorkspace }));
+const ReviewWorkspace = lazy(async () => ({ default: (await import("@/workspace/ReviewWorkspace")).ReviewWorkspace }));
+const PretradeWorkspace = lazy(async () => ({ default: (await import("@/workspace/PretradeWorkspace")).PretradeWorkspace }));
+const DataWorkspace = lazy(async () => ({ default: (await import("@/workspace/DataWorkspace")).DataWorkspace }));
+const SettingsWorkspace = lazy(async () => ({ default: (await import("@/workspace/SettingsWorkspace")).SettingsWorkspace }));
 
 const routeElements: Partial<Record<ProductRouteId, React.ReactNode>> = {
   overview: <Navigate to="/investments" replace />,
@@ -64,6 +70,11 @@ function LegacyRouteRedirect() {
 }
 
 export default function App() {
+  const classic = isClassicWorkspace();
+  const workspacePages: Partial<Record<ProductRouteId, React.ReactNode>> = classic ? {} : {
+    review: <ReviewWorkspace />, twin: <HistoryWorkspace />,
+    pretrade: <PretradeWorkspace />, data_accounts: <DataWorkspace />, settings: <SettingsWorkspace />,
+  };
   return (
     <LocaleProvider>
       <DataModeProvider><ThemeProvider>
@@ -74,9 +85,14 @@ export default function App() {
                 <Route element={<WorkspaceShell />}>
                   <Route index element={<Navigate to="/investments" replace />} />
                   {productRoutes.map((definition) => {
-                    const element = routeElements[definition.id];
-                    return element ? <Route key={definition.id} path={definition.path} element={load(["review", "review_decisions", "review_patterns", "twin", "pretrade", "advanced_evidence"].includes(definition.id) ? <LegacyExample>{element}</LegacyExample> : element)} /> : null;
+                    const element = workspacePages[definition.id] ?? routeElements[definition.id];
+                    const legacy = !workspacePages[definition.id] && ["review", "review_decisions", "review_patterns", "twin", "pretrade", "advanced_evidence"].includes(definition.id);
+                    return element ? <Route key={definition.id} path={definition.path} element={load(legacy ? <LegacyExample>{element}</LegacyExample> : element)} /> : null;
                   })}
+                  <Route path="/history" element={load(<HistoryWorkspace />)} />
+                  <Route path="/comparison" element={load(<HistoryWorkspace initialSection="comparison" />)} />
+                  <Route path="/journal" element={load(<ReviewWorkspace view="journal" />)} />
+                  <Route path="/ask" element={load(<ReviewWorkspace view="ask" />)} />
                   {legacyRoutePaths().map((path) => (
                     <Route key={`legacy:${path}`} path={path} element={<LegacyRouteRedirect />} />
                   ))}

@@ -14,6 +14,7 @@ import {
   currentPretradeRuntime,
   emptyPretradeRequestState,
   inputFromDemo,
+  matchesOfflineDemo,
   PretradeServiceError,
   pretradeRequestReducer,
 } from "@/data/pretradeService";
@@ -32,6 +33,11 @@ export function DecisionCheckPage() {
     emptyPretradeRequestState,
   );
   const impact = requestState.phase === "success" ? requestState.outcome.impact : null;
+  // The generated explanation belongs only to its registered input, not a changed live scenario.
+  const hasRegisteredExplanation = matchesOfflineDemo({
+    ...inputFromDemo(pretradeDemo), symbol, side,
+    quantity: Number(quantity), executionPrice: Number(executionPrice), fees: Number(fees),
+  }, pretradeDemo);
 
   const markInputChanged = (update: () => void) => {
     dispatch({ type: "input_changed" });
@@ -198,7 +204,7 @@ export function DecisionCheckPage() {
               eyebrow={runtime === "tauri_local" ? t("Live deterministic vectorbt replay") : t("Generated offline deterministic replay")}
               title={t("Current → proposed trade")}
               description={t("If executed at the stated proposed price and quantity, the portfolio would change as follows. No future return or price is estimated.")}
-              action={
+              action={hasRegisteredExplanation ? (
                 <EvidenceExplainButton
                   view={pretradeExplainability}
                   label="Explain this change"
@@ -208,7 +214,7 @@ export function DecisionCheckPage() {
                     detail: t("Current → proposed trade"),
                   }}
                 />
-              }
+              ) : undefined}
             />
           </div>
           <dl className="grid border-t border-border/60 md:grid-cols-3">

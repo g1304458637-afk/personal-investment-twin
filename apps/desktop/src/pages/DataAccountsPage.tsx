@@ -31,10 +31,10 @@ const statusLabels: Record<string, string> = {
   replay_ineligible: "Replay unavailable", no_trades: "No transactions",
 };
 
-export function DataAccountsPage() {
+export function DataAccountsPage({ initialKind = "trade" }: { initialKind?: Kind }) {
   const { t, formatNumber } = useLocale();
   const data = useDataMode();
-  const [kind, setKind] = useState<Kind>("trade");
+  const [kind, setKind] = useState<Kind>(initialKind);
   const [subjectId, setSubjectId] = useState("local-user");
   const [accountId, setAccountId] = useState("main-account");
   const [displayName, setDisplayName] = useState("我的投资账户");

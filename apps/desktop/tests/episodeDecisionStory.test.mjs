@@ -90,7 +90,8 @@ test("Episode Story keeps path-first structure and Decision drilldown", async ()
   assert.match(page, /data-selected-phase/);
   assert.match(page, /entry\.reviewPresentation/);
   assert.match(page, /data-review-facts/);
-  assert.match(page, /<details data-all-executions/);
+  assert.match(page, /<section data-all-executions className="iw-executions iw-inset">/);
+  assert.match(page, /entry\.decisions\.map\(\(decision\) => <button[^>]+data-decision-event-id=\{decision\.decisionId\}/);
   assert.ok(page.indexOf("data-price-path") < page.indexOf("data-review-facts"));
   assert.match(page, /omit_decision_phase_until_next_decision_v1/);
   assert.match(page, /After the previous decision, the recorded market path rose \{percent\}, then an add occurred\./);

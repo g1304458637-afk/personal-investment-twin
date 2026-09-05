@@ -6,9 +6,20 @@ const {
   checkPretrade,
   emptyPretradeRequestState,
   inputFromDemo,
+  matchesOfflineDemo,
   PretradeServiceError,
   pretradeRequestReducer,
 } = await import("../src/data/pretradeService.ts");
+
+test("generated explanation is applicable only to the exact registered proposed trade", () => {
+  const demo = adaptPretradeImpact(backendImpact());
+  const input = inputFromDemo(demo);
+  assert.equal(matchesOfflineDemo(input, demo), true);
+  for (const changed of [
+    { quantity: 201 }, { executionPrice: 14 }, { fees: 6 }, { symbol: "OTHER" },
+    { side: "SELL" }, { subjectId: "other" }, { proposedTime: "2025-01-09T12:00:00" },
+  ]) assert.equal(matchesOfflineDemo({ ...input, ...changed }, demo), false);
+});
 
 function state(overrides = {}) {
   return {

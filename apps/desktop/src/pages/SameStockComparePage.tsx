@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import generated from "@/generated/backend-demo-evidence.json";
 import { adaptSameStock } from "@/data/sameStock";
 import { SameStockComparisonPanel } from "@/components/review/SameStockComparisonPanel";
@@ -9,10 +9,12 @@ import { useLocale } from "@/locales/LocaleProvider";
 
 
 export function SameStockComparePage() {
+  const [search] = useSearchParams();
   const { t } = useLocale();
   const view = useMemo(() => adaptSameStock(generated.same_stock_compare_demo), []);
   const [focusedDecisionId, setFocusedDecisionId] = useState<string | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (search.get("focus") === "analysis") document.querySelector("[data-decision-analysis]")?.scrollIntoView({ block: "start", behavior: "smooth" }); }, [search]);
   return <div className="page space-y-5">
     <Button asChild variant="quiet"><Link to="/investments">← {t("My Investments")}</Link></Button>
     <p className="text-sm text-warning">{t("Dedicated comparison example · Synthetic · not your account")}</p>

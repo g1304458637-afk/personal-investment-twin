@@ -90,7 +90,7 @@ export function createPretradeRequestId(): string {
     ?? `pretrade-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function matchesOfflineDemo(input: PretradeCheckInput, offlineDemo: PretradeDemoView): boolean {
+export function matchesOfflineDemo(input: PretradeCheckInput, offlineDemo: PretradeDemoView): boolean {
   const demo = inputFromDemo(offlineDemo);
   return input.subjectId === demo.subjectId
     && input.proposedTime === demo.proposedTime

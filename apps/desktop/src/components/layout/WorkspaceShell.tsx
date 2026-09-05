@@ -21,6 +21,8 @@ import {
 import { CommandPalette } from "./CommandPalette";
 import { navigationItems, type NavigationRouteItem } from "./navigation";
 import { useTheme } from "./ThemeProvider";
+import { IntelligenceShell } from "@/workspace/IntelligenceShell";
+import { isClassicWorkspace } from "@/workspace/workspaceMode";
 
 function WorkspaceShellContent() {
   const location = useLocation();
@@ -65,6 +67,8 @@ function WorkspaceShellContent() {
       </Tooltip>
     );
   };
+
+  if (!isClassicWorkspace()) return <><IntelligenceShell openCommands={() => setCommandOpen(true)} /><CommandPalette open={commandOpen} onOpenChange={setCommandOpen} /></>;
 
   return (
     <div className="workspace-shell">

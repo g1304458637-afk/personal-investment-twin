@@ -1,0 +1,138 @@
+/* Presentation layer for the decision workspace. Values and state stay in the existing
+   runtime adapters; this stylesheet is intentionally inert outside the new shell. */
+.intelligence-workspace .iw-investments,
+.intelligence-workspace .iw-episode { max-width: 1480px; margin-inline: auto; }
+.intelligence-workspace .iw-kicker { color: hsl(var(--muted)); font-size: 10px; font-weight: 650; letter-spacing: .16em; text-transform: uppercase; }
+.intelligence-workspace .iw-subtle { color: hsl(var(--muted)); font-size: 12px; line-height: 1.6; }
+.intelligence-workspace .iw-inset {
+  border: 1px solid hsl(var(--border) / .72); border-radius: 18px;
+  background: linear-gradient(145deg, hsl(var(--card) / .72), hsl(var(--background) / .42));
+  box-shadow: 0 18px 46px hsl(var(--background) / .17), inset 0 1px 0 hsl(var(--foreground) / .045);
+}
+.intelligence-workspace .iw-investments-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: end; margin-bottom: 22px; }
+.intelligence-workspace .iw-investments-title { margin: 7px 0 0; font-size: 32px; line-height: 1.2; font-weight: 550; letter-spacing: -.7px; }
+.intelligence-workspace .iw-context { display: flex; flex-wrap: wrap; justify-content: end; gap: 8px; }
+.intelligence-workspace .iw-context > span { border: 1px solid hsl(var(--border) / .7); border-radius: 999px; padding: 6px 10px; color: hsl(var(--muted)); font-size: 11px; background: hsl(var(--background) / .38); }
+.intelligence-workspace .iw-context strong { color: hsl(var(--foreground)); font-weight: 600; }
+.intelligence-workspace .iw-account-deck { display: grid; grid-template-columns: minmax(220px, 1.2fr) repeat(3, minmax(126px, .58fr)); overflow: hidden; }
+.intelligence-workspace .iw-account-deck > div { min-height: 112px; padding: 18px 20px; border-right: 1px solid hsl(var(--border) / .58); }
+.intelligence-workspace .iw-account-deck > div:last-child { border-right: 0; }
+.intelligence-workspace .iw-account-deck dt { color: hsl(var(--muted)); font-size: 11px; }
+.intelligence-workspace .iw-account-deck dd { margin-top: 8px; color: hsl(var(--foreground)); font-size: 24px; line-height: 1; font-weight: 570; letter-spacing: -.04em; }
+.intelligence-workspace .iw-account-deck .iw-account-name { font-size: 16px; letter-spacing: -.015em; line-height: 1.25; }
+.intelligence-workspace .iw-account-deck .iw-account-note { margin-top: 10px; color: hsl(var(--muted)); font-size: 11px; line-height: 1.5; }
+.intelligence-workspace .iw-listbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 13px; margin: 28px 0 13px; }
+.intelligence-workspace .iw-filter { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid hsl(var(--border) / .67); border-radius: 12px; background: hsl(var(--background) / .42); }
+.intelligence-workspace .iw-filter button { padding: 7px 10px; border-radius: 8px; color: hsl(var(--muted)); font-size: 12px; transition: color 160ms ease, background-color 160ms ease; }
+.intelligence-workspace .iw-filter button[aria-pressed="true"] { color: hsl(var(--foreground)); background: hsl(var(--foreground) / .09); box-shadow: 0 1px 0 hsl(var(--foreground) / .1); }
+.intelligence-workspace .iw-search { width: min(100%, 260px); display: flex; align-items: center; gap: 8px; padding: 0 11px; border: 1px solid hsl(var(--border) / .67); border-radius: 10px; background: hsl(var(--background) / .42); color: hsl(var(--muted)); }
+.intelligence-workspace .iw-search input { min-width: 0; width: 100%; padding: 9px 0; outline: 0; background: transparent; color: hsl(var(--foreground)); font-size: 12px; }
+.intelligence-workspace .iw-episode-list { display: grid; gap: 8px; }
+.intelligence-workspace .iw-investment-row { display: grid; grid-template-columns: minmax(190px, 1.05fr) minmax(170px, .8fr) minmax(145px, .68fr) 18px; align-items: center; gap: 18px; padding: 17px 19px; border: 1px solid hsl(var(--border) / .58); border-radius: 14px; background: hsl(var(--card) / .43); transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease; }
+.intelligence-workspace .iw-investment-row:hover { transform: translateY(-1px); border-color: hsl(var(--accent) / .5); background: hsl(var(--foreground) / .045); }
+.intelligence-workspace .iw-row-name { color: hsl(var(--foreground)); font-size: 14px; font-weight: 620; letter-spacing: -.015em; }
+.intelligence-workspace .iw-row-meta { display: block; margin-top: 5px; color: hsl(var(--muted)); font-size: 11px; }
+.intelligence-workspace .iw-status { display: inline-flex; width: fit-content; align-items: center; gap: 6px; color: hsl(var(--muted)); font-size: 11px; }
+.intelligence-workspace .iw-status::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: hsl(var(--muted)); }
+.intelligence-workspace .iw-status[data-open="true"]::before { background: hsl(var(--positive)); box-shadow: 0 0 10px hsl(var(--positive) / .6); }
+.intelligence-workspace .iw-result { text-align: right; }
+.intelligence-workspace .iw-result-value { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 16px; font-weight: 620; letter-spacing: -.035em; }
+.intelligence-workspace .iw-result-label { margin-top: 4px; color: hsl(var(--muted)); font-size: 10px; }
+
+.intelligence-workspace .iw-episode-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+.intelligence-workspace .iw-episode-hero { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(230px, .6fr); gap: 22px; padding: 21px 25px; }
+.intelligence-workspace .iw-episode-title { margin: 8px 0 0; font-size: 32px; line-height: 1.18; font-weight: 550; letter-spacing: -.8px; overflow-wrap:anywhere; }
+.intelligence-workspace .iw-episode-period { margin-top: 13px; color: hsl(var(--muted)); font-size: 12px; }
+.intelligence-workspace .iw-story { max-width: 70ch; margin: 14px 0 0; padding-top: 12px; border-top: 1px solid hsl(var(--border) / .55); color: hsl(var(--foreground)); font-size: 12px; line-height: 1.8; }
+.intelligence-workspace .iw-outcome { align-self: stretch; display: flex; flex-direction: column; justify-content: space-between; padding: 4px 0 4px 24px; border-left: 1px solid hsl(var(--border) / .55); text-align: right; }
+.intelligence-workspace .iw-outcome-value { margin-top: 9px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 31px; font-weight: 550; letter-spacing: -1px; overflow-wrap:anywhere; }
+.intelligence-workspace .iw-outcome-foot { margin-top: 16px; color: hsl(var(--muted)); font-size: 11px; line-height: 1.55; }
+.intelligence-workspace .iw-episode-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .32fr); gap: 18px; margin-top: 18px; }
+.intelligence-workspace .iw-chart-panel { overflow: hidden; padding: 18px; }
+.intelligence-workspace .iw-panel-heading { display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+.intelligence-workspace .iw-panel-heading h2 { margin: 4px 0 0; font-size: 15px; font-weight: 600; }
+.intelligence-workspace .iw-facts { padding: 9px; }
+.intelligence-workspace .iw-facts-title { padding: 11px 11px 8px; }
+.intelligence-workspace .iw-fact { width: 100%; padding: 13px 11px; border-radius: 10px; text-align: left; transition: background-color 160ms ease; }
+.intelligence-workspace .iw-fact:hover, .intelligence-workspace .iw-fact[aria-pressed="true"] { background: hsl(var(--foreground) / .06); }
+.intelligence-workspace .iw-fact[aria-pressed="true"] { box-shadow: inset 2px 0 hsl(var(--accent)); }
+.intelligence-workspace .iw-fact strong { display: block; color: hsl(var(--foreground)); font-size: 12px; line-height: 1.45; }
+.intelligence-workspace .iw-fact span { display: block; margin-top: 5px; color: hsl(var(--muted)); font-size: 11px; line-height: 1.55; }
+.intelligence-workspace .iw-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, .75fr); gap: 18px; margin-top: 18px; }
+.intelligence-workspace .iw-executions { padding: 17px; }
+.intelligence-workspace .iw-execution-row { display: grid; grid-template-columns: 114px minmax(0, 1fr) minmax(140px, .7fr) 18px; gap: 11px; align-items: center; width: 100%; padding: 12px 8px; border-top: 1px solid hsl(var(--border) / .5); text-align: left; }
+.intelligence-workspace .iw-execution-row:first-of-type { margin-top: 8px; }
+.intelligence-workspace .iw-execution-row:hover { background: hsl(var(--foreground) / .04); }
+.intelligence-workspace .iw-disclosure { padding: 18px; }
+.intelligence-workspace .iw-disclosure + .iw-disclosure { margin-top: 12px; }
+.intelligence-workspace .iw-disclosure summary { cursor: pointer; color: hsl(var(--foreground)); font-size: 13px; font-weight: 590; }
+.intelligence-workspace .iw-disclosure summary::marker { color: hsl(var(--accent)); }
+.intelligence-workspace .iw-analysis { margin-top: 18px; padding: 18px; }
+.intelligence-workspace .iw-analysis > [data-decision-analysis] { margin: 0; }
+.intelligence-workspace .iw-onboarding { padding: clamp(20px, 4vw, 38px); }
+.intelligence-workspace .iw-onboarding h2 { margin-top: 6px; font-size: clamp(22px, 3vw, 33px); letter-spacing: -.045em; font-weight: 610; }
+.intelligence-workspace .iw-onboarding-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 28px; }
+.intelligence-workspace .iw-onboarding-actions > div { min-height: 170px; padding: 17px; border: 1px solid hsl(var(--border) / .62); border-radius: 13px; background: hsl(var(--background) / .28); }
+.intelligence-workspace .iw-onboarding-actions span { display: block; color: hsl(var(--accent)); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+.intelligence-workspace .iw-onboarding-actions strong { display: block; margin-top: 18px; font-size: 14px; font-weight: 600; }
+.intelligence-workspace .iw-onboarding-actions p { min-height: 38px; margin: 7px 0 14px; color: hsl(var(--muted)); font-size: 11px; line-height: 1.55; }
+
+/* Classic uses the same pages rather than a shadow application. Keep that entry
+   compact and legible if the intelligence workspace styles are intentionally off. */
+.workspace-shell:not(.intelligence-workspace) .iw-investments,
+.workspace-shell:not(.intelligence-workspace) .iw-episode { max-width: 1180px; margin-inline: auto; }
+.workspace-shell:not(.intelligence-workspace) .iw-investments-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 20px; }
+.workspace-shell:not(.intelligence-workspace) .iw-investments-title,
+.workspace-shell:not(.intelligence-workspace) .iw-episode-title { margin: 5px 0 0; color: hsl(var(--foreground)); font-size: 30px; line-height: 1.05; font-weight: 650; }
+.workspace-shell:not(.intelligence-workspace) .iw-kicker { color: hsl(var(--muted)); font-size: 10px; font-weight: 650; letter-spacing: .14em; text-transform: uppercase; }
+.workspace-shell:not(.intelligence-workspace) .iw-subtle { color: hsl(var(--muted)); font-size: 12px; line-height: 1.55; }
+.workspace-shell:not(.intelligence-workspace) .iw-inset { border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--card) / .5); }
+.workspace-shell:not(.intelligence-workspace) .iw-account-deck { display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); margin-top: 16px; }
+.workspace-shell:not(.intelligence-workspace) .iw-account-deck > div { padding: 15px; border-right: 1px solid hsl(var(--border)); }
+.workspace-shell:not(.intelligence-workspace) .iw-account-deck > div:last-child { border-right: 0; }
+.workspace-shell:not(.intelligence-workspace) .iw-account-deck dt, .workspace-shell:not(.intelligence-workspace) .iw-account-note, .workspace-shell:not(.intelligence-workspace) .iw-row-meta, .workspace-shell:not(.intelligence-workspace) .iw-result-label { color: hsl(var(--muted)); font-size: 11px; }
+.workspace-shell:not(.intelligence-workspace) .iw-account-deck dd { margin-top: 7px; color: hsl(var(--foreground)); font-size: 20px; font-weight: 600; }
+.workspace-shell:not(.intelligence-workspace) .iw-account-name { font-size: 14px !important; }
+.workspace-shell:not(.intelligence-workspace) .iw-listbar, .workspace-shell:not(.intelligence-workspace) .iw-episode-toolbar, .workspace-shell:not(.intelligence-workspace) .iw-panel-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.workspace-shell:not(.intelligence-workspace) .iw-listbar { margin: 20px 0 12px; }
+.workspace-shell:not(.intelligence-workspace) .iw-filter { display: inline-flex; gap: 4px; padding: 3px; border: 1px solid hsl(var(--border)); border-radius: 8px; }
+.workspace-shell:not(.intelligence-workspace) .iw-filter button { padding: 6px 9px; border-radius: 5px; color: hsl(var(--muted)); font-size: 12px; }
+.workspace-shell:not(.intelligence-workspace) .iw-filter button[aria-pressed="true"] { color: hsl(var(--foreground)); background: hsl(var(--foreground) / .09); }
+.workspace-shell:not(.intelligence-workspace) .iw-search { display: flex; align-items: center; gap: 8px; padding: 0 9px; border: 1px solid hsl(var(--border)); border-radius: 8px; }
+.workspace-shell:not(.intelligence-workspace) .iw-search input { width: 210px; padding: 8px 0; outline: 0; background: transparent; color: hsl(var(--foreground)); font-size: 12px; }
+.workspace-shell:not(.intelligence-workspace) .iw-episode-list { display: grid; gap: 8px; }
+.workspace-shell:not(.intelligence-workspace) .iw-investment-row { display: grid; grid-template-columns: 1fr .8fr .72fr 18px; gap: 15px; align-items: center; padding: 14px; border: 1px solid hsl(var(--border)); border-radius: 10px; }
+.workspace-shell:not(.intelligence-workspace) .iw-row-name { display: block; color: hsl(var(--foreground)); font-size: 14px; font-weight: 600; }
+.workspace-shell:not(.intelligence-workspace) .iw-status { color: hsl(var(--muted)); font-size: 11px; }
+.workspace-shell:not(.intelligence-workspace) .iw-result { text-align: right; }
+.workspace-shell:not(.intelligence-workspace) .iw-result-value { color: hsl(var(--foreground)); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 15px; }
+.workspace-shell:not(.intelligence-workspace) .iw-episode-hero, .workspace-shell:not(.intelligence-workspace) .iw-chart-panel, .workspace-shell:not(.intelligence-workspace) .iw-facts, .workspace-shell:not(.intelligence-workspace) .iw-executions, .workspace-shell:not(.intelligence-workspace) .iw-disclosure, .workspace-shell:not(.intelligence-workspace) .iw-analysis { padding: 16px; }
+.workspace-shell:not(.intelligence-workspace) .iw-episode-hero, .workspace-shell:not(.intelligence-workspace) .iw-episode-main, .workspace-shell:not(.intelligence-workspace) .iw-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(245px, .4fr); gap: 16px; margin-top: 16px; }
+.workspace-shell:not(.intelligence-workspace) .iw-outcome { padding-left: 16px; border-left: 1px solid hsl(var(--border)); text-align: right; }
+.workspace-shell:not(.intelligence-workspace) .iw-outcome-value { margin-top: 7px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 25px; font-weight: 650; }
+.workspace-shell:not(.intelligence-workspace) .iw-story { margin-top: 16px; color: hsl(var(--foreground)); font-size: 13px; line-height: 1.7; }
+.workspace-shell:not(.intelligence-workspace) .iw-fact, .workspace-shell:not(.intelligence-workspace) .iw-execution-row { display: block; width: 100%; padding: 11px; border-top: 1px solid hsl(var(--border) / .7); text-align: left; }
+.workspace-shell:not(.intelligence-workspace) .iw-fact strong { color: hsl(var(--foreground)); font-size: 12px; }.workspace-shell:not(.intelligence-workspace) .iw-fact span { display: block; margin-top: 4px; color: hsl(var(--muted)); font-size: 11px; line-height: 1.5; }
+.workspace-shell:not(.intelligence-workspace) .iw-onboarding { padding: 26px; }.workspace-shell:not(.intelligence-workspace) .iw-onboarding h2 { margin-top: 5px; font-size: 26px; font-weight: 650; }.workspace-shell:not(.intelligence-workspace) .iw-onboarding-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 22px; }.workspace-shell:not(.intelligence-workspace) .iw-onboarding-actions > div { padding: 15px; border: 1px solid hsl(var(--border)); border-radius: 9px; }.workspace-shell:not(.intelligence-workspace) .iw-onboarding-actions span { color: hsl(var(--accent)); font-size: 11px; }.workspace-shell:not(.intelligence-workspace) .iw-onboarding-actions strong { display: block; margin-top: 12px; }.workspace-shell:not(.intelligence-workspace) .iw-onboarding-actions p { min-height: 34px; color: hsl(var(--muted)); font-size: 11px; line-height: 1.5; }
+@media (max-width: 800px) {
+  .intelligence-workspace .iw-investments-head, .intelligence-workspace .iw-episode-hero, .intelligence-workspace .iw-episode-main, .intelligence-workspace .iw-detail-grid { grid-template-columns: 1fr; }
+  .intelligence-workspace .iw-context { justify-content: start; }
+  .intelligence-workspace .iw-account-deck { grid-template-columns: 1fr 1fr; }
+  .intelligence-workspace .iw-account-deck > div:nth-child(2) { border-right: 0; }
+  .intelligence-workspace .iw-account-deck > div:nth-child(n + 3) { border-top: 1px solid hsl(var(--border) / .58); }
+  .intelligence-workspace .iw-outcome { padding: 18px 0 0; border-left: 0; border-top: 1px solid hsl(var(--border) / .55); text-align: left; }
+  .intelligence-workspace .iw-result { text-align: left; }
+}
+@media (max-width: 560px) {
+  .intelligence-workspace .iw-account-deck { grid-template-columns: 1fr; }
+  .intelligence-workspace .iw-account-deck > div { border-right: 0; border-top: 1px solid hsl(var(--border) / .58); }
+  .intelligence-workspace .iw-account-deck > div:first-child { border-top: 0; }
+  .intelligence-workspace .iw-investment-row { grid-template-columns: minmax(0, 1fr) 18px; gap: 12px; }
+  .intelligence-workspace .iw-investment-row > :nth-child(2), .intelligence-workspace .iw-investment-row > :nth-child(3) { grid-column: 1; }
+  .intelligence-workspace .iw-investment-row > :last-child { grid-column: 2; grid-row: 1 / span 3; }
+  .intelligence-workspace .iw-execution-row { grid-template-columns: 1fr 18px; }
+  .intelligence-workspace .iw-execution-row > :nth-child(3) { grid-column: 1; }
+  .intelligence-workspace .iw-execution-row > :last-child { grid-column: 2; grid-row: 1 / span 3; }
+}
+@media (max-width: 800px) { .workspace-shell:not(.intelligence-workspace) .iw-account-deck, .workspace-shell:not(.intelligence-workspace) .iw-episode-hero, .workspace-shell:not(.intelligence-workspace) .iw-episode-main, .workspace-shell:not(.intelligence-workspace) .iw-detail-grid { grid-template-columns: 1fr; }.workspace-shell:not(.intelligence-workspace) .iw-account-deck > div { border-right: 0; border-top: 1px solid hsl(var(--border)); }.workspace-shell:not(.intelligence-workspace) .iw-account-deck > div:first-child { border-top: 0; }.workspace-shell:not(.intelligence-workspace) .iw-outcome { padding: 15px 0 0; border-left: 0; border-top: 1px solid hsl(var(--border)); text-align: left; }.workspace-shell:not(.intelligence-workspace) .iw-onboarding-actions { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .intelligence-workspace .iw-investment-row, .intelligence-workspace .iw-filter button { transition: none; } }
