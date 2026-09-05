@@ -1,6 +1,20 @@
 import { enUS } from "./en-US";
 
 export const zhCN = {
+  "Complete investment experiences reconstructed from your records.": "投资记录还原出的完整经历。",
+  "Data as of {date}": "数据截至 {date}",
+  "Investment status": "投资状态",
+  "All investments": "全部",
+  "Search securities": "搜索证券",
+  "Newest start date first · one row per investment": "按开始日期从近到远排列 · 每轮投资单独记录",
+  "Investment period": "投资期间",
+  "Investment result": "本轮结果",
+  "No matching investments": "没有找到匹配的投资",
+  "Change the filter to see other investments.": "切换筛选，可查看其他投资经历。",
+  "Current marked result": "当前标记结果",
+  "Final realized result": "最终实现结果",
+  "Result unavailable": "结果暂不可用",
+  "No authoritative result is available.": "当前没有可用的权威结果。",
   "This view is not connected to your account": "此页面尚未接入你的账户",
   "Your investments and data remain available from the navigation.": "请从导航查看我的投资或数据。",
   "Standalone legacy example · not the selected account": "独立历史示例 · 不代表当前所选账户",

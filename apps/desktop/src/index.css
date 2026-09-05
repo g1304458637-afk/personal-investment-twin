@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+.archive-column-head, .archive-row { display: grid; grid-template-columns: minmax(150px, .9fr) minmax(200px, 1fr) minmax(260px, 1.2fr); gap: 24px; align-items: center; }
+.archive-column-head { border-bottom: 1px solid hsl(var(--border)); padding: 12px 8px; font-size: 11px; color: hsl(var(--muted)); }
+.archive-row { border-bottom: 1px solid hsl(var(--border)); padding: 20px 8px; }
+.archive-row:hover { background: hsl(var(--accent) / .04); }
+.archive-row:focus-visible { outline: 2px solid hsl(var(--accent)); outline-offset: -2px; }
+@media (max-width: 1000px) { .archive-column-head, .archive-row { grid-template-columns: minmax(130px, .8fr) minmax(160px, 1fr) minmax(220px, 1.2fr); gap: 12px; } }
+@media (max-width: 760px) { .archive-column-head { display: none; } .archive-row { grid-template-columns: 1fr; gap: 8px; } }
+
 :root {
   color-scheme: dark;
   --canvas: 222 34% 6%;

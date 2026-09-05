@@ -19,6 +19,7 @@ from src.market_data.models import resolve_market_data_requirements
 from src.market_data.episode_gate import build_episode_when_market_ready
 from src.persistence import LocalRepository
 from src.presentation.runtime_episode import episode_entry
+from src.presentation.investment_archive import outcome_summaries
 from src.core.canonical_execution import canonical_executions_to_frame
 from src.market_data.models import facts_to_market_data_frame
 
@@ -338,10 +339,15 @@ class ProductRuntime:
             for decision in lifecycle.decisions if decision.decision_type == "close_position"
         }
         display_by_instrument = {str(x.instrument.instrument_id): x.instrument.display_name or x.instrument.display_symbol or x.instrument.local_symbol for x in bundle_from_repository(self.repo, str(account["subject_id"]), str(account["account_id"])).accepted_canonical_executions}
+        summaries = outcome_summaries(lifecycle,
+            canonical_executions_to_frame(bundle.accepted_canonical_executions),
+            facts_to_market_data_frame(facts), subject_id=str(account["subject_id"]),
+            account_id=str(account["account_id"]), init_cash=float(account["initial_cash"]))
         entries = []
         for item in lifecycle.episodes:
             state = snapshot_by_episode.get(item.episode_id) or closing_state_by_episode.get(item.episode_id)
             entries.append({"episode_id": item.episode_id, "instrument_id": item.instrument_id, "currency": currency,
+                "outcome_summary": summaries[item.episode_id],
                 "display_name": display_by_instrument.get(item.instrument_id, item.instrument_id), "status": item.status,
                 "opened_at": item.opened_at.isoformat(), "closed_at": item.closed_at.isoformat() if item.closed_at else None,
                 "duration_days": item.duration_days, "duration_kind": item.duration_kind,

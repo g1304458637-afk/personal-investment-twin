@@ -113,7 +113,9 @@ test("Investments and Overview render backend view models without financial calc
   assert.doesNotMatch(page, /Primary Product Demo/);
   assert.match(page, /realUserApi\.investments/);
   assert.match(row, /to=\{`\/investments\/episodes\/\$\{episode\.episodeId\}`\}/);
-  assert.match(row, /data-primary-demo/);
+  assert.doesNotMatch(row, /data-primary-demo/);
+  assert.match(row, /Current marked result/);
+  assert.match(row, /Final realized result/);
   assert.match(overview, /investments\.primaryEpisodeId/);
   assert.match(overview, /Primary Product Demo/);
   assert.equal(source.includes("@/demo/fixture"), false);

@@ -6,6 +6,16 @@ import type {
 
 export type InvestmentsPortfolioStatus = "available" | "not_started" | "unavailable";
 
+export interface ArchiveOutcome {
+  result_kind: "realized" | "marked" | "unavailable";
+  pnl: number | null;
+  return_value: number | null;
+  result_at: string | null;
+  availability: "available" | "unavailable";
+  reason: string | null;
+  outcome_id: string | null;
+}
+
 export interface BackendInvestmentsPayload {
   subject_id: string;
   as_of: string;
@@ -38,6 +48,7 @@ export interface InvestmentEpisodeRowView {
   valuationAt: string | null;
   valuationPrice: number | null;
   marketValue: number | null;
+  outcome: ArchiveOutcome;
 }
 
 export interface InvestmentsView {
@@ -74,6 +85,7 @@ function count(value: unknown, name: string): number {
 
 function row(entry: PositionEpisodeEntryView): InvestmentEpisodeRowView {
   const state = entry.snapshot?.positionState ?? null;
+  const actual = entry.outcomeStory.episodeOutcome;
   return {
     episodeId: entry.episode.episodeId,
     subjectId: entry.episode.subjectId,
@@ -91,7 +103,20 @@ function row(entry: PositionEpisodeEntryView): InvestmentEpisodeRowView {
     valuationAt: state?.valuationAt ?? null,
     valuationPrice: state?.valuationPrice ?? null,
     marketValue: state?.marketValue ?? null,
+    outcome: {
+      result_kind: actual.actualResult.resultKind === "marked" ? "marked" : "realized",
+      pnl: actual.actualResult.pnl, return_value: actual.actualResult.returnValue,
+      result_at: entry.episode.status === "open" ? actual.actualResult.valuationAt : entry.episode.closedAt,
+      availability: "available", reason: null, outcome_id: actual.outcomeId,
+    },
   };
+}
+
+export function archiveRows(rows: InvestmentEpisodeRowView[], status: "open" | "closed" | "all", query: string): InvestmentEpisodeRowView[] {
+  const term = query.trim().toLocaleLowerCase();
+  return rows.filter((item) => (status === "all" || item.status === status)
+    && `${item.displayName} ${item.instrumentId}`.toLocaleLowerCase().includes(term))
+    .sort((a, b) => Date.parse(b.openedAt) - Date.parse(a.openedAt) || a.episodeId.localeCompare(b.episodeId));
 }
 
 export function adaptInvestmentsPayload(
