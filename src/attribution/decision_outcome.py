@@ -12,7 +12,7 @@ from __future__ import annotations
 import hashlib
 import math
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from types import MappingProxyType
 from typing import Final, Literal
 
@@ -298,6 +298,18 @@ _LOCAL_SCENARIO = CounterfactualScenarioDefinition(
     ),
 )
 
+STRICT_LOCAL_SCENARIO = replace(
+    _LOCAL_SCENARIO,
+    scenario_id="omit_event_until_next_decision_v2",
+    scenario_version="2",
+    price_basis="strict_pre_decision_prior_daily_market_mark",
+    feasibility_conditions=(
+        "A unique legal prior daily observation must exist strictly before the decision calendar date.",
+        "The prior daily mark is not an intraday quote; actual and alternative share that observation.",
+        "No next decision: use strict availability before the analysis_as_of calendar date.",
+    ),
+)
+
 _FULL_SCENARIO = CounterfactualScenarioDefinition(
     scenario_id="omit_event_preserve_later_executions_v1",
     scenario_version="1",
@@ -331,7 +343,7 @@ COUNTERFACTUAL_SCENARIOS: Final[Mapping[str, CounterfactualScenarioDefinition]] 
     MappingProxyType(
         {
             item.scenario_id: item
-            for item in (_LOCAL_SCENARIO, _FULL_SCENARIO, _EXIT_SCENARIO)
+            for item in (_LOCAL_SCENARIO, STRICT_LOCAL_SCENARIO, _FULL_SCENARIO, _EXIT_SCENARIO)
         }
     )
 )
@@ -527,6 +539,7 @@ def _prepare_scope(
     account_id: str,
     analysis_as_of: pd.Timestamp,
     init_cash: float | Mapping[str, float],
+    replay_actual: bool = True,
 ) -> _ScopedReplay:
     subject = _required_text(subject_id, "subject_id")
     account = _required_text(account_id, "account_id")
@@ -596,6 +609,12 @@ def _prepare_scope(
         )
     price_rows = _market_rows_through(market_prices, as_of)
     cash = _cash_for_account(init_cash, account)
+    if not replay_actual:
+        # A strict-availability scenario must not first replay using later marks.
+        return _ScopedReplay(
+            lifecycle, account, as_of, frame, price_rows, None, {}, episodes,
+            decisions, states, (), "", cash,
+        )
     try:
         context = prepare_behavior_replay(frame, price_rows, init_cash=cash)
     except BehaviorReplayError as exc:
@@ -1722,6 +1741,7 @@ def evaluate_historical_counterfactual(
 ) -> HistoricalCounterfactualResult:
     """Evaluate one registered retrospective scenario without rewriting orders."""
 
+    strict = scenario_id == STRICT_LOCAL_SCENARIO.scenario_id
     scope = _prepare_scope(
         lifecycle,
         executions,
@@ -1730,6 +1750,7 @@ def evaluate_historical_counterfactual(
         account_id=account_id,
         analysis_as_of=analysis_as_of,
         init_cash=init_cash,
+        replay_actual=not strict,
     )
     decision_id = _required_text(decision_event_id, "decision_event_id")
     selected = [item for item in scope.decisions if item.decision_id == decision_id]
@@ -1766,6 +1787,13 @@ def evaluate_historical_counterfactual(
             decision=decision,
             scenario=scenario,
             evidence=exit_evidence,
+        )
+    if strict:
+        from src.attribution.strict_predecision import evaluate_strict_omit
+
+        return evaluate_strict_omit(
+            scope, episode=episode, decision=decision, scenario=scenario,
+            changed_execution_refs=(decision.execution_id,),
         )
     return _evaluate_replay_scenario(
         scope,

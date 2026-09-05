@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from dataclasses import replace
 
 import pandas as pd
 
@@ -10,6 +11,8 @@ from src.attribution.decision_outcome import (
     CounterfactualScenarioDefinition,
     HistoricalCounterfactualResult,
     evaluate_omit_executions_counterfactual,
+    _prepare_scope,
+    STRICT_LOCAL_SCENARIO,
 )
 from src.episodes.position_episode import DecisionEvent, PositionEpisode, PositionEpisodeLifecycle
 from src.path.phases import DecisionPhase
@@ -46,6 +49,14 @@ PHASE_FULL_SCENARIO = CounterfactualScenarioDefinition(
     ),
 )
 
+PHASE_STRICT_LOCAL_SCENARIO = replace(
+    PHASE_LOCAL_SCENARIO,
+    scenario_id="omit_decision_phase_until_next_decision_v2",
+    scenario_version="2",
+    price_basis=STRICT_LOCAL_SCENARIO.price_basis,
+    feasibility_conditions=STRICT_LOCAL_SCENARIO.feasibility_conditions,
+)
+
 
 def _next_after_phase(
     decisions: Sequence[DecisionEvent],
@@ -68,9 +79,21 @@ def evaluate_phase_local_counterfactual(
     phase: DecisionPhase,
     analysis_as_of: pd.Timestamp,
     init_cash: float | Mapping[str, float],
+    scenario: CounterfactualScenarioDefinition = PHASE_STRICT_LOCAL_SCENARIO,
 ) -> HistoricalCounterfactualResult | None:
     if phase.phase_type not in {"scaling_in", "scaling_out"}:
         return None
+    if scenario == PHASE_STRICT_LOCAL_SCENARIO:
+        from src.attribution.strict_predecision import evaluate_strict_omit
+
+        scope = _prepare_scope(lifecycle, executions, market_prices,
+            subject_id=episode.subject_id, account_id=episode.account_id,
+            analysis_as_of=analysis_as_of, init_cash=init_cash, replay_actual=False)
+        decision = next(item for item in scope.decisions if item.decision_id == phase.decision_event_ids[0])
+        return evaluate_strict_omit(scope, episode=episode, decision=decision,
+            scenario=scenario, changed_execution_refs=phase.execution_ids)
+    if scenario != PHASE_LOCAL_SCENARIO:
+        raise ValueError("Unregistered phase local scenario")
     next_decision = _next_after_phase(lifecycle.decisions, phase)
     if next_decision is not None:
         evaluation_end = next_decision.occurred_at
@@ -91,7 +114,7 @@ def evaluate_phase_local_counterfactual(
         episode_id=episode.episode_id,
         anchor_decision_event_id=phase.decision_event_ids[0],
         changed_execution_refs=phase.execution_ids,
-        scenario=PHASE_LOCAL_SCENARIO,
+        scenario=scenario,
         evaluation_end=evaluation_end,
         include_evaluation_end_executions=include,
     )

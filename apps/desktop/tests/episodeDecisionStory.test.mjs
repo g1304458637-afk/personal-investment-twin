@@ -176,8 +176,10 @@ test("generated Product Demo projects backend path analysis without handwritten 
   assert.ok(product.pathAnalysis.presentationItems.length <= 6);
   assert.ok(product.pricePoints.some((item) => item.segment === "pre_entry"));
   assert.ok(product.pricePoints.some((item) => item.segment === "episode"));
-  assert.ok(product.pricePoints.some((item) => item.segment === "post_exit"));
-  assert.ok(product.pathAnalysis.phaseCounterfactuals.some((item) => item.scenarioId === "omit_decision_phase_until_next_decision_v1"));
+  // This generated lifecycle is as-of the closing session, not a future follow-up date.
+  assert.equal(product.pricePoints.some((item) => item.segment === "post_exit"), false);
+  assert.ok(product.pricePoints.every((item) => item.observedAt.slice(0, 10) <= product.outcomeStory.episodeOutcome.analysisAsOf.slice(0, 10)));
+  assert.ok(product.pathAnalysis.phaseCounterfactuals.some((item) => item.scenarioId === "omit_decision_phase_until_next_decision_v2"));
 });
 
 function dailyMoves(points) {

@@ -61,7 +61,7 @@ def episode_entry(lifecycle: PositionEpisodeLifecycle, executions: pd.DataFrame,
     outcomes = tuple(item for item in actual.decision_outcomes if item.episode_id == episode_id)
     counterfactuals = []
     for decision in outcomes:
-        scenarios = ["omit_event_until_next_decision_v1"]
+        scenarios = ["omit_event_until_next_decision_v2"]
         if decision.event_type in {"add_position", "reduce_position"}:
             scenarios.append("omit_event_preserve_later_executions_v1")
         for scenario in scenarios:

@@ -227,10 +227,12 @@ def test_phase_counterfactual_uses_next_decision_even_when_months_away():
     cf = next(
         item
         for item in analysis.phase_counterfactuals
-        if item.scenario_id == "omit_decision_phase_until_next_decision_v1"
+        if item.scenario_id == "omit_decision_phase_until_next_decision_v2"
         and item.decision_event_id == scaling.decision_event_ids[0]
     )
     assert cf.evaluation_end == next_decision.occurred_at
+    assert cf.next_decision_at == next_decision.occurred_at
+    assert cf.valuation_observation_date < next_decision.occurred_at.normalize()
     assert calendar_days_between(scaling.ended_at, next_decision.occurred_at) >= 180
     assert episode.closed_at is not None
     assert cf.evaluation_end < episode.closed_at

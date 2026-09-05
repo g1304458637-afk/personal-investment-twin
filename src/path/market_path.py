@@ -485,7 +485,9 @@ def build_episode_market_path(
     *,
     as_of: pd.Timestamp,
 ) -> EpisodeMarketPath:
-    all_obs = instrument_observations(market_prices, instrument_id=episode.instrument_id)
+    # Display/context is point-in-time even when a caller supplies future rows.
+    rows = market_prices.loc[pd.to_datetime(market_prices["date"]).dt.normalize() <= _calendar(as_of)]
+    all_obs = instrument_observations(rows, instrument_id=episode.instrument_id)
     opened = _calendar(episode.opened_at)
     end = _calendar(episode.closed_at if episode.closed_at is not None else as_of)
     pre = _select(all_obs, end_exclusive=opened)[-CONTEXT_REQUESTED_OBSERVATIONS:]

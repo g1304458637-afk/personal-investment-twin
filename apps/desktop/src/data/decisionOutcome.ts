@@ -16,8 +16,10 @@ export type CounterfactualFeasibility =
   | "unsupported_scenario";
 export type CounterfactualScenario =
   | "omit_event_until_next_decision_v1"
+  | "omit_event_until_next_decision_v2"
   | "omit_event_preserve_later_executions_v1"
   | "omit_decision_phase_until_next_decision_v1"
+  | "omit_decision_phase_until_next_decision_v2"
   | "existing_exit_evidence_reuse_v1";
 export type OutcomeComparisonStatus =
   | "complete"
@@ -137,6 +139,8 @@ export interface HistoricalCounterfactualView {
   analysisAsOf: string;
   decisionAt: string;
   evaluationEnd: string | null;
+  nextDecisionAt: string | null;
+  valuationObservationDate: string | null;
   intervention: { changedAction: string; changedExecutionRefs: string[] };
   heldConstant: string[];
   downstreamOrderPolicy: string;
@@ -358,6 +362,18 @@ export function adaptHistoricalCounterfactual(
   if (parsedComparison.status === "complete" && (!actualResult || !counterfactualResult)) {
     throw new Error("Decision Outcome complete counterfactual requires both backend results.");
   }
+  if (item.scenario_id === "omit_event_until_next_decision_v2" || item.scenario_id === "omit_decision_phase_until_next_decision_v2") {
+    if (item.scenario_version !== "2") throw new Error("Strict pre-decision scenario version mismatch.");
+    const next = nullableTimestamp(item.next_decision_at ?? null, `${name}.next_decision_at`);
+    const markDate = nullableTimestamp(item.valuation_observation_date ?? null, `${name}.valuation_observation_date`);
+    if (item.feasibility_status === "complete" && (!markDate || !actualResult || !counterfactualResult
+      || actualResult.valuationAt !== markDate || counterfactualResult.valuationAt !== markDate
+      || actualResult.valuationPrice !== counterfactualResult.valuationPrice)) {
+      throw new Error("Strict pre-decision results must share their declared observed valuation basis.");
+    }
+    // Calendar ownership remains backend-authoritative (canonical market_date may differ from UTC).
+    if (next && next !== item.evaluation_end) throw new Error("Strict pre-decision boundary mismatch.");
+  }
   return {
     counterfactualId: text(item.counterfactual_id, `${name}.counterfactual_id`),
     subjectId: context.subjectId,
@@ -367,8 +383,10 @@ export function adaptHistoricalCounterfactual(
     decisionEventId,
     scenarioId: enumValue(item.scenario_id, [
       "omit_event_until_next_decision_v1",
+      "omit_event_until_next_decision_v2",
       "omit_event_preserve_later_executions_v1",
       "omit_decision_phase_until_next_decision_v1",
+      "omit_decision_phase_until_next_decision_v2",
       "existing_exit_evidence_reuse_v1",
     ], `${name}.scenario_id`),
     scenarioVersion: text(item.scenario_version, `${name}.scenario_version`),
@@ -379,11 +397,21 @@ export function adaptHistoricalCounterfactual(
     analysisAsOf: timestamp(item.analysis_as_of, `${name}.analysis_as_of`),
     decisionAt: timestamp(item.decision_at, `${name}.decision_at`),
     evaluationEnd: nullableTimestamp(item.evaluation_end, `${name}.evaluation_end`),
+    nextDecisionAt: nullableTimestamp(item.next_decision_at ?? null, `${name}.next_decision_at`),
+    valuationObservationDate: nullableTimestamp(item.valuation_observation_date ?? null, `${name}.valuation_observation_date`),
     intervention: {
       changedAction: text(intervention.changed_action, `${name}.changed_action`),
       changedExecutionRefs: texts(intervention.changed_execution_refs, `${name}.changed_execution_refs`),
     },
-    heldConstant: texts(item.held_constant, `${name}.held_constant`),
+    heldConstant: [
+      ...texts(item.held_constant, `${name}.held_constant`),
+      ...(item.scenario_version === "2" ? [
+        `strict pre-decision prior daily market mark · ${item.valuation_observation_date ?? "unavailable"}`,
+        `next_decision_at · ${item.next_decision_at ?? "none"}`,
+        "The prior daily mark is not an intraday quote.",
+      ] : item.scenario_id === "omit_event_until_next_decision_v1" || item.scenario_id === "omit_decision_phase_until_next_decision_v1"
+        ? ["next-decision-session daily market mark"] : []),
+    ],
     downstreamOrderPolicy: text(item.downstream_order_policy, `${name}.downstream_order_policy`),
     priceBasis: text(item.price_basis, `${name}.price_basis`),
     frictionBasis: text(item.friction_basis, `${name}.friction_basis`),
@@ -510,6 +538,7 @@ export function selectPrimaryCounterfactuals(
     const candidates = items.filter((item) =>
       item.decisionEventId === decision.decisionId
       && item.scenarioId !== "omit_decision_phase_until_next_decision_v1"
+      && item.scenarioId !== "omit_decision_phase_until_next_decision_v2"
       && item.relationType !== "registered_baseline_comparison"
       && item.feasibilityStatus === "complete"
       && item.comparison.status === "complete"
@@ -518,13 +547,13 @@ export function selectPrimaryCounterfactuals(
     );
     const unique = new Map<string, HistoricalCounterfactualView>();
     for (const item of candidates) {
-      const key = JSON.stringify([item.actualResult?.pnl, item.counterfactualResult?.pnl,
+      const key = JSON.stringify([item.scenarioId, item.scenarioVersion, item.actualResult?.pnl, item.counterfactualResult?.pnl,
         item.comparison.pnlDifference, item.comparison.resultTransition]);
       if (!unique.has(key) || item.scenarioId === "omit_event_until_next_decision_v1") unique.set(key, item);
     }
     const primary = [...unique.values()].sort((left, right) =>
-      Number(right.scenarioId === "omit_event_until_next_decision_v1")
-      - Number(left.scenarioId === "omit_event_until_next_decision_v1"))[0];
+      Number(right.scenarioId === "omit_event_until_next_decision_v2") * 2 + Number(right.scenarioId === "omit_event_until_next_decision_v1")
+      - Number(left.scenarioId === "omit_event_until_next_decision_v2") * 2 - Number(left.scenarioId === "omit_event_until_next_decision_v1"))[0];
     if (primary && typeById.has(primary.decisionEventId)) chosen.push(primary);
   }
   return chosen;

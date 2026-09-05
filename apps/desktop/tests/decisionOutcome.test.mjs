@@ -20,6 +20,21 @@ function adapt(entry) {
   return adaptDecisionOutcomeStory(structuredClone(entry.outcome_story), context(entry));
 }
 
+test("strict v2 preserves prior observation metadata and rejects mixed valuation bases", () => {
+  const entry = generated.position_episode_demo.entries.find((item) => item.instrument.instrument_id === "600000.SH");
+  const story = adapt(entry);
+  const strict = story.counterfactuals.find((item) => item.scenarioId === "omit_event_until_next_decision_v2" && item.feasibilityStatus === "complete");
+  assert.ok(strict);
+  assert.equal(strict.scenarioVersion, "2");
+  assert.equal(strict.actualResult.valuationAt, strict.valuationObservationDate);
+  assert.equal(strict.counterfactualResult.valuationAt, strict.valuationObservationDate);
+  assert.ok(strict.heldConstant.some((item) => item.includes("not an intraday quote")));
+  const broken = structuredClone(entry);
+  const raw = broken.outcome_story.counterfactuals.find((item) => item.counterfactual_id === strict.counterfactualId);
+  raw.counterfactual_result.valuation_price += 1;
+  assert.throws(() => adapt(broken), /valuation basis/);
+});
+
 test("valid generated stories preserve Closed realized and Open marked Episode outcomes", () => {
   const closedEntry = generated.position_episode_demo.entries.find((item) => item.instrument.instrument_id === "600000.SH");
   const openEntry = generated.position_episode_demo.entries.find((item) => item.instrument.instrument_id === "SYN_PAPER_LOSS");
@@ -114,7 +129,10 @@ test("registered comparison transitions and backend differences are parsed uncha
   const entry = generated.position_episode_demo.entries.find((item) => item.instrument.instrument_id === "SYN_PAPER_LOSS");
   const complete = adapt(entry).counterfactuals.find((item) => item.comparison.resultTransition === "loss_reduced");
   assert.ok(complete);
-  assert.equal(complete.comparison.pnlDifference, 100);
+  assert.equal(complete.scenarioId, "omit_event_until_next_decision_v2");
+  const raw = entry.outcome_story.counterfactuals.find((item) => item.counterfactual_id === complete.counterfactualId);
+  assert.equal(complete.comparison.pnlDifference, raw.comparison.pnl_difference);
+  assert.equal(complete.comparison.pnlDifference, 50);
   assert.equal(complete.comparison.resultTransition, "loss_reduced");
 });
 

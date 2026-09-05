@@ -214,7 +214,7 @@ def _position_episode_story(
                     subject_id=subject_id,
                     account_id=account_id,
                     decision_event_id=decision.decision_event_id,
-                    scenario_id="omit_event_until_next_decision_v1",
+                    scenario_id="omit_event_until_next_decision_v2",
                     analysis_as_of=analysis_as_of,
                     init_cash=INITIAL_CASH,
                 )

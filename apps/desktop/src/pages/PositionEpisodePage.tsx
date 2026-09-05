@@ -158,7 +158,7 @@ function CounterfactualBlock({ item, scope = "event" }: { item: HistoricalCounte
   if (item.relationType === "registered_baseline_comparison") return null;
   if (item.comparison.status === "unavailable_result_basis_mismatch") return <StateNotice state="insufficient" compact title={t("Results use different accounting bases")} detail={t("The backend preserved both results but did not compare them.")} />;
   if (!item.actualResult || !item.counterfactualResult || item.comparison.status !== "complete") return null;
-  const local = item.scenarioId === "omit_event_until_next_decision_v1" || item.scenarioId === "omit_decision_phase_until_next_decision_v1";
+  const local = ["omit_event_until_next_decision_v1", "omit_decision_phase_until_next_decision_v1", "omit_event_until_next_decision_v2", "omit_decision_phase_until_next_decision_v2"].includes(item.scenarioId);
   return <div className="rounded-lg border border-accent/20 bg-accent/[0.045] p-4"><p className="text-[11px] font-medium uppercase tracking-[0.13em] text-accent">{t(scope === "phase" ? "If this scaling phase had been omitted" : "If this execution had been omitted")}</p><p className="mt-2 text-sm font-medium leading-6 text-foreground">{t(transitionKeys[item.comparison.resultTransition!])}</p><p className="mt-1 text-xs leading-5 text-muted">{t(scope === "phase" ? "This is one whole-phase replay, not the sum of single-event alternatives." : local ? "Measured through the next decision boundary on the recorded historical path." : "All later actual executions remain unchanged in this full-Episode historical path.")}</p><dl className="mt-3 grid grid-cols-3 gap-3 text-xs"><div><dt className="text-muted">{t("Actual")}</dt><dd className={cn("mt-1 font-mono text-sm", resultTone(item.actualResult.resultSign))}>{formatCurrency(item.actualResult.pnl)}</dd></div><div><dt className="text-muted">{t(scope === "phase" ? "Without this phase" : "Without this execution")}</dt><dd className={cn("mt-1 font-mono text-sm", resultTone(item.counterfactualResult.resultSign))}>{formatCurrency(item.counterfactualResult.pnl)}</dd></div><div><dt className="text-muted">{t("Difference · alternative − actual")}</dt><dd className="mt-1 font-mono text-sm text-foreground">{formatCurrency(item.comparison.pnlDifference!)}</dd></div></dl>{horizon ? <p className="mt-3 text-[11px] text-muted">{t("Evaluation horizon")}: {horizon}</p> : null}<details className="mt-3 border-t border-border/60 pt-3 text-xs text-muted"><summary className="cursor-pointer font-medium text-foreground">{t("Scenario assumptions and method")}</summary><ul className="mt-2 space-y-1.5 leading-5">{item.heldConstant.map((fact) => <li key={fact}>· {t(fact)}</li>)}</ul><p className="mt-2 break-all font-mono text-[10px]">{item.scenarioId}@{item.scenarioVersion} · {item.priceBasis} · {item.frictionBasis}</p></details></div>;
 }
 
@@ -225,7 +225,7 @@ export function PositionEpisodePage() {
   const emphasizedDecisionIds = selectedPhase?.decisionEventIds ?? selectedPattern?.decisionEventIds ?? [];
   const phaseCounterfactual = selectedPhase
     ? entry.pathAnalysis.phaseCounterfactuals.find((item) =>
-      item.scenarioId === "omit_decision_phase_until_next_decision_v1"
+      (item.scenarioId === "omit_decision_phase_until_next_decision_v2" || item.scenarioId === "omit_decision_phase_until_next_decision_v1")
       && item.decisionEventId === selectedPhase.decisionEventIds[0]) ?? null
     : null;
   const chartGroup = `episode-path-${episode.episodeId}`;

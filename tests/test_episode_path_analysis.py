@@ -11,7 +11,7 @@ from src.attribution.decision_outcome import (
 )
 from src.episodes.position_episode import build_position_episode_lifecycle
 from src.path.analysis import build_episode_path_analysis
-from src.path.counterfactual import PHASE_LOCAL_SCENARIO, evaluate_phase_full_counterfactual
+from src.path.counterfactual import PHASE_LOCAL_SCENARIO, evaluate_phase_full_counterfactual, evaluate_phase_local_counterfactual
 from src.path.market_path import CONTEXT_REQUESTED_OBSERVATIONS, context_status
 from src.path.phases import group_decision_phases
 
@@ -475,10 +475,10 @@ def test_phase_counterfactual_replays_whole_phase_not_sum():
         lifecycle, executions, prices, episode_id=lifecycle.episodes[0].episode_id, init_cash=CASH
     )
     scaling = next(item for item in analysis.phases if item.phase_type == "scaling_in")
-    phase_cf = next(
-        item
-        for item in analysis.phase_counterfactuals
-        if set(item.intervention.changed_execution_refs) == set(scaling.execution_ids)
+    # The historical v1 method stays explicitly reconstructible unchanged.
+    phase_cf = evaluate_phase_local_counterfactual(
+        lifecycle, executions, prices, episode=lifecycle.episodes[0], phase=scaling,
+        analysis_as_of=lifecycle.as_of, init_cash=CASH, scenario=PHASE_LOCAL_SCENARIO,
     )
     assert phase_cf.scenario_id == "omit_decision_phase_until_next_decision_v1"
     assert phase_cf.feasibility_status == "complete"

@@ -23,17 +23,18 @@ def test_product_demo_primary_episode_has_a_mature_unsmoothed_daily_path():
     assert {item["segment"] for item in entry["price_points"]} >= {
         "pre_entry",
         "episode",
-        "post_exit",
     }
     phases = [item["phase_type"] for item in entry["path_analysis"]["phases"]]
     assert phases == ["entry", "scaling_in", "scaling_out", "exit"]
     assert 3 <= len(entry["path_analysis"]["presentation_items"]) <= 6
     assert any(
-        item["scenario_id"] == "omit_decision_phase_until_next_decision_v1"
+        item["scenario_id"] == "omit_decision_phase_until_next_decision_v2"
         for item in entry["path_analysis"]["phase_counterfactuals"]
     )
     assert entry["instrument"]["is_synthetic"] is True
     dates = [item["observed_at"][:10] for item in entry["price_points"]]
+    assert all(date <= entry["outcome_story"]["episode_outcome"]["analysis_as_of"][:10] for date in dates)
+    assert not any(item["segment"] == "post_exit" for item in entry["price_points"])
     assert len(set(dates)) == len(dates)
     assert 60 <= len(set(dates)) <= 100
     prices = [item["price"] for item in entry["price_points"]]
@@ -101,7 +102,7 @@ def test_episode_story_exports_registered_feasible_and_fail_closed_scenarios():
     selected = _entries()["600000.SH"]["outcome_story"]["counterfactuals"]
 
     assert any(
-        item["scenario_id"] == "omit_event_until_next_decision_v1"
+        item["scenario_id"] == "omit_event_until_next_decision_v2"
         and item["feasibility_status"] == "complete"
         for item in selected
     )
