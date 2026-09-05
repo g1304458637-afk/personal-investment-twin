@@ -30,3 +30,9 @@ export function comparisonHighlight(view: CompareView, id: string | null) {
   const f = view.differences.find((x) => x.id === id);
   return f ? { start: f.start, end: f.end, aRefs: f.aRefs, bRefs: f.bRefs } : null;
 }
+
+/** Visual offsets only; same-time execution timestamps and ordering stay exact. */
+export function executionLaneOffset(decisions: CompareDecision[], index: number): number {
+  const peers = decisions.map((d, i) => ({ d, i })).filter(({ d }) => d.at === decisions[index].at);
+  return peers.length <= 1 ? 0 : -12 + 24 * peers.findIndex(({ i }) => i === index) / (peers.length - 1);
+}

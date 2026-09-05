@@ -170,10 +170,19 @@ def compare_same_stock(a: EpisodeCompareFacts, b: EpisodeCompareFacts) -> SameSt
         fatal = True
     for f in (a, b):
         e, o = f.episode, f.outcome
+        scope = (e.subject_id, e.account_id, e.episode_id, e.instrument_id)
+        market = f.path.market_path
         if ((e.subject_id, e.account_id, e.episode_id, e.instrument_id)
                 != (o.subject_id, o.account_id, o.episode_id, o.instrument_id)
                 or e.instrument_id != f.instrument.instrument_id or o.analysis_as_of != f.as_of
-                or any(d.event_time > f.as_of for d in f.decisions)):
+                or f.path.episode_id != e.episode_id
+                or (market.subject_id, market.account_id, market.episode_id, market.instrument_id) != scope
+                or tuple(d.decision_event_id for d in f.decisions) != e.decision_refs
+                or tuple(d.execution_id for d in f.decisions) != e.execution_refs
+                or any((d.subject_id, d.account_id, d.episode_id, d.instrument_id) != scope
+                       or d.event_time > f.as_of or d.episode_result_ref != o.outcome_id for d in f.decisions)
+                or any(p.instrument_id != e.instrument_id or p.observed_at > f.as_of.normalize()
+                       for p in market.episode_market_path.observations)):
             reasons.append("生命周期、结果或时间归属不一致")
             fatal = True
     start = max(a.episode.opened_at, b.episode.opened_at)
@@ -209,8 +218,20 @@ def compare_same_stock(a: EpisodeCompareFacts, b: EpisodeCompareFacts) -> SameSt
     if not fatal:
         # Counts describe canonical decisions only. Zero denotes checked absence
         # in this window; no raw-share cross-account risk comparison is made.
-        for kind in ("open_position", "add_position", "reduce_position", "close_position"):
-            selected = [tuple(d for d in f.decisions if d.event_type == kind and start <= d.event_time <= end)
+        predicates = {kind: (lambda d, kind=kind: d.event_type == kind) for kind in
+                      ("open_position", "add_position", "reduce_position", "close_position")}
+        predicates["cost_raising_additions"] = lambda d: (
+            d.event_type == "add_position" and d.before.average_cost is not None
+            and d.after.average_cost is not None and d.after.average_cost > d.before.average_cost)
+        # Only compare pre-trough actions when BOTH authoritative Path records
+        # identify the exact same recorded trough. No new drawdown calculation.
+        troughs = [f.path.market_path.daily_price_peak_drawdown for f in (a, b)]
+        if all(troughs) and troughs[0].trough_observation == troughs[1].trough_observation:
+            trough_date = troughs[0].trough_observation.observed_at
+            predicates["reductions_before_recorded_trough"] = lambda d: (
+                d.event_type == "reduce_position" and d.event_time.normalize() < trough_date)
+        for kind, matches in predicates.items():
+            selected = [tuple(d for d in f.decisions if matches(d) and start <= d.event_time <= end)
                         for f in (a, b)]
             left, right = selected
             if len(left) == len(right):

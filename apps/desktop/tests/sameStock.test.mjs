@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { adaptSameStock, comparisonHighlight } from "../src/data/sameStock.ts";
+import { adaptSameStock, comparisonHighlight, executionLaneOffset } from "../src/data/sameStock.ts";
 const raw = JSON.parse(await readFile(new URL("../src/generated/backend-demo-evidence.json", import.meta.url), "utf8")).same_stock_compare_demo;
 
 test("same-stock view copies authoritative results, fees and dates without arithmetic", () => {
@@ -34,4 +34,10 @@ test("normalization is copied from backend and never a relative risk calculation
   const v = adaptSameStock(raw);
   assert.deepEqual(v.a.shape.map((p) => p.value), raw.a_position_shape.map((p) => p.normalized_quantity));
   assert.deepEqual(v.b.shape.map((p) => p.quantity), raw.b_position_shape.map((p) => p.quantity));
+});
+test("same-time markers separate visually without changing timestamp or canonical sequence", () => {
+  const decisions = [{ id: "first", at: "2025-01-06T10:00:00" }, { id: "second", at: "2025-01-06T10:00:00" }];
+  const before = structuredClone(decisions);
+  assert.notEqual(executionLaneOffset(decisions, 0), executionLaneOffset(decisions, 1));
+  assert.deepEqual(decisions, before);
 });

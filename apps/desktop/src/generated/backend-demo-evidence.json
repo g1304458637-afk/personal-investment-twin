@@ -58731,6 +58731,75 @@
         ],
         "window_end": "2025-01-17T10:00:00",
         "window_start": "2025-01-02T10:00:00"
+      },
+      {
+        "a_decision_refs": [
+          "de_50b8a3de906f82ce09966d6c886d7f2734d62e5c1275a065f18333b404f0d993",
+          "de_de154253848cf01354dab35109f249280a38557ca7f60354d928f582137a0f02"
+        ],
+        "a_value": 2,
+        "b_decision_refs": [
+          "de_30e6d4ac35ab5e7b776258b449ab6bdff98bcae664a990689fcb5e663bff2fe7"
+        ],
+        "b_value": 1,
+        "dimension": "cost_raising_additions",
+        "fact_id": "difference_6c9428f7865e225e5bacb4271d3555178981aa580d2397b88bfd5b08bc69e55f",
+        "fact_refs": [
+          "eo_f47770bcffdf282e4e61adbafc0f456bb719e0fb8f898b8506b824ac79def72b",
+          "eo_325c03b8d793d7c1edf23c35eb6dc0bf4c5a57521b159d708cc282134af6139a",
+          "do_c2fae39f3f4ccfce62c217f712238a3586fdca9c352e4adb56580eb0d7d858fe",
+          "do_705300b676c4fadff31887f6a707439324fd53218ab5d80d26f3a352be08c0e7",
+          "do_aa890d24b9cff1824afc26b9ddae9bc85002bc121cefdd62996b7667162c8c7e"
+        ],
+        "interpretation_boundary": "仅陈述共同时间范围内的操作次数；不解释意图、优劣或收益归因份额。",
+        "market_observation_refs": [
+          "market_88e334dcf576e81cf0a7ac013bc8ae900f329c8f0cb14fd551ffbded0f0bef29",
+          "market_dcd8a1686166283dc3fea67180b30879d2210d316f3306355b547153c92d72f3",
+          "market_e1b4ab264e881fc106be16c763f5b52aba365a95d48bdd3ad30ab772f89dca51",
+          "market_fb50945b772607eacaa7e064bb72b3b062fa17fb136fe750b155aaf185da0dc6",
+          "market_79590e5fb3e20e62ac5d2884234c473820f8f4fd72c3f28d4dc7e46f1fd549fa",
+          "market_d04ff4e09bd84201470e7bd5c3d4d4de8a6b7ae523635a63d1af5a1cd2e3a8fb",
+          "market_e3b6d01b8e9754857c48ea5d4cb02634f71d3b5b072c64abca4463cd14c08234",
+          "market_ec0773ffa44c63e2de6389d9d4ebac05e83ef42ceef689e332d68a5dc76a7b43",
+          "market_e7b0ea4708d04bdbb894a291f85d699979254739b4a8cb4dbb87075174977f13",
+          "market_8be234195330da46769e3a7b7aace8da246d661a5f702f6d1dc562ebebbe593c",
+          "market_d048ab8ccaa05ec9f8c158a6cdbb366509f5247b8e1297c840a8f0fa26020b0f",
+          "market_06c3b5cd49ca198c9221696932df590e2d2e5c0cca67d6b0fdf8bee90442b1c2"
+        ],
+        "window_end": "2025-01-17T10:00:00",
+        "window_start": "2025-01-02T10:00:00"
+      },
+      {
+        "a_decision_refs": [],
+        "a_value": 0,
+        "b_decision_refs": [
+          "de_63a8f28936843925cc12db395334edfb7e8533fc077ac13ad5a8c40731b5c386"
+        ],
+        "b_value": 1,
+        "dimension": "reductions_before_recorded_trough",
+        "fact_id": "difference_821b04e377e8e5e74feee1f5bea2b6637e68b94151e976ce356d3de84d514424",
+        "fact_refs": [
+          "eo_f47770bcffdf282e4e61adbafc0f456bb719e0fb8f898b8506b824ac79def72b",
+          "eo_325c03b8d793d7c1edf23c35eb6dc0bf4c5a57521b159d708cc282134af6139a",
+          "do_9277bbbf0aabe9290680a09f6fd5080c5de6cce999729f8c0d4f2eb37e402d72"
+        ],
+        "interpretation_boundary": "仅陈述共同时间范围内的操作次数；不解释意图、优劣或收益归因份额。",
+        "market_observation_refs": [
+          "market_88e334dcf576e81cf0a7ac013bc8ae900f329c8f0cb14fd551ffbded0f0bef29",
+          "market_dcd8a1686166283dc3fea67180b30879d2210d316f3306355b547153c92d72f3",
+          "market_e1b4ab264e881fc106be16c763f5b52aba365a95d48bdd3ad30ab772f89dca51",
+          "market_fb50945b772607eacaa7e064bb72b3b062fa17fb136fe750b155aaf185da0dc6",
+          "market_79590e5fb3e20e62ac5d2884234c473820f8f4fd72c3f28d4dc7e46f1fd549fa",
+          "market_d04ff4e09bd84201470e7bd5c3d4d4de8a6b7ae523635a63d1af5a1cd2e3a8fb",
+          "market_e3b6d01b8e9754857c48ea5d4cb02634f71d3b5b072c64abca4463cd14c08234",
+          "market_ec0773ffa44c63e2de6389d9d4ebac05e83ef42ceef689e332d68a5dc76a7b43",
+          "market_e7b0ea4708d04bdbb894a291f85d699979254739b4a8cb4dbb87075174977f13",
+          "market_8be234195330da46769e3a7b7aace8da246d661a5f702f6d1dc562ebebbe593c",
+          "market_d048ab8ccaa05ec9f8c158a6cdbb366509f5247b8e1297c840a8f0fa26020b0f",
+          "market_06c3b5cd49ca198c9221696932df590e2d2e5c0cca67d6b0fdf8bee90442b1c2"
+        ],
+        "window_end": "2025-01-17T10:00:00",
+        "window_start": "2025-01-02T10:00:00"
       }
     ],
     "limitations": [

@@ -1,4 +1,5 @@
 import { formatCurrencyValue } from "@/lib/format";
+import { DecisionAnalysisWorkspace } from "@/components/review/DecisionAnalysisWorkspace";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -256,6 +257,8 @@ export function PositionEpisodePage() {
       <PositionEpisodeTimeline entry={chartEntry} selectedDecisionId={selectedDecisionId} emphasizedDecisionIds={selectedFact?.decisionIds} highlightStart={selectedFact?.startAt} highlightEnd={selectedFact?.endAt} chartGroup={chartGroup} timeNavigation={timeNavigation} onSelectDecision={setSelectedDecisionId} className="h-[280px] w-full" />
       <div data-quantity-path className="border-t border-border/60 pt-2"><h2 className="mb-1 text-xs text-muted">{t("Position quantity")}</h2><PositionQuantityTimeline entry={chartEntry} selectedDecisionId={selectedDecisionId} emphasizedDecisionIds={selectedFact?.decisionIds} highlightStart={selectedFact?.startAt} highlightEnd={selectedFact?.endAt} chartGroup={chartGroup} timeNavigation={timeNavigation} onSelectDecision={setSelectedDecisionId} className="h-[140px] w-full" /></div>
     </section>
+
+    {data.mode === "real_user" && episode.accountId ? <DecisionAnalysisWorkspace key={episode.episodeId} scope={{ subject_id: episode.subjectId, account_id: episode.accountId, episode_id: episode.episodeId, data_mode: "real_user" }} onDecision={setSelectedDecisionId} /> : null}
 
     {review?.facts.length ? <section data-review-facts className="mt-6">
       <h2 className="text-base font-semibold">{t("Facts worth revisiting")}</h2>

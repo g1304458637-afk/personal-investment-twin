@@ -140,7 +140,11 @@ def test_future_facts_do_not_change_past():
 
 
 def test_differences_resolve_to_both_scopes_and_market(pair):
-    assert {d.dimension for d in pair.differences} == {"add_position", "reduce_position"}
+    assert {d.dimension for d in pair.differences} == {"add_position", "reduce_position",
+        "cost_raising_additions", "reductions_before_recorded_trough"}
+    values = {d.dimension: (d.a_value, d.b_value) for d in pair.differences}
+    assert values["cost_raising_additions"] == (2, 1)
+    assert values["reductions_before_recorded_trough"] == (0, 1)
     for fact in pair.differences:
         assert fact.a_decision_refs or fact.b_decision_refs
         assert pair.a.outcome.outcome_id in fact.fact_refs
@@ -148,3 +152,20 @@ def test_differences_resolve_to_both_scopes_and_market(pair):
         assert fact.market_observation_refs
         assert set(fact.a_decision_refs) <= set(pair.a.episode.decision_refs)
         assert set(fact.b_decision_refs) <= set(pair.b.episode.decision_refs)
+
+
+@pytest.mark.parametrize("invalid", ["decision_owner", "missing_decision", "future_market", "wrong_path"])
+def test_received_derived_projection_must_be_internally_scoped(pair, invalid):
+    facts = pair.b
+    if invalid == "decision_owner":
+        facts = replace(facts, decisions=(replace(facts.decisions[0], account_id="OTHER"), *facts.decisions[1:]))
+    elif invalid == "missing_decision":
+        facts = replace(facts, decisions=facts.decisions[1:])
+    elif invalid == "future_market":
+        market = facts.path.market_path
+        series = market.episode_market_path
+        series = replace(series, observations=(*series.observations, replace(series.observations[-1], observed_at=AS_OF + pd.Timedelta(days=1))))
+        facts = replace(facts, path=replace(facts.path, market_path=replace(market, episode_market_path=series)))
+    else:
+        facts = replace(facts, path=replace(facts.path, episode_id="OTHER"))
+    assert compare_same_stock(pair.a, facts).status == "unavailable"
