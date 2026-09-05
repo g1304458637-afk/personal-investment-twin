@@ -440,8 +440,8 @@ test("Episode UI uses backend facts and labels current valuation as not an exit"
 
   assert.equal(page.includes("@/demo/fixture"), false);
   assert.equal(page.includes("dangerouslySetInnerHTML"), false);
-  assert.match(page, /outcome\.before\.quantity/);
-  assert.match(page, /outcome\.after\.quantity/);
+  assert.match(page, /state=\{decision\.stateBefore\}/);
+  assert.match(page, /state=\{decision\.stateAfter\}/);
   assert.match(chart, /seriesId !== "decision-events"/);
   assert.match(chart, /silent: true/);
   assert.match(chinese, /"Open position": "建仓"/);

@@ -74,6 +74,7 @@ from src.episodes.position_episode import (  # noqa: E402
     build_position_episode_lifecycle,
 )
 from src.path.analysis import build_episode_path_analysis  # noqa: E402
+from src.presentation.episode_review import review_presentation  # noqa: E402
 from src.history.metric_series import (  # noqa: E402
     build_portfolio_hhi_history_with_records,
     build_turnover_history,
@@ -354,6 +355,7 @@ def _position_episode_entry(
         "evidence_references": evidence_references,
         "price_points": price_points,
         "path_analysis": analysis,
+        "review_presentation": review_presentation(lifecycle, analysis),
         "outcome_story": outcome_story,
     }
 

@@ -7,6 +7,7 @@
 .archive-row { border-bottom: 1px solid hsl(var(--border)); padding: 20px 8px; }
 .archive-row:hover { background: hsl(var(--accent) / .04); }
 .archive-row:focus-visible { outline: 2px solid hsl(var(--accent)); outline-offset: -2px; }
+.page.investments-page { gap: 0; }
 @media (max-width: 1000px) { .archive-column-head, .archive-row { grid-template-columns: minmax(130px, .8fr) minmax(160px, 1fr) minmax(220px, 1.2fr); gap: 12px; } }
 @media (max-width: 760px) { .archive-column-head { display: none; } .archive-row { grid-template-columns: 1fr; gap: 8px; } }
 

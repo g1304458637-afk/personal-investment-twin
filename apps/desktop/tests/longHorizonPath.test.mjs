@@ -49,7 +49,7 @@ test("long-horizon copy stays neutral and bilingual", async () => {
   const page = await readFile(new URL("../src/pages/PositionEpisodePage.tsx", import.meta.url), "utf8");
   const zh = await readFile(new URL("../src/locales/zh-CN.ts", import.meta.url), "utf8");
   const en = await readFile(new URL("../src/locales/en-US.ts", import.meta.url), "utf8");
-  assert.match(page, /data-path-summary/);
+  assert.match(page, /data-review-story/);
   assert.match(page, /long_no_execution_interval/);
   assert.doesNotMatch(page, /1000 observation|map\(\(obs/);
   assert.match(zh, /此后 \{count\} 个日历日没有新增交易记录/);

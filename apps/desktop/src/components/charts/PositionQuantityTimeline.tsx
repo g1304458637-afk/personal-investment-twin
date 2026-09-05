@@ -27,8 +27,10 @@ export function PositionQuantityTimeline({
   chartGroup,
   timeNavigation,
   onSelectDecision,
+  className = "h-[190px] w-full",
 }: {
   entry: PositionEpisodeEntryView;
+  className?: string;
   selectedDecisionId: string | null;
   emphasizedDecisionIds?: string[];
   highlightStart?: string | null;
@@ -148,7 +150,7 @@ export function PositionQuantityTimeline({
       timeNavigation={timeNavigation}
       observationTimes={uniqueDailyObservationTimes(entry.pricePoints.map((point) => point.observedAt))}
       label={t("Position quantity evolution for {symbol}", { symbol: entry.episode.instrumentId })}
-      className="h-[190px] w-full"
+      className={className}
       onChartClick={onClick}
     />
   );

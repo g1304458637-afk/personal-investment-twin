@@ -12,6 +12,7 @@ import pandas as pd
 from src.attribution.decision_outcome import build_actual_outcomes, evaluate_historical_counterfactual
 from src.episodes.position_episode import PositionEpisodeLifecycle
 from src.path.analysis import build_episode_path_analysis
+from src.presentation.episode_review import review_presentation
 
 
 def json_value(value: Any) -> Any:
@@ -76,6 +77,7 @@ def episode_entry(lifecycle: PositionEpisodeLifecycle, executions: pd.DataFrame,
         "episode": episode, "snapshot": snapshot, "decisions": decisions,
         "states_by_ref": states, "evidence_references": refs, "price_points": display,
         "path_analysis": analysis,
+        "review_presentation": review_presentation(lifecycle, analysis),
         "outcome_story": {"episode_outcome": episode_outcome, "decision_outcomes": outcomes,
                           "counterfactuals": tuple(counterfactuals), "exit_followup": None},
     }

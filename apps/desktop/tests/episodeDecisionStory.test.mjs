@@ -84,19 +84,16 @@ test("Episode Story keeps path-first structure and Decision drilldown", async ()
   assert.match(page, /decision\.outcome\.immediateResult/);
   assert.match(page, /Position quantity \{before\} → \{after\}/);
   assert.match(page, /type="button"/);
-  assert.match(page, /aria-expanded/);
   assert.match(page, /data-decision-event-id/);
   assert.match(page, /scrollIntoView/);
   assert.match(page, /selectedDecisionId=\{selectedDecisionId\}/);
-  assert.match(page, /selectPrimaryPathItems/);
-  assert.match(page, /showPreEntryContext/);
-  assert.match(page, /data-path-section/);
   assert.match(page, /data-selected-phase/);
-  assert.match(page, /data-phase-counterfactual/);
+  assert.match(page, /entry\.reviewPresentation/);
+  assert.match(page, /data-review-facts/);
+  assert.match(page, /<details data-all-executions/);
+  assert.ok(page.indexOf("data-price-path") < page.indexOf("data-review-facts"));
   assert.match(page, /omit_decision_phase_until_next_decision_v1/);
   assert.match(page, /After the previous decision, the recorded market path rose \{percent\}, then an add occurred\./);
-  assert.match(page, /data-path-summary/);
-  assert.match(page, /These 3–6 items are selected by the backend/);
   assert.doesNotMatch(page, /追涨|抄底|fear|greed|FOMO|VWAP|groupDecision|耐心|死扛|坚定持有/i);
   assert.doesNotMatch(page, /Math\.(abs|pow)|\.reduce\s*\(/);
   assert.match(echart, /MarkAreaComponent/);
@@ -154,7 +151,6 @@ test("zh-CN and en-US include deterministic Story wording and avoid advice", asy
 test("responsive Story layout avoids fixed page widths and keeps technical IDs secondary", async () => {
   const page = await readFile(new URL("../src/pages/PositionEpisodePage.tsx", import.meta.url), "utf8");
   assert.match(page, /sm:grid-cols/);
-  assert.match(page, /lg:grid-cols/);
   assert.match(page, /w-\[min\(96vw,680px\)\]/);
   assert.doesNotMatch(page, /min-w-\[(?:8|9|1\d)\d\dpx\]/);
   assert.match(page, /entry\.outcomeStory\.episodeOutcome/);

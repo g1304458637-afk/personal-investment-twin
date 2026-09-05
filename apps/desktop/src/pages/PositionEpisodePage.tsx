@@ -1,5 +1,5 @@
 import { formatCurrencyValue } from "@/lib/format";
-import { ArrowLeft, ArrowRight, CircleDot, Database, Hash } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
@@ -7,29 +7,23 @@ import { PositionEpisodeTimeline } from "@/components/charts/PositionEpisodeTime
 import { PositionQuantityTimeline } from "@/components/charts/PositionQuantityTimeline";
 import { uniqueDailyObservationTimes } from "@/components/charts/dailyTimeAxis";
 import { useDailyTimeNavigation } from "@/components/charts/useDailyTimeNavigation";
-import { GlassPanel } from "@/components/common/GlassPanel";
-import { PageHeader, SectionHeading } from "@/components/common/PageHeader";
 import { StateNotice } from "@/components/common/StateNotice";
-import { DemoBadge, StatusBadge } from "@/components/common/StatusBadge";
+import { StatusBadge } from "@/components/common/StatusBadge";
 import { EvidenceExplainButton } from "@/components/evidence/EvidenceInspector";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
-import { explainabilityForEvidence, getPositionEpisodeById, positionEpisodeDemo } from "@/data/backendEvidence";
+import { explainabilityForEvidence, getPositionEpisodeById } from "@/data/backendEvidence";
 import { belongsToExample } from "@/data/accountContext";
 import { useDataMode } from "@/data/DataModeProvider";
 import { realUserApi } from "@/data/runtimeService";
 import { selectPrimaryCounterfactuals, type HistoricalCounterfactualView, type OutcomeResultSign, type OutcomeResultView, type OutcomeTransition } from "@/data/decisionOutcome";
-import { adaptRuntimePositionEpisodeEntry, selectPrimaryPathItems, type DecisionPhaseView, type EpisodePatternObservationView, type PathPresentationItemView, type PositionDecisionType, type PositionDecisionView, type PositionEpisodeEntryView, type PositionEvidenceReferenceView, type PositionStateView } from "@/data/positionEpisode";
+import { adaptRuntimePositionEpisodeEntry, type DecisionPhaseView, type EpisodePatternObservationView, type PathPresentationItemView, type PositionDecisionType, type PositionDecisionView, type PositionEpisodeEntryView, type PositionEvidenceReferenceView, type PositionStateView } from "@/data/positionEpisode";
 import { CurrencyProvider, useLocale } from "@/locales/LocaleProvider";
 import { cn } from "@/lib/utils";
 
 function DecisionName({ type }: { type: PositionDecisionType }) {
   const { t } = useLocale();
   return <>{{ open_position: t("Open position"), add_position: t("Add position"), reduce_position: t("Reduce position"), close_position: t("Close position / final sale") }[type]}</>;
-}
-
-function contextStatusLabel(status: "complete" | "partial" | "insufficient", t: (key: string) => string) {
-  return t(status === "complete" ? "Context complete" : status === "partial" ? "Context partial" : "Context insufficient");
 }
 
 function numericFact(facts: Record<string, unknown>, key: string): number | null {
@@ -50,6 +44,7 @@ function pathItemCopy(
   formatPercent: (value: number, digits?: number) => string,
   formatNumber: (value: number, digits?: number) => string,
 ): { title: string; detail: string } {
+  const optionalNumber = (value: number | null) => value === null ? "—" : formatNumber(value, 0);
   const phase = item.phaseId ? phases.find((candidate) => candidate.phaseId === item.phaseId) : undefined;
   const pattern = item.patternId ? patterns.find((candidate) => candidate.patternId === item.patternId) : undefined;
   if (pattern?.patternCode === "add_after_positive_market_move") {
@@ -80,10 +75,10 @@ function pathItemCopy(
     };
   }
   if (pattern?.patternCode === "consecutive_scaling_in") {
-    return { title: t("Consecutive scaling in"), detail: t("Two or more consecutive adds are grouped as one scaling-in phase. Each fill remains a separate execution.") };
+    return { title: t("Consecutive scaling in"), detail: t("{count} additions changed quantity from {before} to {after}.", { count: numericFact(pattern.facts, "decision_count") ?? "—", before: optionalNumber(numericFact(pattern.facts, "quantity_before")), after: optionalNumber(numericFact(pattern.facts, "quantity_after")) }) };
   }
   if (pattern?.patternCode === "consecutive_scaling_out") {
-    return { title: t("Consecutive scaling out"), detail: t("Two or more consecutive reduces are grouped as one scaling-out phase. Close stays a separate exit phase.") };
+    return { title: t("Consecutive scaling out"), detail: t("{count} reductions changed quantity from {before} to {after}.", { count: numericFact(pattern.facts, "decision_count") ?? "—", before: optionalNumber(numericFact(pattern.facts, "quantity_before")), after: optionalNumber(numericFact(pattern.facts, "quantity_after")) }) };
   }
   if (pattern?.patternCode === "price_following_scale_sequence") {
     return { title: t("Scaling sequence aligned with the recorded price path"), detail: t("This episode recorded an add after a rising market path, then a later reduce or exit after a falling market path.") };
@@ -93,7 +88,7 @@ function pathItemCopy(
     const status = textFact(pattern.facts, "quantity_at_trough_status");
     const maxQty = numericFact(pattern.facts, "episode_max_quantity");
     const detail = status === "available" && qty !== null
-      ? t("At the daily price-path trough, recorded quantity was {quantity}. Episode maximum quantity was {maxQuantity}.", { quantity: formatNumber(qty, 0), maxQuantity: formatNumber(maxQty ?? 0, 0) })
+      ? t("At the daily price-path trough, recorded quantity was {quantity}. Episode maximum quantity was {maxQuantity}.", { quantity: formatNumber(qty, 0), maxQuantity: optionalNumber(maxQty) })
       : t("The daily price-path trough falls on a date where quantity cannot be assigned without guessing same-day order.");
     return { title: t("Recorded quantity during the daily price peak-to-trough path"), detail };
   }
@@ -163,7 +158,7 @@ function CounterfactualBlock({ item, scope = "event" }: { item: HistoricalCounte
   if (item.comparison.status === "unavailable_result_basis_mismatch") return <StateNotice state="insufficient" compact title={t("Results use different accounting bases")} detail={t("The backend preserved both results but did not compare them.")} />;
   if (!item.actualResult || !item.counterfactualResult || item.comparison.status !== "complete") return null;
   const local = ["omit_event_until_next_decision_v1", "omit_decision_phase_until_next_decision_v1", "omit_event_until_next_decision_v2", "omit_decision_phase_until_next_decision_v2"].includes(item.scenarioId);
-  return <div className="rounded-lg border border-accent/20 bg-accent/[0.045] p-4"><p className="text-[11px] font-medium uppercase tracking-[0.13em] text-accent">{t(scope === "phase" ? "If this scaling phase had been omitted" : "If this execution had been omitted")}</p><p className="mt-2 text-sm font-medium leading-6 text-foreground">{t(transitionKeys[item.comparison.resultTransition!])}</p><p className="mt-1 text-xs leading-5 text-muted">{t(scope === "phase" ? "This is one whole-phase replay, not the sum of single-event alternatives." : local ? "Measured through the next decision boundary on the recorded historical path." : "All later actual executions remain unchanged in this full-Episode historical path.")}</p><dl className="mt-3 grid grid-cols-3 gap-3 text-xs"><div><dt className="text-muted">{t("Actual")}</dt><dd className={cn("mt-1 font-mono text-sm", resultTone(item.actualResult.resultSign))}>{formatCurrency(item.actualResult.pnl)}</dd></div><div><dt className="text-muted">{t(scope === "phase" ? "Without this phase" : "Without this execution")}</dt><dd className={cn("mt-1 font-mono text-sm", resultTone(item.counterfactualResult.resultSign))}>{formatCurrency(item.counterfactualResult.pnl)}</dd></div><div><dt className="text-muted">{t("Difference · alternative − actual")}</dt><dd className="mt-1 font-mono text-sm text-foreground">{formatCurrency(item.comparison.pnlDifference!)}</dd></div></dl>{horizon ? <p className="mt-3 text-[11px] text-muted">{t("Evaluation horizon")}: {horizon}</p> : null}<details className="mt-3 border-t border-border/60 pt-3 text-xs text-muted"><summary className="cursor-pointer font-medium text-foreground">{t("Scenario assumptions and method")}</summary><ul className="mt-2 space-y-1.5 leading-5">{item.heldConstant.map((fact) => <li key={fact}>· {t(fact)}</li>)}</ul><p className="mt-2 break-all font-mono text-[10px]">{item.scenarioId}@{item.scenarioVersion} · {item.priceBasis} · {item.frictionBasis}</p></details></div>;
+  return <div className="rounded-lg border border-accent/20 bg-accent/[0.045] p-4"><p className="text-[11px] font-medium uppercase tracking-[0.13em] text-accent">{t(scope === "phase" ? "If this scaling phase had been omitted" : "If this execution had been omitted")}</p><p className="mt-2 text-sm font-medium leading-6 text-foreground">{t(transitionKeys[item.comparison.resultTransition!])}</p><p className="mt-1 text-xs leading-5 text-muted">{t(scope === "phase" ? "This is one whole-phase replay, not the sum of single-event alternatives." : local ? "Measured through the next decision boundary on the recorded historical path." : "All later actual executions remain unchanged in this full-Episode historical path.")}</p><dl className="mt-3 grid grid-cols-3 gap-3 text-xs"><div><dt className="text-muted">{t("Actual")}</dt><dd className={cn("mt-1 font-mono text-sm", resultTone(item.actualResult.resultSign))}>{formatCurrency(item.actualResult.pnl)}</dd></div><div><dt className="text-muted">{t(scope === "phase" ? "Without this phase" : "Without this execution")}</dt><dd className={cn("mt-1 font-mono text-sm", resultTone(item.counterfactualResult.resultSign))}>{formatCurrency(item.counterfactualResult.pnl)}</dd></div><div><dt className="text-muted">{t("Difference · alternative − actual")}</dt><dd className="mt-1 font-mono text-sm text-foreground">{formatCurrency(item.comparison.pnlDifference!)}</dd></div></dl><p className="mt-3 text-xs text-warning">{t("This is the result for this comparison window, not the final result of the investment.")}</p>{item.nextDecisionAt ? <p className="mt-2 text-xs text-muted">{t("Next decision")}: {item.nextDecisionAt}</p> : null}{item.valuationObservationDate ? <p className="mt-1 text-xs text-muted">{t("Valuation observation")}: {item.valuationObservationDate} · {t("A daily market mark, not an intraday execution price.")}</p> : null}{horizon ? <p className="mt-3 text-[11px] text-muted">{t("Evaluation horizon")}: {horizon}</p> : null}<details className="mt-3 border-t border-border/60 pt-3 text-xs text-muted"><summary className="cursor-pointer font-medium text-foreground">{t("Scenario assumptions and method")}</summary><ul className="mt-2 space-y-1.5 leading-5">{item.heldConstant.map((fact) => <li key={fact}>· {t(fact)}</li>)}</ul><p className="mt-2 break-all font-mono text-[10px]">{item.scenarioId}@{item.scenarioVersion} · {item.priceBasis} · {item.frictionBasis}</p></details></div>;
 }
 
 function ExitFollowup({ entry }: { entry: PositionEpisodeEntryView }) {
@@ -192,13 +187,14 @@ export function PositionEpisodePage() {
   const [runtimeEntry, setRuntimeEntry] = useState<PositionEpisodeEntryView | null>(null);
   const [runtimeError, setRuntimeError] = useState<string | null>(null);
   const demoEntry = episodeId ? getPositionEpisodeById(episodeId) : null;
-  const entry = data.mode === "demo" ? (demoEntry && belongsToExample(demoEntry, data.exampleAccount) ? demoEntry : null) : runtimeEntry?.episode.episodeId === episodeId && runtimeEntry?.episode.subjectId === data.activeAccount?.subject_id && runtimeEntry?.episode.accountId === data.activeAccount?.account_id ? runtimeEntry : null;
+  const entry = data.mode === "demo" ? (demoEntry && belongsToExample(demoEntry, data.exampleAccount) ? demoEntry : null)
+    : runtimeEntry?.episode.episodeId === episodeId && runtimeEntry?.episode.subjectId === data.activeAccount?.subject_id && runtimeEntry?.episode.accountId === data.activeAccount?.account_id ? runtimeEntry : null;
   const [selectedDecisionId, setSelectedDecisionId] = useState<string | null>(null);
   const [selectedPathItemId, setSelectedPathItemId] = useState<string | null>(null);
-  const rowRefs = useRef(new Map<string, HTMLButtonElement>());
-  const formatCurrency = (value: number) => formatCurrencyValue(value, locale, entry?.instrument.currency ?? null);
-  const selectedDecision = useMemo(() => entry?.decisions.find((decision) => decision.decisionId === selectedDecisionId) ?? null, [entry, selectedDecisionId]);
-  useEffect(() => { setSelectedDecisionId(null); setSelectedPathItemId(null); }, [episodeId]);
+  const [showBackground, setShowBackground] = useState(false);
+  const chartRef = useRef<HTMLElement>(null);
+  const selectedDecision = entry?.decisions.find((item) => item.decisionId === selectedDecisionId) ?? null;
+  useEffect(() => { setSelectedDecisionId(null); setSelectedPathItemId(null); setShowBackground(false); }, [episodeId, data.mode, data.exampleAccount, data.activeAccount]);
   useEffect(() => {
     let cancelled = false;
     setRuntimeEntry(null); setRuntimeError(null);
@@ -212,66 +208,86 @@ export function PositionEpisodePage() {
     }).catch((value) => { if (!cancelled) setRuntimeError(value instanceof Error ? value.message : String(value)); });
     return () => { cancelled = true; };
   }, [data.mode, data.activeAccount, episodeId]);
-  const observationTimes = useMemo(
-    () => (entry ? uniqueDailyObservationTimes(entry.pricePoints.map((point) => point.observedAt)) : []),
-    [entry],
-  );
+  const chartEntry = useMemo(() => entry ? {...entry, pricePoints: showBackground ? entry.pricePoints : entry.pricePoints.filter((point) => point.segment === "episode")} : null, [entry, showBackground]);
+  const observationTimes = useMemo(() => chartEntry ? uniqueDailyObservationTimes(chartEntry.pricePoints.map((point) => point.observedAt)) : [], [chartEntry]);
   const boundaryTimes = useMemo(() => entry ? [
     ...entry.decisions.map((decision) => Date.parse(decision.occurredAt)),
     ...entry.pathAnalysis.positionPath.points.map((point) => Date.parse(point.asOf)),
   ] : [], [entry]);
   const timeNavigation = useDailyTimeNavigation(episodeId ?? "", observationTimes, boundaryTimes);
-  if (!entry) return <div className="space-y-5 pb-8"><Button asChild variant="quiet" size="sm"><Link to="/investments"><ArrowLeft />{t("Back to My Investments")}</Link></Button><StateNotice state={data.mode === "real_user" && !runtimeError ? "loading" : "empty"} title={runtimeError ? t("Position Episode not found") : t("Loading…")} detail={runtimeError ?? t(data.mode === "demo" ? "No generated lifecycle matches this Episode ID; the UI will not substitute another Episode." : "Rebuilding from local canonical facts.")} /></div>;
-  const selectDecision = (decisionId: string, moveToRow = false) => { setSelectedDecisionId(decisionId); if (moveToRow) requestAnimationFrame(() => { const row = rowRefs.current.get(decisionId); row?.scrollIntoView({ behavior: "smooth", block: "center" }); row?.focus({ preventScroll: true }); }); };
+  if (!entry || !chartEntry) return <div className="space-y-5"><Button asChild variant="quiet"><Link to="/investments"><ArrowLeft />{t("Back to My Investments")}</Link></Button><StateNotice state={data.mode === "real_user" && data.activeAccount && !runtimeError ? "loading" : "insufficient"} title={t(runtimeError || !data.activeAccount && data.mode === "real_user" || data.mode === "demo" ? "This investment is not available in the selected account" : "Loading…")} detail={runtimeError ?? t(data.mode === "real_user" && data.activeAccount ? "Rebuilding from local canonical facts." : "Select its account or return to My Investments.")} /></div>;
   const episode = entry.episode;
   const result = entry.outcomeStory.episodeOutcome.actualResult;
-  const dateOnly = new Intl.DateTimeFormat(locale, { year: "numeric", month: "short", day: "numeric" });
-  const openedAt = dateOnly.format(new Date(episode.openedAt));
-  const closedAt = episode.closedAt ? dateOnly.format(new Date(episode.closedAt)) : null;
-  const asOf = entry.snapshot ? dateOnly.format(new Date(entry.snapshot.asOf)) : null;
-  const episodeReferences = entry.evidenceReferences.filter((reference) => episode.evidenceRefs.includes(reference.evidenceId));
-  const pathItems = selectPrimaryPathItems(entry.pathAnalysis);
-  const selectedPathItem = pathItems.find((item) => item.itemId === selectedPathItemId) ?? pathItems[0] ?? null;
-  const selectedPhase = selectedPathItem?.phaseId
-    ? entry.pathAnalysis.phases.find((phase) => phase.phaseId === selectedPathItem.phaseId) ?? null
-    : null;
-  const selectedPattern = selectedPathItem?.patternId
-    ? entry.pathAnalysis.patterns.find((pattern) => pattern.patternId === selectedPathItem.patternId) ?? null
-    : null;
-  const highlightStart = selectedPhase?.startedAt
-    ?? (selectedPattern ? textFact(selectedPattern.facts, "window_start") ?? textFact(selectedPattern.facts, "peak_observed_at") : null);
-  const highlightEnd = selectedPhase?.endedAt
-    ?? (selectedPattern ? textFact(selectedPattern.facts, "window_end") ?? textFact(selectedPattern.facts, "trough_observed_at") : null);
-  const emphasizedDecisionIds = selectedPhase?.decisionEventIds ?? selectedPattern?.decisionEventIds ?? [];
-  const phaseCounterfactual = selectedPhase
-    ? entry.pathAnalysis.phaseCounterfactuals.find((item) =>
-      (item.scenarioId === "omit_decision_phase_until_next_decision_v2" || item.scenarioId === "omit_decision_phase_until_next_decision_v1")
-      && item.decisionEventId === selectedPhase.decisionEventIds[0]) ?? null
-    : null;
+  const formatCurrency = (value: number) => formatCurrencyValue(value, locale, entry.instrument.currency);
+  const dateOnly = new Intl.DateTimeFormat(locale, { year: "numeric", month: "2-digit", day: "2-digit" });
+  const date = (value: string) => dateOnly.format(new Date(value));
+  const review = entry.reviewPresentation;
+  const selectedFact = review?.facts.find((fact) => fact.itemId === selectedPathItemId) ?? null;
+  const selectedPhase = selectedFact?.phaseId ? entry.pathAnalysis.phases.find((phase) => phase.phaseId === selectedFact.phaseId) ?? null : null;
+  const phaseCounterfactual = selectedPhase ? entry.pathAnalysis.phaseCounterfactuals.find((item) => item.scenarioId === "omit_decision_phase_until_next_decision_v2" && item.decisionEventId === selectedPhase.decisionEventIds[0]) ?? null : null;
+  const story = review?.storySteps.map((step) => {
+    const phase = entry.pathAnalysis.phases.find((item) => item.phaseId === step.phaseId)!;
+    return t(({entry: "Opened with {quantity} shares", scaling_in: "{count} additions brought the holding to {quantity} shares", scaling_out: "{count} reductions left {quantity} shares", exit: "Finally closed the position"})[phase.phaseType], {count: step.decisionCount, quantity: formatNumber(phase.quantityAfter, 0)});
+  }).join(t("Story separator"));
   const chartGroup = `episode-path-${episode.episodeId}`;
-  const preEntry = entry.pathAnalysis.marketPath.preEntryContext;
-  const showPreEntryContext = entry.pathAnalysis.marketPath.preEntryContextStatus !== "insufficient";
-  const preEntrySentence = !showPreEntryContext || preEntry.priceReturn === null
-    ? null
-    : preEntry.priceReturn > 0
-      ? t("Recorded pre-entry market observations show the price rose {percent}.", { percent: formatPercent(preEntry.priceReturn, 1) })
-      : preEntry.priceReturn < 0
-        ? t("Recorded pre-entry market observations show the price fell {percent}.", { percent: formatPercent(preEntry.priceReturn < 0 ? -preEntry.priceReturn : preEntry.priceReturn, 1) })
-        : t("Recorded pre-entry market observations show the price was unchanged.");
-  const longGap = entry.pathAnalysis.patterns.find((item) => item.patternCode === "long_no_execution_interval") ?? null;
-  const drawdown = entry.pathAnalysis.marketPath.dailyPricePeakDrawdown;
-  const segmentKinds = new Set(entry.pathAnalysis.marketPath.marketPathSegments.map((item) => item.kind));
-  return <CurrencyProvider value={entry.instrument.currency}><div className="space-y-6 pb-8">
-    <Button asChild variant="quiet" size="sm" className="-ml-3"><Link to="/investments"><ArrowLeft />{t("Back to My Investments")}</Link></Button>
-    <PageHeader eyebrow={t("Episode Decision Story · recorded history")} title={t(entry.instrument.displayName)} description={t("Canonical instrument ID: {instrumentId}. Every result below comes from deterministic replay, Outcome, or registered Evidence.", { instrumentId: episode.instrumentId })} actions={<div className="flex items-center gap-2">{entry.instrument.isSynthetic ? <DemoBadge /> : <span className="rounded-full border border-positive/30 bg-positive/10 px-3 py-1.5 text-xs text-positive">{t("Local deterministic data")}</span>}<span className={cn("rounded-full border px-3 py-1.5 text-xs font-medium", episode.status === "open" ? "border-accent/35 bg-accent/10 text-accent" : "border-border bg-white/[0.04] text-foreground")}>{t(episode.status === "open" ? "Holding" : "Closed position")}</span></div>} showDemo={false} />
-    <GlassPanel data-episode-result className="overflow-hidden p-0"><div className="grid gap-5 p-5 md:p-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(360px,.8fr)] lg:items-end"><div><p className="text-xs text-muted"><ResultLabel result={result} scope="episode" /></p><p className={cn("mt-2 font-mono text-4xl font-semibold tracking-tight", resultTone(result.resultSign))}>{formatCurrency(result.pnl)}</p>{result.returnValue !== null ? <p className="mt-2 font-mono text-sm text-foreground">{t("Position return")}: {formatPercent(result.returnValue, 2)}</p> : null}</div><dl className="grid grid-cols-2 gap-x-5 gap-y-3 text-xs sm:grid-cols-4 lg:grid-cols-2"><div><dt className="text-muted">{t("Opened")}</dt><dd className="mt-1 text-sm text-foreground">{openedAt}</dd></div><div><dt className="text-muted">{t(episode.status === "open" ? "As of" : "Closed")}</dt><dd className="mt-1 text-sm text-foreground">{episode.status === "open" ? asOf : closedAt}</dd></div><div><dt className="text-muted">{t("Duration")}</dt><dd className="mt-1 font-mono text-sm text-foreground">{t(episode.durationKind === "so_far" ? "{count} calendar days so far" : "{count} calendar days", { count: episode.durationDays })}</dd></div><div><dt className="text-muted">{t("Recorded fees")}</dt><dd className="mt-1 font-mono text-sm text-foreground">{t("Entry {entry} · Exit {exit}", { entry: formatCurrency(result.recordedEntryFees), exit: formatCurrency(result.recordedExitFees) })}</dd></div></dl></div>{episode.status === "open" ? <div className="flex flex-wrap gap-x-5 gap-y-2 border-t border-border/70 bg-accent/[0.035] px-5 py-3 text-xs text-muted md:px-6"><span className="text-accent">{t("Marked at {date}", { date: result.valuationAt ? dateOnly.format(new Date(result.valuationAt)) : "—" })}</span><span>{t("Valuation price")}: {result.valuationPrice === null ? "—" : formatCurrency(result.valuationPrice)}</span><span>{t("This is a current mark, not a realized exit.")}</span></div> : null}<div data-path-summary className="grid gap-x-5 gap-y-3 border-t border-border/70 px-5 py-3 text-xs text-muted sm:grid-cols-2 lg:grid-cols-4 md:px-6"><div><dt className="text-muted">{t("Position changes")}</dt><dd className="mt-1 text-sm text-foreground">{t("{count} recorded position changes", { count: entry.decisions.length })}</dd></div><div><dt className="text-muted">{t("Maximum recorded quantity")}</dt><dd className="mt-1 font-mono text-sm text-foreground">{formatNumber(entry.pathAnalysis.positionPath.maxQuantity, 0)}</dd></div><div><dt className="text-muted">{t("Valid daily market observations")}</dt><dd className="mt-1 font-mono text-sm text-foreground">{entry.pathAnalysis.marketPath.episodeMarketPath.validObservationCount}</dd></div><div><dt className="text-muted">{t("Daily price-path drawdown")}</dt><dd className="mt-1 text-sm text-foreground">{drawdown && drawdown.quantityAtTroughStatus === "available" && drawdown.quantityAtTrough !== null ? t("Major daily price drawdown occurred while quantity was {quantity}.", { quantity: formatNumber(drawdown.quantityAtTrough, 0) }) : drawdown ? t("A major daily price-path drawdown is recorded; quantity at the trough is not assigned.") : t("No daily price-path drawdown is recorded.")}</dd></div>{longGap ? <div className="sm:col-span-2"><dt className="text-muted">{t("Long interval with no additional executions")}</dt><dd className="mt-1 text-sm text-foreground">{t("No additional executions were recorded for {count} calendar days.", { count: numericFact(longGap.facts, "calendar_days") ?? 0 })}</dd></div> : null}{segmentKinds.has("drawdown") || segmentKinds.has("recovery") ? <div className="sm:col-span-2"><dt className="text-muted">{t("Recorded market path segments")}</dt><dd className="mt-1 text-sm text-foreground">{Array.from(segmentKinds).map((kind) => t(`Market segment: ${kind}`)).join(" · ")}</dd></div> : null}</div></GlassPanel>
-    <GlassPanel data-price-path className="overflow-hidden p-5 md:p-6"><SectionHeading eyebrow={t("Market path + cost path + actual fills")} title={t("Decision story chart")} description={t("Pre-entry, holding, and post-exit market observations stay visually separate. Holding uses a restrained markArea.")} />{preEntrySentence ? <p className="mt-3 text-sm leading-6 text-foreground">{preEntrySentence}</p> : null}<p className="mt-2 text-xs text-muted">{showPreEntryContext ? <>{t("Pre-entry context")}: {contextStatusLabel(entry.pathAnalysis.marketPath.preEntryContextStatus, t)} · </> : null}{t("Holding context")}: {contextStatusLabel(entry.pathAnalysis.marketPath.episodeContextStatus, t)}{episode.status === "closed" && entry.pathAnalysis.marketPath.postExitContextStatus !== "insufficient" ? <> · {t("Post-exit market path")}: {contextStatusLabel(entry.pathAnalysis.marketPath.postExitContextStatus, t)}</> : null}</p><div className="mt-5"><PositionEpisodeTimeline entry={entry} selectedDecisionId={selectedDecisionId} emphasizedDecisionIds={emphasizedDecisionIds} highlightStart={highlightStart} highlightEnd={highlightEnd} chartGroup={chartGroup} timeNavigation={timeNavigation} onSelectDecision={(id) => selectDecision(id, true)} /></div></GlassPanel>
-    <GlassPanel data-quantity-path className="overflow-hidden p-5 md:p-6"><SectionHeading eyebrow={t("Authoritative position state")} title={t("Position evolution")} description={t("The step line uses replay state points only; it is not smoothed or forward-filled.")} /><div className="mt-3"><PositionQuantityTimeline entry={entry} selectedDecisionId={selectedDecisionId} emphasizedDecisionIds={emphasizedDecisionIds} highlightStart={highlightStart} highlightEnd={highlightEnd} chartGroup={chartGroup} timeNavigation={timeNavigation} onSelectDecision={(id) => selectDecision(id, true)} /></div></GlassPanel>
-    <GlassPanel data-path-section className="overflow-hidden p-5 md:p-6"><SectionHeading eyebrow={t("Recorded path")} title={t("This episode path")} description={t("These 3–6 items are selected by the backend. The UI does not regroup phases or calculate market moves.")} /><div className="mt-5 grid gap-2">{pathItems.map((item) => { const copy = pathItemCopy(item, entry.pathAnalysis.phases, entry.pathAnalysis.patterns, t, formatPercent, formatNumber); const active = selectedPathItem?.itemId === item.itemId; return <button key={item.itemId} data-path-item-id={item.itemId} data-phase-id={item.phaseId ?? undefined} type="button" className={cn("w-full rounded-lg border px-4 py-3 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent/50", active ? "border-accent/40 bg-accent/[0.07]" : "border-border/70 hover:bg-white/[0.025]")} onClick={() => setSelectedPathItemId(item.itemId)}><strong className="block text-sm font-medium text-foreground">{copy.title}</strong><span className="mt-1 block text-xs leading-5 text-muted">{copy.detail}</span></button>; })}</div></GlassPanel>
-    {selectedPhase ? <GlassPanel data-selected-phase className="overflow-hidden p-5 md:p-6"><SectionHeading eyebrow={t("Selected phase")} title={{ entry: t("Entry phase"), scaling_in: t("Scaling in"), scaling_out: t("Scaling out"), exit: t("Exit phase") }[selectedPhase.phaseType]} description={t("Phase grouping is analytical. Every listed fill remains a separate Canonical Execution.")} /><dl className="mt-4 grid grid-cols-2 gap-x-5 gap-y-3 text-xs sm:grid-cols-4"><div><dt className="text-muted">{t("Started")}</dt><dd className="mt-1 text-sm text-foreground">{dateOnly.format(new Date(selectedPhase.startedAt))}</dd></div><div><dt className="text-muted">{t("Ended")}</dt><dd className="mt-1 text-sm text-foreground">{dateOnly.format(new Date(selectedPhase.endedAt))}</dd></div><div><dt className="text-muted">{t("Position quantity")}</dt><dd className="mt-1 font-mono text-sm text-foreground">{formatNumber(selectedPhase.quantityBefore, 0)} → {formatNumber(selectedPhase.quantityAfter, 0)}</dd></div><div><dt className="text-muted">{t("Average cost")}</dt><dd className="mt-1 font-mono text-sm text-foreground">{selectedPhase.averageCostBefore === null ? "—" : formatCurrency(selectedPhase.averageCostBefore)} → {selectedPhase.averageCostAfter === null ? "—" : formatCurrency(selectedPhase.averageCostAfter)}</dd></div></dl><div className="mt-4 divide-y divide-border/70 border-y border-border/70">{selectedPhase.decisionEventIds.map((decisionId) => { const decision = entry.decisions.find((item) => item.decisionId === decisionId); if (!decision) return null; return <button key={decisionId} type="button" className="flex w-full items-center justify-between gap-3 px-1 py-3 text-left text-sm hover:bg-white/[0.025]" onClick={() => selectDecision(decisionId, true)}><span><DecisionName type={decision.decisionType} /><span className="mt-1 block text-xs text-muted">{dateOnly.format(new Date(decision.occurredAt))}</span></span><ArrowRight className="size-3.5 text-accent" aria-hidden="true" /></button>; })}</div>{phaseCounterfactual ? <div data-phase-counterfactual className="mt-5"><CounterfactualBlock item={phaseCounterfactual} scope="phase" /></div> : selectedPhase.phaseType === "entry" ? <p className="mt-4 text-xs leading-5 text-muted">{t("Entry is not a primary phase counterfactual in v1.")}</p> : null}</GlassPanel> : null}
-    <GlassPanel className="overflow-hidden p-5 md:p-6"><SectionHeading eyebrow={t("Before → action → after → result")} title={t("Decision events")} description={t("Select any row for replay facts, historical alternatives, Evidence, and technical sources.")} /><div className="mt-5 divide-y divide-border/70 border-y border-border/70">{entry.decisions.map((decision) => { const immediate = decision.outcome.immediateResult; return <button key={decision.decisionId} ref={(node) => { if (node) rowRefs.current.set(decision.decisionId, node); else rowRefs.current.delete(decision.decisionId); }} data-decision-event-id={decision.decisionId} type="button" aria-expanded={selectedDecisionId === decision.decisionId} className={cn("grid w-full gap-3 px-2 py-4 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent/50 sm:grid-cols-[130px_minmax(170px,.75fr)_minmax(220px,1fr)_auto] sm:items-center", selectedDecisionId === decision.decisionId ? "bg-accent/[0.07]" : "hover:bg-white/[0.025]")} onClick={() => selectDecision(decision.decisionId)}><span className="text-xs text-muted">{dateOnly.format(new Date(decision.occurredAt))}</span><span><strong className="block text-sm font-medium text-foreground"><DecisionName type={decision.decisionType} /></strong><span className="mt-1 block text-xs text-muted">{t(decision.side === "BUY" ? "Bought {quantity} @ {price}" : "Sold {quantity} @ {price}", { quantity: formatNumber(decision.outcome.executedQuantity, 0), price: formatCurrency(decision.outcome.executionPrice) })}</span></span><span className="text-xs leading-5 text-muted"><span className="block">{t("Position quantity {before} → {after}", { before: formatNumber(decision.outcome.before.quantity, 0), after: formatNumber(decision.outcome.after.quantity, 0) })}</span>{decision.side === "BUY" ? <span className="block">{t("Average cost {before} → {after}", { before: decision.outcome.before.averageCost === null ? "—" : formatCurrency(decision.outcome.before.averageCost), after: decision.outcome.after.averageCost === null ? "—" : formatCurrency(decision.outcome.after.averageCost) })}</span> : null}</span><span className="inline-flex items-center justify-end gap-2 text-right text-xs font-medium text-accent">{immediate ? <span className={resultTone(immediate.resultSign)}><ResultLabel result={immediate} scope="sale" /> · {formatCurrency(immediate.pnl)}</span> : t("View details")}<ArrowRight className="size-3.5 shrink-0" aria-hidden="true" /></span></button>; })}</div></GlassPanel>
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,.72fr)]"><GlassPanel className="p-5 md:p-6"><SectionHeading eyebrow={t("Existing Evidence")} title={t("Episode-level evidence references")} description={t("Evidence stays linked to its registered scope; Outcome counterfactuals are not relabeled as EvidenceRecord.")} /><div className="mt-4">{episodeReferences.length ? <EvidenceLinks references={episodeReferences} /> : <StateNotice state="insufficient" compact title={t("No Episode-level Evidence is linked")} detail={t("The position lifecycle remains valid without an inferred Evidence result.")} />}</div></GlassPanel><GlassPanel className="p-5 md:p-6" tone="quiet"><div className="flex items-center gap-2 text-xs text-muted"><Database className="size-3.5 text-accent" />{t("Deterministic source")}</div><p className="mt-3 font-mono text-xs text-foreground">{entry.pathAnalysis.methodId}@{entry.pathAnalysis.methodVersion}</p><p className="mt-1 font-mono text-xs text-muted">{entry.outcomeStory.episodeOutcome.methodId}@{entry.outcomeStory.episodeOutcome.methodVersion}</p><p className="mt-2 flex items-start gap-2 break-all font-mono text-[10px] leading-5 text-muted"><Hash className="mt-0.5 size-3 shrink-0" />{episode.episodeId}</p><p className="mt-4 text-xs leading-5 text-muted">{t("This page describes recorded history and registered historical alternatives. It does not recommend, predict, or optimize a future action.")}</p></GlassPanel></div>
-    {data.mode === "demo" ? <div className="flex flex-wrap gap-2">{positionEpisodeDemo.entries.filter((candidate) => belongsToExample(candidate, data.exampleAccount) && candidate.episode.episodeId !== episode.episodeId).map((candidate) => <Button key={candidate.episode.episodeId} asChild variant="quiet" size="sm"><Link to={`/investments/episodes/${candidate.episode.episodeId}`}><CircleDot />{t("View {symbol} · {status}", { symbol: t(candidate.instrument.displayName), status: t(candidate.episode.status === "open" ? "Holding" : "Closed position") })}</Link></Button>)}</div> : null}
+  const hasBackground = entry.pricePoints.some((point) => point.segment !== "episode");
+  return <CurrencyProvider value={entry.instrument.currency}><div className="episode-review pb-8">
+    <div className="mb-4 flex items-center justify-between gap-3">
+      <Button asChild variant="quiet" size="sm" className="-ml-3"><Link to="/investments"><ArrowLeft />{t("My Investments")}</Link></Button>
+      <span className="text-xs text-muted">{data.mode === "demo" ? t("Example account · Synthetic") : data.activeAccount?.display_name}</span>
+    </div>
+    <header className="flex flex-wrap items-start justify-between gap-4">
+      <div><p className="mb-1 text-xs text-muted">{t("This investment")}</p><h1 className="text-2xl font-semibold">{t(entry.instrument.displayName)}</h1>
+        <p className="mt-2 text-xs text-muted">{date(episode.openedAt)} → {episode.closedAt ? date(episode.closedAt) : t("Present")} · {t(episode.status === "open" ? "Holding" : "Closed")}</p></div>
+      <div data-episode-result className="text-right">
+        <p className="text-xs text-muted">{t(result.resultKind === "marked" ? "Current marked result" : "Final realized result")}</p>
+        <p className={cn("mt-1 font-mono text-3xl font-semibold", resultTone(result.resultSign))}>{formatCurrency(result.pnl)}</p>
+        {result.returnValue !== null ? <p className="mt-1 text-xs text-muted">{t("Position return")}: {formatPercent(result.returnValue, 2)}</p> : null}
+        <p className="mt-1 text-[11px] text-muted">{result.resultKind === "marked" ? t("Marked at {date}", {date: result.valuationAt ? date(result.valuationAt) : "—"}) : t("Final date: {date}", {date: episode.closedAt ? date(episode.closedAt) : "—"})}</p>
+      </div>
+    </header>
+    {result.resultKind === "marked" ? <p className="mt-3 text-xs text-muted">{t("This is a current mark, not a realized exit.")} {t("Valuation price")}: {result.valuationPrice === null ? "—" : formatCurrency(result.valuationPrice)}</p> : null}
+    {story ? <p data-review-story className="mt-4 text-sm leading-6 text-foreground">{story}{review?.abbreviated ? t("Further executions are listed below.") : t("Story full stop")}</p> : null}
+
+    <section ref={chartRef} data-price-path className="mt-4 border-y border-border py-3">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><h2 className="text-sm font-medium">{t("Price and recorded executions")}</h2>
+        {hasBackground ? <button type="button" className="text-xs text-muted hover:text-foreground" aria-pressed={showBackground} onClick={() => setShowBackground((value) => !value)}>{t(showBackground ? "Hide outside-holding market context" : "Show outside-holding market context")}</button> : null}</div>
+      {showBackground ? <p className="mb-3 text-xs text-warning">{t("Outside-holding market context does not extend this investment's lifecycle.")}</p> : null}
+      <PositionEpisodeTimeline entry={chartEntry} selectedDecisionId={selectedDecisionId} emphasizedDecisionIds={selectedFact?.decisionIds} highlightStart={selectedFact?.startAt} highlightEnd={selectedFact?.endAt} chartGroup={chartGroup} timeNavigation={timeNavigation} onSelectDecision={setSelectedDecisionId} className="h-[280px] w-full" />
+      <div data-quantity-path className="border-t border-border/60 pt-2"><h2 className="mb-1 text-xs text-muted">{t("Position quantity")}</h2><PositionQuantityTimeline entry={chartEntry} selectedDecisionId={selectedDecisionId} emphasizedDecisionIds={selectedFact?.decisionIds} highlightStart={selectedFact?.startAt} highlightEnd={selectedFact?.endAt} chartGroup={chartGroup} timeNavigation={timeNavigation} onSelectDecision={setSelectedDecisionId} className="h-[140px] w-full" /></div>
+    </section>
+
+    {review?.facts.length ? <section data-review-facts className="mt-6">
+      <h2 className="text-base font-semibold">{t("Facts worth revisiting")}</h2>
+      <div className="mt-2 divide-y divide-border">{review.facts.map((fact) => {
+        const item = entry.pathAnalysis.presentationItems.find((item) => item.itemId === fact.itemId)!;
+        const copy = pathItemCopy(item, entry.pathAnalysis.phases, entry.pathAnalysis.patterns, t, formatPercent, formatNumber);
+        return <button type="button" key={fact.itemId} data-review-fact={fact.itemId} className="flex w-full items-center justify-between gap-5 py-4 text-left hover:bg-accent/[.025]" aria-pressed={selectedPathItemId === fact.itemId} onClick={() => {setSelectedPathItemId(fact.itemId); timeNavigation.apply({start: Date.parse(fact.startAt), end: Date.parse(fact.endAt)}, "reset"); chartRef.current?.scrollIntoView({block: "start", behavior: "smooth"});}}>
+          <span><strong className="text-sm font-medium">{copy.title}</strong><span className="mt-1 block text-xs leading-5 text-muted">{copy.detail}</span></span><span className="shrink-0 text-xs text-accent">{t("View this interval")} →</span>
+        </button>;
+      })}</div>
+    </section> : null}
+
+    {selectedFact ? <section data-selected-phase className="mt-3 border-y border-border py-4">
+      <p className="text-xs text-muted">{date(selectedFact.startAt)} → {date(selectedFact.endAt)}</p>
+      <div className="mt-2 flex flex-wrap gap-2">{selectedFact.decisionIds.map((id) => {const decision = entry.decisions.find((item) => item.decisionId === id)!; return <Button key={id} variant="quiet" size="sm" onClick={() => setSelectedDecisionId(id)}>{date(decision.occurredAt)} · <DecisionName type={decision.decisionType} /></Button>;})}</div>
+      {phaseCounterfactual ? <details className="mt-3"><summary className="cursor-pointer text-xs text-accent">{t("Historical comparison under fixed assumptions")}</summary><div className="mt-3"><CounterfactualBlock item={phaseCounterfactual} scope="phase" /></div></details> : null}
+    </section> : null}
+
+    <details data-all-executions className="mt-5 border-b border-border py-4">
+      <summary className="cursor-pointer text-sm font-medium">{t("View all executions")}</summary>
+      <div className="mt-3 divide-y divide-border">{entry.decisions.map((decision) => <button type="button" key={decision.decisionId} data-decision-event-id={decision.decisionId} className="grid w-full gap-2 py-3 text-left text-sm sm:grid-cols-[150px_1fr_1fr_auto]" onClick={() => setSelectedDecisionId(decision.decisionId)}>
+        <span className="text-xs text-muted">{date(decision.occurredAt)}</span><span><DecisionName type={decision.decisionType} /></span><span className="font-mono text-xs">{formatNumber(decision.executedQuantity, 0)} @ {formatCurrency(decision.executionPrice)}</span><ArrowRight className="size-4 text-accent" />
+      </button>)}</div>
+    </details>
+    <details className="border-b border-border py-4"><summary className="cursor-pointer text-sm font-medium">{t("More recorded context")}</summary>
+      <div className="mt-4 space-y-3">{entry.pathAnalysis.presentationItems.map((item) => {const copy = pathItemCopy(item, entry.pathAnalysis.phases, entry.pathAnalysis.patterns, t, formatPercent, formatNumber); return <p key={item.itemId} className="text-xs leading-5 text-muted"><strong className="text-foreground">{copy.title}</strong> · {copy.detail}</p>;})}</div>
+    </details>
+    <details className="border-b border-border py-4"><summary className="cursor-pointer text-sm font-medium">{t("View evidence")}</summary>
+      <div className="mt-4"><EvidenceLinks references={entry.evidenceReferences.filter((reference) => episode.evidenceRefs.includes(reference.evidenceId))} /></div>
+      <details className="mt-4"><summary className="cursor-pointer text-xs text-muted">{t("Technical details")}</summary><p className="mt-3 break-all font-mono text-[10px] leading-5">{episode.episodeId}<br />{episode.instrumentId}<br />{entry.outcomeStory.episodeOutcome.methodId}@{entry.outcomeStory.episodeOutcome.methodVersion}<br />{entry.pathAnalysis.methodId}@{entry.pathAnalysis.methodVersion}<br />{result.source.sourceRecordId}</p></details>
+      <p className="mt-3 text-xs text-muted">{t("This page describes recorded history and registered historical alternatives. It does not recommend, predict, or optimize a future action.")}</p>
+    </details>
     <DecisionDrawer entry={entry} decision={selectedDecision} open={selectedDecision !== null} onOpenChange={(open) => !open && setSelectedDecisionId(null)} />
   </div></CurrencyProvider>;
 }

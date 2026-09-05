@@ -1,4 +1,5 @@
 import type { EvidenceStatus } from "@/demo/types";
+import { adaptEpisodeReview, type EpisodeReview } from "./episodeReview.ts";
 
 import {
   adaptDecisionOutcomeStory,
@@ -85,6 +86,7 @@ export interface BackendPositionEpisodeSnapshot {
 }
 
 export interface BackendPositionEpisodeEntry {
+  review_presentation?: unknown;
   instrument: {
     instrument_id: string;
     display_name: string | null;
@@ -181,6 +183,7 @@ export interface PositionEpisodeSnapshotView {
 }
 
 export interface PositionEpisodeEntryView {
+  reviewPresentation: EpisodeReview | null;
   instrument: {
     instrumentId: string;
     displayName: string;
@@ -813,6 +816,7 @@ function adaptEntry(entry: BackendPositionEpisodeEntry, expectedTier: "synthetic
       segment: pathEnum(point.segment, SEGMENTS, "price_points.segment"),
     })),
     pathAnalysis,
+    reviewPresentation: adaptEpisodeReview(entry.review_presentation, episode, pathAnalysis),
     outcomeStory,
   };
 }

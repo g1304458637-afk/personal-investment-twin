@@ -232,7 +232,7 @@ export const productRoutes: readonly ProductRouteDefinition[] = [
     path: "/investments/episodes/:episodeId",
     legacyPaths: ["/decisions/episodes/:episodeId"],
     labelKey: "Investment Episode",
-    pageTitleKey: "Investment Episode",
+    pageTitleKey: "This investment",
     descriptionKey: "Position lifecycle and linked decisions",
     icon: "episode",
     navigationSection: null,

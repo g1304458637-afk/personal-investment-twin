@@ -51,8 +51,10 @@ export function PositionEpisodeTimeline({
   chartGroup,
   timeNavigation,
   onSelectDecision,
+  className = "h-[360px] w-full",
 }: {
   entry: PositionEpisodeEntryView;
+  className?: string;
   selectedDecisionId: string | null;
   emphasizedDecisionIds?: string[];
   highlightStart?: string | null;
@@ -423,7 +425,7 @@ export function PositionEpisodeTimeline({
         label={t("Market price and actual position decision timeline for {symbol}", {
           symbol: entry.episode.instrumentId,
         })}
-        className="h-[360px] w-full"
+        className={className}
         onChartClick={handleClick}
       />
     </div>

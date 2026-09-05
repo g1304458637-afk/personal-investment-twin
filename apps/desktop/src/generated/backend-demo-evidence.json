@@ -7893,6 +7893,61 @@
             "segment": "episode"
           }
         ],
+        "review_presentation": {
+          "episode_id": "pe_68e61608a1a66ad2a6f275cc8ee1cc3ec528f3fa82762b35e13a79b5cb571abd",
+          "facts": [
+            {
+              "decision_ids": [
+                "de_3ef1978dd1dd26e1832b1be18f0fc3e8ca024a0c142ae18ed4100a434ffc6122",
+                "de_e62d25c19d3d2610a3b751803871fa2113e496f67d45d31d76e27958c1a14034"
+              ],
+              "end_at": "2025-02-20T14:20:00",
+              "item_id": "pattern_phase_ccfaa811c6a14de94703b2f2d44e1c86dd4099c30b9349f215cdaf1930219d36_consecutive_scaling_in",
+              "pattern_id": "pattern_phase_ccfaa811c6a14de94703b2f2d44e1c86dd4099c30b9349f215cdaf1930219d36_consecutive_scaling_in",
+              "phase_id": "phase_ccfaa811c6a14de94703b2f2d44e1c86dd4099c30b9349f215cdaf1930219d36",
+              "start_at": "2025-01-24T10:12:00"
+            },
+            {
+              "decision_ids": [
+                "de_54bd8206110700ae4c8ba2305c535432a1e54306f3ce4f3859c75046fa32548a",
+                "de_04463fc7cb03983bbba5bd2a79aa7527d8b7fdb65b31de60def9f63866acacfd"
+              ],
+              "end_at": "2025-04-10T13:40:00",
+              "item_id": "pattern_phase_4cd4bc7ca1bc00b3df9ec801f24ebb59f8f5d096739b21aabddf50dc7e6168f2_consecutive_scaling_out",
+              "pattern_id": "pattern_phase_4cd4bc7ca1bc00b3df9ec801f24ebb59f8f5d096739b21aabddf50dc7e6168f2_consecutive_scaling_out",
+              "phase_id": "phase_4cd4bc7ca1bc00b3df9ec801f24ebb59f8f5d096739b21aabddf50dc7e6168f2",
+              "start_at": "2025-03-18T10:05:00"
+            },
+            {
+              "decision_ids": [],
+              "end_at": "2025-03-17T00:00:00",
+              "item_id": "pattern_pe_68e61608a1a66ad2a6f275cc8ee1cc3ec528f3fa82762b35e13a79b5cb571abd_high_quantity_during_daily_price_drawdown",
+              "pattern_id": "pattern_pe_68e61608a1a66ad2a6f275cc8ee1cc3ec528f3fa82762b35e13a79b5cb571abd_high_quantity_during_daily_price_drawdown",
+              "phase_id": null,
+              "start_at": "2025-03-07T00:00:00"
+            }
+          ],
+          "story_abbreviated": false,
+          "story_steps": [
+            {
+              "decision_count": 1,
+              "phase_id": "phase_b5ad6bc3256edf3b59bae6551e1583666bcfd47f165abd28f1df5941fbc0fa57"
+            },
+            {
+              "decision_count": 2,
+              "phase_id": "phase_ccfaa811c6a14de94703b2f2d44e1c86dd4099c30b9349f215cdaf1930219d36"
+            },
+            {
+              "decision_count": 2,
+              "phase_id": "phase_4cd4bc7ca1bc00b3df9ec801f24ebb59f8f5d096739b21aabddf50dc7e6168f2"
+            },
+            {
+              "decision_count": 1,
+              "phase_id": "phase_bcc81b9635a7c07fb91f38a916d8f9bd63105fec2f759d6254bac94e93b3394e"
+            }
+          ],
+          "version": "1"
+        },
         "snapshot": null,
         "states_by_ref": {
           "ps_00a40384f9a876695fbeeafcc8058488063c8abfa62d631dfcff3f5750384afe": {
@@ -25507,6 +25562,64 @@
             "segment": "post_exit"
           }
         ],
+        "review_presentation": {
+          "episode_id": "pe_23b27e73f9a36e9bb94f466c87a88b9d027c53fe6936cee97813b1826829ab38",
+          "facts": [
+            {
+              "decision_ids": [
+                "de_048338c8ce5c88322433bc005c1955957457a07e5d47beeb4d2eb8abed701e00",
+                "de_61de7b54447edf0d13cdbd9e749f2ea5c96a113f303237a2b40663e1a74f8c23"
+              ],
+              "end_at": "2022-03-10T13:20:00",
+              "item_id": "pattern_phase_1a4245fff5dc9c547e1e6ee9444b12a549d18e22fc552545a047d087e9ef1bcb_consecutive_scaling_in",
+              "pattern_id": "pattern_phase_1a4245fff5dc9c547e1e6ee9444b12a549d18e22fc552545a047d087e9ef1bcb_consecutive_scaling_in",
+              "phase_id": "phase_1a4245fff5dc9c547e1e6ee9444b12a549d18e22fc552545a047d087e9ef1bcb",
+              "start_at": "2021-11-08T10:15:00"
+            },
+            {
+              "decision_ids": [
+                "de_61de7b54447edf0d13cdbd9e749f2ea5c96a113f303237a2b40663e1a74f8c23",
+                "de_98c27dd30c9c88d43b849e9b69cc644210dd7307797ab04f437d947cd218c00a"
+              ],
+              "end_at": "2024-08-19T00:00:00",
+              "item_id": "pattern_de_61de7b54447edf0d13cdbd9e749f2ea5c96a113f303237a2b40663e1a74f8c23_de_98c27dd30c9c88d43b849e9b69cc644210dd7307797ab04f437d947cd218c00a_long_no_execution_interval",
+              "pattern_id": "pattern_de_61de7b54447edf0d13cdbd9e749f2ea5c96a113f303237a2b40663e1a74f8c23_de_98c27dd30c9c88d43b849e9b69cc644210dd7307797ab04f437d947cd218c00a_long_no_execution_interval",
+              "phase_id": null,
+              "start_at": "2022-03-11T00:00:00"
+            },
+            {
+              "decision_ids": [
+                "de_98c27dd30c9c88d43b849e9b69cc644210dd7307797ab04f437d947cd218c00a",
+                "de_f240e74bf59814894ea7e57daa8d4c7bd8b4f43120be658e6daba615727811a2"
+              ],
+              "end_at": "2025-06-17T00:00:00",
+              "item_id": "pattern_de_98c27dd30c9c88d43b849e9b69cc644210dd7307797ab04f437d947cd218c00a_de_f240e74bf59814894ea7e57daa8d4c7bd8b4f43120be658e6daba615727811a2_long_no_execution_interval",
+              "pattern_id": "pattern_de_98c27dd30c9c88d43b849e9b69cc644210dd7307797ab04f437d947cd218c00a_de_f240e74bf59814894ea7e57daa8d4c7bd8b4f43120be658e6daba615727811a2_long_no_execution_interval",
+              "phase_id": null,
+              "start_at": "2024-08-21T00:00:00"
+            }
+          ],
+          "story_abbreviated": false,
+          "story_steps": [
+            {
+              "decision_count": 1,
+              "phase_id": "phase_4d64cb46bb6e6ec244868cd3338b9fc487b6e6568444fd9d245fd94e05210539"
+            },
+            {
+              "decision_count": 2,
+              "phase_id": "phase_1a4245fff5dc9c547e1e6ee9444b12a549d18e22fc552545a047d087e9ef1bcb"
+            },
+            {
+              "decision_count": 1,
+              "phase_id": "phase_221697707217fa369ecb01414d4b9034dfc93c62db4bf5e4674351e202cd9948"
+            },
+            {
+              "decision_count": 1,
+              "phase_id": "phase_8e699c7fde4304ed5883841ee2a7e2028d2e72ad7a47de8327dde06a29b09ff1"
+            }
+          ],
+          "version": "1"
+        },
         "snapshot": null,
         "states_by_ref": {
           "ps_1d2d4237f43902ccdc0d1cbc904e19515ae44be06e3a71fd923691e7478bdde5": {
@@ -43570,6 +43683,52 @@
             "segment": "episode"
           }
         ],
+        "review_presentation": {
+          "episode_id": "pe_df4faa212d965392f499f02de61700c6c2501839666ac34ed2bd721a782d9bd6",
+          "facts": [
+            {
+              "decision_ids": [
+                "de_45dfe24e35fc871d82633fe7afa89d85cb3b47db96b173f6f4cefb077cda3a22"
+              ],
+              "end_at": "2026-01-15T00:00:00",
+              "item_id": "pattern_de_45dfe24e35fc871d82633fe7afa89d85cb3b47db96b173f6f4cefb077cda3a22_trailing_long_no_execution_interval",
+              "pattern_id": "pattern_de_45dfe24e35fc871d82633fe7afa89d85cb3b47db96b173f6f4cefb077cda3a22_trailing_long_no_execution_interval",
+              "phase_id": null,
+              "start_at": "2022-01-13T00:00:00"
+            },
+            {
+              "decision_ids": [
+                "de_005b037c06244e5cca21de12e39e34d34b21464a68ba2d21863a9ce814aa3304",
+                "de_45dfe24e35fc871d82633fe7afa89d85cb3b47db96b173f6f4cefb077cda3a22"
+              ],
+              "end_at": "2022-01-11T00:00:00",
+              "item_id": "pattern_de_005b037c06244e5cca21de12e39e34d34b21464a68ba2d21863a9ce814aa3304_de_45dfe24e35fc871d82633fe7afa89d85cb3b47db96b173f6f4cefb077cda3a22_long_no_execution_interval",
+              "pattern_id": "pattern_de_005b037c06244e5cca21de12e39e34d34b21464a68ba2d21863a9ce814aa3304_de_45dfe24e35fc871d82633fe7afa89d85cb3b47db96b173f6f4cefb077cda3a22_long_no_execution_interval",
+              "phase_id": null,
+              "start_at": "2021-04-07T00:00:00"
+            },
+            {
+              "decision_ids": [],
+              "end_at": "2022-11-14T00:00:00",
+              "item_id": "pattern_pe_df4faa212d965392f499f02de61700c6c2501839666ac34ed2bd721a782d9bd6_high_quantity_during_daily_price_drawdown",
+              "pattern_id": "pattern_pe_df4faa212d965392f499f02de61700c6c2501839666ac34ed2bd721a782d9bd6_high_quantity_during_daily_price_drawdown",
+              "phase_id": null,
+              "start_at": "2022-05-10T00:00:00"
+            }
+          ],
+          "story_abbreviated": false,
+          "story_steps": [
+            {
+              "decision_count": 1,
+              "phase_id": "phase_f549636946cbb09ed831c1b0f07f720aa5c225436ec768ff7ec5a2ee5ccb4051"
+            },
+            {
+              "decision_count": 1,
+              "phase_id": "phase_b344f394e57540ec9a96dc100c9cea5663976519dfd26c211a965d383eacfe4b"
+            }
+          ],
+          "version": "1"
+        },
         "snapshot": {
           "as_of": "2026-01-15T23:59:00",
           "episode_id": "pe_df4faa212d965392f499f02de61700c6c2501839666ac34ed2bd721a782d9bd6",
@@ -46910,6 +47069,39 @@
             "segment": "episode"
           }
         ],
+        "review_presentation": {
+          "episode_id": "pe_ef0fdf5071700a366dc7aeaa5713d218613494526dac104b52eceed023085640",
+          "facts": [
+            {
+              "decision_ids": [],
+              "end_at": "2025-03-17T00:00:00",
+              "item_id": "pattern_pe_ef0fdf5071700a366dc7aeaa5713d218613494526dac104b52eceed023085640_high_quantity_during_daily_price_drawdown",
+              "pattern_id": "pattern_pe_ef0fdf5071700a366dc7aeaa5713d218613494526dac104b52eceed023085640_high_quantity_during_daily_price_drawdown",
+              "phase_id": null,
+              "start_at": "2025-03-07T00:00:00"
+            }
+          ],
+          "story_abbreviated": false,
+          "story_steps": [
+            {
+              "decision_count": 1,
+              "phase_id": "phase_ae964659133ebfba63ed80e7efedccb36ac45fced5966b1aaf8e741d9ab34953"
+            },
+            {
+              "decision_count": 1,
+              "phase_id": "phase_adc5b2bfaa34ec8391a2c6b1a9d3abc114eee6d822da56b04eade719e4ee16ee"
+            },
+            {
+              "decision_count": 1,
+              "phase_id": "phase_ce1f48c80474a104fde30303d8a762720c14fd304d708c714ab29ea960c98bea"
+            },
+            {
+              "decision_count": 1,
+              "phase_id": "phase_5550c2adadb0632fcc39f6a0f9bfd9995a0989675d1814585c82cb833000cf2f"
+            }
+          ],
+          "version": "1"
+        },
         "snapshot": null,
         "states_by_ref": {
           "ps_0be1a196d6b6c33b9056bf85124e69daf1f8ef0f60e150d604fab15977399004": {
@@ -48673,6 +48865,31 @@
             "segment": "episode"
           }
         ],
+        "review_presentation": {
+          "episode_id": "pe_8aa45542d79249f41b272e6efb46dec7a11119b7eac854ed6005ebf3e8b4b7d0",
+          "facts": [
+            {
+              "decision_ids": [],
+              "end_at": "2025-01-08T00:00:00",
+              "item_id": "pattern_pe_8aa45542d79249f41b272e6efb46dec7a11119b7eac854ed6005ebf3e8b4b7d0_high_quantity_during_daily_price_drawdown",
+              "pattern_id": "pattern_pe_8aa45542d79249f41b272e6efb46dec7a11119b7eac854ed6005ebf3e8b4b7d0_high_quantity_during_daily_price_drawdown",
+              "phase_id": null,
+              "start_at": "2025-01-07T00:00:00"
+            }
+          ],
+          "story_abbreviated": false,
+          "story_steps": [
+            {
+              "decision_count": 1,
+              "phase_id": "phase_6c94d0fe44c391b3d2dea38b0187c7ba17cf448e892b08856af7d94b367c96c8"
+            },
+            {
+              "decision_count": 1,
+              "phase_id": "phase_ad5f5633c76139e37b5152c6b74e721783086dfaee574da6016370f5d26751d3"
+            }
+          ],
+          "version": "1"
+        },
         "snapshot": {
           "as_of": "2025-01-08T23:59:00",
           "episode_id": "pe_8aa45542d79249f41b272e6efb46dec7a11119b7eac854ed6005ebf3e8b4b7d0",
@@ -50372,6 +50589,33 @@
             "segment": "episode"
           }
         ],
+        "review_presentation": {
+          "episode_id": "pe_460a70738da94f7dca7f03f18c47168c855a0f23bde32111af10e8d74612b9bf",
+          "facts": [
+            {
+              "decision_ids": [
+                "de_c74c4dd56838b259772b2a774cf1ec239f95016186603d4fa02eca3aad9cd842"
+              ],
+              "end_at": "2025-01-07T00:00:00",
+              "item_id": "pattern_de_c74c4dd56838b259772b2a774cf1ec239f95016186603d4fa02eca3aad9cd842_reduce_after_negative_market_move",
+              "pattern_id": "pattern_de_c74c4dd56838b259772b2a774cf1ec239f95016186603d4fa02eca3aad9cd842_reduce_after_negative_market_move",
+              "phase_id": "phase_b30eea79c1e5aeb8252a70d6e2cdebeea769a50d243e34dffd89d094de407b05",
+              "start_at": "2025-01-03T00:00:00"
+            }
+          ],
+          "story_abbreviated": false,
+          "story_steps": [
+            {
+              "decision_count": 1,
+              "phase_id": "phase_0e47e5c59df53d97df48a46d1777c8dfe336dc4a84bd2a538d536b0272f13f32"
+            },
+            {
+              "decision_count": 1,
+              "phase_id": "phase_b30eea79c1e5aeb8252a70d6e2cdebeea769a50d243e34dffd89d094de407b05"
+            }
+          ],
+          "version": "1"
+        },
         "snapshot": {
           "as_of": "2025-01-08T23:59:00",
           "episode_id": "pe_460a70738da94f7dca7f03f18c47168c855a0f23bde32111af10e8d74612b9bf",
@@ -51968,6 +52212,22 @@
             "segment": "episode"
           }
         ],
+        "review_presentation": {
+          "episode_id": "pe_db1d299a07e8c15c234076633709dc5996d4fa6c8ee6757bc805b1db4179a213",
+          "facts": [],
+          "story_abbreviated": false,
+          "story_steps": [
+            {
+              "decision_count": 1,
+              "phase_id": "phase_a4a66ed2e8ff33cb16550db44314c76ab8bc00eef641de9210a41737545ab990"
+            },
+            {
+              "decision_count": 1,
+              "phase_id": "phase_5cff85f5b25d7986c1ae9b3593603ce9b36b6558a75e99de82b13345566452e5"
+            }
+          ],
+          "version": "1"
+        },
         "snapshot": {
           "as_of": "2025-01-08T23:59:00",
           "episode_id": "pe_db1d299a07e8c15c234076633709dc5996d4fa6c8ee6757bc805b1db4179a213",
@@ -53618,6 +53878,31 @@
             "segment": "episode"
           }
         ],
+        "review_presentation": {
+          "episode_id": "pe_cb215cbf858c71448eeb04b0268b5883a82404eb8d17b73f8e752de01bef28e5",
+          "facts": [
+            {
+              "decision_ids": [],
+              "end_at": "2025-01-08T00:00:00",
+              "item_id": "pattern_pe_cb215cbf858c71448eeb04b0268b5883a82404eb8d17b73f8e752de01bef28e5_high_quantity_during_daily_price_drawdown",
+              "pattern_id": "pattern_pe_cb215cbf858c71448eeb04b0268b5883a82404eb8d17b73f8e752de01bef28e5_high_quantity_during_daily_price_drawdown",
+              "phase_id": null,
+              "start_at": "2025-01-02T00:00:00"
+            }
+          ],
+          "story_abbreviated": false,
+          "story_steps": [
+            {
+              "decision_count": 1,
+              "phase_id": "phase_da25b46965f550391247a6b9648e4afb3d162f9037a9e3761e64751b0ca6a8b0"
+            },
+            {
+              "decision_count": 1,
+              "phase_id": "phase_71ac158fc7c1b3b6461e261dad267388a1d60fb86962db767f045fe909118bfe"
+            }
+          ],
+          "version": "1"
+        },
         "snapshot": {
           "as_of": "2025-01-08T23:59:00",
           "episode_id": "pe_cb215cbf858c71448eeb04b0268b5883a82404eb8d17b73f8e752de01bef28e5",
@@ -54463,6 +54748,18 @@
             "segment": "episode"
           }
         ],
+        "review_presentation": {
+          "episode_id": "pe_dc5c9dff3dbb79eb92f1d19cfe799bc5d97bfe04ecba00dadb9bad27e05ac657",
+          "facts": [],
+          "story_abbreviated": false,
+          "story_steps": [
+            {
+              "decision_count": 1,
+              "phase_id": "phase_7664af0c13fb0931075fd9c7ed7b5996a2679a92effca82bc49afaa91892d820"
+            }
+          ],
+          "version": "1"
+        },
         "snapshot": {
           "as_of": "2025-01-08T23:59:00",
           "episode_id": "pe_dc5c9dff3dbb79eb92f1d19cfe799bc5d97bfe04ecba00dadb9bad27e05ac657",
@@ -55551,6 +55848,22 @@
             "segment": "post_exit"
           }
         ],
+        "review_presentation": {
+          "episode_id": "pe_4a6bb34e1520c7a36e170f1ef57485298f4ff50057b8e17db097781dccbd66d4",
+          "facts": [],
+          "story_abbreviated": false,
+          "story_steps": [
+            {
+              "decision_count": 1,
+              "phase_id": "phase_9e1b11c31a4cdb52e5e0da94bf4aa04db06d57248a8c6a10314a32bbf18bf08b"
+            },
+            {
+              "decision_count": 1,
+              "phase_id": "phase_30c5961d1f95650068c7e440068c6d3ecb3143bdfe306595ca06bc0a4c5762b2"
+            }
+          ],
+          "version": "1"
+        },
         "snapshot": null,
         "states_by_ref": {
           "ps_25a3e4ebb33d44e9bbd3385993903bb7ce0739b4b488c5a79f6f1cde0f98e52d": {

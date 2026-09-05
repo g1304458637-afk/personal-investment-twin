@@ -22,4 +22,6 @@ test("startup does not resume a synthetic preference or fallback on runtime fail
   assert.doesNotMatch(provider, /localStorage|setModeState\("demo"\)/);
   const settings = await readFile(new URL("../src/pages/SettingsPage.tsx", import.meta.url), "utf8");
   assert.doesNotMatch(settings, /Switch|uiStateExamples|peerParticipation|privacyMode/);
+  const dataPage = await readFile(new URL("../src/pages/DataAccountsPage.tsx", import.meta.url), "utf8");
+  assert.equal((dataPage.match(/<PageHeader showDemo=\{data.mode === "demo"\}/g) ?? []).length, 2);
 });
