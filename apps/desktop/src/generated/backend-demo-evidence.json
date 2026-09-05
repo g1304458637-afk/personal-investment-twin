@@ -37164,6 +37164,15 @@
                 "execution_id": "INT-e6522f226b9f1b3a",
                 "quantity": 900.0,
                 "state_id": "ps_8ad18723683c21ea2da52c9bad8d9b97e0dc28d0c3a2a09155322cbb74faccaf"
+              },
+              {
+                "as_of": "2026-01-15T23:59:00",
+                "average_cost": 10.844444444444445,
+                "boundary": "as_of_valuation",
+                "decision_event_id": null,
+                "execution_id": null,
+                "quantity": 900.0,
+                "state_id": "ps_e5ff5c58b28d54318b5267d724d19dc2904c1883eb8941b8e74715e5d6c0312f"
               }
             ],
             "quantity_at_drawdown": {
@@ -48594,6 +48603,15 @@
                 "execution_id": "INT-d4586f80fa439c5b",
                 "quantity": 50.0,
                 "state_id": "ps_efb77db2327c15c5dcc71b2b9649b79cb01d0bd70b690e30aaf288e11622ecf5"
+              },
+              {
+                "as_of": "2025-01-08T23:59:00",
+                "average_cost": 10.0,
+                "boundary": "as_of_valuation",
+                "decision_event_id": null,
+                "execution_id": null,
+                "quantity": 50.0,
+                "state_id": "ps_367bec00cd9aae1621061833ce473c24185cf98bce5408565c229b457aead998"
               }
             ],
             "quantity_at_drawdown": {
@@ -50277,6 +50295,15 @@
                 "execution_id": "INT-a3170e2505c6780c",
                 "quantity": 50.0,
                 "state_id": "ps_79010f381fd816a10ae40f10ac5ef3a8592afc151f6fd904c047edb03437ceac"
+              },
+              {
+                "as_of": "2025-01-08T23:59:00",
+                "average_cost": 20.0,
+                "boundary": "as_of_valuation",
+                "decision_event_id": null,
+                "execution_id": null,
+                "quantity": 50.0,
+                "state_id": "ps_16a636bb85a383d0f937c95563118cfea05436144a505116d4377a01f4d995ba"
               }
             ],
             "quantity_at_drawdown": {
@@ -51884,6 +51911,15 @@
                 "execution_id": "INT-6f010c88f1373b79",
                 "quantity": 450.0,
                 "state_id": "ps_fc7d49871514c6182b8b87078202e9635dd146cf9c491486800c988844f9b287"
+              },
+              {
+                "as_of": "2025-01-08T23:59:00",
+                "average_cost": 10.11111111111111,
+                "boundary": "as_of_valuation",
+                "decision_event_id": null,
+                "execution_id": null,
+                "quantity": 450.0,
+                "state_id": "ps_50762d64173b04df73fe33eb64a2ceb77005608679279571ed2b561ece5ae22b"
               }
             ],
             "quantity_at_drawdown": null
@@ -53512,6 +53548,15 @@
                 "execution_id": "INT-2ceb6308626ad5af",
                 "quantity": 150.0,
                 "state_id": "ps_8a72329de4f44041b2fc7c491b5622a1b4461ea2d9473d3fb30c369c1688d0aa"
+              },
+              {
+                "as_of": "2025-01-08T23:59:00",
+                "average_cost": 9.666666666666666,
+                "boundary": "as_of_valuation",
+                "decision_event_id": null,
+                "execution_id": null,
+                "quantity": 150.0,
+                "state_id": "ps_b17ab2a4dbe91cb19aa1f17867781241a6948effd406720fb28c6c4aa24530d6"
               }
             ],
             "quantity_at_drawdown": {
@@ -54368,6 +54413,15 @@
                 "execution_id": "INT-1e3bfc818d361ed7",
                 "quantity": 100.0,
                 "state_id": "ps_c1b19ddead57bca17fa48d6ae34ea7ea63c8d4ebfa8f76530809535ea2a7ab5d"
+              },
+              {
+                "as_of": "2025-01-08T23:59:00",
+                "average_cost": 5.0,
+                "boundary": "as_of_valuation",
+                "decision_event_id": null,
+                "execution_id": null,
+                "quantity": 100.0,
+                "state_id": "ps_19cdbec25b1fd505e9013ac5bf42b9a8fd7424bdb3ee8ce79dbecbe67d872877"
               }
             ],
             "quantity_at_drawdown": null

@@ -64,11 +64,13 @@ def build_episode_path_analysis(
         states=states,
     )
     market_path = replace(market_path, daily_price_peak_drawdown=annotated_drawdown)
+    snapshot = next((item for item in lifecycle.snapshots if item.episode_id == episode_id), None)
     position_path = build_episode_position_path(
         episode,
         decisions,
         lifecycle.states,
         drawdown=annotated_drawdown,
+        snapshot_state=states[snapshot.position_state_ref] if snapshot else None,
     )
     phases = group_decision_phases(episode, decisions, states)
     holding = market_path.episode_market_path.observations

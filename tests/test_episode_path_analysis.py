@@ -503,9 +503,7 @@ def test_phase_counterfactual_replays_whole_phase_not_sum():
     assert phase_cf.comparison.result_transition is not None
 
 
-def test_phase_counterfactual_does_not_duplicate_replay_and_full_omit_is_not_clamped():
-    source = getsource(evaluate_omit_executions_counterfactual)
-    assert "replay" in source.lower() or True
+def test_full_phase_omit_is_not_clamped_and_identifies_conflict():
     executions, prices = _complex_path()
     lifecycle = _lifecycle(executions, prices, as_of="2025-06-11")
     analysis = build_episode_path_analysis(
@@ -522,8 +520,8 @@ def test_phase_counterfactual_does_not_duplicate_replay_and_full_omit_is_not_cla
         init_cash=CASH,
     )
     assert full is not None
-    if full.feasibility_status == "infeasible_downstream_execution":
-        assert full.first_conflicting_execution_id is not None
+    assert full.feasibility_status == "infeasible_downstream_execution"
+    assert full.first_conflicting_execution_id == "EXE-4"
     assert "clamp" not in (full.infeasible_reason or "")
     assert PHASE_LOCAL_SCENARIO.changed_action == "omit_selected_executions"
 

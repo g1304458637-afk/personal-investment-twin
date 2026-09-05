@@ -7,6 +7,7 @@ known at a Decision time.  It does not store a second market-data catalog.
 from __future__ import annotations
 
 import math
+from bisect import bisect_left, bisect_right
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Final, Literal
@@ -14,6 +15,7 @@ from typing import Final, Literal
 import pandas as pd
 
 from src.episodes.position_episode import DecisionEvent, PositionEpisode
+from src.attribution.selection_evidence import _validated_price_provenance, _EvidenceDataError
 
 
 PATH_METHOD_ID: Final = "episode_path_analysis_v1"
@@ -179,7 +181,13 @@ def instrument_observations(
     rows = market_prices.loc[market_prices["instrument"].astype(str) == instrument_id].copy()
     if rows.empty:
         return ()
-    rows = rows.assign(_date=pd.to_datetime(rows["date"], errors="raise").dt.normalize())
+    try:
+        rows = rows.assign(_date=pd.to_datetime(rows["date"], errors="raise").dt.normalize())
+        if rows._date.isna().any() or rows._date.duplicated().any():
+            raise EpisodePathError("Market observation date is null or has conflicting/duplicate rows")
+        _validated_price_provenance(rows, f"Path market series {instrument_id}")
+    except (ValueError, TypeError, _EvidenceDataError) as exc:
+        raise EpisodePathError(f"Market data conflict or invalid provenance: {exc}") from exc
     rows = rows.sort_values(["_date"], kind="stable")
     observations: list[DailyMarketObservation] = []
     for _, row in rows.iterrows():
@@ -382,16 +390,19 @@ def build_market_path_segments(
         anchors.append(observations[-1])
     segments: list[MarketPathSegment] = []
     saw_drawdown = False
+    observed_times = [item.observed_at for item in observations]
+    prior_high = anchors[0].price
     for index, (start, end) in enumerate(zip(anchors, anchors[1:])):
+        prior_high = max(prior_high, start.price)
         change = end.price - start.price
         ret = change / start.price if start.price else None
-        count = sum(1 for item in observations if start.observed_at <= item.observed_at <= end.observed_at)
+        count = bisect_right(observed_times, end.observed_at) - bisect_left(observed_times, start.observed_at)
         if change < 0:
             kind: MarketPathSegmentKind = "drawdown"
             saw_drawdown = True
         elif saw_drawdown:
             kind = "recovery"
-            if end.price >= max(item.price for item in anchors[: index + 1]):
+            if end.price >= prior_high:
                 saw_drawdown = False
         elif change > 0:
             kind = "rise"
@@ -486,8 +497,13 @@ def build_episode_market_path(
     as_of: pd.Timestamp,
 ) -> EpisodeMarketPath:
     # Display/context is point-in-time even when a caller supplies future rows.
-    rows = market_prices.loc[pd.to_datetime(market_prices["date"]).dt.normalize() <= _calendar(as_of)]
-    all_obs = instrument_observations(rows, instrument_id=episode.instrument_id)
+    problem = ()
+    try:
+        rows = market_prices.loc[pd.to_datetime(market_prices["date"]).dt.normalize() <= _calendar(as_of)]
+        all_obs = instrument_observations(rows, instrument_id=episode.instrument_id)
+    except (EpisodePathError, KeyError, ValueError, TypeError) as exc:
+        all_obs = ()
+        problem = (f"Market context unavailable: conflict or invalid data: {exc}",)
     opened = _calendar(episode.opened_at)
     end = _calendar(episode.closed_at if episode.closed_at is not None else as_of)
     pre = _select(all_obs, end_exclusive=opened)[-CONTEXT_REQUESTED_OBSERVATIONS:]
@@ -541,7 +557,7 @@ def build_episode_market_path(
         daily_price_peak_drawdown=daily_price_peak_drawdown(holding),
         method_id=PATH_METHOD_ID,
         method_version=PATH_METHOD_VERSION,
-        limitations=(
+        limitations=problem + (
             "Daily observations have no intraday available_at; same-day close is never pre-decision information.",
             "Missing pre-entry or post-exit context does not invalidate the Position Episode lifecycle.",
             "Path statistics describe the asset market-price path, not a second position PnL.",

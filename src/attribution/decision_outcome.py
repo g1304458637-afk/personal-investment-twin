@@ -1422,6 +1422,14 @@ def _evaluate_omit_frame(
     omitted = {str(item) for item in changed_execution_refs}
     if not omitted:
         raise OutcomeAttributionError("changed_execution_refs must not be empty")
+    if len(omitted) != len(changed_execution_refs):
+        raise OutcomeAttributionError("changed_execution_refs must be unique")
+    if not omitted.issubset(episode.execution_refs):
+        raise OutcomeAttributionError("Omitted execution does not belong to this subject/account Episode")
+    if not omitted.issubset(set(actual_frame.execution_id.astype(str))):
+        raise OutcomeAttributionError("Omitted execution lies outside the permitted horizon")
+    if decision.execution_id not in omitted:
+        raise OutcomeAttributionError("Anchor Decision must belong to the intervention")
     counterfactual_frame = actual_frame.loc[
         ~actual_frame["execution_id"].astype(str).isin(omitted)
     ].copy()
@@ -1469,7 +1477,7 @@ def _evaluate_omit_frame(
         )
     except OutcomeAttributionError as exc:
         conflict = None
-        if scenario.scenario_id == _FULL_SCENARIO.scenario_id:
+        if scenario.downstream_order_policy == _FULL_SCENARIO.downstream_order_policy:
             conflict = _first_downstream_conflict(
                 scope,
                 counterfactual_frame,
@@ -1619,6 +1627,28 @@ def evaluate_omit_executions_counterfactual(
     if decision.episode_id != episode.episode_id:
         raise OutcomeAttributionError("anchor Decision does not belong to the Episode")
     refs = tuple(_required_text(item, "changed_execution_ref") for item in changed_execution_refs)
+    if not refs or len(refs) != len(set(refs)):
+        raise OutcomeAttributionError("Omit refs must be nonempty and unique")
+    if not set(refs).issubset(episode.execution_refs):
+        raise OutcomeAttributionError("Omit refs must belong to the selected Episode")
+    if decision.execution_id not in refs:
+        raise OutcomeAttributionError("Anchor Decision must belong to the intervention")
+    order = {str(ref): index for index, ref in enumerate(scope.frame.execution_id)}
+    refs = tuple(sorted(refs, key=order.__getitem__))
+    last = max(order[ref] for ref in refs)
+    if scenario.evaluation_horizon == _LOCAL_SCENARIO.evaluation_horizon:
+        next_event = next((item for item in scope.decisions
+            if item.episode_id == episode.episode_id and order[item.execution_id] > last), None)
+        expected_end = next_event.occurred_at if next_event else scope.analysis_as_of
+        if next_event is None and episode.status != "open":
+            raise OutcomeAttributionError("Closed local intervention has no subsequent Decision")
+        if evaluation_end != expected_end or include_evaluation_end_executions != (next_event is None):
+            raise OutcomeAttributionError("Intervention horizon does not match its registered scenario")
+    elif scenario.evaluation_horizon == _FULL_SCENARIO.evaluation_horizon:
+        if evaluation_end != (episode.closed_at or scope.analysis_as_of) or not include_evaluation_end_executions:
+            raise OutcomeAttributionError("Full intervention must preserve its registered horizon")
+    else:
+        raise OutcomeAttributionError("Unsupported multi-omit horizon")
     if include_evaluation_end_executions:
         actual_frame = scope.frame.loc[scope.frame["event_time"] <= evaluation_end].copy()
     else:

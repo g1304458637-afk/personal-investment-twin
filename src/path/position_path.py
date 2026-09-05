@@ -120,6 +120,7 @@ def build_episode_position_path(
     states: Sequence[ReplayPositionState],
     *,
     drawdown: DailyPricePeakDrawdown | None,
+    snapshot_state: ReplayPositionState | None = None,
 ) -> EpisodePositionPath:
     by_id = _state_map(states)
     ordered = tuple(item for item in decisions if item.episode_id == episode.episode_id)
@@ -153,6 +154,18 @@ def build_episode_position_path(
     if not points:
         raise ValueError("Episode has no replay position states")
     peak = max(points, key=lambda item: (item.quantity, item.as_of.isoformat()))
+    if snapshot_state is not None:
+        if (episode.status != "open" or snapshot_state.boundary != "as_of_valuation"
+                or snapshot_state.subject_id != episode.subject_id
+                or snapshot_state.account_id != episode.account_id
+                or snapshot_state.instrument_id != episode.instrument_id
+                or snapshot_state.as_of < points[-1].as_of):
+            raise ValueError("Invalid authoritative as-of position endpoint")
+        points.append(PositionPathPoint(
+            as_of=snapshot_state.as_of, boundary="as_of_valuation",
+            state_id=snapshot_state.state_id, quantity=snapshot_state.quantity,
+            average_cost=snapshot_state.average_cost, execution_id=None, decision_event_id=None,
+        ))
     annotated = attach_drawdown_quantity(drawdown, decisions=ordered, states=by_id)
     quantity_at_drawdown = None
     if annotated is not None:
