@@ -114,8 +114,17 @@ def bundle_from_repository(repo: LocalRepository, subject_id: str, account_id: s
 class ProductRuntime:
     def __init__(self, db_path: str | Path) -> None:
         self.repo = LocalRepository(db_path)
+        self._review_runtime = None
+
+    def review_runtime(self):
+        if self._review_runtime is None:
+            from .review import ReviewRuntime
+            self._review_runtime = ReviewRuntime(self)
+        return self._review_runtime
 
     def close(self) -> None:
+        if self._review_runtime is not None:
+            self._review_runtime.close()
         self.repo.close()
 
     def _trade_preview(self, params, content, subject, account):
@@ -296,7 +305,11 @@ class ProductRuntime:
             "import_history": history}
 
     def delete_account(self, params: Mapping[str, object]) -> dict[str, object]:
-        return {"deleted": self.repo.delete_account(_required_text(params, "subject_id"), _required_text(params, "account_id"))}
+        subject, account = _required_text(params, "subject_id"), _required_text(params, "account_id")
+        deleted = self.repo.delete_account(subject, account)
+        if deleted:
+            self.review_runtime().drop_account(subject, account)
+        return {"deleted": deleted}
 
     def _lifecycle(self, params: Mapping[str, object]):
         subject, account = _required_text(params, "subject_id"), _required_text(params, "account_id")

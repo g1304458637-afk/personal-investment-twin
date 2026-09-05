@@ -26,6 +26,14 @@ const PRODUCT_METHODS: &[&str] = &[
     "investments.list",
     "episode.get",
     "data.delete_account",
+    "review.context",
+    "review.start",
+    "review.poll",
+    "review.add_note",
+    "compare.export_share",
+    "compare.import_share",
+    "compare.list_shares",
+    "compare.revoke_share",
 ];
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]

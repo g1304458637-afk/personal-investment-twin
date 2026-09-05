@@ -22,6 +22,8 @@ PRODUCT_METHODS = (
     "market.preview_price_csv", "market.commit_price_import",
     "account.list", "account.get_data_status", "investments.list", "episode.get",
     "data.delete_account",
+    "review.context", "review.start", "review.poll", "review.add_note",
+    "compare.export_share", "compare.import_share", "compare.list_shares", "compare.revoke_share",
 )
 SUPPORTED_METHODS = (*BASE_METHODS, *PRODUCT_METHODS)
 
@@ -131,6 +133,14 @@ def _product_methods(db_path: str | None) -> tuple[dict[str, Callable[[object], 
         "investments.list": checked(product.investments),
         "episode.get": checked(product.episode),
         "data.delete_account": checked(product.delete_account),
+        "review.context": checked(lambda p: product.review_runtime().context(p)),
+        "review.start": checked(lambda p: product.review_runtime().start(p)),
+        "review.poll": checked(lambda p: product.review_runtime().poll(p)),
+        "review.add_note": checked(lambda p: product.review_runtime().add_note(p)),
+        "compare.export_share": checked(lambda p: product.review_runtime().export_share(p)),
+        "compare.import_share": checked(lambda p: product.review_runtime().import_share(p)),
+        "compare.list_shares": checked(lambda p: product.review_runtime().list_shares(p)),
+        "compare.revoke_share": checked(lambda p: product.review_runtime().revoke_share(p)),
     }
     return methods, product
 
