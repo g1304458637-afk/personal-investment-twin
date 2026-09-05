@@ -86,6 +86,35 @@ def finalization_wire_verified(requests):
         and r.get("schema_present") is True and r.get("strict") is True for r in final)
 
 
+def semantic_diagnostic(selection, context, error):
+    """Only typed candidate fields and allowlisted Synthetic ref metadata, no prose."""
+    from dataclasses import asdict
+    from src.agents.claim_contract import ReviewVerificationError
+    known = context.records
+    if (context.own.episode.data_tier != "synthetic"
+        or any(r.subject_id not in {"SYN_COMPARE_A", "SYN_COMPARE_B"} for r in known.values())):
+        return {"reason": "diagnostic_scope_not_allowed"}
+    def ref(value):
+        return value if value in known else "[UNKNOWN_REF_SHA256:" + hashlib.sha256(value.encode()).hexdigest()[:12] + "]"
+    candidate = selection.model_dump()
+    candidate["factual_refs"] = [ref(r) for r in selection.factual_refs]
+    candidate["historical_comparison_refs"] = [ref(r) for r in selection.historical_comparison_refs]
+    for hypothesis in candidate["possible_explanations"]:
+        for key in ("supporting_evidence_refs", "contradictory_evidence_refs"):
+            hypothesis[key] = [ref(r) for r in hypothesis[key]]
+    issue = asdict(error.issue) if isinstance(error, ReviewVerificationError) else None
+    if issue:
+        issue["refs"] = [ref(r) for r in issue["refs"]]
+    referenced = set(selection.factual_refs + selection.historical_comparison_refs)
+    for h in selection.possible_explanations:
+        referenced.update(h.supporting_evidence_refs + h.contradictory_evidence_refs)
+    metadata = {r: {"kind": known[r].kind, "tags": known[r].tags, "availability": known[r].availability,
+        "subject_id": known[r].subject_id, "account_id": known[r].account_id,
+        "episode_id": known[r].episode_id, "instrument_id": known[r].instrument_id,
+        "actually_read": r in context.retrieved} for r in sorted(referenced & known.keys())}
+    return {"candidate": candidate, "rejection": issue, "referenced_evidence": metadata}
+
+
 def prepare_context(product):
     from src.compare.demo import build_pair
     pair = build_pair()
@@ -224,8 +253,11 @@ async def diagnose(context, secret, question=None):
             state[prefix + "_entered"] = True
             try:
                 return original(*args, **kwargs)
-            except Exception:
+            except Exception as exc:
                 state[prefix + "_failed"] = True
+                if prefix == "claim_evidence_validation":
+                    state["semantic_rejection"] = semantic_diagnostic(args[0], args[1], exc)
+                    emit("claim_evidence_rejected", **state["semantic_rejection"])
                 raise
         return run
 

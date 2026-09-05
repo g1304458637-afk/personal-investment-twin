@@ -36,6 +36,7 @@ class ReviewContext:
     own: EpisodeCompareFacts
     records: dict[str, ReviewFact]
     comparison_id: str | None
+    authorized_scopes: frozenset[tuple[str, str, str, str]] = frozenset()
     retrieved: set[str] = field(default_factory=set)
     searched: set[str] = field(default_factory=set)
     access_allowed: Callable[[], bool] = field(default=lambda: True, repr=False)
@@ -55,6 +56,15 @@ def build_review_catalog(own: EpisodeCompareFacts, *, comparison: SameStockCompa
     records: dict[str, ReviewFact] = {}
     def add(facts, ref, kind, title, value, refs, tags=(), status="complete", method=None, version="1"):
         ep = facts.episode
+        if ref in records:
+            # Re-importing one's own share can carry the same IDs with redacted
+            # execution refs. Keep local canonical facts, never overwrite them
+            # with the shared projection. Notes and foreign collisions reject.
+            if (facts is not own and kind == records[ref].kind
+                and (ep.subject_id, ep.account_id, ep.episode_id, ep.instrument_id)
+                    == (e.subject_id, e.account_id, e.episode_id, e.instrument_id)):
+                return
+            raise ValueError("duplicate_review_ref")
         records[ref] = ReviewFact(ref, kind, title, ep.subject_id, ep.account_id, ep.episode_id,
                                   ep.instrument_id, facts.instrument.currency, facts.as_of.isoformat(),
                                   method or facts.outcome.method_id, version, status, tuple(refs),
@@ -113,7 +123,11 @@ def build_review_catalog(own: EpisodeCompareFacts, *, comparison: SameStockCompa
             raise ValueError("note_scope_mismatch")
         if note.get("source") != "user":
             raise ValueError("note_source_invalid")
+        if note.get("note_kind") not in {"plan", "reason"}:
+            raise ValueError("note_kind_invalid")
         tag = "user_plan" if note.get("note_kind") == "plan" else "user_reason"
         add(own, note["note_id"], "user_note", "用户提供的信息（并非已核实当时事实）", note,
             (note["note_id"],), (tag,), method="user_authored_note_v1")
-    return ReviewContext(own, records, comparison.comparison_id if comparison else None)
+    scopes = frozenset((f.episode.subject_id, f.episode.account_id, f.episode.episode_id, f.episode.instrument_id)
+                       for f in ((own, comparison.b) if comparison else (own,)))
+    return ReviewContext(own, records, comparison.comparison_id if comparison else None, scopes)

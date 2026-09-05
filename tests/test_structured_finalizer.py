@@ -48,6 +48,8 @@ def test_prose_is_internal_and_finalizer_has_no_tools_same_schema(pair):
     assert last["tools"] == [] and last["model_settings"].tool_choice == "none"
     assert last["model_settings"].reasoning.effort == "none"
     assert last["output_schema"].json_schema() == AgentOutputSchema(ReviewSelection).json_schema()
+    assert "claim_evidence_contract" in str(model.inputs[-1])
+    assert "eligible_support_refs" in str(model.inputs[-1])
     assert model.calls == len(calls()) + 2
 
 

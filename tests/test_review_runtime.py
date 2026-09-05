@@ -51,6 +51,10 @@ def test_share_export_import_permission_revocation_and_no_raw_file(product, tmp_
     imported = service.import_share(params | {"trusted_sender_fingerprint": result["signer_fingerprint"], "file_path": str(target)})
     shared_params = params | {"share_id": imported["share_id"]}
     assert service.context(shared_params)["comparison"]["status"] != "unavailable"
+    catalog, _, _ = service._context(shared_params)
+    own_fact = catalog.records[catalog.own.outcome.outcome_id]
+    assert own_fact.value["episode"]["execution_refs"] == list(catalog.own.episode.execution_refs)
+    assert own_fact.underlying_refs == catalog.own.outcome.execution_refs
     with pytest.raises(ValueError, match="agent"):
         service._context(shared_params, for_agent=True)
     with pytest.raises(FileExistsError):

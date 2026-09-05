@@ -111,3 +111,32 @@ def test_qa_requires_actual_tool_free_strict_finalizer_wire():
     for key, value in {"phase": "analysis", "tool_count": 1, "tool_choice": "auto",
                        "reasoning": {}, "text_format_type": "text", "schema_present": False, "strict": False}.items():
         assert not finalization_wire_verified([request | {key: value}])
+
+
+def test_semantic_diagnostic_has_exact_path_and_masks_unknown_refs():
+    import json
+    from scripts.qa_decision_review_deepseek import semantic_diagnostic
+    from src.agents.decision_review import Hypothesis, ReviewVerificationError, verify_selection
+    from src.agents.review_catalog import build_review_catalog
+    from src.compare.demo import build_pair
+    from test_decision_review_agent import selection
+    context = build_review_catalog(build_pair().a)
+    context.retrieved.update(context.records)
+    ref = context.own.outcome.outcome_id
+    claim = Hypothesis(kind="price_influence_possible", supporting_evidence_refs=[ref],
+        contradictory_evidence_refs=[], alternative_explanations=["prior_staged_plan"],
+        missing_information=["contemporaneous_plan"])
+    candidate = selection(context, possible_explanations=[claim])
+    with pytest.raises(ReviewVerificationError) as caught:
+        verify_selection(candidate, context)
+    diagnostic = semantic_diagnostic(candidate, context, caught.value)
+    assert diagnostic["rejection"]["json_path"] == "$.possible_explanations[0].supporting_evidence_refs"
+    assert diagnostic["rejection"]["code"] == "evidence_does_not_support_hypothesis"
+    assert diagnostic["candidate"]["possible_explanations"][0] == claim.model_dump()
+    assert diagnostic["referenced_evidence"][ref]["kind"] == "episode"
+    marker = "UNTRUSTED_QA_MARKER_NOT_A_CREDENTIAL"
+    candidate.factual_refs.append(marker)
+    assert marker not in json.dumps(semantic_diagnostic(candidate, context, caught.value))
+    from dataclasses import replace
+    context.records[ref] = replace(context.records[ref], subject_id="REAL_SUBJECT")
+    assert semantic_diagnostic(candidate, context, caught.value) == {"reason": "diagnostic_scope_not_allowed"}

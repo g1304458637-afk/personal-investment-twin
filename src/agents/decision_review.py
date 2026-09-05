@@ -19,6 +19,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from src.agents.investment_coach import create_model_runtime, CoachModelRuntime
 from src.agents.review_catalog import ReviewContext
 from src.agents.structured_finalizer import StructuredFinalizer, build_finalization_input
+from src.agents.claim_contract import (CLAIM_RULES, ReviewVerificationError, build_claim_contract,
+                                       counter_material_refs, scope_of, supports_claim)
 
 REVIEW_VERSION = "evidence_grounded_review_v1"
 INSTRUCTIONS = """
@@ -124,39 +126,57 @@ TOOLS = [get_episode_facts, search_review_facts, get_same_stock_comparison,
          get_registered_historical_comparisons, get_self_history, get_user_notes]
 
 
-class ReviewVerificationError(ValueError):
-    pass
-
-
 def verify_selection(selection: ReviewSelection, context: ReviewContext) -> None:
     if not context.access_allowed():
         raise ReviewVerificationError("review_access_expired_or_revoked")
-    def records(refs):
-        if any(ref not in context.retrieved for ref in refs):
-            raise ReviewVerificationError("unretrieved_or_unknown_evidence")
+    def reject(code, path, kind=None, refs=(), expected=""):
+        raise ReviewVerificationError(code, path=path, kind=kind, refs=refs, expected=expected)
+    def records(refs, path, kind=None, own_only=False):
+        for i, ref in enumerate(refs):
+            if ref not in context.retrieved or ref not in context.records:
+                reject("unretrieved_or_unknown_evidence", f"{path}[{i}]", kind, (ref,),
+                       "Reference must belong to this run's completed authorized receipts.")
+            record = context.records[ref]
+            permitted = {scope_of(context.own.episode)} if own_only else context.authorized_scopes
+            if scope_of(record) not in permitted:
+                reject("evidence_scope_mismatch", f"{path}[{i}]", kind, (ref,),
+                       "Subject/account/Episode/instrument must match the authorized claim scope.")
         return [context.records[ref] for ref in refs]
-    facts = records(selection.factual_refs)
+    facts = records(selection.factual_refs, "$.factual_refs")
     if context.own.outcome.outcome_id not in selection.factual_refs:
-        raise ReviewVerificationError("own_episode_result_required")
-    if any(r.kind == "historical_comparison" for r in facts):
-        raise ReviewVerificationError("historical_hypothesis_is_not_actual_fact")
-    if any(r.kind != "historical_comparison" or r.availability != "complete"
-           for r in records(selection.historical_comparison_refs)):
-        raise ReviewVerificationError("unavailable_or_unregistered_historical_comparison")
-    for h in selection.possible_explanations:
-        supports = records(h.supporting_evidence_refs)
-        records(h.contradictory_evidence_refs)
-        expected_tag = {"price_influence_possible": "add_after_positive_market_move",
-                        "planned_staging_possible": "user_plan", "user_reported_reason": "user_reason"}.get(h.kind)
-        if expected_tag and not any(expected_tag in r.tags and r.subject_id == context.own.episode.subject_id
-                                     and r.account_id == context.own.episode.account_id for r in supports):
-            raise ReviewVerificationError("evidence_does_not_support_hypothesis")
-        if h.kind == "price_influence_possible":
-            plan_refs = {r.ref for r in context.records.values() if "user_plan" in r.tags}
-            if not plan_refs <= set(h.contradictory_evidence_refs):
-                raise ReviewVerificationError("contrary_plan_not_addressed")
-        if h.kind != "unknown" and (not h.alternative_explanations or not h.missing_information):
-            raise ReviewVerificationError("hypothesis_needs_alternatives_and_missing_information")
+        reject("own_episode_result_required", "$.factual_refs")
+    own_record = context.records[context.own.outcome.outcome_id]
+    if own_record.kind != "episode" or scope_of(own_record) != scope_of(context.own.episode):
+        reject("own_episode_result_identity_mismatch", "$.factual_refs")
+    for i, record in enumerate(facts):
+        if record.kind == "historical_comparison":
+            reject("historical_hypothesis_is_not_actual_fact", f"$.factual_refs[{i}]", refs=(record.ref,))
+    history = records(selection.historical_comparison_refs, "$.historical_comparison_refs", own_only=True)
+    for i, record in enumerate(history):
+        if record.kind != "historical_comparison" or record.availability != "complete":
+            reject("unavailable_or_unregistered_historical_comparison", f"$.historical_comparison_refs[{i}]", refs=(record.ref,))
+    for i, h in enumerate(selection.possible_explanations):
+        path = f"$.possible_explanations[{i}]"
+        supports = records(h.supporting_evidence_refs, path + ".supporting_evidence_refs", h.kind, own_only=True)
+        contrary = records(h.contradictory_evidence_refs, path + ".contradictory_evidence_refs", h.kind, own_only=True)
+        if any(r.kind == "historical_comparison" for r in supports + contrary):
+            reject("historical_hypothesis_is_not_motive_support", path, h.kind,
+                   h.supporting_evidence_refs + h.contradictory_evidence_refs)
+        overlap = set(h.supporting_evidence_refs) & set(h.contradictory_evidence_refs)
+        if overlap:
+            reject("support_counter_material_overlap", path + ".contradictory_evidence_refs", h.kind, sorted(overlap))
+        if h.kind == "unknown":
+            continue
+        rule = CLAIM_RULES[h.kind]
+        if not any(supports_claim(r, h.kind, context) for r in supports):
+            reject("evidence_does_not_support_hypothesis", path + ".supporting_evidence_refs", h.kind,
+                   h.supporting_evidence_refs, f"Requires complete, own-scoped {rule.evidence_kind} / {rule.tag}; {rule.boundary}")
+        if not counter_material_refs(context, h.kind) <= set(h.contradictory_evidence_refs):
+            reject("contrary_plan_not_addressed", path + ".contradictory_evidence_refs", h.kind,
+                   h.contradictory_evidence_refs, "Known user plans must remain visible as alternative counter-material, not proven negation.")
+        if not h.alternative_explanations or rule.missing not in h.missing_information:
+            reject("hypothesis_needs_alternatives_and_missing_information", path + ".missing_information", h.kind,
+                   expected=f"Retain alternatives and {rule.missing}; {rule.boundary}")
 
 
 def _audit(result, context):
@@ -211,6 +231,7 @@ async def run_decision_review(question: str, context: ReviewContext, *, runtime:
     # A retrieval flag without a paired successful receipt must never authorize
     # a final reference. No new reads occur in the finalization stage.
     local.retrieved = set(payload["allowed_evidence_refs"])
+    payload["claim_evidence_contract"] = build_claim_contract(local, local.retrieved)
     selection = await StructuredFinalizer(runtime).finalize(payload, ReviewSelection,
                                                           access_allowed=local.access_allowed)
     executed = _audit(result, local)
