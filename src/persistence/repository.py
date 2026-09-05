@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import sqlite3
 from contextlib import contextmanager
+from dataclasses import replace
 from datetime import date
 from pathlib import Path
 from typing import Iterator, Mapping, Sequence
@@ -22,7 +23,7 @@ from src.core.canonical_execution import (
 )
 from src.market_data.models import HistoricalPriceFact
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 class RepositoryError(RuntimeError):
@@ -79,6 +80,17 @@ CREATE TABLE instrument_resolutions (
 
 def _dump(value: object) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
+
+
+_MIGRATION_2 = """
+CREATE TABLE execution_instrument_resolutions (
+  execution_id TEXT PRIMARY KEY, subject_id TEXT NOT NULL, account_id TEXT NOT NULL,
+  instrument_id TEXT NOT NULL, payload_json TEXT NOT NULL, recorded_at TEXT NOT NULL,
+  source_file_sha256 TEXT NOT NULL, source_row_ref TEXT NOT NULL,
+  FOREIGN KEY(execution_id) REFERENCES canonical_executions(execution_id) ON DELETE CASCADE,
+  FOREIGN KEY(subject_id, account_id) REFERENCES accounts(subject_id, account_id) ON DELETE CASCADE
+);
+"""
 
 
 def _execution_payload(item: CanonicalExecutionV2) -> dict[str, object]:
@@ -163,9 +175,19 @@ class LocalRepository:
                 self.connection.executescript(
                     "BEGIN IMMEDIATE;\n" + _MIGRATION_1
                     + "\nCREATE TABLE schema_migrations(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL);"
-                    + f"\nINSERT INTO schema_migrations VALUES({SCHEMA_VERSION}, datetime('now'));"
-                    + f"\nPRAGMA user_version={SCHEMA_VERSION};\nCOMMIT;"
+                    + "\nINSERT INTO schema_migrations VALUES(1, datetime('now'));"
+                    + "\nPRAGMA user_version=1;\nCOMMIT;"
                 )
+            except sqlite3.Error as exc:
+                if self.connection.in_transaction:
+                    self.connection.rollback()
+                raise RepositoryError(f"migration failed: {exc}") from exc
+            current = 1
+        if current == 1:
+            try:
+                self.connection.executescript("BEGIN IMMEDIATE;\n" + _MIGRATION_2
+                    + "\nINSERT INTO schema_migrations VALUES(2, datetime('now'));"
+                    + "\nPRAGMA user_version=2;\nCOMMIT;")
             except sqlite3.Error as exc:
                 if self.connection.in_transaction:
                     self.connection.rollback()
@@ -188,12 +210,20 @@ class LocalRepository:
     def list_accounts(self) -> list[dict[str, object]]:
         return [dict(row) for row in self.connection.execute("SELECT * FROM accounts ORDER BY created_at, subject_id, account_id")]
 
-    def executions(self, subject_id: str, account_id: str) -> tuple[CanonicalExecutionV2, ...]:
+    def executions(self, subject_id: str, account_id: str, *, resolve_instruments: bool = True) -> tuple[CanonicalExecutionV2, ...]:
         rows = self.connection.execute(
             "SELECT payload_json FROM canonical_executions WHERE subject_id=? AND account_id=? ORDER BY event_order_key, COALESCE(execution_sequence,-1), execution_id",
             (subject_id, account_id),
         )
-        return tuple(_decode_execution(row[0]) for row in rows)
+        facts = tuple(_decode_execution(row[0]) for row in rows)
+        if not resolve_instruments:
+            return facts
+        resolutions = {row[0]: instrument_ref(**json.loads(row[1])["instrument"])
+            for row in self.connection.execute(
+                "SELECT execution_id,payload_json FROM execution_instrument_resolutions WHERE subject_id=? AND account_id=?",
+                (subject_id, account_id))}
+        return tuple(replace(item, instrument=resolutions[item.execution_id])
+            if item.execution_id in resolutions else item for item in facts)
 
     def prices(self, subject_id: str, account_id: str) -> tuple[HistoricalPriceFact, ...]:
         rows = self.connection.execute(
@@ -213,9 +243,25 @@ class LocalRepository:
                             initial_cash: float, batch_id: str, file_sha256: str, filename: str,
                             imported_at: str, summary: Mapping[str, object], executions: Sequence[CanonicalExecutionV2],
                             decisions: Sequence[tuple[str, str, str | None]] = (),
-                            resolutions: Sequence[tuple[str, str, Mapping[str, object]]] = ()) -> int:
+                            resolutions: Sequence[tuple[str, str, Mapping[str, object]]] = (),
+                            execution_resolutions: Sequence[tuple[str, str, Mapping[str, object]]] = ()) -> int:
         with self.transaction() as db:
             self.upsert_account(subject_id, account_id, display_name=display_name, initial_cash=initial_cash, now=imported_at)
+            # A confirmed resolution is independent of import-batch idempotency.
+            # The original execution JSON stays immutable; this is a qualified view.
+            for execution_id, source_row_ref, payload in execution_resolutions:
+                existing = db.execute("SELECT payload_json FROM canonical_executions WHERE execution_id=? AND subject_id=? AND account_id=?",
+                    (execution_id, subject_id, account_id)).fetchone()
+                if not existing or _decode_execution(existing[0]).instrument.instrument_id is not None:
+                    raise RepositoryError("resolution requires an owned unresolved canonical execution")
+                instrument = instrument_ref(**payload["instrument"])
+                if instrument.instrument_id is None:
+                    raise RepositoryError("resolution must identify a qualified instrument")
+                previous = db.execute("SELECT payload_json FROM execution_instrument_resolutions WHERE execution_id=?", (execution_id,)).fetchone()
+                if previous and instrument_ref(**json.loads(previous[0])["instrument"]) != instrument:
+                    raise RepositoryError("conflicting instrument resolution requires explicit reconciliation")
+                db.execute("INSERT OR IGNORE INTO execution_instrument_resolutions VALUES(?,?,?,?,?,?,?,?)",
+                    (execution_id, subject_id, account_id, instrument.instrument_id, _dump(payload), imported_at, file_sha256, source_row_ref))
             if db.execute("SELECT 1 FROM import_batches WHERE batch_id=?", (batch_id,)).fetchone():
                 return 0
             db.execute("INSERT INTO import_batches VALUES(?,?,?,?,?,?,?,?)",

@@ -27,6 +27,7 @@ def test_product_runtime_preview_commit_restart_reimport_and_delete(tmp_path):
     preview = runtime.preview_trade(trade)
     assert preview["summary"]["new_executions"] == 5
     trade["expected_file_sha256"] = preview["batch"]["file_sha256"]
+    trade["expected_preview_fingerprint"] = preview["preview_fingerprint"]
     trade["duplicate_choices"] = {}
     assert runtime.commit_trade(trade)["inserted_executions"] == 5
     assert runtime.commit_trade(trade)["inserted_executions"] == 0
@@ -36,6 +37,7 @@ def test_product_runtime_preview_commit_restart_reimport_and_delete(tmp_path):
     market_preview = runtime.preview_market(market)
     assert market_preview["summary"]["new_observations"] == 5
     market["expected_file_sha256"] = market_preview["file_sha256"]
+    market["expected_preview_fingerprint"] = market_preview["preview_fingerprint"]
     assert runtime.commit_market(market)["inserted_observations"] == 5
     assert runtime.commit_market(market)["inserted_observations"] == 0
     investments = runtime.investments({"subject_id": "local-user", "account_id": "ACC-1"})
@@ -59,7 +61,7 @@ def test_runtime_never_persists_raw_csv_or_absolute_path(tmp_path):
     runtime = ProductRuntime(tmp_path / "db")
     trade = trade_params()
     preview = runtime.preview_trade(trade)
-    trade.update(expected_file_sha256=preview["batch"]["file_sha256"], duplicate_choices={})
+    trade.update(expected_file_sha256=preview["batch"]["file_sha256"], expected_preview_fingerprint=preview["preview_fingerprint"], duplicate_choices={})
     runtime.commit_trade(trade)
     history = runtime.data_status({"subject_id": "local-user", "account_id": "ACC-1"})["import_history"]
     assert history[0]["filename"] == "fixture_a_lifecycle.csv"
@@ -73,9 +75,11 @@ def test_existing_account_initial_cash_cannot_be_rewritten(tmp_path):
     runtime = ProductRuntime(tmp_path / "db")
     trade = trade_params()
     preview = runtime.preview_trade(trade)
-    trade.update(expected_file_sha256=preview["batch"]["file_sha256"], duplicate_choices={})
+    trade.update(expected_file_sha256=preview["batch"]["file_sha256"], expected_preview_fingerprint=preview["preview_fingerprint"], duplicate_choices={})
     runtime.commit_trade(trade)
     trade["initial_cash"] = 200000
+    preview = runtime.preview_trade(trade)
+    trade["expected_preview_fingerprint"] = preview["preview_fingerprint"]
     import pytest
     with pytest.raises(ValueError, match="initial_cash cannot change"):
         runtime.commit_trade(trade)
@@ -84,7 +88,7 @@ def test_existing_account_initial_cash_cannot_be_rewritten(tmp_path):
 
 def _import_trades(runtime, params):
     preview = runtime.preview_trade(params)
-    params.update(expected_file_sha256=preview["batch"]["file_sha256"], duplicate_choices={})
+    params.update(expected_file_sha256=preview["batch"]["file_sha256"], expected_preview_fingerprint=preview["preview_fingerprint"], duplicate_choices={})
     return runtime.commit_trade(params)
 
 
@@ -121,6 +125,7 @@ def test_latest_daily_observation_includes_intraday_canonical_executions(
         market = _market_params()
         preview = runtime.preview_market(market)
         market["expected_file_sha256"] = preview["file_sha256"]
+        market["expected_preview_fingerprint"] = preview["preview_fingerprint"]
         runtime.commit_market(market)
         stored = runtime.repo.executions("local-user", "ACC-1")
         assert len(stored) == expected_count
@@ -178,6 +183,7 @@ def test_commit_rejects_changed_confirmed_file_without_persisting(tmp_path, kind
         params["file_path"] = str(path)
         preview = getattr(runtime, f"preview_{kind}")(params)
         params["expected_file_sha256"] = preview["batch"]["file_sha256"] if kind == "trade" else preview["file_sha256"]
+        params["expected_preview_fingerprint"] = preview["preview_fingerprint"]
         before = list(runtime.repo.connection.iterdump())
         path.write_bytes(changed)
         with pytest.raises(ValueError, match="^file changed after preview$"):
@@ -201,6 +207,7 @@ def test_commit_hashes_and_parses_one_authoritative_read(tmp_path, monkeypatch, 
         changed = original.replace(b"BUY,100,10.00", b"BUY,999,10.00") if kind == "trade" else original.replace(b"equity,10.00", b"equity,99.00")
         preview = getattr(runtime, f"preview_{kind}")(params)
         params["expected_file_sha256"] = preview["batch"]["file_sha256"] if kind == "trade" else preview["file_sha256"]
+        params["expected_preview_fingerprint"] = preview["preview_fingerprint"]
         reads = []
 
         def changing_file(_params):

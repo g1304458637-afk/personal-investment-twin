@@ -1,5 +1,8 @@
 /** Stable source-message keys used by the lightweight desktop locale layer. */
 export const enUS = {
+  "Instrument resolutions": "Instrument resolutions",
+  "Instrument resolution": "Instrument resolution",
+  "Confirmed facts": "Time · Instrument · Side · Quantity · Price · Fee status · Fee",
   "Personal Investment Twin": "Personal Investment Twin",
   "Your investment twin": "Your investment twin",
   "Updated": "Updated",

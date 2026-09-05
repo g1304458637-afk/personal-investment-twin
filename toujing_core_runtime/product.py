@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from dataclasses import replace
 import hashlib
 import math
 from pathlib import Path
@@ -49,6 +50,20 @@ def _now(params: Mapping[str, object]) -> str:
     return str(value) if isinstance(value, str) and value else datetime.now(timezone.utc).isoformat()
 
 
+def _preview_fingerprint(params: Mapping[str, object], content: bytes, kind: str) -> str:
+    # Bind every supplied interpretation option, excluding only transport,
+    # confirmation and post-preview row choices. No paths/raw bytes are stored.
+    excluded = {"file_path", "expected_file_sha256", "expected_preview_fingerprint", "duplicate_choices", "imported_at"}
+    payload = {"kind": kind, "file_sha256": hashlib.sha256(content).hexdigest(),
+               "configuration": {key: value for key, value in params.items() if key not in excluded}}
+    return stable_id("preview", payload)
+
+
+def _confirm_preview(params: Mapping[str, object], content: bytes, kind: str) -> None:
+    if _required_text(params, "expected_preview_fingerprint") != _preview_fingerprint(params, content, kind):
+        raise ValueError("preview configuration changed; preview again before confirmation")
+
+
 def _summary_zero(total: int) -> ImportPreviewSummary:
     return ImportPreviewSummary(total, total, total, 0, 0, 0, 0, 0, 0, total, 0, 0, 0)
 
@@ -92,26 +107,67 @@ class ProductRuntime:
     def close(self) -> None:
         self.repo.close()
 
+    def _trade_preview(self, params, content, subject, account):
+        config = _trade_config(params, subject, account)
+        raw = self.repo.executions(subject, account, resolve_instruments=False)
+        raw_by_id = {item.execution_id: item for item in raw}
+        current = {item.execution_id: item for item in self.repo.executions(subject, account)}
+        if params.get("column_mapping") is not None and not isinstance(params["column_mapping"], Mapping):
+            raise ValueError("column_mapping must be an object")
+        options = dict(explicit_mapping=params.get("column_mapping"), existing_executions=raw,
+                       existing_file_hashes=self.repo.file_hashes(subject, account, "trade"))
+        parsed = preview_generic_csv(content, config=config, **options)
+        source = preview_generic_csv(content, config=replace(config, confirmed_instruments=None), **options) if config.confirmed_instruments else parsed
+        payload = parsed.as_dict()
+        reconciled = {}
+        for row, original, view in zip(parsed.rows, source.rows, payload["rows"]):
+            if row.candidate is None or original.candidate is None:
+                continue
+            old = raw_by_id.get(original.candidate.execution_id)
+            if old is None or old.instrument.instrument_id is not None or row.candidate.instrument.instrument_id is None:
+                continue
+            excluded = {"instrument_id", "execution_id", "source_record_ref"}
+            same_facts = lambda item: {key: value for key, value in item.result_payload().items() if key not in excluded}
+            if same_facts(old) != same_facts(row.candidate):
+                raise ValueError("instrument resolution cannot change execution facts")
+            qualified = replace(old, instrument=replace(row.candidate.instrument,
+                currency=row.candidate.instrument.currency or old.instrument.currency))
+            previous = current[old.execution_id]
+            if previous.instrument.instrument_id is not None and previous.instrument != qualified.instrument:
+                raise ValueError("conflicting instrument resolution requires explicit reconciliation")
+            needed = previous.instrument.instrument_id is None
+            reconciled[row.row_ref] = qualified if needed else None
+            view["status"] = "instrument_resolution" if needed else "exact_duplicate"
+            view["candidate"] = {**view["candidate"], "execution_id": old.execution_id,
+                                 "source_record_ref": old.provenance.source_record_ref}
+            view["existing_execution_id"] = old.execution_id
+            if row.status == "new_execution":
+                payload["summary"]["new_executions"] -= 1
+                payload["summary"]["accepted_canonical_facts"] -= 1
+            key = "instrument_resolutions" if needed else "exact_duplicates"
+            payload["summary"][key] = payload["summary"].get(key, 0) + 1
+        return parsed, reconciled, payload
+
     def preview_trade(self, params: Mapping[str, object]) -> dict[str, object]:
         path, content = _file(params)
         subject = _required_text(params, "subject_id")
         account = _required_text(params, "account_id")
-        preview = preview_generic_csv(content, config=_trade_config(params, subject, account),
-            existing_executions=self.repo.executions(subject, account),
-            existing_file_hashes=self.repo.file_hashes(subject, account, "trade"))
-        return {**preview.as_dict(), "filename": path.name}
+        _, _, preview = self._trade_preview(params, content, subject, account)
+        return {**preview, "filename": path.name, "preview_fingerprint": _preview_fingerprint(params, content, "trade")}
 
     def commit_trade(self, params: Mapping[str, object]) -> dict[str, object]:
         path, content = _confirmed_file(params)
+        _confirm_preview(params, content, "trade")
         subject, account = _required_text(params, "subject_id"), _required_text(params, "account_id")
-        parsed = preview_generic_csv(content, config=_trade_config(params, subject, account),
-            existing_executions=self.repo.executions(subject, account), existing_file_hashes=self.repo.file_hashes(subject, account, "trade"))
+        parsed, reconciled, preview_payload = self._trade_preview(params, content, subject, account)
         choices = params.get("duplicate_choices", {})
         if not isinstance(choices, Mapping):
             raise ValueError("duplicate_choices must be an object")
         accepted = []
         decisions = []
         for row in parsed.rows:
+            if row.row_ref in reconciled:
+                continue
             if row.status == "new_execution" and row.candidate is not None:
                 accepted.append(row.candidate)
             elif row.status == "possible_duplicate":
@@ -146,13 +202,19 @@ class ProductRuntime:
                     },
                     "resolution_source": "user_confirmed_import",
                 }))
+        resolution_rows = [(item.execution_id, row_ref, {
+            "instrument": {"local_symbol": item.instrument.local_symbol, "market": item.instrument.market,
+                "security_type": item.instrument.security_type, "currency": item.instrument.currency},
+            "reason": "confirmed_instrument_resolution", "preview_fingerprint": params["expected_preview_fingerprint"],
+        }) for row_ref, item in reconciled.items() if item is not None]
         inserted = self.repo.commit_trade_import(
             subject_id=subject, account_id=account,
             display_name=str(params.get("display_name") or account), initial_cash=initial_cash,
             batch_id=parsed.batch.batch_id, file_sha256=parsed.batch.file_sha256, filename=path.name,
-            imported_at=imported_at, summary=parsed.summary.as_dict(), executions=accepted,
-            decisions=decisions, resolutions=resolutions)
-        return {"batch_id": parsed.batch.batch_id, "inserted_executions": inserted, "data_status": self.data_status(params)}
+            imported_at=imported_at, summary=preview_payload["summary"], executions=accepted,
+            decisions=decisions, resolutions=resolutions, execution_resolutions=resolution_rows)
+        return {"batch_id": parsed.batch.batch_id, "inserted_executions": inserted,
+                "resolved_executions": len(resolution_rows), "data_status": self.data_status(params)}
 
     def preview_market(self, params: Mapping[str, object]) -> dict[str, object]:
         path, content = _file(params)
@@ -163,6 +225,7 @@ class ProductRuntime:
             imported_at=_now(params), known_instruments=bundle.instrument_refs),
             existing=self.repo.prices(subject, account), requirement_bundle=bundle)
         return {"batch_id": preview.batch_id, "file_sha256": preview.file_sha256, "filename": path.name,
+            "preview_fingerprint": _preview_fingerprint(params, content, "market"),
             "summary": {"total_observations": preview.total_observations, "new_observations": preview.new_observations,
                 "existing_observations": preview.existing_observations, "duplicate_rows": preview.duplicate_rows,
                 "conflicts": preview.conflicts, "invalid_rows": preview.invalid_rows},
@@ -177,6 +240,7 @@ class ProductRuntime:
 
     def commit_market(self, params: Mapping[str, object]) -> dict[str, object]:
         path, content = _confirmed_file(params)
+        _confirm_preview(params, content, "market")
         subject, account = _required_text(params, "subject_id"), _required_text(params, "account_id")
         bundle = bundle_from_repository(self.repo, subject, account)
         preview = GenericHistoricalPriceCsvAdapter().preview(content, GenericPriceCsvConfig(

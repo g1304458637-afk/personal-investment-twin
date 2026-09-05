@@ -1,6 +1,9 @@
 import { enUS } from "./en-US";
 
 export const zhCN = {
+  "Instrument resolutions": "标的消歧记录",
+  "Instrument resolution": "确认标的归属",
+  "Confirmed facts": "时间 · 标的 · 方向 · 数量 · 价格 · 费用状态 · 费用",
   "Personal Investment Twin": "个人投资镜像",
   "Your investment twin": "你的投资镜像",
   "Updated": "更新于",

@@ -107,3 +107,23 @@ def test_future_schema_fails_closed(tmp_path):
     db.close()
     with pytest.raises(RepositoryError, match="future schema"):
         LocalRepository(path)
+
+
+def test_schema_one_upgrade_preserves_original_facts(tmp_path):
+    import sqlite3
+    from src.persistence.repository import _MIGRATION_1
+    path = tmp_path / "existing.db"
+    with sqlite3.connect(path) as db:
+        db.executescript(_MIGRATION_1 + "CREATE TABLE schema_migrations(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL);"
+            "INSERT INTO schema_migrations VALUES(1,'original'); PRAGMA user_version=1;")
+        db.execute("INSERT INTO accounts VALUES(?,?,?,?,?,?)", ("s", "a", "existing", 100, "old", "old"))
+    with sqlite3.connect(path) as db:
+        before = db.execute("SELECT * FROM accounts").fetchall()
+    repo = LocalRepository(path)
+    try:
+        assert [tuple(x) for x in repo.connection.execute("SELECT * FROM accounts")] == before
+        assert repo.connection.execute("PRAGMA user_version").fetchone()[0] == 2
+        assert repo.connection.execute("SELECT applied_at FROM schema_migrations WHERE version=1").fetchone()[0] == "original"
+        assert repo.connection.execute("SELECT COUNT(*) FROM execution_instrument_resolutions").fetchone()[0] == 0
+    finally:
+        repo.close()
