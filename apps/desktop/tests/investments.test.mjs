@@ -110,7 +110,7 @@ test("Investments and Overview render backend view models without financial calc
 
   assert.match(page, /view\.openEpisodes/);
   assert.match(page, /view\.closedEpisodes/);
-  assert.match(page, /view\.primaryEpisodeId/);
+  assert.doesNotMatch(page, /Primary Product Demo/);
   assert.match(page, /realUserApi\.investments/);
   assert.match(row, /to=\{`\/investments\/episodes\/\$\{episode\.episodeId\}`\}/);
   assert.match(row, /data-primary-demo/);
@@ -127,7 +127,8 @@ test("Overview is a current-state entry point, not a module-card or attention-ra
   const overview = await readFile(new URL("../src/pages/OverviewHomePage.tsx", import.meta.url), "utf8");
   const app = await readFile(new URL("../src/App.tsx", import.meta.url), "utf8");
 
-  assert.match(app, /@\/pages\/OverviewHomePage/);
+  assert.doesNotMatch(app, /@\/pages\/OverviewHomePage/);
+  assert.ok(app.includes('overview: <Navigate to="/investments"'));
   assert.match(overview, /investments\.summary\.openEpisodeCount/);
   assert.match(overview, /to="\/twin"/);
   assert.match(overview, /to="\/pretrade"/);

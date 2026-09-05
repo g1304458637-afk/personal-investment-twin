@@ -4,7 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { FinancialObjectRow } from "@/components/investments/FinancialObjectRow";
 import { PageHeader, SectionHeading } from "@/components/common/PageHeader";
 import { StateNotice } from "@/components/common/StateNotice";
-import { investments } from "@/data/backendEvidence";
+import { positionEpisodeDemo } from "@/data/backendEvidence";
+import { adaptDemoInvestmentsCatalog } from "@/data/investments";
+import { belongsToExample } from "@/data/accountContext";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { useDataMode } from "@/data/DataModeProvider";
 import { realUserApi, type RuntimeInvestments } from "@/data/runtimeService";
 import { useLocale } from "@/locales/LocaleProvider";
@@ -24,7 +28,10 @@ export function InvestmentsPage() {
     return () => { cancelled = true; };
   }, [data.mode, data.activeAccount]);
   const view = useMemo(() => {
-    if (data.mode !== "real_user" || !runtime) return investments;
+    if (data.mode !== "real_user" || !runtime) {
+      const entries = positionEpisodeDemo.entries.filter((entry) => belongsToExample(entry, data.exampleAccount));
+      return adaptDemoInvestmentsCatalog({ ...positionEpisodeDemo, entries, defaultEpisodeId: entries[0].episode.episodeId });
+    }
     const rows = runtime.episodes.map((episode) => ({ episodeId: episode.episode_id,
       subjectId: runtime.subject_id, instrumentId: episode.instrument_id, displayName: episode.display_name,
       isSynthetic: false, currency: episode.currency, status: episode.status, openedAt: episode.opened_at, closedAt: episode.closed_at,
@@ -36,8 +43,8 @@ export function InvestmentsPage() {
       summary: { openEpisodeCount: runtime.summary.open_episode_count, closedEpisodeCount: runtime.summary.closed_episode_count, currentPositionCount: runtime.summary.current_position_count },
       openEpisodes: rows.filter((x) => x.status === "open"), closedEpisodes: rows.filter((x) => x.status === "closed"),
       primaryEpisodeId: null };
-  }, [data.mode, runtime]);
-  if (data.mode === "real_user" && !data.activeAccount) return <div className="page"><PageHeader showDemo={false} eyebrow={t("Investment experience")} title={t("My Investments")} description={t("Browse the position Episodes formed from actual executions. Current marks are valuations, not exits or predictions.")} /><StateNotice state="empty" title={t("No real account imported yet.")} detail={t("Import transactions from Data & Accounts before opening real-user investments.")} /></div>;
+  }, [data.mode, runtime, data.exampleAccount]);
+  if (data.mode === "real_user" && !data.activeAccount) return <div className="page space-y-6"><PageHeader showDemo={false} title={t("My Investments")} description={t("Import executions to reconstruct complete investment experiences.")} /><p className="text-sm text-muted">{t("Historical prices are needed for valuation and parts of the review.")}</p>{data.accountsLoading || data.accountError ? <StateNotice state={data.accountError ? "error" : "loading"} title={t(data.accountError ? "Could not read local accounts" : "Loading…")} detail={data.accountError ?? t("Opening view…")} /> : null}<div className="flex gap-3"><Button asChild variant="primary"><Link to="/data">{t("Import data")}</Link></Button><Button variant="quiet" onClick={() => data.setMode("demo")}>{t("View example account")}</Button></div></div>;
   if (data.mode === "real_user" && !runtime) return <div className="page"><PageHeader showDemo={false} eyebrow={t("Investment experience")} title={t("My Investments")} description={t("Browse the position Episodes formed from actual executions. Current marks are valuations, not exits or predictions.")} /><StateNotice state={runtimeError ? "disconnected" : "loading"} title={runtimeError ? t("Portfolio state is unavailable") : t("Loading…")} detail={runtimeError ?? t("Rebuilding from local canonical facts.")} /></div>;
   const asOf = new Intl.DateTimeFormat(locale, {
     year: "numeric",
@@ -45,11 +52,8 @@ export function InvestmentsPage() {
     day: "numeric",
   }).format(new Date(view.asOf));
   const portfolioAvailable = view.portfolioState.status === "available";
-  const primaryEpisode = view.primaryEpisodeId
-    ? [...view.closedEpisodes, ...view.openEpisodes].find((episode) => episode.episodeId === view.primaryEpisodeId) ?? null
-    : null;
-  const openEpisodes = view.openEpisodes.filter((episode) => episode.episodeId !== view.primaryEpisodeId);
-  const closedEpisodes = view.closedEpisodes.filter((episode) => episode.episodeId !== view.primaryEpisodeId);
+  const openEpisodes = view.openEpisodes;
+  const closedEpisodes = view.closedEpisodes;
 
   return (
     <div className="page investments-page">
@@ -94,19 +98,6 @@ export function InvestmentsPage() {
           />
         )}
       </section>
-
-      {primaryEpisode ? (
-        <section className="product-section" aria-labelledby="primary-demo-heading">
-          <SectionHeading
-            eyebrow={t("Product Demo")}
-            title={t("Primary Product Demo")}
-            description={t("This is the canonical Product Demo path used for visual acceptance.")}
-          />
-          <div className="financial-object-list">
-            <FinancialObjectRow episode={primaryEpisode} primary />
-          </div>
-        </section>
-      ) : null}
 
       <section className="product-section" aria-labelledby="open-episodes-heading">
         <SectionHeading

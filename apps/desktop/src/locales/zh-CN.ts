@@ -1,6 +1,22 @@
 import { enUS } from "./en-US";
 
 export const zhCN = {
+  "This view is not connected to your account": "此页面尚未接入你的账户",
+  "Your investments and data remain available from the navigation.": "请从导航查看我的投资或数据。",
+  "Standalone legacy example · not the selected account": "独立历史示例 · 不代表当前所选账户",
+  "Current account": "当前账户",
+  "My account · not imported": "我的账户 · 尚未导入",
+  "Example accounts · Synthetic": "示例账户 · Synthetic",
+  "Example account · Synthetic": "示例账户 · Synthetic",
+  "Real account · Local": "真实账户 · 本地",
+  "No account": "尚无账户",
+  "Import data to begin": "导入数据，开始整理投资",
+  "Display preferences are saved on this device.": "显示偏好保存在本机。",
+  "Import executions to reconstruct complete investment experiences.": "导入成交记录，把一次次买卖还原成完整的投资经历。",
+  "Historical prices are needed for valuation and parts of the review.": "需要相应历史价格才能完成估值和部分复盘。",
+  "Could not read local accounts": "无法读取本地账户",
+  "Import data": "导入数据",
+  "View example account": "查看示例账户",
   "Current marked total profit": "当前按市价计量的总盈利",
   "Current marked total loss": "当前按市价计量的总亏损",
   "Recorded quantity during the daily price peak-to-trough path": "每日价格峰谷区间内的记录持仓量",

@@ -51,13 +51,12 @@ test("primary sidebar derives only ready routes from metadata", () => {
       ? [entry.route.id]
       : [entry.route.id, ...entry.children.map((child) => child.id)],
   );
-  assert.deepEqual(ids, ["overview", "investments", "review", "review_decisions", "review_patterns", "twin", "pretrade", "data_accounts", "settings"]);
+  assert.deepEqual(ids, ["investments", "data_accounts", "settings"]);
   assert.equal(ids.includes("advanced_evidence"), false);
   assert.equal(ids.includes("investments"), true);
   assert.equal(ids.includes("data_accounts"), true);
-  assert.equal(entries.some((entry) => entry.type === "group" && entry.id === "review"), true);
-  const review = entries.find((entry) => entry.type === "group" && entry.id === "review");
-  assert.equal(review.route.path, "/review");
+  assert.equal(entries.some((entry) => entry.type === "group" && entry.id === "review"), false);
+  assert.ok(productRoutes.some((route) => route.path === "/review"));
 });
 
 test("review children, titles, and active state share route metadata", () => {
@@ -84,6 +83,7 @@ test("App, Sidebar, and Command Palette consume the metadata source", async () =
   assert.match(palette, /commandNavigationItems/);
   assert.match(shell, /pageTitleKey\(location\.pathname\)/);
   assert.match(shell, /to=\{item\.path\}/);
-  assert.match(shell, /AgentPanel/);
-  assert.match(shell, /Ask Twin/);
+  assert.doesNotMatch(shell, /AgentPanel/);
+  assert.doesNotMatch(shell, /Ask Twin/);
+  assert.match(app, /overview: <Navigate to="\/investments"/);
 });

@@ -9,7 +9,7 @@ export function PageHeader({
   actions,
   showDemo = true,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description: string;
   actions?: ReactNode;
@@ -18,10 +18,10 @@ export function PageHeader({
   return (
     <header className="page-header">
       <div className="page-header__copy">
-        <div className="page-header__eyebrow">
+        {eyebrow || showDemo ? <div className="page-header__eyebrow">
           <span>{eyebrow}</span>
           {showDemo ? <DemoBadge compact /> : null}
-        </div>
+        </div> : null}
         <h1>{title}</h1>
         <p>{description}</p>
       </div>

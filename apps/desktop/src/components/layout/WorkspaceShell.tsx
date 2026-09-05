@@ -3,14 +3,11 @@ import { Command, MoonStar, SunMedium } from "lucide-react";
 import { useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 
-import { AgentPanel } from "@/components/assistant/AgentPanel";
 import { MirrorOrb } from "@/components/common/MirrorOrb";
-import { DemoBadge } from "@/components/common/StatusBadge";
 import { ContextualInspectorHost } from "@/components/inspector/ContextualInspectorHost";
 import { InspectorProvider } from "@/components/inspector/InspectorContext";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { demoUser } from "@/demo/fixture";
 import { useDataMode } from "@/data/DataModeProvider";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/locales/LocaleProvider";
@@ -29,7 +26,6 @@ function WorkspaceShellContent() {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const { t } = useLocale();
-  const [agentOpen, setAgentOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const data = useDataMode();
   const currentRouteId = activeNavigationRouteId(location.pathname);
@@ -84,6 +80,28 @@ function WorkspaceShellContent() {
           </div>
         </div>
 
+        <div className="px-4 pb-5">
+          <label htmlFor="account-context" className="mb-2 block text-[11px] text-muted">{t("Current account")}</label>
+          <select id="account-context" className="w-full min-w-0 rounded-md border border-border bg-background px-2 py-2 text-xs text-foreground"
+            value={data.mode === "demo" ? `example:${data.exampleAccount.key}` : data.activeAccount ? `real:${JSON.stringify([data.activeAccount.subject_id, data.activeAccount.account_id])}` : "none"}
+            onChange={(event) => {
+              const value = event.target.value;
+              if (value.startsWith("example:")) {
+                const account = data.examples.find((item) => `example:${item.key}` === value);
+                if (account) { data.setExampleAccount(account); data.setMode("demo"); }
+              } else {
+                const account = data.accounts.find((item) => `real:${JSON.stringify([item.subject_id, item.account_id])}` === value);
+                data.setActiveAccount(account ?? null); data.setMode("real_user");
+              }
+            }}>
+            {!data.accounts.length ? <option value="none">{t("My account · not imported")}</option> : null}
+            {data.accounts.map((account) => <option key={JSON.stringify([account.subject_id, account.account_id])} value={`real:${JSON.stringify([account.subject_id, account.account_id])}`}>{account.display_name}</option>)}
+            <optgroup label={t("Example accounts · Synthetic")}>
+              {data.examples.map((account) => <option key={account.key} value={`example:${account.key}`}>{t(account.label)}</option>)}
+            </optgroup>
+          </select>
+        </div>
+
         <nav className="workspace-nav">
           <span className="workspace-nav__label">{t("Work")}</span>
           {navigationItems.map((item, index) => {
@@ -114,7 +132,8 @@ function WorkspaceShellContent() {
         </nav>
 
         <div className="workspace-sidebar__footer">
-          {data.mode === "demo" ? <><DemoBadge /><p>{t("Offline fixture · {tier}", { tier: t(demoUser.dataTier) })}</p><span>ui-demo-v1</span></> : <><span className="rounded-full border border-positive/30 bg-positive/10 px-2 py-1 text-[10px] text-positive">{t("My data")}</span><p>{data.activeAccount?.display_name ?? t("No real account imported yet.")}</p><span>{t("Local deterministic data")}</span></>}
+          <strong className="text-xs text-foreground">{t(data.mode === "demo" ? "Example account · Synthetic" : data.activeAccount ? "Real account · Local" : "No account")}</strong>
+          <p>{data.mode === "demo" ? t(data.exampleAccount.label) : data.activeAccount?.display_name ?? t("Import data to begin")}</p>
         </div>
       </aside>
 
@@ -148,10 +167,6 @@ function WorkspaceShellContent() {
               </TooltipTrigger>
               <TooltipContent>{t("Switch to {theme} mode", { theme: t(nextTheme) })}</TooltipContent>
             </Tooltip>
-            <Button className="ask-twin-button" variant="primary" onClick={() => setAgentOpen(true)}>
-              <span>{t("Ask Twin")}</span>
-              <MirrorOrb size="sm" state="active" />
-            </Button>
           </div>
         </header>
 
@@ -165,14 +180,13 @@ function WorkspaceShellContent() {
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             >
-              <Outlet context={{ openAgent: () => setAgentOpen(true) }} />
+              <Outlet />
             </motion.div>
           </AnimatePresence>
         </main>
       </div>
 
       <ContextualInspectorHost />
-      <AgentPanel open={agentOpen} onOpenChange={setAgentOpen} />
       <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
     </div>
   );
