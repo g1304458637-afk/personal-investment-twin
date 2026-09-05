@@ -19,9 +19,9 @@ from pydantic import BaseModel, ConfigDict, Field
 from src.agents.investment_coach import create_model_runtime, CoachModelRuntime
 from src.agents.review_catalog import ReviewContext
 from src.agents.structured_finalizer import StructuredFinalizer, build_finalization_input
-from src.agents.claim_contract import (CLAIM_RULES, ReviewVerificationError, build_claim_candidates,
-                                       can_correct_selection, counter_material_refs, scope_of,
-                                       supports_claim, verify_claim_candidates)
+from src.agents.claim_contract import (CLAIM_RULES, ReviewVerificationError,
+                                       counter_material_refs, scope_of, supports_claim)
+from src.agents.claim_options import build_finalization_options, can_correct_choice
 
 REVIEW_VERSION = "evidence_grounded_review_v1"
 INSTRUCTIONS = """
@@ -180,10 +180,25 @@ def verify_selection(selection: ReviewSelection, context: ReviewContext) -> None
                    expected=f"Retain alternatives and {rule.missing}; {rule.boundary}")
 
 
-def validate_finalization(selection, context, candidate_space):
-    """Both gates must pass, on initial output and on any correction."""
+def prepare_finalization_options(context):
+    """Do not expose a generated bundle until the authoritative gate accepts it."""
+    options = build_finalization_options(context)
+    if options.claim_scope != scope_of(context.own.episode) or any(
+        c.claim_scope != options.claim_scope for c in options.claim_options
+    ):
+        raise ReviewVerificationError("claim_option_scope_mismatch")
+    for case in options.validation_cases():
+        verify_selection(ReviewSelection.model_validate(case), context)
+    return options
+
+
+def expand_finalization(choice, options):
+    return ReviewSelection.model_validate(options.expand(choice))
+
+
+def validate_finalization(selection, context):
+    """The original authoritative gate still checks every expanded candidate."""
     verify_selection(selection, context)
-    verify_claim_candidates(selection, candidate_space)
 
 
 def _audit(result, context):
@@ -237,21 +252,22 @@ async def run_decision_review(question: str, context: ReviewContext, *, runtime:
     # A retrieval flag without a paired successful receipt must never authorize
     # a final reference. No new reads occur in the finalization stage.
     local.retrieved = set(payload["allowed_evidence_refs"])
-    payload["candidate_space"] = build_claim_candidates(local, local.retrieved)
+    options = prepare_finalization_options(local)
+    payload["option_catalog"] = options.model_view()
+    choice_type = options.choice_type(ReviewSelection)
     finalizer = StructuredFinalizer(runtime)
     correction = None
     for semantic_attempt in range(2):
-        selection = await finalizer.finalize(payload, ReviewSelection,
+        choice = await finalizer.finalize(payload, choice_type,
             access_allowed=local.access_allowed, semantic_correction=correction)
         # Missing/failed receipts never authorize correction, and the original
         # Stage 1 receipts are re-audited after every candidate, including repair.
         executed = _audit(result, local)
-        if not isinstance(selection, ReviewSelection):
-            raise ReviewVerificationError("invalid_review_output")
         try:
-            validate_finalization(selection, local, payload["candidate_space"])
+            selection = expand_finalization(choice, options)
+            validate_finalization(selection, local)
         except ReviewVerificationError as exc:
-            if semantic_attempt or not can_correct_selection(exc, selection, local.retrieved):
+            if semantic_attempt or not can_correct_choice(exc, choice, options):
                 exc.semantic_correction_exhausted = bool(semantic_attempt)
                 raise
             correction = asdict(exc.issue)  # Typed feedback only; no prose or new retrieval.

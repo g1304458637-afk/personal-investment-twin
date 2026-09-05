@@ -5,7 +5,8 @@ import time
 import pytest
 
 from test_product_runtime import _import_trades, _market_params, trade_params
-from test_decision_review_agent import ScriptedModel, runtime as fake_runtime, selection
+from test_decision_review_agent import ScriptedModel, runtime as fake_runtime
+from review_option_helpers import choose_options
 from toujing_core_runtime.product import ProductRuntime
 from toujing_core_runtime import review
 
@@ -68,10 +69,9 @@ def test_share_export_import_permission_revocation_and_no_raw_file(product, tmp_
 def test_native_agent_job_scope_notes_invalidate_and_never_write_financial_facts(product, monkeypatch):
     params = scope(product)
     service = product.review_runtime()
-    context, _, _ = service._context(params)
     model = ScriptedModel([("get_episode_facts", {}), ("search_review_facts", {"stance": "support", "topic": "all"}),
                            ("search_review_facts", {"stance": "contradict", "topic": "all"}),
-                           ("get_registered_historical_comparisons", {}), ("get_self_history", {}), selection(context), selection(context)])
+                           ("get_registered_historical_comparisons", {}), ("get_self_history", {}), "内部候选分析", choose_options("unknown")])
     monkeypatch.setattr(review, "create_model_runtime", lambda: fake_runtime(model))
     before = product.repo.executions("local-user", "ACC-1")
     with pytest.raises(ValueError, match="consent"):

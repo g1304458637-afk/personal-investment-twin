@@ -1,5 +1,10 @@
 # Agent v1 adversarial semantic stability closure
 
+Historical record for `d532f5e`. Subsequent user live QA was **main 1/2 PASS**
+with support/contrary overlap and repeated B-scope selections correctly rejected.
+Its partial ref-narrowing surface is superseded by
+[deterministic claim options](AGENT_CLAIM_OPTIONS_V1.md); it did not reach freeze.
+
 ## Observed failures
 
 The user confirmed the main live DeepSeek E2E PASS after `45b4f98`, but two

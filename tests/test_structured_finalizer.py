@@ -2,18 +2,19 @@
 import asyncio
 import json
 from dataclasses import asdict
+from copy import copy
 from types import SimpleNamespace
 
 import pytest
 from agents import Agent, ToolCallItem, ToolCallOutputItem
-from agents.agent_output import AgentOutputSchema
 from openai.types.responses import ResponseFunctionToolCall
 
 from test_decision_review_agent import ScriptedModel, runtime, selection
-from src.agents.decision_review import Hypothesis, ReviewSelection, ReviewVerificationError, run_decision_review
+from src.agents.decision_review import Hypothesis, prepare_finalization_options, run_decision_review
 from src.agents.review_catalog import build_review_catalog
 from src.agents.structured_finalizer import StructuredFinalizationUnavailable, build_finalization_input, MAX_ANALYSIS_CHARS
 from src.compare.demo import build_pair
+from review_option_helpers import choose_options
 
 
 @pytest.fixture(scope="module")
@@ -33,12 +34,10 @@ def run(context, analysis, outputs, topic="all"):
     return asyncio.run(run_decision_review("为什么 A 亏？", context, runtime=runtime(model))), model
 
 
-def test_prose_is_internal_and_finalizer_has_no_tools_same_schema(pair):
+def test_prose_is_internal_and_finalizer_has_no_tools_only_option_schema(pair):
     context = build_review_catalog(pair.a)
     prose = "内部候选：A是不是贪婪？不能确认。unknown；缺少当时计划。"
-    final = selection(context, possible_explanations=[Hypothesis(kind="unknown",
-        supporting_evidence_refs=[], contradictory_evidence_refs=[],
-        alternative_explanations=["unknown"], missing_information=["contemporaneous_plan"])])
+    final = choose_options("unknown")
     result, model = run(context, prose, [final])
     assert "贪婪" not in json.dumps(result, ensure_ascii=False)
     assert "analysis_candidates" not in result
@@ -48,17 +47,17 @@ def test_prose_is_internal_and_finalizer_has_no_tools_same_schema(pair):
     assert last["tools"] == [] and last["model_settings"].tool_choice == "none"
     assert last["model_settings"].reasoning.effort == "none"
     wire_schema = last["output_schema"].json_schema()
-    assert wire_schema["$defs"]["Hypothesis"]["properties"]["kind"]["enum"] == ["unknown"]
-    assert wire_schema["required"] == AgentOutputSchema(ReviewSelection).json_schema()["required"]
-    assert "candidate_space" in str(model.inputs[-1])
-    assert "eligible_support_refs" in str(model.inputs[-1])
+    assert set(wire_schema["required"]) == {"factual_option_ids", "historical_option_ids", "claim_option_ids", "question_kind"}
+    assert "factual_refs" not in wire_schema["properties"]
+    assert "option_catalog" in str(model.inputs[-1])
+    assert "eligible_support_refs" not in str(model.inputs[-1])
     assert model.calls == len(calls()) + 2
 
 
 @pytest.mark.parametrize("invalid", ['prose {"factual_refs":[]}', '{broken', '{"question_kind":"none"}'])
 def test_one_schema_retry_never_reruns_tools(pair, invalid):
     context = build_review_catalog(pair.a)
-    result, model = run(context, "unknown", [invalid, selection(context)])
+    result, model = run(context, "unknown", [invalid, choose_options("unknown")])
     assert result["facts"]
     assert model.calls == len(calls()) + 3
     assert model.requests[-2]["tools"] == model.requests[-1]["tools"] == []
@@ -76,9 +75,13 @@ def test_second_schema_failure_is_unavailable_not_prose(pair, invalid):
 def test_finalizer_refs_must_come_from_completed_receipts(pair, ref_kind):
     context = build_review_catalog(pair.a)
     ref = "invented-ref" if ref_kind == "invented" else next(r.ref for r in context.records.values() if r.kind == "market")
-    final = selection(context, factual_refs=[pair.a.outcome.outcome_id, ref])
-    with pytest.raises(ReviewVerificationError, match="unretrieved"):
-        run(context, "unknown " + ref, [final], topic="plan_or_reason")
+    if ref_kind == "unread":
+        previous = copy(context)
+        previous.retrieved = set(context.records)
+        ref = next(o.option_id for o in prepare_finalization_options(previous).factual_options if ref in o.evidence_refs)
+    final = choose_options("unknown", change=lambda c, _: c | {"factual_option_ids": [ref]})
+    with pytest.raises(StructuredFinalizationUnavailable, match="schema_validation_failed"):
+        run(context, "unknown " + ref, [final, final], topic="plan_or_reason")
 
 
 def test_psychological_prose_cannot_launder_as_supported_claim(pair):
@@ -86,7 +89,7 @@ def test_psychological_prose_cannot_launder_as_supported_claim(pair):
     final = selection(context, possible_explanations=[Hypothesis(kind="price_influence_possible",
         supporting_evidence_refs=[pair.a.outcome.outcome_id], contradictory_evidence_refs=[],
         alternative_explanations=["prior_staged_plan"], missing_information=["contemporaneous_plan"])])
-    with pytest.raises(ReviewVerificationError, match="does_not_support"):
+    with pytest.raises(StructuredFinalizationUnavailable, match="schema_validation_failed"):
         run(context, "A追涨且贪婪。候选 price_influence_possible。", [final, final])
 
 
@@ -95,7 +98,7 @@ def test_finalizer_cannot_accept_an_inadmissible_inference(pair):
     final = selection(context, possible_explanations=[Hypothesis(kind="price_influence_possible",
         supporting_evidence_refs=[], contradictory_evidence_refs=[],
         alternative_explanations=["unknown"], missing_information=["contemporaneous_plan"])])
-    with pytest.raises(ReviewVerificationError, match="does_not_support"):
+    with pytest.raises(StructuredFinalizationUnavailable, match="schema_validation_failed"):
         run(context, "无法判断。unknown。", [final, final])
 
 

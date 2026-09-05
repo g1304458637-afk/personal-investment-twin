@@ -106,13 +106,59 @@ def finalization_wire_verified(requests):
         and r.get("schema_present") is True and r.get("strict") is True for r in final)
 
 
+def synthetic_diagnostic_allowed(context):
+    return context.own.episode.data_tier == "synthetic" and all(
+        r.subject_id in {"SYN_COMPARE_A", "SYN_COMPARE_B"}
+        and r.account_id in {"SYN_COMPARE_ACCOUNT_A", "SYN_COMPARE_ACCOUNT_B"}
+        for r in context.records.values())
+
+
+def option_diagnostic(options, context, choice=None):
+    """No model-authored option identifier or real-user catalog is printed."""
+    if not synthetic_diagnostic_allowed(context):
+        return {"reason": "diagnostic_scope_not_allowed"}
+    result = {"claim_scope": dict(zip(("subject_id", "account_id", "episode_id", "instrument_id"), options.claim_scope)),
+        "generated_option_count": len(options.factual_options) + len(options.historical_options) + len(options.claim_options),
+        "admissible_kinds": [o.claim_kind for o in options.claim_options]}
+    if choice is not None:
+        allowed = {o.option_id for o in (*options.factual_options, *options.historical_options, *options.claim_options)}
+        result["selected_option_ids"] = {field: [option_id if option_id in allowed else "[UNEXPOSED_OPTION_SHA256:"
+            + hashlib.sha256(option_id.encode()).hexdigest()[:12] + "]" for option_id in getattr(choice, field)]
+            for field in ("factual_option_ids", "historical_option_ids", "claim_option_ids")}
+    return result
+
+
+def accepted_quality_facts(result, context):
+    """A small human-readable Synthetic quality view, copied from accepted facts."""
+    if not synthetic_diagnostic_allowed(context):
+        return []
+    fields = {"episode": ("result", "pnl_display", "position_return_display", "interpretation_boundary"),
+        "decision": ("event_type", "event_time", "side", "executed_quantity", "execution_price", "before", "after"),
+        "path": ("pattern_code", "facts", "limitations")}
+    output = []
+    for fact in result["facts"]:
+        # Compare accepted facts with the deterministic catalog before logging.
+        record = context.records.get(fact["ref"])
+        if record is None or fact["value"] != record.value:
+            continue
+        if record.kind == "comparison":
+            value = [{k: item[k] for k in ("fact_id", "dimension", "a_value", "b_value", "window_start", "window_end", "interpretation_boundary")
+                      if k in item} for item in record.value]
+        elif record.kind in fields and isinstance(record.value, dict):
+            value = {k: record.value[k] for k in fields[record.kind] if k in record.value}
+        else:
+            continue
+        output.append({"ref": record.ref, "kind": record.kind, "subject_id": record.subject_id,
+                       "availability": record.availability, "value": value})
+    return output
+
+
 def semantic_diagnostic(selection, context, error):
     """Only typed candidate fields and allowlisted Synthetic ref metadata, no prose."""
     from dataclasses import asdict
     from src.agents.claim_contract import ReviewVerificationError
     known = context.records
-    if (context.own.episode.data_tier != "synthetic"
-        or any(r.subject_id not in {"SYN_COMPARE_A", "SYN_COMPARE_B"} for r in known.values())):
+    if not synthetic_diagnostic_allowed(context):
         return {"reason": "diagnostic_scope_not_allowed"}
     def ref(value):
         return value if value in known else "[UNKNOWN_REF_SHA256:" + hashlib.sha256(value.encode()).hexdigest()[:12] + "]"
@@ -160,10 +206,12 @@ async def diagnose(context, secret, question=None):
     from jsonschema import Draft202012Validator
     from src.agents import decision_review as review
     from src.agents.investment_coach import create_model_runtime
+    from src.agents.structured_finalizer import StructuredFinalizer
 
     state = dict(llm_round=0, phase="analysis", analysis_tool_loop="pending", tool_call_count=0,
                  tool_calls=[], requests=[], responses=[], final_schema_attempts=[],
                  semantic_validation_attempts=[], semantic_correction_attempts=0, semantic_rejections=[],
+                 option_expansions=[], option_selection_rejections=[], format_retry_count=0,
                  final_structured_output_entered=False, final_structured_output_failed=False,
                  tool_receipt_audit_entered=False, tool_receipt_audit_failed=False,
                  claim_evidence_validation_entered=False, claim_evidence_validation_failed=False)
@@ -252,11 +300,20 @@ async def diagnose(context, secret, question=None):
     saved_run_descriptor, original_run = Runner.__dict__["run"], Runner.run
     original_validate = AgentOutputSchema.validate_json
     original_verify, original_audit = review.validate_finalization, review._audit
-    original_can_correct = review.can_correct_selection
+    original_can_correct = review.can_correct_choice
+    original_prepare, original_expand = review.prepare_finalization_options, review.expand_finalization
+    original_finalize = StructuredFinalizer.finalize
+    qa_context = context
 
     async def observed_run(cls, *args, **kwargs):
         kwargs["hooks"] = Hooks()
         return await original_run(*args, **kwargs)
+
+    async def observed_finalize(self, *args, **kwargs):
+        try:
+            return await original_finalize(self, *args, **kwargs)
+        finally:
+            state["format_retry_count"] = 1 - self.format_retries_remaining
 
     def observed_validate(self, *args, **kwargs):
         state["final_structured_output_entered"] = True
@@ -269,6 +326,28 @@ async def diagnose(context, secret, question=None):
             state["final_schema_attempts"].append("invalid")
             state["final_structured_output_failed"] = True
             raise
+
+    def observed_prepare(local):
+        nonlocal qa_context
+        options = original_prepare(local)
+        qa_context = local
+        state["claim_options"] = option_diagnostic(options, local)
+        emit("claim_options_prevalidated", **state["claim_options"])
+        return options
+
+    def observed_expand(choice, options):
+        diagnostic = option_diagnostic(options, qa_context, choice)
+        try:
+            expanded = original_expand(choice, options)
+        except review.ReviewVerificationError as exc:
+            rejection = {**diagnostic, "code": exc.issue.code, "json_path": exc.issue.json_path}
+            state["option_selection_rejections"].append(rejection)
+            emit("option_selection_rejected", **rejection)
+            raise
+        diagnostic["expansion"] = semantic_diagnostic(expanded, qa_context, None)
+        state["option_expansions"].append(diagnostic)
+        emit("option_expansion", **diagnostic)
+        return expanded
 
     def observe_check(original, prefix):
         def run(*args, **kwargs):
@@ -286,8 +365,8 @@ async def diagnose(context, secret, question=None):
                 raise
         return run
 
-    def observed_can_correct(error, selection, allowed_refs):
-        permitted = original_can_correct(error, selection, allowed_refs)
+    def observed_can_correct(error, choice, options):
+        permitted = original_can_correct(error, choice, options)
         if permitted:
             state["semantic_correction_attempts"] += 1
             emit("semantic_correction", attempt=state["semantic_correction_attempts"],
@@ -310,7 +389,9 @@ async def diagnose(context, secret, question=None):
         AgentOutputSchema.validate_json = observed_validate
         review.validate_finalization = observe_check(original_verify, "claim_evidence_validation")
         review._audit = observe_check(original_audit, "tool_receipt_audit")
-        review.can_correct_selection = observed_can_correct
+        review.can_correct_choice = observed_can_correct
+        review.prepare_finalization_options, review.expand_finalization = observed_prepare, observed_expand
+        StructuredFinalizer.finalize = observed_finalize
         result = await asyncio.wait_for(review.run_decision_review(
             question or "这是固定 Synthetic 示例。为什么 A 亏而 B 赚？请查双方操作、支持材料、反例和自身历史，"
             "区分记录、固定假设比较与可能解释；不能确定原因时明确说明。", context, runtime=runtime), 120)
@@ -318,6 +399,7 @@ async def diagnose(context, secret, question=None):
              factual_refs=[r["ref"] for r in result["facts"]],
              historical_refs=[r["ref"] for r in result["historical_comparisons"]],
              possible_explanations=result["possible_explanations"], question_kind=result["question_kind"])
+        emit("accepted_quality_facts", facts=accepted_quality_facts(result, qa_context))
         state["qa_status"] = "PASS"
     except Exception as exc:
         cause = exc.__cause__ or exc.__context__
@@ -330,7 +412,9 @@ async def diagnose(context, secret, question=None):
         Runner.run = saved_run_descriptor
         AgentOutputSchema.validate_json = original_validate
         review.validate_finalization, review._audit = original_verify, original_audit
-        review.can_correct_selection = original_can_correct
+        review.can_correct_choice = original_can_correct
+        review.prepare_finalization_options, review.expand_finalization = original_prepare, original_expand
+        StructuredFinalizer.finalize = original_finalize
         transport.event_hooks = saved_hooks
         await client.close()
     state["wire_reasoning_none_verified"] = bool(state["requests"]) and all(

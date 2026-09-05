@@ -16,8 +16,9 @@ as contrary material when considering price influence.
 
 ## Deliberately bounded interpretations
 
-The model selects tools, references, hypotheses, alternatives, missing inputs,
-and a follow-up question in a structured native SDK output. V1 has four supported
+The model selects tools and then prevalidated fact/history/claim option IDs and
+a follow-up question. Python supplies exact refs, roles, alternatives and required
+missing inputs. V1 has four supported
 hypothesis kinds: price influence possible, reported staged plan, reported reason,
 and unknown. Their final wording is bounded; the model does not author financial
 numbers or freely assert motives. This is a real tool loop but **not an open-ended
@@ -30,27 +31,31 @@ The analysis run retains those tools and required initial tool use, but its
 bounded free text is internal, untrusted candidate material, never a rendered
 answer or immutable Evidence/Twin fact. A separate `StructuredFinalizer` uses
 the same configured model/client with no tools and reasoning `none`. The
-production `ReviewSelection` shape is unchanged; its wire enums are narrowed to
-the current admissible kinds and scoped references. No new provider integration exists.
+production `ReviewSelection` shape is unchanged. The internal wire output is a
+smaller `FinalizationChoice`: dynamic typed option IDs, not raw refs. The same
+type drives wire constraints and local parsing. No new provider integration exists.
 
 Only paired, completed SDK tool receipts whose records match the authorized
 catalog admit references. Context retrieval flags alone are insufficient.
-The finalizer receives scoped record metadata and bounded analysis, not another
-retrieval capability. The application derives admissible kinds and role-specific
-references from completed receipts, not kind tokens in prose. Psychological prose cannot confer
-evidentiary support. All selected references and relationships still pass the
+The finalizer receives scoped record metadata, prevalidated immutable options and
+bounded analysis, not another retrieval capability. The application derives exact
+role-aware bundles from completed receipts, not kind tokens in prose. Each bundle
+passes the original validator before exposure. Comparison facts and A-scoped
+explanation evidence are separate; unknown has no support/contrary roles.
+Psychological prose cannot confer evidentiary support. Expanded refs still pass the
 original receipt audit and claim/evidence verification before rendering.
 
 Strict JSON/schema failure permits one formatting-only retry across Stage 2.
-A typed, model-correctable semantic rejection permits one separate correction
-against the same candidate space; receipts and the full validator run again.
-Unknown/unread refs never authorize correction. Neither budget resets the other.
+A typed duplicate/conflicting-option selection permits one separate correction
+against the same option catalog; receipts and the full validator run again.
+Unknown IDs/raw-ref fields fail strict parsing. Invalid deterministic scope/role
+bundles fail closed, not model repair. Neither budget resets the other.
 No new tools, repeated analysis, fence stripping or JSON extraction is used.
 Exhausted retries fail closed. Permissions are rechecked around each
 finalizer call. These are generic analysis/finalization boundaries; live provider
 qualification currently targets the existing DeepSeek configuration.
 
-See [adversarial stability closure](AGENT_SEMANTIC_STABILITY_V1.md) for exact
+See [deterministic claim options](AGENT_CLAIM_OPTIONS_V1.md) for exact
 failure cases, bounded budgets and the repeated live acceptance command.
 
 Actual facts, registered historical alternatives and revisable interpretations
