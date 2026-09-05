@@ -28,9 +28,11 @@ class ScriptedModel(Model):
         self.script = iter(script)
         self.calls = 0
         self.inputs = []
+        self.requests = []
 
     async def get_response(self, *args, **kwargs):
         self.calls += 1
+        self.requests.append(kwargs)
         self.inputs.append(kwargs.get("input", args[1] if len(args) > 1 else None))
         step = next(self.script)
         if isinstance(step, tuple):
@@ -39,7 +41,7 @@ class ScriptedModel(Model):
                        call_id=f"call-{self.calls}", arguments=json.dumps(arguments))]
         else:
             output = [ResponseOutputMessage(id=f"message-{self.calls}", type="message", role="assistant",
-                       status="completed", content=[ResponseOutputText(type="output_text", text=step.model_dump_json(), annotations=[])])]
+                       status="completed", content=[ResponseOutputText(type="output_text", text=step if isinstance(step, str) else step.model_dump_json(), annotations=[])])]
         return ModelResponse(output=output, usage=Usage(), response_id=f"response-{self.calls}")
 
     async def stream_response(self, *args, **kwargs):
@@ -72,6 +74,7 @@ def execute(context, final, *, contradict=True, question="帮我分析这轮"):
     if context.comparison_id:
         script.append(("get_same_stock_comparison", {}))
     script.append(final)
+    script.append(final)  # Separate no-tools finalization, not another tool loop.
     model = ScriptedModel(script)
     return asyncio.run(run_decision_review(question, context, runtime=runtime(model))), model
 
@@ -79,7 +82,7 @@ def execute(context, final, *, contradict=True, question="帮我分析这轮"):
 def test_native_sdk_loop_calls_real_tools_and_preserves_financial_facts(pair):
     context = build_review_catalog(pair.a, comparison=pair)
     result, model = execute(context, selection(context))
-    assert model.calls == 7
+    assert model.calls == 8
     assert {"get_episode_facts", "search_review_facts"} <= set(result["executed_tools"])
     fact = result["facts"][0]
     assert fact["value"]["result"]["pnl"] == pair.a.outcome.actual_result.pnl
@@ -186,6 +189,6 @@ def test_revoked_context_cannot_accept_previously_retrieved_evidence(pair):
 def test_missing_registered_history_tool_is_not_an_accepted_run(pair):
     context = build_review_catalog(pair.a)
     model = ScriptedModel([("get_episode_facts", {}), ("search_review_facts", {"stance": "support", "topic": "all"}),
-        ("search_review_facts", {"stance": "contradict", "topic": "all"}), ("get_self_history", {}), selection(context)])
+        ("search_review_facts", {"stance": "contradict", "topic": "all"}), ("get_self_history", {}), selection(context), selection(context)])
     with pytest.raises(ReviewVerificationError, match="not_executed"):
         asyncio.run(run_decision_review("我一直这样吗？", context, runtime=runtime(model)))

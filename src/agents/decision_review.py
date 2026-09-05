@@ -11,13 +11,14 @@ from __future__ import annotations
 import copy
 import json
 from dataclasses import asdict
-from typing import Literal
+from typing import Literal, get_args
 
 from agents import Agent, Runner, RunContextWrapper, ToolCallItem, ToolCallOutputItem, function_tool
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.agents.investment_coach import create_model_runtime, CoachModelRuntime
 from src.agents.review_catalog import ReviewContext
+from src.agents.structured_finalizer import StructuredFinalizer, build_finalization_input
 
 REVIEW_VERSION = "evidence_grounded_review_v1"
 INSTRUCTIONS = """
@@ -188,18 +189,31 @@ def _audit(result, context):
 
 
 async def run_decision_review(question: str, context: ReviewContext, *, runtime: CoachModelRuntime | None = None):
-    """One native SDK multi-tool run; no final output accepted before verification."""
+    """Analysis tools, isolated structured finalization, then original audits."""
     runtime = runtime or create_model_runtime()
     if runtime.model_settings.tool_choice != "required":
         raise ReviewVerificationError("required_tool_choice_missing")
     local = copy.copy(context)
     local.retrieved, local.searched = set(), set()
-    agent = Agent(name="Toujing Evidence-grounded Review", instructions=INSTRUCTIONS,
+    stage_boundary = ("\n本阶段输出仅是内部候选分析，不会展示给用户。无需输出最终复杂 JSON。"
+                      "若提出候选解释，明确使用上述已有 hypothesis kind 标识，并附已读取引用、"
+                      "相反材料、其他解释及缺失信息；无法判断时用 unknown。不要创造新 kind。")
+    agent = Agent(name="Toujing Evidence-grounded Review", instructions=INSTRUCTIONS + stage_boundary,
                   model=runtime.model, model_settings=runtime.model_settings, tools=TOOLS,
-                  output_type=ReviewSelection)
+                  output_type=None)
     result = await Runner.run(agent, question, context=local, run_config=runtime.run_config, max_turns=12)
+    records = json.loads(json.dumps({ref: asdict(record) for ref, record in local.records.items()}, ensure_ascii=False))
+    payload = build_finalization_input(result, question=question,
+        scope={"subject_id": local.own.episode.subject_id, "account_id": local.own.episode.account_id,
+               "episode_id": local.own.episode.episode_id, "comparison_id": local.comparison_id},
+        records=records, retrieved_refs=local.retrieved, tool_names={t.name for t in TOOLS},
+        hypothesis_kinds=get_args(Hypothesis.model_fields["kind"].annotation))
+    # A retrieval flag without a paired successful receipt must never authorize
+    # a final reference. No new reads occur in the finalization stage.
+    local.retrieved = set(payload["allowed_evidence_refs"])
+    selection = await StructuredFinalizer(runtime).finalize(payload, ReviewSelection,
+                                                          access_allowed=local.access_allowed)
     executed = _audit(result, local)
-    selection = result.final_output
     if not isinstance(selection, ReviewSelection):
         raise ReviewVerificationError("invalid_review_output")
     verify_selection(selection, local)

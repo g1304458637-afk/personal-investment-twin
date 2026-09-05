@@ -67,7 +67,7 @@ def test_native_agent_job_scope_notes_invalidate_and_never_write_financial_facts
     context, _, _ = service._context(params)
     model = ScriptedModel([("get_episode_facts", {}), ("search_review_facts", {"stance": "support", "topic": "all"}),
                            ("search_review_facts", {"stance": "contradict", "topic": "all"}),
-                           ("get_registered_historical_comparisons", {}), ("get_self_history", {}), selection(context)])
+                           ("get_registered_historical_comparisons", {}), ("get_self_history", {}), selection(context), selection(context)])
     monkeypatch.setattr(review, "create_model_runtime", lambda: fake_runtime(model))
     before = product.repo.executions("local-user", "ACC-1")
     with pytest.raises(ValueError, match="consent"):
