@@ -133,9 +133,11 @@ export function dailyDataZoom(sliderBottom: number, minValueSpan: number) {
       start: 0,
       end: 100,
       minValueSpan,
+      zoomLock: true,
       zoomOnMouseWheel: false,
       moveOnMouseWheel: false,
       moveOnMouseMove: true,
+      preventDefaultMouseMove: true,
     },
     {
       type: "slider" as const,

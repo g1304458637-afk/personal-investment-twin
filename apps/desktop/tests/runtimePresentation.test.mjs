@@ -36,3 +36,23 @@ test("Open cannot smuggle post-exit display observations; real metadata keeps US
   real.episode.data_tier = "authorized_beta";
   assert.equal(adaptRuntimePositionEpisodeEntry(real).instrument.currency, "USD");
 });
+
+test("path points and execution references cannot diverge from authoritative state", () => {
+  for (const mutate of [
+    (e) => { e.path_analysis.position_path.points[0].quantity += 1; },
+    (e) => { e.path_analysis.position_path.points[0].state_id = "missing"; },
+    (e) => { e.decisions[0].execution_id = "missing"; },
+  ]) {
+    const value = structuredClone(demo); mutate(value.entries[0]);
+    assert.throws(() => adaptPositionEpisodeDemo(value), /state|reference|Episode/);
+  }
+});
+
+test("actual serialized long-horizon payload is measured in bytes, including arrays", () => {
+  const entry = demo.entries.find((e) => e.instrument.instrument_id === "SYN_LONG_OPEN");
+  const bytes = Buffer.byteLength(JSON.stringify(entry));
+  assert.ok(entry.price_points.length > 1000);
+  assert.ok(bytes > 100000 && bytes < 2000000, `actual Episode payload ${bytes} bytes`);
+  const roundtrip = JSON.parse(JSON.stringify(entry));
+  assert.deepEqual(roundtrip, entry);
+});

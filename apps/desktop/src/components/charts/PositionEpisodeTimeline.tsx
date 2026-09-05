@@ -11,6 +11,11 @@ import {
   MS_PER_DAY,
   calendarDayTime,
 } from "@/components/charts/dailyTimeAxis";
+import {
+  dailyPathLineWidth,
+  createAdaptiveDailyAxisFormatter,
+} from "@/components/charts/dailyTimeNavigation";
+import type { DailyTimeNavigationStore } from "@/components/charts/useDailyTimeNavigation";
 import type {
   PositionDecisionType,
   PositionEpisodeEntryView,
@@ -44,6 +49,7 @@ export function PositionEpisodeTimeline({
   highlightStart,
   highlightEnd,
   chartGroup,
+  timeNavigation,
   onSelectDecision,
 }: {
   entry: PositionEpisodeEntryView;
@@ -52,6 +58,7 @@ export function PositionEpisodeTimeline({
   highlightStart?: string | null;
   highlightEnd?: string | null;
   chartGroup?: string;
+  timeNavigation?: DailyTimeNavigationStore;
   onSelectDecision: (decisionId: string) => void;
 }) {
   const { locale, t, formatCurrency, formatNumber } = useLocale();
@@ -107,9 +114,9 @@ export function PositionEpisodeTimeline({
         },
       };
     });
-    const averageCost = entry.decisions.map((decision) => ({
-      value: [decision.occurredAt, decision.outcome.after.averageCost],
-      decisionId: decision.decisionId,
+    const averageCost = entry.pathAnalysis.positionPath.points.map((point) => ({
+      value: [point.asOf, point.averageCost],
+      decisionId: point.decisionId,
     }));
     const current = entry.snapshot?.positionState;
     const valuation =
@@ -170,6 +177,9 @@ export function PositionEpisodeTimeline({
     };
     const observationTimes = uniqueDailyObservationTimes(entry.pricePoints.map((point) => point.observedAt));
     const minValueSpan = minDailyZoomSpanMs(observationTimes);
+    const pathLineWidth = dailyPathLineWidth(observationTimes.length, "primary");
+    const mutedLineWidth = dailyPathLineWidth(observationTimes.length, "muted");
+    const costLineWidth = dailyPathLineWidth(observationTimes.length, "secondary");
     const executionDays = new Set(
       entry.decisions.map((decision) => calendarDayTime(Date.parse(decision.occurredAt))),
     );
@@ -253,6 +263,7 @@ export function PositionEpisodeTimeline({
         ...dailyTimeDomain([
           ...entry.pricePoints.map((point) => point.observedAt),
           ...entry.decisions.map((decision) => decision.occurredAt),
+          ...entry.pathAnalysis.positionPath.points.map((point) => point.asOf),
         ]),
         boundaryGap: ["4%", "8%"],
         axisLine: { lineStyle: { color: "rgba(148, 177, 204, .18)" } },
@@ -260,7 +271,7 @@ export function PositionEpisodeTimeline({
         axisLabel: {
           color: "rgba(177, 196, 214, .72)",
           hideOverlap: true,
-          formatter: (value: number) => formatDailyAxisTick(value, locale),
+          formatter: createAdaptiveDailyAxisFormatter(locale, () => timeNavigation?.getDomain()),
         },
         splitLine: { show: false },
       },
@@ -284,7 +295,7 @@ export function PositionEpisodeTimeline({
               showSymbol: false,
               connectNulls: false,
               smooth: false,
-              lineStyle: { color: "rgba(142, 220, 255, .42)", width: 1.6 },
+              lineStyle: { color: "rgba(142, 220, 255, .42)", width: mutedLineWidth },
               z: 1,
             }]
           : []),
@@ -296,7 +307,7 @@ export function PositionEpisodeTimeline({
           showSymbol: false,
           connectNulls: false,
           smooth: false,
-          lineStyle: { color: "rgba(142, 220, 255, .92)", width: 2.4 },
+          lineStyle: { color: "rgba(142, 220, 255, .92)", width: pathLineWidth },
           markArea,
           emphasis: { focus: "series" },
           z: 2,
@@ -310,7 +321,7 @@ export function PositionEpisodeTimeline({
               showSymbol: false,
               connectNulls: false,
               smooth: false,
-              lineStyle: { color: "rgba(240, 202, 131, .55)", width: 1.5, type: "dotted" as const },
+              lineStyle: { color: "rgba(240, 202, 131, .55)", width: mutedLineWidth, type: "dotted" as const },
               z: 1,
             }]
           : []),
@@ -323,7 +334,7 @@ export function PositionEpisodeTimeline({
           smooth: false,
           showSymbol: false,
           connectNulls: false,
-          lineStyle: { color: "rgba(188, 169, 255, .78)", width: 1.6, type: "dashed" },
+          lineStyle: { color: "rgba(188, 169, 255, .78)", width: costLineWidth, type: "dashed" },
           z: 3,
         },
         {
@@ -354,6 +365,7 @@ export function PositionEpisodeTimeline({
     locale,
     selectedDecisionId,
     t,
+    timeNavigation,
   ]);
 
   const handleClick = useCallback(
@@ -406,6 +418,7 @@ export function PositionEpisodeTimeline({
         option={option}
         group={chartGroup}
         resetKey={entry.episode.episodeId}
+        timeNavigation={timeNavigation}
         observationTimes={uniqueDailyObservationTimes(entry.pricePoints.map((point) => point.observedAt))}
         label={t("Market price and actual position decision timeline for {symbol}", {
           symbol: entry.episode.instrumentId,

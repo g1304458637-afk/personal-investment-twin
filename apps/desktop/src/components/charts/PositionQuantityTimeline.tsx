@@ -10,6 +10,11 @@ import {
   uniqueDailyObservationTimes,
   MS_PER_DAY,
 } from "@/components/charts/dailyTimeAxis";
+import {
+  dailyPathLineWidth,
+  createAdaptiveDailyAxisFormatter,
+} from "@/components/charts/dailyTimeNavigation";
+import type { DailyTimeNavigationStore } from "@/components/charts/useDailyTimeNavigation";
 import type { PositionEpisodeEntryView } from "@/data/positionEpisode";
 import { useLocale } from "@/locales/LocaleProvider";
 
@@ -20,6 +25,7 @@ export function PositionQuantityTimeline({
   highlightStart,
   highlightEnd,
   chartGroup,
+  timeNavigation,
   onSelectDecision,
 }: {
   entry: PositionEpisodeEntryView;
@@ -28,17 +34,12 @@ export function PositionQuantityTimeline({
   highlightStart?: string | null;
   highlightEnd?: string | null;
   chartGroup?: string;
+  timeNavigation?: DailyTimeNavigationStore;
   onSelectDecision: (decisionId: string) => void;
 }) {
   const { locale, t, formatNumber } = useLocale();
   const option = useMemo<EChartsCoreOption>(() => {
-    const first = entry.decisions[0];
-    const quantityPoints = first
-      ? [
-          [first.occurredAt, first.outcome.before.quantity],
-          ...entry.decisions.map((decision) => [decision.occurredAt, decision.outcome.after.quantity]),
-        ]
-      : [];
+    const quantityPoints = entry.pathAnalysis.positionPath.points.map((point) => [point.asOf, point.quantity]);
     const emphasized = new Set(emphasizedDecisionIds ?? []);
     const events = entry.decisions.map((decision) => {
       const active = decision.decisionId === selectedDecisionId || emphasized.has(decision.decisionId);
@@ -58,6 +59,7 @@ export function PositionQuantityTimeline({
     });
     const observationTimes = uniqueDailyObservationTimes(entry.pricePoints.map((point) => point.observedAt));
     const minValueSpan = minDailyZoomSpanMs(observationTimes);
+    const quantityLineWidth = dailyPathLineWidth(observationTimes.length, "primary");
     const holdingEnd = entry.episode.closedAt ?? entry.snapshot?.positionState.valuationAt ?? entry.episode.openedAt;
     return {
       animationDuration: 360,
@@ -84,6 +86,7 @@ export function PositionQuantityTimeline({
         ...dailyTimeDomain([
           ...entry.pricePoints.map((point) => point.observedAt),
           ...entry.decisions.map((decision) => decision.occurredAt),
+          ...entry.pathAnalysis.positionPath.points.map((point) => point.asOf),
         ]),
         boundaryGap: ["4%", "6%"],
         axisLine: { lineStyle: { color: "rgba(148, 177, 204, .18)" } },
@@ -91,7 +94,7 @@ export function PositionQuantityTimeline({
         axisLabel: {
           color: "rgba(177, 196, 214, .72)",
           hideOverlap: true,
-          formatter: (value: number) => formatDailyAxisTick(value, locale),
+          formatter: createAdaptiveDailyAxisFormatter(locale, () => timeNavigation?.getDomain()),
         },
         splitLine: { show: false },
       },
@@ -111,7 +114,7 @@ export function PositionQuantityTimeline({
           smooth: false,
           showSymbol: false,
           connectNulls: false,
-          lineStyle: { color: "rgba(142, 220, 255, .9)", width: 2.2 },
+          lineStyle: { color: "rgba(142, 220, 255, .9)", width: quantityLineWidth },
           markArea: {
             silent: true,
             data: [
@@ -129,7 +132,7 @@ export function PositionQuantityTimeline({
         { id: "quantity-events", type: "scatter", data: events, z: 4 },
       ],
     };
-  }, [emphasizedDecisionIds, entry, formatNumber, highlightEnd, highlightStart, locale, selectedDecisionId, t]);
+  }, [emphasizedDecisionIds, entry, formatNumber, highlightEnd, highlightStart, locale, selectedDecisionId, t, timeNavigation]);
 
   const onClick = useCallback((event: ECElementEvent) => {
     if (event.seriesId !== "quantity-events") return;
@@ -142,6 +145,7 @@ export function PositionQuantityTimeline({
       option={option}
       group={chartGroup}
       resetKey={entry.episode.episodeId}
+      timeNavigation={timeNavigation}
       observationTimes={uniqueDailyObservationTimes(entry.pricePoints.map((point) => point.observedAt))}
       label={t("Position quantity evolution for {symbol}", { symbol: entry.episode.instrumentId })}
       className="h-[190px] w-full"

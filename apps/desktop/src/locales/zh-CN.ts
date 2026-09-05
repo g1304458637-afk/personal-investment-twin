@@ -8,6 +8,7 @@ export const zhCN = {
   "Market segment: drawdown": "回撤区间",
   "Market segment: recovery": "恢复区间",
   "Market segment: flat": "平稳区间",
+  "Market segment: range": "区间波动",
   "No closed Position Episode is present in this account snapshot.": "当前账户快照中没有已关闭的持仓周期。",
   "Instrument resolutions": "标的消歧记录",
   "Instrument resolution": "确认标的归属",

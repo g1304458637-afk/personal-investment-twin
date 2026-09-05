@@ -311,6 +311,7 @@ export interface EpisodeMarketPathView {
 
 export interface EpisodePositionPathView {
   episodeId: string;
+  points: Array<{ asOf: string; stateId: string; boundary: string; quantity: number; averageCost: number | null; decisionId: string | null }>;
   maxQuantity: number;
   maxQuantityAsOf: string;
   maxQuantityStateId: string;
@@ -576,6 +577,13 @@ function adaptPathAnalysis(
     },
     positionPath: {
       episodeId: context.episodeId,
+      points: (positionRaw.points as unknown[]).map((value) => {
+        const point = pathObject(value, "position_path.point");
+        return { asOf: pathTimestamp(point.as_of, "position_path.as_of"), stateId: pathText(point.state_id, "position_path.state_id"),
+          boundary: pathText(point.boundary, "position_path.boundary"), quantity: finite(point.quantity as number, "position_path.quantity"),
+          averageCost: point.average_cost === null ? null : finite(point.average_cost as number, "position_path.average_cost"),
+          decisionId: point.decision_event_id === null ? null : pathText(point.decision_event_id, "position_path.decision_event_id") };
+      }),
       maxQuantity: finite(positionRaw.max_quantity as number, "position_path.max_quantity"),
       maxQuantityAsOf: pathTimestamp(positionRaw.max_quantity_as_of, "position_path.max_quantity_as_of"),
       maxQuantityStateId: pathText(positionRaw.max_quantity_state_id, "position_path.max_quantity_state_id"),
@@ -686,6 +694,7 @@ function adaptEntry(entry: BackendPositionEpisodeEntry, expectedTier: "synthetic
     ? entry.instrument.display_name.trim()
     : episode.instrumentId;
   const baseDecisions = entry.decisions.map((decision) => {
+    if (!episode.decisionRefs.includes(decision.decision_id) || !episode.executionRefs.includes(decision.execution_id)) throw new Error("Decision execution/reference does not belong to Episode.");
     if (decision.episode_id !== episode.episodeId) {
       throw new Error(`Position episode decision ${decision.decision_id} belongs to another Episode.`);
     }
@@ -723,6 +732,11 @@ function adaptEntry(entry: BackendPositionEpisodeEntry, expectedTier: "synthetic
   const outcomeStory = adaptDecisionOutcomeStory(entry.outcome_story, outcomeContext);
   const knownDecisionIds = new Set(baseDecisions.map((decision) => decision.decisionId));
   const pathAnalysis = adaptPathAnalysis(entry.path_analysis, outcomeContext, knownDecisionIds);
+  for (const point of pathAnalysis.positionPath.points) {
+    const state = requiredState(statesByRef, point.stateId, point.decisionId ?? episode.episodeId);
+    if (point.quantity !== state.quantity || point.averageCost !== state.averageCost || point.asOf !== state.asOf || point.boundary !== state.boundary) throw new Error("Position path differs from authoritative state.");
+    if (point.decisionId !== null && !knownDecisionIds.has(point.decisionId)) throw new Error("Unknown position-path decision reference.");
+  }
   const outcomeByDecision = new Map(
     outcomeStory.decisionOutcomes.map((outcome) => [outcome.decisionEventId, outcome]),
   );

@@ -41,6 +41,8 @@ test("minimum daily zoom is five observations, not a hardcoded 14-day product ru
   assert.equal(zoom[0].end, 100);
   assert.ok(zoom[0].moveOnMouseMove);
   assert.equal(zoom[0].zoomOnMouseWheel, false);
+  assert.equal(zoom[0].moveOnMouseWheel, false);
+  assert.equal(zoom[0].zoomLock, true);
 });
 
 test("sparse holiday windows expand until five daily observations exist", () => {
@@ -89,15 +91,20 @@ test("Episode charts lock observation-based zoom, persist across phase selection
   assert.match(chart, /resetKey/);
   assert.match(chart, /observationTimes/);
   assert.match(chart, /clampVisibleDailyWindow/);
-  assert.match(chart, /if \(keyChanged\) zoomRef.current = null/);
+  assert.match(chart, /classifyTimeNavigationIntent/);
+  assert.match(chart, /passive: false, capture: true/);
+  assert.match(chart, /if \(intent === "page-scroll"\) return/);
+  assert.match(chart, /timeNavigationRef.current\?\.reset\(\)/);
   assert.match(price, /resetKey=\{entry.episode.episodeId\}/);
   assert.match(quantity, /resetKey=\{entry.episode.episodeId\}/);
+  assert.match(price, /createAdaptiveDailyAxisFormatter/);
+  assert.match(quantity, /createAdaptiveDailyAxisFormatter/);
   assert.match(price, /minInterval: MS_PER_DAY/);
   assert.match(quantity, /minInterval: MS_PER_DAY/);
   assert.match(price, /dailyTimeDomain/);
   assert.match(quantity, /dailyTimeDomain/);
-  assert.match(price, /formatter: \(value: number\) => formatDailyAxisTick\(value, locale\)/);
-  assert.match(quantity, /formatter: \(value: number\) => formatDailyAxisTick\(value, locale\)/);
+  assert.match(price, /timeNavigation/);
+  assert.match(quantity, /timeNavigation/);
   assert.doesNotMatch(quantity, /hour:\s*"2-digit"/);
   assert.doesNotMatch(price, /sampling:/);
   assert.doesNotMatch(quantity, /sampling:/);

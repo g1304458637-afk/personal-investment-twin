@@ -7,6 +7,7 @@ export const enUS = {
   "Market segment: drawdown": "Drawdown",
   "Market segment: recovery": "Recovery",
   "Market segment: flat": "Flat",
+  "Market segment: range": "Range",
   "No closed Position Episode is present in this account snapshot.": "No closed Position Episode is present in this account snapshot.",
   "Instrument resolutions": "Instrument resolutions",
   "Instrument resolution": "Instrument resolution",

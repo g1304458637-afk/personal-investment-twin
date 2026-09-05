@@ -33,7 +33,8 @@ test("chart contracts preserve market, execution, valuation, and average-cost so
   assert.match(chart, /entry\.pricePoints/);
   assert.match(chart, /decision\.executionPrice/);
   assert.match(chart, /current\.valuationPrice/);
-  assert.match(chart, /decision\.outcome\.after\.averageCost/);
+  assert.match(chart, /entry\.pathAnalysis\.positionPath\.points/);
+  assert.match(chart, /point\.averageCost/);
   assert.match(chart, /id: "average-cost"/);
   assert.match(chart, /connectNulls: false/);
   assert.match(chart, /selectedDecisionId/);
@@ -46,7 +47,7 @@ test("chart contracts preserve market, execution, valuation, and average-cost so
   assert.doesNotMatch(chart, /areaStyle/);
   assert.match(chart, /minInterval: MS_PER_DAY/);
   assert.match(chart, /dailyDataZoom\(8, minValueSpan\)/);
-  assert.match(chart, /formatDailyAxisTick/);
+  assert.match(chart, /createAdaptiveDailyAxisFormatter/);
   assert.match(chart, /hideOverlap: true/);
   assert.match(chart, /bySegment\("pre_entry"\)\.length/);
   assert.match(chart, /hasPreEntryPath \?/);
