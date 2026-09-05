@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import hashlib
 import math
 from pathlib import Path
 from typing import Mapping
@@ -33,6 +34,14 @@ def _file(params: Mapping[str, object]) -> tuple[Path, bytes]:
     if not path.is_file() or path.suffix.lower() != ".csv":
         raise ValueError("file_path must identify a readable CSV file")
     return path, path.read_bytes()
+
+
+def _confirmed_file(params: Mapping[str, object]) -> tuple[Path, bytes]:
+    """Validate and return the exact immutable bytes that commit will parse."""
+    path, content = _file(params)
+    if hashlib.sha256(content).hexdigest() != _required_text(params, "expected_file_sha256"):
+        raise ValueError("file changed after preview")
+    return path, content
 
 
 def _now(params: Mapping[str, object]) -> str:
@@ -93,11 +102,7 @@ class ProductRuntime:
         return {**preview.as_dict(), "filename": path.name}
 
     def commit_trade(self, params: Mapping[str, object]) -> dict[str, object]:
-        preview = self.preview_trade(params)
-        expected = _required_text(params, "expected_file_sha256")
-        if preview["batch"]["file_sha256"] != expected:  # type: ignore[index]
-            raise ValueError("file changed after preview")
-        path, content = _file(params)
+        path, content = _confirmed_file(params)
         subject, account = _required_text(params, "subject_id"), _required_text(params, "account_id")
         parsed = preview_generic_csv(content, config=_trade_config(params, subject, account),
             existing_executions=self.repo.executions(subject, account), existing_file_hashes=self.repo.file_hashes(subject, account, "trade"))
@@ -171,14 +176,12 @@ class ProductRuntime:
                       "issues": [{"code": issue.code, "field": issue.field} for issue in row.issues]} for row in preview.rows]}
 
     def commit_market(self, params: Mapping[str, object]) -> dict[str, object]:
-        path, content = _file(params)
+        path, content = _confirmed_file(params)
         subject, account = _required_text(params, "subject_id"), _required_text(params, "account_id")
         bundle = bundle_from_repository(self.repo, subject, account)
         preview = GenericHistoricalPriceCsvAdapter().preview(content, GenericPriceCsvConfig(
             source_id=_required_text(params, "source_id"), source_version=_required_text(params, "source_version"),
             imported_at=_now(params), known_instruments=bundle.instrument_refs), existing=self.repo.prices(subject, account), requirement_bundle=bundle)
-        if preview.file_sha256 != _required_text(params, "expected_file_sha256"):
-            raise ValueError("file changed after preview")
         if preview.conflicts or preview.invalid_rows:
             raise ValueError("market import contains conflicts or invalid rows")
         facts = [row.candidate for row in preview.rows if row.status == "new_observation" and row.candidate]
@@ -228,8 +231,18 @@ class ProductRuntime:
         bundle, facts = bundle_from_repository(self.repo, subject, account), self.repo.prices(subject, account)
         if not facts:
             return accounts[0], bundle, facts, None, "unavailable_pending_market_data"
-        as_of = pd.Timestamp(max(x.date for x in facts))
-        gated = build_episode_when_market_ready(bundle, facts, as_of=as_of,
+        valuation_date = pd.Timestamp(max(x.date for x in facts))
+        execution_cutoff = valuation_date
+        # A daily observation date is not a midnight execution cutoff. Include
+        # the exact canonical instants belonging to supported calendar dates;
+        # keep their UTC mapping/sequence and the daily market observations
+        # unchanged. This cutoff does not assert intraday price availability.
+        if bundle.accepted_canonical_executions and replay_eligibility(bundle.accepted_canonical_executions).eligible:
+            frame = canonical_executions_to_frame(bundle.accepted_canonical_executions)
+            supported_times = frame.loc[frame["market_date"] <= valuation_date, "event_time"]
+            if not supported_times.empty:
+                execution_cutoff = max(execution_cutoff, supported_times.max())
+        gated = build_episode_when_market_ready(bundle, facts, as_of=execution_cutoff,
             init_cash=float(accounts[0]["initial_cash"]), calculation_code_version="runtime_v1")
         return accounts[0], bundle, facts, gated.lifecycle, gated.status
 
