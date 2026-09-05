@@ -55994,6 +55994,2854 @@
     "simulation_reason": null,
     "simulation_status": "complete"
   },
+  "same_stock_compare_demo": {
+    "a": {
+      "as_of": "2025-01-17T16:00:00",
+      "decisions": [
+        {
+          "account_id": "SYN_COMPARE_ACCOUNT_A",
+          "after": {
+            "average_cost": 10.0,
+            "position_status": "open",
+            "quantity": 100.0,
+            "state_ref": "ps_70b7e3b7c256de8ce8f084a59ea6c4274af3555f9c7b1bbdfdd94e9c060dcd07"
+          },
+          "before": {
+            "average_cost": null,
+            "position_status": "flat",
+            "quantity": 0.0,
+            "state_ref": "ps_81099b831fcef5b8351aac177181e4f243b313829d0be7fc9e1aa87d2ee8260e"
+          },
+          "calculation_code_version": "same_stock_descriptive_comparison_v1",
+          "decision_event_id": "de_332358b7387edf77da7ffb987c6ee444d7fcdd09ee24f9461d4dfc98d640569b",
+          "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+          "episode_result_ref": "eo_f47770bcffdf282e4e61adbafc0f456bb719e0fb8f898b8506b824ac79def72b",
+          "event_time": "2025-01-02T10:00:00",
+          "event_type": "open_position",
+          "evidence_refs": [],
+          "executed_quantity": 100.0,
+          "execution_fee": 1.0,
+          "execution_id": "SYN_COMPARE_A_EXEC_0",
+          "execution_price": 10.0,
+          "execution_source": {
+            "execution_refs": [
+              "SYN_COMPARE_A_EXEC_0"
+            ],
+            "replay_scope_id": "replay_460ff5d2bfd52b24418fa4a0a6f6d0451db4c94ad8eef7ba8834ebf9b3eeb621",
+            "source_kind": "vectorbt_order",
+            "source_record_id": "vectorbt_order:replay_460ff5d2bfd52b24418fa4a0a6f6d0451db4c94ad8eef7ba8834ebf9b3eeb621:SYN_COMPARE_ACCOUNT_A:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:0",
+            "vectorbt_record_id": 0
+          },
+          "immediate_result": null,
+          "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+          "limitations": [
+            "Outcome Attribution v1 supports normalized long-only executions only.",
+            "Results describe recorded history and registered historical alternatives; they are not forecasts or recommendations.",
+            "No downstream order is clamped, resized, deleted, synthesized, or optimized."
+          ],
+          "method_id": "historical_decision_outcome_v1",
+          "method_version": "1",
+          "outcome_id": "do_9cb8137779172f009d1ad3d610222b96f804ab8d35587fdc111f511b22f4fe7c",
+          "provenance": [
+            {
+              "as_of": "2025-01-17T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "1",
+              "instrument": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "same_stock_pair_fixture",
+              "source_type": "price_series"
+            }
+          ],
+          "relation_types": [
+            "deterministic_state_transition"
+          ],
+          "side": "BUY",
+          "subject_id": "SYN_COMPARE_A"
+        },
+        {
+          "account_id": "SYN_COMPARE_ACCOUNT_A",
+          "after": {
+            "average_cost": 11.0,
+            "position_status": "open",
+            "quantity": 200.0,
+            "state_ref": "ps_bed94164ba73231e42746ffba4f62b9f1777784941d32d4fb9a362b407cc06ee"
+          },
+          "before": {
+            "average_cost": 10.0,
+            "position_status": "open",
+            "quantity": 100.0,
+            "state_ref": "ps_f278fbe0ef9f0993a7dc17920afb625adaaa023582342f43b10f8ffd43849b21"
+          },
+          "calculation_code_version": "same_stock_descriptive_comparison_v1",
+          "decision_event_id": "de_50b8a3de906f82ce09966d6c886d7f2734d62e5c1275a065f18333b404f0d993",
+          "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+          "episode_result_ref": "eo_f47770bcffdf282e4e61adbafc0f456bb719e0fb8f898b8506b824ac79def72b",
+          "event_time": "2025-01-06T10:00:00",
+          "event_type": "add_position",
+          "evidence_refs": [],
+          "executed_quantity": 100.0,
+          "execution_fee": 1.0,
+          "execution_id": "SYN_COMPARE_A_EXEC_1",
+          "execution_price": 12.0,
+          "execution_source": {
+            "execution_refs": [
+              "SYN_COMPARE_A_EXEC_1"
+            ],
+            "replay_scope_id": "replay_460ff5d2bfd52b24418fa4a0a6f6d0451db4c94ad8eef7ba8834ebf9b3eeb621",
+            "source_kind": "vectorbt_order",
+            "source_record_id": "vectorbt_order:replay_460ff5d2bfd52b24418fa4a0a6f6d0451db4c94ad8eef7ba8834ebf9b3eeb621:SYN_COMPARE_ACCOUNT_A:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:1",
+            "vectorbt_record_id": 1
+          },
+          "immediate_result": null,
+          "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+          "limitations": [
+            "Outcome Attribution v1 supports normalized long-only executions only.",
+            "Results describe recorded history and registered historical alternatives; they are not forecasts or recommendations.",
+            "No downstream order is clamped, resized, deleted, synthesized, or optimized."
+          ],
+          "method_id": "historical_decision_outcome_v1",
+          "method_version": "1",
+          "outcome_id": "do_c2fae39f3f4ccfce62c217f712238a3586fdca9c352e4adb56580eb0d7d858fe",
+          "provenance": [
+            {
+              "as_of": "2025-01-17T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "1",
+              "instrument": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "same_stock_pair_fixture",
+              "source_type": "price_series"
+            }
+          ],
+          "relation_types": [
+            "deterministic_state_transition"
+          ],
+          "side": "BUY",
+          "subject_id": "SYN_COMPARE_A"
+        },
+        {
+          "account_id": "SYN_COMPARE_ACCOUNT_A",
+          "after": {
+            "average_cost": 11.666666666666666,
+            "position_status": "open",
+            "quantity": 300.0,
+            "state_ref": "ps_2d78473ac9c96b9d577b36fa3a1413e0feae1f078c7bb6f8422967eb78899a5d"
+          },
+          "before": {
+            "average_cost": 11.0,
+            "position_status": "open",
+            "quantity": 200.0,
+            "state_ref": "ps_63831b869a474f90e399c91f3a60874282e4cd2095291a83035ff93ac6842311"
+          },
+          "calculation_code_version": "same_stock_descriptive_comparison_v1",
+          "decision_event_id": "de_de154253848cf01354dab35109f249280a38557ca7f60354d928f582137a0f02",
+          "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+          "episode_result_ref": "eo_f47770bcffdf282e4e61adbafc0f456bb719e0fb8f898b8506b824ac79def72b",
+          "event_time": "2025-01-07T10:00:00",
+          "event_type": "add_position",
+          "evidence_refs": [],
+          "executed_quantity": 100.0,
+          "execution_fee": 1.0,
+          "execution_id": "SYN_COMPARE_A_EXEC_2",
+          "execution_price": 13.0,
+          "execution_source": {
+            "execution_refs": [
+              "SYN_COMPARE_A_EXEC_2"
+            ],
+            "replay_scope_id": "replay_460ff5d2bfd52b24418fa4a0a6f6d0451db4c94ad8eef7ba8834ebf9b3eeb621",
+            "source_kind": "vectorbt_order",
+            "source_record_id": "vectorbt_order:replay_460ff5d2bfd52b24418fa4a0a6f6d0451db4c94ad8eef7ba8834ebf9b3eeb621:SYN_COMPARE_ACCOUNT_A:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:2",
+            "vectorbt_record_id": 2
+          },
+          "immediate_result": null,
+          "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+          "limitations": [
+            "Outcome Attribution v1 supports normalized long-only executions only.",
+            "Results describe recorded history and registered historical alternatives; they are not forecasts or recommendations.",
+            "No downstream order is clamped, resized, deleted, synthesized, or optimized."
+          ],
+          "method_id": "historical_decision_outcome_v1",
+          "method_version": "1",
+          "outcome_id": "do_705300b676c4fadff31887f6a707439324fd53218ab5d80d26f3a352be08c0e7",
+          "provenance": [
+            {
+              "as_of": "2025-01-17T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "1",
+              "instrument": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "same_stock_pair_fixture",
+              "source_type": "price_series"
+            }
+          ],
+          "relation_types": [
+            "deterministic_state_transition"
+          ],
+          "side": "BUY",
+          "subject_id": "SYN_COMPARE_A"
+        },
+        {
+          "account_id": "SYN_COMPARE_ACCOUNT_A",
+          "after": {
+            "average_cost": 11.666666666666664,
+            "position_status": "open",
+            "quantity": 200.0,
+            "state_ref": "ps_4755186a328db7b58716755e676c76be3d15d03e8769f664d4f96d2aa3e2463d"
+          },
+          "before": {
+            "average_cost": 11.666666666666666,
+            "position_status": "open",
+            "quantity": 300.0,
+            "state_ref": "ps_66dc3c419ea031e50e16cbb74a0be898a735386de85047e4e10345d48d609dd7"
+          },
+          "calculation_code_version": "same_stock_descriptive_comparison_v1",
+          "decision_event_id": "de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b",
+          "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+          "episode_result_ref": "eo_f47770bcffdf282e4e61adbafc0f456bb719e0fb8f898b8506b824ac79def72b",
+          "event_time": "2025-01-13T10:00:00",
+          "event_type": "reduce_position",
+          "evidence_refs": [],
+          "executed_quantity": 100.0,
+          "execution_fee": 1.0,
+          "execution_id": "SYN_COMPARE_A_EXEC_3",
+          "execution_price": 9.5,
+          "execution_source": {
+            "execution_refs": [
+              "SYN_COMPARE_A_EXEC_3"
+            ],
+            "replay_scope_id": "replay_460ff5d2bfd52b24418fa4a0a6f6d0451db4c94ad8eef7ba8834ebf9b3eeb621",
+            "source_kind": "vectorbt_order",
+            "source_record_id": "vectorbt_order:replay_460ff5d2bfd52b24418fa4a0a6f6d0451db4c94ad8eef7ba8834ebf9b3eeb621:SYN_COMPARE_ACCOUNT_A:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:3",
+            "vectorbt_record_id": 3
+          },
+          "immediate_result": {
+            "pnl": -218.66666666666652,
+            "position_status": "closed",
+            "recorded_entry_fees": 1.0,
+            "recorded_exit_fees": 1.0,
+            "result_basis": "net_pnl",
+            "result_kind": "realized",
+            "result_sign": "loss",
+            "return_value": -0.18742857142857133,
+            "source": {
+              "execution_refs": [
+                "SYN_COMPARE_A_EXEC_3"
+              ],
+              "replay_scope_id": "replay_460ff5d2bfd52b24418fa4a0a6f6d0451db4c94ad8eef7ba8834ebf9b3eeb621",
+              "source_kind": "vectorbt_exit_trade",
+              "source_record_id": "vectorbt_exit_trade:replay_460ff5d2bfd52b24418fa4a0a6f6d0451db4c94ad8eef7ba8834ebf9b3eeb621:SYN_COMPARE_ACCOUNT_A:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:0",
+              "vectorbt_record_id": 0
+            },
+            "valuation_at": null,
+            "valuation_price": null
+          },
+          "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+          "limitations": [
+            "Outcome Attribution v1 supports normalized long-only executions only.",
+            "Results describe recorded history and registered historical alternatives; they are not forecasts or recommendations.",
+            "No downstream order is clamped, resized, deleted, synthesized, or optimized."
+          ],
+          "method_id": "historical_decision_outcome_v1",
+          "method_version": "1",
+          "outcome_id": "do_ba9ffc76f960d35d643e7712a3c152795f47eb9a04c9faa80c21754b86cf03d1",
+          "provenance": [
+            {
+              "as_of": "2025-01-17T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "1",
+              "instrument": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "same_stock_pair_fixture",
+              "source_type": "price_series"
+            }
+          ],
+          "relation_types": [
+            "deterministic_state_transition",
+            "accounting_realized_result"
+          ],
+          "side": "SELL",
+          "subject_id": "SYN_COMPARE_A"
+        },
+        {
+          "account_id": "SYN_COMPARE_ACCOUNT_A",
+          "after": {
+            "average_cost": null,
+            "position_status": "flat",
+            "quantity": 0.0,
+            "state_ref": "ps_c2dc72db8de2138cdf97b688c20035d008eeb1ae4f98bff9c6f7f333f644b0c0"
+          },
+          "before": {
+            "average_cost": 11.666666666666664,
+            "position_status": "open",
+            "quantity": 200.0,
+            "state_ref": "ps_6ba05b51957989baf0e5ac97510b2007b5b2f5c8bbef757553165ad707023cb3"
+          },
+          "calculation_code_version": "same_stock_descriptive_comparison_v1",
+          "decision_event_id": "de_ad5cf521a4d90c57ad2eb140e0818fa1b3cf1cc4dc200882d4cb2c5baccd0955",
+          "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+          "episode_result_ref": "eo_f47770bcffdf282e4e61adbafc0f456bb719e0fb8f898b8506b824ac79def72b",
+          "event_time": "2025-01-17T10:00:00",
+          "event_type": "close_position",
+          "evidence_refs": [],
+          "executed_quantity": 200.0,
+          "execution_fee": 1.0,
+          "execution_id": "SYN_COMPARE_A_EXEC_4",
+          "execution_price": 11.0,
+          "execution_source": {
+            "execution_refs": [
+              "SYN_COMPARE_A_EXEC_4"
+            ],
+            "replay_scope_id": "replay_460ff5d2bfd52b24418fa4a0a6f6d0451db4c94ad8eef7ba8834ebf9b3eeb621",
+            "source_kind": "vectorbt_order",
+            "source_record_id": "vectorbt_order:replay_460ff5d2bfd52b24418fa4a0a6f6d0451db4c94ad8eef7ba8834ebf9b3eeb621:SYN_COMPARE_ACCOUNT_A:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:4",
+            "vectorbt_record_id": 4
+          },
+          "immediate_result": {
+            "pnl": -136.33333333333303,
+            "position_status": "closed",
+            "recorded_entry_fees": 2.0,
+            "recorded_exit_fees": 1.0,
+            "result_basis": "net_pnl",
+            "result_kind": "realized",
+            "result_sign": "loss",
+            "return_value": -0.05842857142857131,
+            "source": {
+              "execution_refs": [
+                "SYN_COMPARE_A_EXEC_4"
+              ],
+              "replay_scope_id": "replay_460ff5d2bfd52b24418fa4a0a6f6d0451db4c94ad8eef7ba8834ebf9b3eeb621",
+              "source_kind": "vectorbt_exit_trade",
+              "source_record_id": "vectorbt_exit_trade:replay_460ff5d2bfd52b24418fa4a0a6f6d0451db4c94ad8eef7ba8834ebf9b3eeb621:SYN_COMPARE_ACCOUNT_A:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:1",
+              "vectorbt_record_id": 1
+            },
+            "valuation_at": null,
+            "valuation_price": null
+          },
+          "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+          "limitations": [
+            "Outcome Attribution v1 supports normalized long-only executions only.",
+            "Results describe recorded history and registered historical alternatives; they are not forecasts or recommendations.",
+            "No downstream order is clamped, resized, deleted, synthesized, or optimized."
+          ],
+          "method_id": "historical_decision_outcome_v1",
+          "method_version": "1",
+          "outcome_id": "do_cc297f3ff1c35227cd9545407c0b86fe237b7d894b267034621191ab376d7f65",
+          "provenance": [
+            {
+              "as_of": "2025-01-17T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "1",
+              "instrument": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "same_stock_pair_fixture",
+              "source_type": "price_series"
+            }
+          ],
+          "relation_types": [
+            "deterministic_state_transition",
+            "accounting_realized_result"
+          ],
+          "side": "SELL",
+          "subject_id": "SYN_COMPARE_A"
+        }
+      ],
+      "episode": {
+        "account_id": "SYN_COMPARE_ACCOUNT_A",
+        "calculation_code_version": "same_stock_descriptive_comparison_v1",
+        "closed_at": "2025-01-17T10:00:00",
+        "closing_execution_id": "SYN_COMPARE_A_EXEC_4",
+        "data_tier": "synthetic",
+        "decision_refs": [
+          "de_332358b7387edf77da7ffb987c6ee444d7fcdd09ee24f9461d4dfc98d640569b",
+          "de_50b8a3de906f82ce09966d6c886d7f2734d62e5c1275a065f18333b404f0d993",
+          "de_de154253848cf01354dab35109f249280a38557ca7f60354d928f582137a0f02",
+          "de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b",
+          "de_ad5cf521a4d90c57ad2eb140e0818fa1b3cf1cc4dc200882d4cb2c5baccd0955"
+        ],
+        "duration_days": 15,
+        "duration_kind": "final",
+        "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+        "evidence_refs": [],
+        "execution_refs": [
+          "SYN_COMPARE_A_EXEC_0",
+          "SYN_COMPARE_A_EXEC_1",
+          "SYN_COMPARE_A_EXEC_2",
+          "SYN_COMPARE_A_EXEC_3",
+          "SYN_COMPARE_A_EXEC_4"
+        ],
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "limitations": [
+          "Position Episode v1 supports only normalized long-only BUY/SELL executions.",
+          "Corporate actions and transfers are unsupported and must not be encoded as executions.",
+          "Open-position valuation is a replay mark at its stated valuation time, not an exit."
+        ],
+        "opened_at": "2025-01-02T10:00:00",
+        "opening_execution_id": "SYN_COMPARE_A_EXEC_0",
+        "provenance": [
+          {
+            "as_of": "2025-01-17T00:00:00",
+            "attributes": {},
+            "benchmark_id": null,
+            "data_version": "1",
+            "instrument": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+            "is_synthetic": true,
+            "price_type": "synthetic",
+            "source_id": null,
+            "source_name": "same_stock_pair_fixture",
+            "source_type": "price_series"
+          }
+        ],
+        "replay_method_id": "vectorbt_portfolio_replay_v1",
+        "status": "closed",
+        "subject_id": "SYN_COMPARE_A",
+        "vectorbt_position_record_id": 0
+      },
+      "instrument": {
+        "currency": "CNY",
+        "display_name": "同股操作示例 / Synthetic comparison",
+        "display_symbol": "SYN_COMPARE",
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "local_symbol": "SYN_COMPARE",
+        "market": "SYNTHETIC",
+        "security_type": "equity"
+      },
+      "outcome": {
+        "account_id": "SYN_COMPARE_ACCOUNT_A",
+        "actual_result": {
+          "pnl": -354.9999999999991,
+          "position_status": "closed",
+          "recorded_entry_fees": 3.0,
+          "recorded_exit_fees": 2.0,
+          "result_basis": "net_pnl",
+          "result_kind": "realized",
+          "result_sign": "loss",
+          "return_value": -0.1014285714285712,
+          "source": {
+            "execution_refs": [
+              "SYN_COMPARE_A_EXEC_0",
+              "SYN_COMPARE_A_EXEC_1",
+              "SYN_COMPARE_A_EXEC_2",
+              "SYN_COMPARE_A_EXEC_3",
+              "SYN_COMPARE_A_EXEC_4"
+            ],
+            "replay_scope_id": "replay_460ff5d2bfd52b24418fa4a0a6f6d0451db4c94ad8eef7ba8834ebf9b3eeb621",
+            "source_kind": "vectorbt_position",
+            "source_record_id": "vectorbt_position:replay_460ff5d2bfd52b24418fa4a0a6f6d0451db4c94ad8eef7ba8834ebf9b3eeb621:SYN_COMPARE_ACCOUNT_A:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:0",
+            "vectorbt_record_id": 0
+          },
+          "valuation_at": null,
+          "valuation_price": null
+        },
+        "analysis_as_of": "2025-01-17T16:00:00",
+        "calculation_code_version": "same_stock_descriptive_comparison_v1",
+        "decision_event_refs": [
+          "de_332358b7387edf77da7ffb987c6ee444d7fcdd09ee24f9461d4dfc98d640569b",
+          "de_50b8a3de906f82ce09966d6c886d7f2734d62e5c1275a065f18333b404f0d993",
+          "de_de154253848cf01354dab35109f249280a38557ca7f60354d928f582137a0f02",
+          "de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b",
+          "de_ad5cf521a4d90c57ad2eb140e0818fa1b3cf1cc4dc200882d4cb2c5baccd0955"
+        ],
+        "duration_days": 15,
+        "duration_kind": "final",
+        "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+        "episode_status": "closed",
+        "execution_refs": [
+          "SYN_COMPARE_A_EXEC_0",
+          "SYN_COMPARE_A_EXEC_1",
+          "SYN_COMPARE_A_EXEC_2",
+          "SYN_COMPARE_A_EXEC_3",
+          "SYN_COMPARE_A_EXEC_4"
+        ],
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "limitations": [
+          "Outcome Attribution v1 supports normalized long-only executions only.",
+          "Results describe recorded history and registered historical alternatives; they are not forecasts or recommendations.",
+          "No downstream order is clamped, resized, deleted, synthesized, or optimized."
+        ],
+        "method_id": "historical_decision_outcome_v1",
+        "method_version": "1",
+        "outcome_id": "eo_f47770bcffdf282e4e61adbafc0f456bb719e0fb8f898b8506b824ac79def72b",
+        "provenance": [
+          {
+            "as_of": "2025-01-17T00:00:00",
+            "attributes": {},
+            "benchmark_id": null,
+            "data_version": "1",
+            "instrument": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+            "is_synthetic": true,
+            "price_type": "synthetic",
+            "source_id": null,
+            "source_name": "same_stock_pair_fixture",
+            "source_type": "price_series"
+          }
+        ],
+        "relation_type": "accounting_realized_result",
+        "subject_id": "SYN_COMPARE_A"
+      },
+      "path": {
+        "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+        "limitations": [
+          "Daily observations have no intraday available_at; same-day close is never pre-decision information.",
+          "Missing pre-entry or post-exit context does not invalidate the Position Episode lifecycle.",
+          "Path statistics describe the asset market-price path, not a second position PnL.",
+          "Duration uses calendar days between normalized timestamps, not a trading calendar.",
+          "Valid daily market observations are counted as observed rows, not trading days.",
+          "Intervals without new executions are market-path facts, not user Decisions.",
+          "No corporate-action, FX, short, margin, Journal, or Agent layer is applied.",
+          "No stop-loss historical scenario or user-selected historical exit-date scenario is provided.",
+          "No online market provider is implemented; path uses recorded daily observations only."
+        ],
+        "market_path": {
+          "account_id": "SYN_COMPARE_ACCOUNT_A",
+          "daily_price_peak_drawdown": {
+            "daily_price_peak_drawdown": -0.34615384615384615,
+            "peak_observation": {
+              "data_source": "same_stock_pair_fixture",
+              "data_version": "1",
+              "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "observed_at": "2025-01-07T00:00:00",
+              "price": 13.0,
+              "price_type": "synthetic"
+            },
+            "quantity_at_trough": 300.0,
+            "quantity_at_trough_status": "available",
+            "quantity_status_reason": null,
+            "trough_observation": {
+              "data_source": "same_stock_pair_fixture",
+              "data_version": "1",
+              "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "observed_at": "2025-01-10T00:00:00",
+              "price": 8.5,
+              "price_type": "synthetic"
+            }
+          },
+          "decision_interval_moves": [
+            {
+              "interval_id": "interval_de_332358b7387edf77da7ffb987c6ee444d7fcdd09ee24f9461d4dfc98d640569b_de_50b8a3de906f82ce09966d6c886d7f2734d62e5c1275a065f18333b404f0d993",
+              "move": {
+                "decision_event_id": "de_50b8a3de906f82ce09966d6c886d7f2734d62e5c1275a065f18333b404f0d993",
+                "end_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-03T00:00:00",
+                  "price": 10.8,
+                  "price_type": "synthetic"
+                },
+                "gap_status": "preserved_as_observed",
+                "highest_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-03T00:00:00",
+                  "price": 10.8,
+                  "price_type": "synthetic"
+                },
+                "lowest_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-03T00:00:00",
+                  "price": 10.8,
+                  "price_type": "synthetic"
+                },
+                "method_version": "1",
+                "previous_decision_event_id": "de_332358b7387edf77da7ffb987c6ee444d7fcdd09ee24f9461d4dfc98d640569b",
+                "price_change": null,
+                "price_return": null,
+                "start_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-03T00:00:00",
+                  "price": 10.8,
+                  "price_type": "synthetic"
+                },
+                "status": "insufficient",
+                "valid_observation_count": 1,
+                "window_end": "2025-01-03T00:00:00",
+                "window_start": "2025-01-03T00:00:00"
+              },
+              "next_decision_event_id": "de_50b8a3de906f82ce09966d6c886d7f2734d62e5c1275a065f18333b404f0d993",
+              "previous_decision_event_id": "de_332358b7387edf77da7ffb987c6ee444d7fcdd09ee24f9461d4dfc98d640569b"
+            },
+            {
+              "interval_id": "interval_de_50b8a3de906f82ce09966d6c886d7f2734d62e5c1275a065f18333b404f0d993_de_de154253848cf01354dab35109f249280a38557ca7f60354d928f582137a0f02",
+              "move": {
+                "decision_event_id": "de_de154253848cf01354dab35109f249280a38557ca7f60354d928f582137a0f02",
+                "end_observation": null,
+                "gap_status": "insufficient",
+                "highest_observation": null,
+                "lowest_observation": null,
+                "method_version": "1",
+                "previous_decision_event_id": "de_50b8a3de906f82ce09966d6c886d7f2734d62e5c1275a065f18333b404f0d993",
+                "price_change": null,
+                "price_return": null,
+                "start_observation": null,
+                "status": "insufficient",
+                "valid_observation_count": 0,
+                "window_end": null,
+                "window_start": null
+              },
+              "next_decision_event_id": "de_de154253848cf01354dab35109f249280a38557ca7f60354d928f582137a0f02",
+              "previous_decision_event_id": "de_50b8a3de906f82ce09966d6c886d7f2734d62e5c1275a065f18333b404f0d993"
+            },
+            {
+              "interval_id": "interval_de_de154253848cf01354dab35109f249280a38557ca7f60354d928f582137a0f02_de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b",
+              "move": {
+                "decision_event_id": "de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b",
+                "end_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-10T00:00:00",
+                  "price": 8.5,
+                  "price_type": "synthetic"
+                },
+                "gap_status": "preserved_as_observed",
+                "highest_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-08T00:00:00",
+                  "price": 11.5,
+                  "price_type": "synthetic"
+                },
+                "lowest_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-10T00:00:00",
+                  "price": 8.5,
+                  "price_type": "synthetic"
+                },
+                "method_version": "1",
+                "previous_decision_event_id": "de_de154253848cf01354dab35109f249280a38557ca7f60354d928f582137a0f02",
+                "price_change": -3.0,
+                "price_return": -0.2608695652173913,
+                "start_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-08T00:00:00",
+                  "price": 11.5,
+                  "price_type": "synthetic"
+                },
+                "status": "complete",
+                "valid_observation_count": 3,
+                "window_end": "2025-01-10T00:00:00",
+                "window_start": "2025-01-08T00:00:00"
+              },
+              "next_decision_event_id": "de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b",
+              "previous_decision_event_id": "de_de154253848cf01354dab35109f249280a38557ca7f60354d928f582137a0f02"
+            },
+            {
+              "interval_id": "interval_de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b_de_ad5cf521a4d90c57ad2eb140e0818fa1b3cf1cc4dc200882d4cb2c5baccd0955",
+              "move": {
+                "decision_event_id": "de_ad5cf521a4d90c57ad2eb140e0818fa1b3cf1cc4dc200882d4cb2c5baccd0955",
+                "end_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-16T00:00:00",
+                  "price": 11.5,
+                  "price_type": "synthetic"
+                },
+                "gap_status": "preserved_as_observed",
+                "highest_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-16T00:00:00",
+                  "price": 11.5,
+                  "price_type": "synthetic"
+                },
+                "lowest_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-15T00:00:00",
+                  "price": 10.0,
+                  "price_type": "synthetic"
+                },
+                "method_version": "1",
+                "previous_decision_event_id": "de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b",
+                "price_change": 0.5,
+                "price_return": 0.045454545454545456,
+                "start_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-14T00:00:00",
+                  "price": 11.0,
+                  "price_type": "synthetic"
+                },
+                "status": "complete",
+                "valid_observation_count": 3,
+                "window_end": "2025-01-16T00:00:00",
+                "window_start": "2025-01-14T00:00:00"
+              },
+              "next_decision_event_id": "de_ad5cf521a4d90c57ad2eb140e0818fa1b3cf1cc4dc200882d4cb2c5baccd0955",
+              "previous_decision_event_id": "de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b"
+            }
+          ],
+          "episode_context_status": "complete",
+          "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+          "episode_market_path": {
+            "daily_path_max": {
+              "data_source": "same_stock_pair_fixture",
+              "data_version": "1",
+              "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "observed_at": "2025-01-07T00:00:00",
+              "price": 13.0,
+              "price_type": "synthetic"
+            },
+            "daily_path_min": {
+              "data_source": "same_stock_pair_fixture",
+              "data_version": "1",
+              "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "observed_at": "2025-01-10T00:00:00",
+              "price": 8.5,
+              "price_type": "synthetic"
+            },
+            "observations": [
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-02T00:00:00",
+                "price": 10.0,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-03T00:00:00",
+                "price": 10.8,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-06T00:00:00",
+                "price": 12.0,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-07T00:00:00",
+                "price": 13.0,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-08T00:00:00",
+                "price": 11.5,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-09T00:00:00",
+                "price": 9.0,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-10T00:00:00",
+                "price": 8.5,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-13T00:00:00",
+                "price": 9.5,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-14T00:00:00",
+                "price": 11.0,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-15T00:00:00",
+                "price": 10.0,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-16T00:00:00",
+                "price": 11.5,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-17T00:00:00",
+                "price": 11.0,
+                "price_type": "synthetic"
+              }
+            ],
+            "requested_observation_count": null,
+            "segment": "episode",
+            "status": "complete",
+            "valid_observation_count": 12
+          },
+          "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+          "limitations": [
+            "Daily observations have no intraday available_at; same-day close is never pre-decision information.",
+            "Missing pre-entry or post-exit context does not invalidate the Position Episode lifecycle.",
+            "Path statistics describe the asset market-price path, not a second position PnL.",
+            "Duration uses calendar days between normalized timestamps, not a trading calendar.",
+            "Valid daily market observations are counted as observed rows, not trading days.",
+            "Intervals without new executions are market-path facts, not user Decisions.",
+            "No corporate-action, FX, short, margin, Journal, or Agent layer is applied."
+          ],
+          "market_path_segments": [
+            {
+              "end_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-07T00:00:00",
+                "price": 13.0,
+                "price_type": "synthetic"
+              },
+              "kind": "rise",
+              "price_change": 3.0,
+              "price_return": 0.3,
+              "segment_id": "segment_pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49_0_rise",
+              "start_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-02T00:00:00",
+                "price": 10.0,
+                "price_type": "synthetic"
+              },
+              "valid_observation_count": 4
+            },
+            {
+              "end_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-10T00:00:00",
+                "price": 8.5,
+                "price_type": "synthetic"
+              },
+              "kind": "drawdown",
+              "price_change": -4.5,
+              "price_return": -0.34615384615384615,
+              "segment_id": "segment_pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49_1_drawdown",
+              "start_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-07T00:00:00",
+                "price": 13.0,
+                "price_type": "synthetic"
+              },
+              "valid_observation_count": 4
+            },
+            {
+              "end_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-14T00:00:00",
+                "price": 11.0,
+                "price_type": "synthetic"
+              },
+              "kind": "recovery",
+              "price_change": 2.5,
+              "price_return": 0.29411764705882354,
+              "segment_id": "segment_pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49_2_recovery",
+              "start_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-10T00:00:00",
+                "price": 8.5,
+                "price_type": "synthetic"
+              },
+              "valid_observation_count": 3
+            },
+            {
+              "end_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-15T00:00:00",
+                "price": 10.0,
+                "price_type": "synthetic"
+              },
+              "kind": "drawdown",
+              "price_change": -1.0,
+              "price_return": -0.09090909090909091,
+              "segment_id": "segment_pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49_3_drawdown",
+              "start_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-14T00:00:00",
+                "price": 11.0,
+                "price_type": "synthetic"
+              },
+              "valid_observation_count": 2
+            },
+            {
+              "end_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-16T00:00:00",
+                "price": 11.5,
+                "price_type": "synthetic"
+              },
+              "kind": "recovery",
+              "price_change": 1.5,
+              "price_return": 0.15,
+              "segment_id": "segment_pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49_4_recovery",
+              "start_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-15T00:00:00",
+                "price": 10.0,
+                "price_type": "synthetic"
+              },
+              "valid_observation_count": 2
+            },
+            {
+              "end_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-17T00:00:00",
+                "price": 11.0,
+                "price_type": "synthetic"
+              },
+              "kind": "drawdown",
+              "price_change": -0.5,
+              "price_return": -0.043478260869565216,
+              "segment_id": "segment_pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49_5_drawdown",
+              "start_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-16T00:00:00",
+                "price": 11.5,
+                "price_type": "synthetic"
+              },
+              "valid_observation_count": 2
+            }
+          ],
+          "method_id": "episode_path_analysis_v1",
+          "method_version": "1",
+          "post_exit_context": {
+            "daily_path_max": null,
+            "daily_path_min": null,
+            "observations": [],
+            "requested_observation_count": 20,
+            "segment": "post_exit",
+            "status": "insufficient",
+            "valid_observation_count": 0
+          },
+          "post_exit_context_status": "insufficient",
+          "pre_entry_context": {
+            "end_observation": null,
+            "method_version": "1",
+            "observations": [],
+            "price_change": null,
+            "price_return": null,
+            "requested_observation_count": 20,
+            "start_observation": null,
+            "status": "insufficient",
+            "valid_observation_count": 0
+          },
+          "pre_entry_context_status": "insufficient",
+          "subject_id": "SYN_COMPARE_A",
+          "trailing_hold_observation": null
+        },
+        "method_id": "episode_path_analysis_v1",
+        "method_version": "1",
+        "patterns": [
+          {
+            "decision_event_ids": [
+              "de_50b8a3de906f82ce09966d6c886d7f2734d62e5c1275a065f18333b404f0d993",
+              "de_de154253848cf01354dab35109f249280a38557ca7f60354d928f582137a0f02"
+            ],
+            "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+            "evidence_ids": [],
+            "facts": {
+              "decision_count": 2,
+              "ended_at": "2025-01-07T10:00:00",
+              "quantity_after": 300.0,
+              "quantity_before": 100.0,
+              "started_at": "2025-01-06T10:00:00"
+            },
+            "method_version": "1",
+            "pattern_code": "consecutive_scaling_in",
+            "pattern_id": "pattern_phase_89a3d0062c21fc5874c53830598139a14f7485d8d3268e6c2f9732b4a5d9b78d_consecutive_scaling_in",
+            "phase_ids": [
+              "phase_89a3d0062c21fc5874c53830598139a14f7485d8d3268e6c2f9732b4a5d9b78d"
+            ]
+          },
+          {
+            "decision_event_ids": [
+              "de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b"
+            ],
+            "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+            "evidence_ids": [],
+            "facts": {
+              "previous_decision_event_id": "de_de154253848cf01354dab35109f249280a38557ca7f60354d928f582137a0f02",
+              "price_change": -3.0,
+              "price_return": -0.2608695652173913,
+              "valid_observation_count": 3,
+              "window_end": "2025-01-10T00:00:00",
+              "window_start": "2025-01-08T00:00:00"
+            },
+            "method_version": "1",
+            "pattern_code": "reduce_after_negative_market_move",
+            "pattern_id": "pattern_de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b_reduce_after_negative_market_move",
+            "phase_ids": [
+              "phase_65ef28f55df881fd470b8413bb934a1f84d5c661c4158547099cf533d8f1bca9"
+            ]
+          },
+          {
+            "decision_event_ids": [],
+            "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+            "evidence_ids": [],
+            "facts": {
+              "daily_price_peak_drawdown": -0.34615384615384615,
+              "episode_max_quantity": 300.0,
+              "peak_observed_at": "2025-01-07T00:00:00",
+              "quantity_at_daily_price_drawdown": 300.0,
+              "quantity_at_trough_status": "available",
+              "quantity_ratio_to_episode_max": 1.0,
+              "quantity_status_reason": null,
+              "trough_observed_at": "2025-01-10T00:00:00"
+            },
+            "method_version": "1",
+            "pattern_code": "high_quantity_during_daily_price_drawdown",
+            "pattern_id": "pattern_pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49_high_quantity_during_daily_price_drawdown",
+            "phase_ids": []
+          }
+        ],
+        "phase_counterfactuals": [],
+        "phases": [
+          {
+            "average_cost_after": 10.0,
+            "average_cost_before": null,
+            "decision_event_ids": [
+              "de_332358b7387edf77da7ffb987c6ee444d7fcdd09ee24f9461d4dfc98d640569b"
+            ],
+            "ended_at": "2025-01-02T10:00:00",
+            "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+            "execution_ids": [
+              "SYN_COMPARE_A_EXEC_0"
+            ],
+            "method_version": "1",
+            "phase_id": "phase_366ff2aa560b9ebdcb500ce972917d0d75b1949cc77afb2b6907f0528c61c371",
+            "phase_type": "entry",
+            "quantity_after": 100.0,
+            "quantity_before": 0.0,
+            "started_at": "2025-01-02T10:00:00",
+            "state_after_ref": "ps_70b7e3b7c256de8ce8f084a59ea6c4274af3555f9c7b1bbdfdd94e9c060dcd07",
+            "state_before_ref": "ps_81099b831fcef5b8351aac177181e4f243b313829d0be7fc9e1aa87d2ee8260e",
+            "taxonomy_version": "1"
+          },
+          {
+            "average_cost_after": 11.666666666666666,
+            "average_cost_before": 10.0,
+            "decision_event_ids": [
+              "de_50b8a3de906f82ce09966d6c886d7f2734d62e5c1275a065f18333b404f0d993",
+              "de_de154253848cf01354dab35109f249280a38557ca7f60354d928f582137a0f02"
+            ],
+            "ended_at": "2025-01-07T10:00:00",
+            "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+            "execution_ids": [
+              "SYN_COMPARE_A_EXEC_1",
+              "SYN_COMPARE_A_EXEC_2"
+            ],
+            "method_version": "1",
+            "phase_id": "phase_89a3d0062c21fc5874c53830598139a14f7485d8d3268e6c2f9732b4a5d9b78d",
+            "phase_type": "scaling_in",
+            "quantity_after": 300.0,
+            "quantity_before": 100.0,
+            "started_at": "2025-01-06T10:00:00",
+            "state_after_ref": "ps_2d78473ac9c96b9d577b36fa3a1413e0feae1f078c7bb6f8422967eb78899a5d",
+            "state_before_ref": "ps_f278fbe0ef9f0993a7dc17920afb625adaaa023582342f43b10f8ffd43849b21",
+            "taxonomy_version": "1"
+          },
+          {
+            "average_cost_after": 11.666666666666664,
+            "average_cost_before": 11.666666666666666,
+            "decision_event_ids": [
+              "de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b"
+            ],
+            "ended_at": "2025-01-13T10:00:00",
+            "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+            "execution_ids": [
+              "SYN_COMPARE_A_EXEC_3"
+            ],
+            "method_version": "1",
+            "phase_id": "phase_65ef28f55df881fd470b8413bb934a1f84d5c661c4158547099cf533d8f1bca9",
+            "phase_type": "scaling_out",
+            "quantity_after": 200.0,
+            "quantity_before": 300.0,
+            "started_at": "2025-01-13T10:00:00",
+            "state_after_ref": "ps_4755186a328db7b58716755e676c76be3d15d03e8769f664d4f96d2aa3e2463d",
+            "state_before_ref": "ps_66dc3c419ea031e50e16cbb74a0be898a735386de85047e4e10345d48d609dd7",
+            "taxonomy_version": "1"
+          },
+          {
+            "average_cost_after": null,
+            "average_cost_before": 11.666666666666664,
+            "decision_event_ids": [
+              "de_ad5cf521a4d90c57ad2eb140e0818fa1b3cf1cc4dc200882d4cb2c5baccd0955"
+            ],
+            "ended_at": "2025-01-17T10:00:00",
+            "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+            "execution_ids": [
+              "SYN_COMPARE_A_EXEC_4"
+            ],
+            "method_version": "1",
+            "phase_id": "phase_2fcf550debe9a35ef2fee33b237fe2bd666bf6b34499cb75956ed6bf1098cac3",
+            "phase_type": "exit",
+            "quantity_after": 0.0,
+            "quantity_before": 200.0,
+            "started_at": "2025-01-17T10:00:00",
+            "state_after_ref": "ps_c2dc72db8de2138cdf97b688c20035d008eeb1ae4f98bff9c6f7f333f644b0c0",
+            "state_before_ref": "ps_6ba05b51957989baf0e5ac97510b2007b5b2f5c8bbef757553165ad707023cb3",
+            "taxonomy_version": "1"
+          }
+        ],
+        "position_path": {
+          "episode_id": "pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49",
+          "max_quantity": 300.0,
+          "max_quantity_as_of": "2025-01-07T10:00:00",
+          "max_quantity_state_id": "ps_2d78473ac9c96b9d577b36fa3a1413e0feae1f078c7bb6f8422967eb78899a5d",
+          "points": [
+            {
+              "as_of": "2025-01-02T10:00:00",
+              "average_cost": null,
+              "boundary": "before_execution",
+              "decision_event_id": "de_332358b7387edf77da7ffb987c6ee444d7fcdd09ee24f9461d4dfc98d640569b",
+              "execution_id": "SYN_COMPARE_A_EXEC_0",
+              "quantity": 0.0,
+              "state_id": "ps_81099b831fcef5b8351aac177181e4f243b313829d0be7fc9e1aa87d2ee8260e"
+            },
+            {
+              "as_of": "2025-01-02T10:00:00",
+              "average_cost": 10.0,
+              "boundary": "after_execution",
+              "decision_event_id": "de_332358b7387edf77da7ffb987c6ee444d7fcdd09ee24f9461d4dfc98d640569b",
+              "execution_id": "SYN_COMPARE_A_EXEC_0",
+              "quantity": 100.0,
+              "state_id": "ps_70b7e3b7c256de8ce8f084a59ea6c4274af3555f9c7b1bbdfdd94e9c060dcd07"
+            },
+            {
+              "as_of": "2025-01-06T10:00:00",
+              "average_cost": 11.0,
+              "boundary": "after_execution",
+              "decision_event_id": "de_50b8a3de906f82ce09966d6c886d7f2734d62e5c1275a065f18333b404f0d993",
+              "execution_id": "SYN_COMPARE_A_EXEC_1",
+              "quantity": 200.0,
+              "state_id": "ps_bed94164ba73231e42746ffba4f62b9f1777784941d32d4fb9a362b407cc06ee"
+            },
+            {
+              "as_of": "2025-01-07T10:00:00",
+              "average_cost": 11.666666666666666,
+              "boundary": "after_execution",
+              "decision_event_id": "de_de154253848cf01354dab35109f249280a38557ca7f60354d928f582137a0f02",
+              "execution_id": "SYN_COMPARE_A_EXEC_2",
+              "quantity": 300.0,
+              "state_id": "ps_2d78473ac9c96b9d577b36fa3a1413e0feae1f078c7bb6f8422967eb78899a5d"
+            },
+            {
+              "as_of": "2025-01-13T10:00:00",
+              "average_cost": 11.666666666666664,
+              "boundary": "after_execution",
+              "decision_event_id": "de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b",
+              "execution_id": "SYN_COMPARE_A_EXEC_3",
+              "quantity": 200.0,
+              "state_id": "ps_4755186a328db7b58716755e676c76be3d15d03e8769f664d4f96d2aa3e2463d"
+            },
+            {
+              "as_of": "2025-01-17T10:00:00",
+              "average_cost": null,
+              "boundary": "after_execution",
+              "decision_event_id": "de_ad5cf521a4d90c57ad2eb140e0818fa1b3cf1cc4dc200882d4cb2c5baccd0955",
+              "execution_id": "SYN_COMPARE_A_EXEC_4",
+              "quantity": 0.0,
+              "state_id": "ps_c2dc72db8de2138cdf97b688c20035d008eeb1ae4f98bff9c6f7f333f644b0c0"
+            }
+          ],
+          "quantity_at_drawdown": {
+            "observed_at": "2025-01-10T00:00:00",
+            "quantity": 300.0,
+            "reason": null,
+            "state_id": null,
+            "status": "available"
+          }
+        },
+        "presentation_items": [
+          {
+            "item_id": "pattern_phase_89a3d0062c21fc5874c53830598139a14f7485d8d3268e6c2f9732b4a5d9b78d_consecutive_scaling_in",
+            "kind": "pattern",
+            "pattern_id": "pattern_phase_89a3d0062c21fc5874c53830598139a14f7485d8d3268e6c2f9732b4a5d9b78d_consecutive_scaling_in",
+            "phase_id": "phase_89a3d0062c21fc5874c53830598139a14f7485d8d3268e6c2f9732b4a5d9b78d",
+            "reason_code": "consecutive_scaling_in"
+          },
+          {
+            "item_id": "pattern_pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49_high_quantity_during_daily_price_drawdown",
+            "kind": "pattern",
+            "pattern_id": "pattern_pe_3b9d8da407ff9c073e83c3235ad39bbfaf0d303e64a5ad9985d80926a46cca49_high_quantity_during_daily_price_drawdown",
+            "phase_id": null,
+            "reason_code": "high_quantity_during_daily_price_drawdown"
+          },
+          {
+            "item_id": "phase_366ff2aa560b9ebdcb500ce972917d0d75b1949cc77afb2b6907f0528c61c371",
+            "kind": "phase",
+            "pattern_id": null,
+            "phase_id": "phase_366ff2aa560b9ebdcb500ce972917d0d75b1949cc77afb2b6907f0528c61c371",
+            "reason_code": "episode_path_phase"
+          },
+          {
+            "item_id": "phase_2fcf550debe9a35ef2fee33b237fe2bd666bf6b34499cb75956ed6bf1098cac3",
+            "kind": "phase",
+            "pattern_id": null,
+            "phase_id": "phase_2fcf550debe9a35ef2fee33b237fe2bd666bf6b34499cb75956ed6bf1098cac3",
+            "reason_code": "large_quantity_change"
+          },
+          {
+            "item_id": "phase_65ef28f55df881fd470b8413bb934a1f84d5c661c4158547099cf533d8f1bca9",
+            "kind": "phase",
+            "pattern_id": null,
+            "phase_id": "phase_65ef28f55df881fd470b8413bb934a1f84d5c661c4158547099cf533d8f1bca9",
+            "reason_code": "large_quantity_change"
+          },
+          {
+            "item_id": "pattern_de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b_reduce_after_negative_market_move",
+            "kind": "pattern",
+            "pattern_id": "pattern_de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b_reduce_after_negative_market_move",
+            "phase_id": "phase_65ef28f55df881fd470b8413bb934a1f84d5c661c4158547099cf533d8f1bca9",
+            "reason_code": "reduce_after_negative_market_move"
+          }
+        ]
+      }
+    },
+    "a_position_shape": [
+      {
+        "as_of": "2025-01-02T10:00:00",
+        "average_cost": null,
+        "boundary": "before_execution",
+        "decision_ref": "de_332358b7387edf77da7ffb987c6ee444d7fcdd09ee24f9461d4dfc98d640569b",
+        "normalized_quantity": 0.0,
+        "quantity": 0.0,
+        "state_ref": "ps_81099b831fcef5b8351aac177181e4f243b313829d0be7fc9e1aa87d2ee8260e"
+      },
+      {
+        "as_of": "2025-01-02T10:00:00",
+        "average_cost": 10.0,
+        "boundary": "after_execution",
+        "decision_ref": "de_332358b7387edf77da7ffb987c6ee444d7fcdd09ee24f9461d4dfc98d640569b",
+        "normalized_quantity": 0.3333333333333333,
+        "quantity": 100.0,
+        "state_ref": "ps_70b7e3b7c256de8ce8f084a59ea6c4274af3555f9c7b1bbdfdd94e9c060dcd07"
+      },
+      {
+        "as_of": "2025-01-06T10:00:00",
+        "average_cost": 11.0,
+        "boundary": "after_execution",
+        "decision_ref": "de_50b8a3de906f82ce09966d6c886d7f2734d62e5c1275a065f18333b404f0d993",
+        "normalized_quantity": 0.6666666666666666,
+        "quantity": 200.0,
+        "state_ref": "ps_bed94164ba73231e42746ffba4f62b9f1777784941d32d4fb9a362b407cc06ee"
+      },
+      {
+        "as_of": "2025-01-07T10:00:00",
+        "average_cost": 11.666666666666666,
+        "boundary": "after_execution",
+        "decision_ref": "de_de154253848cf01354dab35109f249280a38557ca7f60354d928f582137a0f02",
+        "normalized_quantity": 1.0,
+        "quantity": 300.0,
+        "state_ref": "ps_2d78473ac9c96b9d577b36fa3a1413e0feae1f078c7bb6f8422967eb78899a5d"
+      },
+      {
+        "as_of": "2025-01-13T10:00:00",
+        "average_cost": 11.666666666666664,
+        "boundary": "after_execution",
+        "decision_ref": "de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b",
+        "normalized_quantity": 0.6666666666666666,
+        "quantity": 200.0,
+        "state_ref": "ps_4755186a328db7b58716755e676c76be3d15d03e8769f664d4f96d2aa3e2463d"
+      },
+      {
+        "as_of": "2025-01-17T10:00:00",
+        "average_cost": null,
+        "boundary": "after_execution",
+        "decision_ref": "de_ad5cf521a4d90c57ad2eb140e0818fa1b3cf1cc4dc200882d4cb2c5baccd0955",
+        "normalized_quantity": 0.0,
+        "quantity": 0.0,
+        "state_ref": "ps_c2dc72db8de2138cdf97b688c20035d008eeb1ae4f98bff9c6f7f333f644b0c0"
+      }
+    ],
+    "as_of": "2025-01-17T16:00:00",
+    "b": {
+      "as_of": "2025-01-17T16:00:00",
+      "decisions": [
+        {
+          "account_id": "SYN_COMPARE_ACCOUNT_B",
+          "after": {
+            "average_cost": 10.0,
+            "position_status": "open",
+            "quantity": 100.0,
+            "state_ref": "ps_9d6b98ecd7bb01b041fea3c26341bc558cd9727b69b238f9df81294ccd2bd1ad"
+          },
+          "before": {
+            "average_cost": null,
+            "position_status": "flat",
+            "quantity": 0.0,
+            "state_ref": "ps_84153725b6ed92bb95d0821d866d466a6b260891acc460fb474d9b9868fcd157"
+          },
+          "calculation_code_version": "same_stock_descriptive_comparison_v1",
+          "decision_event_id": "de_93aad4ff2a96e9abf17629d4becc12b4fddfcaf1adaee9ff8fac4c9c96775b8d",
+          "episode_id": "pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1",
+          "episode_result_ref": "eo_325c03b8d793d7c1edf23c35eb6dc0bf4c5a57521b159d708cc282134af6139a",
+          "event_time": "2025-01-02T10:00:00",
+          "event_type": "open_position",
+          "evidence_refs": [],
+          "executed_quantity": 100.0,
+          "execution_fee": 1.0,
+          "execution_id": "SYN_COMPARE_B_EXEC_0",
+          "execution_price": 10.0,
+          "execution_source": {
+            "execution_refs": [
+              "SYN_COMPARE_B_EXEC_0"
+            ],
+            "replay_scope_id": "replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b",
+            "source_kind": "vectorbt_order",
+            "source_record_id": "vectorbt_order:replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b:SYN_COMPARE_ACCOUNT_B:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:0",
+            "vectorbt_record_id": 0
+          },
+          "immediate_result": null,
+          "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+          "limitations": [
+            "Outcome Attribution v1 supports normalized long-only executions only.",
+            "Results describe recorded history and registered historical alternatives; they are not forecasts or recommendations.",
+            "No downstream order is clamped, resized, deleted, synthesized, or optimized."
+          ],
+          "method_id": "historical_decision_outcome_v1",
+          "method_version": "1",
+          "outcome_id": "do_42c2cb963c06da7bf11fa13edbfc3e949ac64596058186efe713efa64afcf5ae",
+          "provenance": [
+            {
+              "as_of": "2025-01-17T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "1",
+              "instrument": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "same_stock_pair_fixture",
+              "source_type": "price_series"
+            }
+          ],
+          "relation_types": [
+            "deterministic_state_transition"
+          ],
+          "side": "BUY",
+          "subject_id": "SYN_COMPARE_B"
+        },
+        {
+          "account_id": "SYN_COMPARE_ACCOUNT_B",
+          "after": {
+            "average_cost": 10.0,
+            "position_status": "open",
+            "quantity": 60.0,
+            "state_ref": "ps_2e894b926ed768a5423f7aae4107f3ba6f12688c3ad34f0e6662aede654d8f9d"
+          },
+          "before": {
+            "average_cost": 10.0,
+            "position_status": "open",
+            "quantity": 100.0,
+            "state_ref": "ps_822c299ef7184788516f2fee9eda7e59a42aa12621a691fcf929d7205eb54df1"
+          },
+          "calculation_code_version": "same_stock_descriptive_comparison_v1",
+          "decision_event_id": "de_63a8f28936843925cc12db395334edfb7e8533fc077ac13ad5a8c40731b5c386",
+          "episode_id": "pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1",
+          "episode_result_ref": "eo_325c03b8d793d7c1edf23c35eb6dc0bf4c5a57521b159d708cc282134af6139a",
+          "event_time": "2025-01-07T10:00:00",
+          "event_type": "reduce_position",
+          "evidence_refs": [],
+          "executed_quantity": 40.0,
+          "execution_fee": 1.0,
+          "execution_id": "SYN_COMPARE_B_EXEC_1",
+          "execution_price": 13.0,
+          "execution_source": {
+            "execution_refs": [
+              "SYN_COMPARE_B_EXEC_1"
+            ],
+            "replay_scope_id": "replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b",
+            "source_kind": "vectorbt_order",
+            "source_record_id": "vectorbt_order:replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b:SYN_COMPARE_ACCOUNT_B:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:1",
+            "vectorbt_record_id": 1
+          },
+          "immediate_result": {
+            "pnl": 118.6,
+            "position_status": "closed",
+            "recorded_entry_fees": 0.4,
+            "recorded_exit_fees": 1.0,
+            "result_basis": "net_pnl",
+            "result_kind": "realized",
+            "result_sign": "profit",
+            "return_value": 0.2965,
+            "source": {
+              "execution_refs": [
+                "SYN_COMPARE_B_EXEC_1"
+              ],
+              "replay_scope_id": "replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b",
+              "source_kind": "vectorbt_exit_trade",
+              "source_record_id": "vectorbt_exit_trade:replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b:SYN_COMPARE_ACCOUNT_B:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:0",
+              "vectorbt_record_id": 0
+            },
+            "valuation_at": null,
+            "valuation_price": null
+          },
+          "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+          "limitations": [
+            "Outcome Attribution v1 supports normalized long-only executions only.",
+            "Results describe recorded history and registered historical alternatives; they are not forecasts or recommendations.",
+            "No downstream order is clamped, resized, deleted, synthesized, or optimized."
+          ],
+          "method_id": "historical_decision_outcome_v1",
+          "method_version": "1",
+          "outcome_id": "do_9277bbbf0aabe9290680a09f6fd5080c5de6cce999729f8c0d4f2eb37e402d72",
+          "provenance": [
+            {
+              "as_of": "2025-01-17T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "1",
+              "instrument": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "same_stock_pair_fixture",
+              "source_type": "price_series"
+            }
+          ],
+          "relation_types": [
+            "deterministic_state_transition",
+            "accounting_realized_result"
+          ],
+          "side": "SELL",
+          "subject_id": "SYN_COMPARE_B"
+        },
+        {
+          "account_id": "SYN_COMPARE_ACCOUNT_B",
+          "after": {
+            "average_cost": 10.4,
+            "position_status": "open",
+            "quantity": 100.0,
+            "state_ref": "ps_af0498709b48ca0f53a7f8f3b179cbfdb45ae627fe77c97b8b7f1afd86f50d88"
+          },
+          "before": {
+            "average_cost": 10.0,
+            "position_status": "open",
+            "quantity": 60.0,
+            "state_ref": "ps_f3ee4d3869aaac8a865ef427db8e2a8ec259dbecb135741afcddeaf23922d030"
+          },
+          "calculation_code_version": "same_stock_descriptive_comparison_v1",
+          "decision_event_id": "de_30e6d4ac35ab5e7b776258b449ab6bdff98bcae664a990689fcb5e663bff2fe7",
+          "episode_id": "pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1",
+          "episode_result_ref": "eo_325c03b8d793d7c1edf23c35eb6dc0bf4c5a57521b159d708cc282134af6139a",
+          "event_time": "2025-01-14T10:00:00",
+          "event_type": "add_position",
+          "evidence_refs": [],
+          "executed_quantity": 40.0,
+          "execution_fee": 1.0,
+          "execution_id": "SYN_COMPARE_B_EXEC_2",
+          "execution_price": 11.0,
+          "execution_source": {
+            "execution_refs": [
+              "SYN_COMPARE_B_EXEC_2"
+            ],
+            "replay_scope_id": "replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b",
+            "source_kind": "vectorbt_order",
+            "source_record_id": "vectorbt_order:replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b:SYN_COMPARE_ACCOUNT_B:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:2",
+            "vectorbt_record_id": 2
+          },
+          "immediate_result": null,
+          "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+          "limitations": [
+            "Outcome Attribution v1 supports normalized long-only executions only.",
+            "Results describe recorded history and registered historical alternatives; they are not forecasts or recommendations.",
+            "No downstream order is clamped, resized, deleted, synthesized, or optimized."
+          ],
+          "method_id": "historical_decision_outcome_v1",
+          "method_version": "1",
+          "outcome_id": "do_aa890d24b9cff1824afc26b9ddae9bc85002bc121cefdd62996b7667162c8c7e",
+          "provenance": [
+            {
+              "as_of": "2025-01-17T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "1",
+              "instrument": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "same_stock_pair_fixture",
+              "source_type": "price_series"
+            }
+          ],
+          "relation_types": [
+            "deterministic_state_transition"
+          ],
+          "side": "BUY",
+          "subject_id": "SYN_COMPARE_B"
+        },
+        {
+          "account_id": "SYN_COMPARE_ACCOUNT_B",
+          "after": {
+            "average_cost": 10.4,
+            "position_status": "open",
+            "quantity": 60.0,
+            "state_ref": "ps_296f4d1a7735609caeaedd63e3d1fed21676e669a8398db9cd70e11b6713a48c"
+          },
+          "before": {
+            "average_cost": 10.4,
+            "position_status": "open",
+            "quantity": 100.0,
+            "state_ref": "ps_2f2acb9ed284b8a0f384b97dd15b50f5e9473ec0a4433384431d4aa5c160abf5"
+          },
+          "calculation_code_version": "same_stock_descriptive_comparison_v1",
+          "decision_event_id": "de_2271f42c9d6117e935f19d2ac63eccfe5e0541300e419d0abc0037266e42cfb6",
+          "episode_id": "pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1",
+          "episode_result_ref": "eo_325c03b8d793d7c1edf23c35eb6dc0bf4c5a57521b159d708cc282134af6139a",
+          "event_time": "2025-01-16T10:00:00",
+          "event_type": "reduce_position",
+          "evidence_refs": [],
+          "executed_quantity": 40.0,
+          "execution_fee": 1.0,
+          "execution_id": "SYN_COMPARE_B_EXEC_3",
+          "execution_price": 11.5,
+          "execution_source": {
+            "execution_refs": [
+              "SYN_COMPARE_B_EXEC_3"
+            ],
+            "replay_scope_id": "replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b",
+            "source_kind": "vectorbt_order",
+            "source_record_id": "vectorbt_order:replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b:SYN_COMPARE_ACCOUNT_B:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:3",
+            "vectorbt_record_id": 3
+          },
+          "immediate_result": {
+            "pnl": 42.36,
+            "position_status": "closed",
+            "recorded_entry_fees": 0.6400000000000001,
+            "recorded_exit_fees": 1.0,
+            "result_basis": "net_pnl",
+            "result_kind": "realized",
+            "result_sign": "profit",
+            "return_value": 0.10182692307692308,
+            "source": {
+              "execution_refs": [
+                "SYN_COMPARE_B_EXEC_3"
+              ],
+              "replay_scope_id": "replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b",
+              "source_kind": "vectorbt_exit_trade",
+              "source_record_id": "vectorbt_exit_trade:replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b:SYN_COMPARE_ACCOUNT_B:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:1",
+              "vectorbt_record_id": 1
+            },
+            "valuation_at": null,
+            "valuation_price": null
+          },
+          "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+          "limitations": [
+            "Outcome Attribution v1 supports normalized long-only executions only.",
+            "Results describe recorded history and registered historical alternatives; they are not forecasts or recommendations.",
+            "No downstream order is clamped, resized, deleted, synthesized, or optimized."
+          ],
+          "method_id": "historical_decision_outcome_v1",
+          "method_version": "1",
+          "outcome_id": "do_f31fb6c6e0d22cc60d570c02468b59461995d2b54c34a01cd66f7a52fabbbacf",
+          "provenance": [
+            {
+              "as_of": "2025-01-17T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "1",
+              "instrument": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "same_stock_pair_fixture",
+              "source_type": "price_series"
+            }
+          ],
+          "relation_types": [
+            "deterministic_state_transition",
+            "accounting_realized_result"
+          ],
+          "side": "SELL",
+          "subject_id": "SYN_COMPARE_B"
+        },
+        {
+          "account_id": "SYN_COMPARE_ACCOUNT_B",
+          "after": {
+            "average_cost": null,
+            "position_status": "flat",
+            "quantity": 0.0,
+            "state_ref": "ps_b10e7c073d431b665b0fbbf995707da2c5e10ce78d4bd91d2ab990ddbc5dcc41"
+          },
+          "before": {
+            "average_cost": 10.4,
+            "position_status": "open",
+            "quantity": 60.0,
+            "state_ref": "ps_e97244747bdce17e1ae07d9d8b3b668e15745cdc4a23c5b2fe1bd43aa33d9547"
+          },
+          "calculation_code_version": "same_stock_descriptive_comparison_v1",
+          "decision_event_id": "de_215bb43cf6cf5ed3e05877568c03b1fdd1e98866fc2cebdbbf65cc59e963f681",
+          "episode_id": "pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1",
+          "episode_result_ref": "eo_325c03b8d793d7c1edf23c35eb6dc0bf4c5a57521b159d708cc282134af6139a",
+          "event_time": "2025-01-17T10:00:00",
+          "event_type": "close_position",
+          "evidence_refs": [],
+          "executed_quantity": 60.0,
+          "execution_fee": 1.0,
+          "execution_id": "SYN_COMPARE_B_EXEC_4",
+          "execution_price": 11.0,
+          "execution_source": {
+            "execution_refs": [
+              "SYN_COMPARE_B_EXEC_4"
+            ],
+            "replay_scope_id": "replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b",
+            "source_kind": "vectorbt_order",
+            "source_record_id": "vectorbt_order:replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b:SYN_COMPARE_ACCOUNT_B:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:4",
+            "vectorbt_record_id": 4
+          },
+          "immediate_result": {
+            "pnl": 34.04,
+            "position_status": "closed",
+            "recorded_entry_fees": 0.96,
+            "recorded_exit_fees": 1.0,
+            "result_basis": "net_pnl",
+            "result_kind": "realized",
+            "result_sign": "profit",
+            "return_value": 0.05455128205128205,
+            "source": {
+              "execution_refs": [
+                "SYN_COMPARE_B_EXEC_4"
+              ],
+              "replay_scope_id": "replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b",
+              "source_kind": "vectorbt_exit_trade",
+              "source_record_id": "vectorbt_exit_trade:replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b:SYN_COMPARE_ACCOUNT_B:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:2",
+              "vectorbt_record_id": 2
+            },
+            "valuation_at": null,
+            "valuation_price": null
+          },
+          "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+          "limitations": [
+            "Outcome Attribution v1 supports normalized long-only executions only.",
+            "Results describe recorded history and registered historical alternatives; they are not forecasts or recommendations.",
+            "No downstream order is clamped, resized, deleted, synthesized, or optimized."
+          ],
+          "method_id": "historical_decision_outcome_v1",
+          "method_version": "1",
+          "outcome_id": "do_32b75b2dff0149ca219743f7b22128ba3d674cd8ec02baf03581cef6a60e2145",
+          "provenance": [
+            {
+              "as_of": "2025-01-17T00:00:00",
+              "attributes": {},
+              "benchmark_id": null,
+              "data_version": "1",
+              "instrument": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "is_synthetic": true,
+              "price_type": "synthetic",
+              "source_id": null,
+              "source_name": "same_stock_pair_fixture",
+              "source_type": "price_series"
+            }
+          ],
+          "relation_types": [
+            "deterministic_state_transition",
+            "accounting_realized_result"
+          ],
+          "side": "SELL",
+          "subject_id": "SYN_COMPARE_B"
+        }
+      ],
+      "episode": {
+        "account_id": "SYN_COMPARE_ACCOUNT_B",
+        "calculation_code_version": "same_stock_descriptive_comparison_v1",
+        "closed_at": "2025-01-17T10:00:00",
+        "closing_execution_id": "SYN_COMPARE_B_EXEC_4",
+        "data_tier": "synthetic",
+        "decision_refs": [
+          "de_93aad4ff2a96e9abf17629d4becc12b4fddfcaf1adaee9ff8fac4c9c96775b8d",
+          "de_63a8f28936843925cc12db395334edfb7e8533fc077ac13ad5a8c40731b5c386",
+          "de_30e6d4ac35ab5e7b776258b449ab6bdff98bcae664a990689fcb5e663bff2fe7",
+          "de_2271f42c9d6117e935f19d2ac63eccfe5e0541300e419d0abc0037266e42cfb6",
+          "de_215bb43cf6cf5ed3e05877568c03b1fdd1e98866fc2cebdbbf65cc59e963f681"
+        ],
+        "duration_days": 15,
+        "duration_kind": "final",
+        "episode_id": "pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1",
+        "evidence_refs": [],
+        "execution_refs": [
+          "SYN_COMPARE_B_EXEC_0",
+          "SYN_COMPARE_B_EXEC_1",
+          "SYN_COMPARE_B_EXEC_2",
+          "SYN_COMPARE_B_EXEC_3",
+          "SYN_COMPARE_B_EXEC_4"
+        ],
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "limitations": [
+          "Position Episode v1 supports only normalized long-only BUY/SELL executions.",
+          "Corporate actions and transfers are unsupported and must not be encoded as executions.",
+          "Open-position valuation is a replay mark at its stated valuation time, not an exit."
+        ],
+        "opened_at": "2025-01-02T10:00:00",
+        "opening_execution_id": "SYN_COMPARE_B_EXEC_0",
+        "provenance": [
+          {
+            "as_of": "2025-01-17T00:00:00",
+            "attributes": {},
+            "benchmark_id": null,
+            "data_version": "1",
+            "instrument": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+            "is_synthetic": true,
+            "price_type": "synthetic",
+            "source_id": null,
+            "source_name": "same_stock_pair_fixture",
+            "source_type": "price_series"
+          }
+        ],
+        "replay_method_id": "vectorbt_portfolio_replay_v1",
+        "status": "closed",
+        "subject_id": "SYN_COMPARE_B",
+        "vectorbt_position_record_id": 0
+      },
+      "instrument": {
+        "currency": "CNY",
+        "display_name": "同股操作示例 / Synthetic comparison",
+        "display_symbol": "SYN_COMPARE",
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "local_symbol": "SYN_COMPARE",
+        "market": "SYNTHETIC",
+        "security_type": "equity"
+      },
+      "outcome": {
+        "account_id": "SYN_COMPARE_ACCOUNT_B",
+        "actual_result": {
+          "pnl": 195.0,
+          "position_status": "closed",
+          "recorded_entry_fees": 2.0,
+          "recorded_exit_fees": 3.0,
+          "result_basis": "net_pnl",
+          "result_kind": "realized",
+          "result_sign": "profit",
+          "return_value": 0.13541666666666666,
+          "source": {
+            "execution_refs": [
+              "SYN_COMPARE_B_EXEC_0",
+              "SYN_COMPARE_B_EXEC_1",
+              "SYN_COMPARE_B_EXEC_2",
+              "SYN_COMPARE_B_EXEC_3",
+              "SYN_COMPARE_B_EXEC_4"
+            ],
+            "replay_scope_id": "replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b",
+            "source_kind": "vectorbt_position",
+            "source_record_id": "vectorbt_position:replay_27e40a6d571ad11a65adc1ad5213eda4e8ec68db81c6aabdafc8811902f3eb0b:SYN_COMPARE_ACCOUNT_B:inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3:0",
+            "vectorbt_record_id": 0
+          },
+          "valuation_at": null,
+          "valuation_price": null
+        },
+        "analysis_as_of": "2025-01-17T16:00:00",
+        "calculation_code_version": "same_stock_descriptive_comparison_v1",
+        "decision_event_refs": [
+          "de_93aad4ff2a96e9abf17629d4becc12b4fddfcaf1adaee9ff8fac4c9c96775b8d",
+          "de_63a8f28936843925cc12db395334edfb7e8533fc077ac13ad5a8c40731b5c386",
+          "de_30e6d4ac35ab5e7b776258b449ab6bdff98bcae664a990689fcb5e663bff2fe7",
+          "de_2271f42c9d6117e935f19d2ac63eccfe5e0541300e419d0abc0037266e42cfb6",
+          "de_215bb43cf6cf5ed3e05877568c03b1fdd1e98866fc2cebdbbf65cc59e963f681"
+        ],
+        "duration_days": 15,
+        "duration_kind": "final",
+        "episode_id": "pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1",
+        "episode_status": "closed",
+        "execution_refs": [
+          "SYN_COMPARE_B_EXEC_0",
+          "SYN_COMPARE_B_EXEC_1",
+          "SYN_COMPARE_B_EXEC_2",
+          "SYN_COMPARE_B_EXEC_3",
+          "SYN_COMPARE_B_EXEC_4"
+        ],
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "limitations": [
+          "Outcome Attribution v1 supports normalized long-only executions only.",
+          "Results describe recorded history and registered historical alternatives; they are not forecasts or recommendations.",
+          "No downstream order is clamped, resized, deleted, synthesized, or optimized."
+        ],
+        "method_id": "historical_decision_outcome_v1",
+        "method_version": "1",
+        "outcome_id": "eo_325c03b8d793d7c1edf23c35eb6dc0bf4c5a57521b159d708cc282134af6139a",
+        "provenance": [
+          {
+            "as_of": "2025-01-17T00:00:00",
+            "attributes": {},
+            "benchmark_id": null,
+            "data_version": "1",
+            "instrument": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+            "is_synthetic": true,
+            "price_type": "synthetic",
+            "source_id": null,
+            "source_name": "same_stock_pair_fixture",
+            "source_type": "price_series"
+          }
+        ],
+        "relation_type": "accounting_realized_result",
+        "subject_id": "SYN_COMPARE_B"
+      },
+      "path": {
+        "episode_id": "pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1",
+        "limitations": [
+          "Daily observations have no intraday available_at; same-day close is never pre-decision information.",
+          "Missing pre-entry or post-exit context does not invalidate the Position Episode lifecycle.",
+          "Path statistics describe the asset market-price path, not a second position PnL.",
+          "Duration uses calendar days between normalized timestamps, not a trading calendar.",
+          "Valid daily market observations are counted as observed rows, not trading days.",
+          "Intervals without new executions are market-path facts, not user Decisions.",
+          "No corporate-action, FX, short, margin, Journal, or Agent layer is applied.",
+          "No stop-loss historical scenario or user-selected historical exit-date scenario is provided.",
+          "No online market provider is implemented; path uses recorded daily observations only."
+        ],
+        "market_path": {
+          "account_id": "SYN_COMPARE_ACCOUNT_B",
+          "daily_price_peak_drawdown": {
+            "daily_price_peak_drawdown": -0.34615384615384615,
+            "peak_observation": {
+              "data_source": "same_stock_pair_fixture",
+              "data_version": "1",
+              "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "observed_at": "2025-01-07T00:00:00",
+              "price": 13.0,
+              "price_type": "synthetic"
+            },
+            "quantity_at_trough": 60.0,
+            "quantity_at_trough_status": "available",
+            "quantity_status_reason": null,
+            "trough_observation": {
+              "data_source": "same_stock_pair_fixture",
+              "data_version": "1",
+              "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "observed_at": "2025-01-10T00:00:00",
+              "price": 8.5,
+              "price_type": "synthetic"
+            }
+          },
+          "decision_interval_moves": [
+            {
+              "interval_id": "interval_de_93aad4ff2a96e9abf17629d4becc12b4fddfcaf1adaee9ff8fac4c9c96775b8d_de_63a8f28936843925cc12db395334edfb7e8533fc077ac13ad5a8c40731b5c386",
+              "move": {
+                "decision_event_id": "de_63a8f28936843925cc12db395334edfb7e8533fc077ac13ad5a8c40731b5c386",
+                "end_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-06T00:00:00",
+                  "price": 12.0,
+                  "price_type": "synthetic"
+                },
+                "gap_status": "preserved_as_observed",
+                "highest_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-06T00:00:00",
+                  "price": 12.0,
+                  "price_type": "synthetic"
+                },
+                "lowest_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-03T00:00:00",
+                  "price": 10.8,
+                  "price_type": "synthetic"
+                },
+                "method_version": "1",
+                "previous_decision_event_id": "de_93aad4ff2a96e9abf17629d4becc12b4fddfcaf1adaee9ff8fac4c9c96775b8d",
+                "price_change": 1.1999999999999993,
+                "price_return": 0.11111111111111104,
+                "start_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-03T00:00:00",
+                  "price": 10.8,
+                  "price_type": "synthetic"
+                },
+                "status": "complete",
+                "valid_observation_count": 2,
+                "window_end": "2025-01-06T00:00:00",
+                "window_start": "2025-01-03T00:00:00"
+              },
+              "next_decision_event_id": "de_63a8f28936843925cc12db395334edfb7e8533fc077ac13ad5a8c40731b5c386",
+              "previous_decision_event_id": "de_93aad4ff2a96e9abf17629d4becc12b4fddfcaf1adaee9ff8fac4c9c96775b8d"
+            },
+            {
+              "interval_id": "interval_de_63a8f28936843925cc12db395334edfb7e8533fc077ac13ad5a8c40731b5c386_de_30e6d4ac35ab5e7b776258b449ab6bdff98bcae664a990689fcb5e663bff2fe7",
+              "move": {
+                "decision_event_id": "de_30e6d4ac35ab5e7b776258b449ab6bdff98bcae664a990689fcb5e663bff2fe7",
+                "end_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-13T00:00:00",
+                  "price": 9.5,
+                  "price_type": "synthetic"
+                },
+                "gap_status": "preserved_as_observed",
+                "highest_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-08T00:00:00",
+                  "price": 11.5,
+                  "price_type": "synthetic"
+                },
+                "lowest_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-10T00:00:00",
+                  "price": 8.5,
+                  "price_type": "synthetic"
+                },
+                "method_version": "1",
+                "previous_decision_event_id": "de_63a8f28936843925cc12db395334edfb7e8533fc077ac13ad5a8c40731b5c386",
+                "price_change": -2.0,
+                "price_return": -0.17391304347826086,
+                "start_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-08T00:00:00",
+                  "price": 11.5,
+                  "price_type": "synthetic"
+                },
+                "status": "complete",
+                "valid_observation_count": 4,
+                "window_end": "2025-01-13T00:00:00",
+                "window_start": "2025-01-08T00:00:00"
+              },
+              "next_decision_event_id": "de_30e6d4ac35ab5e7b776258b449ab6bdff98bcae664a990689fcb5e663bff2fe7",
+              "previous_decision_event_id": "de_63a8f28936843925cc12db395334edfb7e8533fc077ac13ad5a8c40731b5c386"
+            },
+            {
+              "interval_id": "interval_de_30e6d4ac35ab5e7b776258b449ab6bdff98bcae664a990689fcb5e663bff2fe7_de_2271f42c9d6117e935f19d2ac63eccfe5e0541300e419d0abc0037266e42cfb6",
+              "move": {
+                "decision_event_id": "de_2271f42c9d6117e935f19d2ac63eccfe5e0541300e419d0abc0037266e42cfb6",
+                "end_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-15T00:00:00",
+                  "price": 10.0,
+                  "price_type": "synthetic"
+                },
+                "gap_status": "preserved_as_observed",
+                "highest_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-15T00:00:00",
+                  "price": 10.0,
+                  "price_type": "synthetic"
+                },
+                "lowest_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-15T00:00:00",
+                  "price": 10.0,
+                  "price_type": "synthetic"
+                },
+                "method_version": "1",
+                "previous_decision_event_id": "de_30e6d4ac35ab5e7b776258b449ab6bdff98bcae664a990689fcb5e663bff2fe7",
+                "price_change": null,
+                "price_return": null,
+                "start_observation": {
+                  "data_source": "same_stock_pair_fixture",
+                  "data_version": "1",
+                  "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                  "observed_at": "2025-01-15T00:00:00",
+                  "price": 10.0,
+                  "price_type": "synthetic"
+                },
+                "status": "insufficient",
+                "valid_observation_count": 1,
+                "window_end": "2025-01-15T00:00:00",
+                "window_start": "2025-01-15T00:00:00"
+              },
+              "next_decision_event_id": "de_2271f42c9d6117e935f19d2ac63eccfe5e0541300e419d0abc0037266e42cfb6",
+              "previous_decision_event_id": "de_30e6d4ac35ab5e7b776258b449ab6bdff98bcae664a990689fcb5e663bff2fe7"
+            },
+            {
+              "interval_id": "interval_de_2271f42c9d6117e935f19d2ac63eccfe5e0541300e419d0abc0037266e42cfb6_de_215bb43cf6cf5ed3e05877568c03b1fdd1e98866fc2cebdbbf65cc59e963f681",
+              "move": {
+                "decision_event_id": "de_215bb43cf6cf5ed3e05877568c03b1fdd1e98866fc2cebdbbf65cc59e963f681",
+                "end_observation": null,
+                "gap_status": "insufficient",
+                "highest_observation": null,
+                "lowest_observation": null,
+                "method_version": "1",
+                "previous_decision_event_id": "de_2271f42c9d6117e935f19d2ac63eccfe5e0541300e419d0abc0037266e42cfb6",
+                "price_change": null,
+                "price_return": null,
+                "start_observation": null,
+                "status": "insufficient",
+                "valid_observation_count": 0,
+                "window_end": null,
+                "window_start": null
+              },
+              "next_decision_event_id": "de_215bb43cf6cf5ed3e05877568c03b1fdd1e98866fc2cebdbbf65cc59e963f681",
+              "previous_decision_event_id": "de_2271f42c9d6117e935f19d2ac63eccfe5e0541300e419d0abc0037266e42cfb6"
+            }
+          ],
+          "episode_context_status": "complete",
+          "episode_id": "pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1",
+          "episode_market_path": {
+            "daily_path_max": {
+              "data_source": "same_stock_pair_fixture",
+              "data_version": "1",
+              "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "observed_at": "2025-01-07T00:00:00",
+              "price": 13.0,
+              "price_type": "synthetic"
+            },
+            "daily_path_min": {
+              "data_source": "same_stock_pair_fixture",
+              "data_version": "1",
+              "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+              "observed_at": "2025-01-10T00:00:00",
+              "price": 8.5,
+              "price_type": "synthetic"
+            },
+            "observations": [
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-02T00:00:00",
+                "price": 10.0,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-03T00:00:00",
+                "price": 10.8,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-06T00:00:00",
+                "price": 12.0,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-07T00:00:00",
+                "price": 13.0,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-08T00:00:00",
+                "price": 11.5,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-09T00:00:00",
+                "price": 9.0,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-10T00:00:00",
+                "price": 8.5,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-13T00:00:00",
+                "price": 9.5,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-14T00:00:00",
+                "price": 11.0,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-15T00:00:00",
+                "price": 10.0,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-16T00:00:00",
+                "price": 11.5,
+                "price_type": "synthetic"
+              },
+              {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-17T00:00:00",
+                "price": 11.0,
+                "price_type": "synthetic"
+              }
+            ],
+            "requested_observation_count": null,
+            "segment": "episode",
+            "status": "complete",
+            "valid_observation_count": 12
+          },
+          "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+          "limitations": [
+            "Daily observations have no intraday available_at; same-day close is never pre-decision information.",
+            "Missing pre-entry or post-exit context does not invalidate the Position Episode lifecycle.",
+            "Path statistics describe the asset market-price path, not a second position PnL.",
+            "Duration uses calendar days between normalized timestamps, not a trading calendar.",
+            "Valid daily market observations are counted as observed rows, not trading days.",
+            "Intervals without new executions are market-path facts, not user Decisions.",
+            "No corporate-action, FX, short, margin, Journal, or Agent layer is applied."
+          ],
+          "market_path_segments": [
+            {
+              "end_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-07T00:00:00",
+                "price": 13.0,
+                "price_type": "synthetic"
+              },
+              "kind": "rise",
+              "price_change": 3.0,
+              "price_return": 0.3,
+              "segment_id": "segment_pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1_0_rise",
+              "start_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-02T00:00:00",
+                "price": 10.0,
+                "price_type": "synthetic"
+              },
+              "valid_observation_count": 4
+            },
+            {
+              "end_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-10T00:00:00",
+                "price": 8.5,
+                "price_type": "synthetic"
+              },
+              "kind": "drawdown",
+              "price_change": -4.5,
+              "price_return": -0.34615384615384615,
+              "segment_id": "segment_pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1_1_drawdown",
+              "start_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-07T00:00:00",
+                "price": 13.0,
+                "price_type": "synthetic"
+              },
+              "valid_observation_count": 4
+            },
+            {
+              "end_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-14T00:00:00",
+                "price": 11.0,
+                "price_type": "synthetic"
+              },
+              "kind": "recovery",
+              "price_change": 2.5,
+              "price_return": 0.29411764705882354,
+              "segment_id": "segment_pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1_2_recovery",
+              "start_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-10T00:00:00",
+                "price": 8.5,
+                "price_type": "synthetic"
+              },
+              "valid_observation_count": 3
+            },
+            {
+              "end_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-15T00:00:00",
+                "price": 10.0,
+                "price_type": "synthetic"
+              },
+              "kind": "drawdown",
+              "price_change": -1.0,
+              "price_return": -0.09090909090909091,
+              "segment_id": "segment_pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1_3_drawdown",
+              "start_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-14T00:00:00",
+                "price": 11.0,
+                "price_type": "synthetic"
+              },
+              "valid_observation_count": 2
+            },
+            {
+              "end_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-16T00:00:00",
+                "price": 11.5,
+                "price_type": "synthetic"
+              },
+              "kind": "recovery",
+              "price_change": 1.5,
+              "price_return": 0.15,
+              "segment_id": "segment_pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1_4_recovery",
+              "start_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-15T00:00:00",
+                "price": 10.0,
+                "price_type": "synthetic"
+              },
+              "valid_observation_count": 2
+            },
+            {
+              "end_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-17T00:00:00",
+                "price": 11.0,
+                "price_type": "synthetic"
+              },
+              "kind": "drawdown",
+              "price_change": -0.5,
+              "price_return": -0.043478260869565216,
+              "segment_id": "segment_pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1_5_drawdown",
+              "start_observation": {
+                "data_source": "same_stock_pair_fixture",
+                "data_version": "1",
+                "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+                "observed_at": "2025-01-16T00:00:00",
+                "price": 11.5,
+                "price_type": "synthetic"
+              },
+              "valid_observation_count": 2
+            }
+          ],
+          "method_id": "episode_path_analysis_v1",
+          "method_version": "1",
+          "post_exit_context": {
+            "daily_path_max": null,
+            "daily_path_min": null,
+            "observations": [],
+            "requested_observation_count": 20,
+            "segment": "post_exit",
+            "status": "insufficient",
+            "valid_observation_count": 0
+          },
+          "post_exit_context_status": "insufficient",
+          "pre_entry_context": {
+            "end_observation": null,
+            "method_version": "1",
+            "observations": [],
+            "price_change": null,
+            "price_return": null,
+            "requested_observation_count": 20,
+            "start_observation": null,
+            "status": "insufficient",
+            "valid_observation_count": 0
+          },
+          "pre_entry_context_status": "insufficient",
+          "subject_id": "SYN_COMPARE_B",
+          "trailing_hold_observation": null
+        },
+        "method_id": "episode_path_analysis_v1",
+        "method_version": "1",
+        "patterns": [
+          {
+            "decision_event_ids": [],
+            "episode_id": "pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1",
+            "evidence_ids": [],
+            "facts": {
+              "daily_price_peak_drawdown": -0.34615384615384615,
+              "episode_max_quantity": 100.0,
+              "peak_observed_at": "2025-01-07T00:00:00",
+              "quantity_at_daily_price_drawdown": 60.0,
+              "quantity_at_trough_status": "available",
+              "quantity_ratio_to_episode_max": 0.6,
+              "quantity_status_reason": null,
+              "trough_observed_at": "2025-01-10T00:00:00"
+            },
+            "method_version": "1",
+            "pattern_code": "high_quantity_during_daily_price_drawdown",
+            "pattern_id": "pattern_pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1_high_quantity_during_daily_price_drawdown",
+            "phase_ids": []
+          }
+        ],
+        "phase_counterfactuals": [],
+        "phases": [
+          {
+            "average_cost_after": 10.0,
+            "average_cost_before": null,
+            "decision_event_ids": [
+              "de_93aad4ff2a96e9abf17629d4becc12b4fddfcaf1adaee9ff8fac4c9c96775b8d"
+            ],
+            "ended_at": "2025-01-02T10:00:00",
+            "episode_id": "pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1",
+            "execution_ids": [
+              "SYN_COMPARE_B_EXEC_0"
+            ],
+            "method_version": "1",
+            "phase_id": "phase_3e16c9cb0d8d354091d83d874fe2938163d9d70ee0598221d1d3d1cf20e81029",
+            "phase_type": "entry",
+            "quantity_after": 100.0,
+            "quantity_before": 0.0,
+            "started_at": "2025-01-02T10:00:00",
+            "state_after_ref": "ps_9d6b98ecd7bb01b041fea3c26341bc558cd9727b69b238f9df81294ccd2bd1ad",
+            "state_before_ref": "ps_84153725b6ed92bb95d0821d866d466a6b260891acc460fb474d9b9868fcd157",
+            "taxonomy_version": "1"
+          },
+          {
+            "average_cost_after": 10.0,
+            "average_cost_before": 10.0,
+            "decision_event_ids": [
+              "de_63a8f28936843925cc12db395334edfb7e8533fc077ac13ad5a8c40731b5c386"
+            ],
+            "ended_at": "2025-01-07T10:00:00",
+            "episode_id": "pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1",
+            "execution_ids": [
+              "SYN_COMPARE_B_EXEC_1"
+            ],
+            "method_version": "1",
+            "phase_id": "phase_d6fed9bcce25051e43f62dbecd10f626157137384ed73921437c44bb46f9fa23",
+            "phase_type": "scaling_out",
+            "quantity_after": 60.0,
+            "quantity_before": 100.0,
+            "started_at": "2025-01-07T10:00:00",
+            "state_after_ref": "ps_2e894b926ed768a5423f7aae4107f3ba6f12688c3ad34f0e6662aede654d8f9d",
+            "state_before_ref": "ps_822c299ef7184788516f2fee9eda7e59a42aa12621a691fcf929d7205eb54df1",
+            "taxonomy_version": "1"
+          },
+          {
+            "average_cost_after": 10.4,
+            "average_cost_before": 10.0,
+            "decision_event_ids": [
+              "de_30e6d4ac35ab5e7b776258b449ab6bdff98bcae664a990689fcb5e663bff2fe7"
+            ],
+            "ended_at": "2025-01-14T10:00:00",
+            "episode_id": "pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1",
+            "execution_ids": [
+              "SYN_COMPARE_B_EXEC_2"
+            ],
+            "method_version": "1",
+            "phase_id": "phase_4a56aaa223c6d81899cfc076b33629daf7994b429dbb15da37d0d03082ae277b",
+            "phase_type": "scaling_in",
+            "quantity_after": 100.0,
+            "quantity_before": 60.0,
+            "started_at": "2025-01-14T10:00:00",
+            "state_after_ref": "ps_af0498709b48ca0f53a7f8f3b179cbfdb45ae627fe77c97b8b7f1afd86f50d88",
+            "state_before_ref": "ps_f3ee4d3869aaac8a865ef427db8e2a8ec259dbecb135741afcddeaf23922d030",
+            "taxonomy_version": "1"
+          },
+          {
+            "average_cost_after": 10.4,
+            "average_cost_before": 10.4,
+            "decision_event_ids": [
+              "de_2271f42c9d6117e935f19d2ac63eccfe5e0541300e419d0abc0037266e42cfb6"
+            ],
+            "ended_at": "2025-01-16T10:00:00",
+            "episode_id": "pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1",
+            "execution_ids": [
+              "SYN_COMPARE_B_EXEC_3"
+            ],
+            "method_version": "1",
+            "phase_id": "phase_c58f76d3e4b6fecba236a0b53c583d44d3a19a1f312645ccad1ac8e0a5c04320",
+            "phase_type": "scaling_out",
+            "quantity_after": 60.0,
+            "quantity_before": 100.0,
+            "started_at": "2025-01-16T10:00:00",
+            "state_after_ref": "ps_296f4d1a7735609caeaedd63e3d1fed21676e669a8398db9cd70e11b6713a48c",
+            "state_before_ref": "ps_2f2acb9ed284b8a0f384b97dd15b50f5e9473ec0a4433384431d4aa5c160abf5",
+            "taxonomy_version": "1"
+          },
+          {
+            "average_cost_after": null,
+            "average_cost_before": 10.4,
+            "decision_event_ids": [
+              "de_215bb43cf6cf5ed3e05877568c03b1fdd1e98866fc2cebdbbf65cc59e963f681"
+            ],
+            "ended_at": "2025-01-17T10:00:00",
+            "episode_id": "pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1",
+            "execution_ids": [
+              "SYN_COMPARE_B_EXEC_4"
+            ],
+            "method_version": "1",
+            "phase_id": "phase_f42874572aa41e7ef9f42751808e1dbaefbf4b4417caba65a660e43fbd665d71",
+            "phase_type": "exit",
+            "quantity_after": 0.0,
+            "quantity_before": 60.0,
+            "started_at": "2025-01-17T10:00:00",
+            "state_after_ref": "ps_b10e7c073d431b665b0fbbf995707da2c5e10ce78d4bd91d2ab990ddbc5dcc41",
+            "state_before_ref": "ps_e97244747bdce17e1ae07d9d8b3b668e15745cdc4a23c5b2fe1bd43aa33d9547",
+            "taxonomy_version": "1"
+          }
+        ],
+        "position_path": {
+          "episode_id": "pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1",
+          "max_quantity": 100.0,
+          "max_quantity_as_of": "2025-01-14T10:00:00",
+          "max_quantity_state_id": "ps_af0498709b48ca0f53a7f8f3b179cbfdb45ae627fe77c97b8b7f1afd86f50d88",
+          "points": [
+            {
+              "as_of": "2025-01-02T10:00:00",
+              "average_cost": null,
+              "boundary": "before_execution",
+              "decision_event_id": "de_93aad4ff2a96e9abf17629d4becc12b4fddfcaf1adaee9ff8fac4c9c96775b8d",
+              "execution_id": "SYN_COMPARE_B_EXEC_0",
+              "quantity": 0.0,
+              "state_id": "ps_84153725b6ed92bb95d0821d866d466a6b260891acc460fb474d9b9868fcd157"
+            },
+            {
+              "as_of": "2025-01-02T10:00:00",
+              "average_cost": 10.0,
+              "boundary": "after_execution",
+              "decision_event_id": "de_93aad4ff2a96e9abf17629d4becc12b4fddfcaf1adaee9ff8fac4c9c96775b8d",
+              "execution_id": "SYN_COMPARE_B_EXEC_0",
+              "quantity": 100.0,
+              "state_id": "ps_9d6b98ecd7bb01b041fea3c26341bc558cd9727b69b238f9df81294ccd2bd1ad"
+            },
+            {
+              "as_of": "2025-01-07T10:00:00",
+              "average_cost": 10.0,
+              "boundary": "after_execution",
+              "decision_event_id": "de_63a8f28936843925cc12db395334edfb7e8533fc077ac13ad5a8c40731b5c386",
+              "execution_id": "SYN_COMPARE_B_EXEC_1",
+              "quantity": 60.0,
+              "state_id": "ps_2e894b926ed768a5423f7aae4107f3ba6f12688c3ad34f0e6662aede654d8f9d"
+            },
+            {
+              "as_of": "2025-01-14T10:00:00",
+              "average_cost": 10.4,
+              "boundary": "after_execution",
+              "decision_event_id": "de_30e6d4ac35ab5e7b776258b449ab6bdff98bcae664a990689fcb5e663bff2fe7",
+              "execution_id": "SYN_COMPARE_B_EXEC_2",
+              "quantity": 100.0,
+              "state_id": "ps_af0498709b48ca0f53a7f8f3b179cbfdb45ae627fe77c97b8b7f1afd86f50d88"
+            },
+            {
+              "as_of": "2025-01-16T10:00:00",
+              "average_cost": 10.4,
+              "boundary": "after_execution",
+              "decision_event_id": "de_2271f42c9d6117e935f19d2ac63eccfe5e0541300e419d0abc0037266e42cfb6",
+              "execution_id": "SYN_COMPARE_B_EXEC_3",
+              "quantity": 60.0,
+              "state_id": "ps_296f4d1a7735609caeaedd63e3d1fed21676e669a8398db9cd70e11b6713a48c"
+            },
+            {
+              "as_of": "2025-01-17T10:00:00",
+              "average_cost": null,
+              "boundary": "after_execution",
+              "decision_event_id": "de_215bb43cf6cf5ed3e05877568c03b1fdd1e98866fc2cebdbbf65cc59e963f681",
+              "execution_id": "SYN_COMPARE_B_EXEC_4",
+              "quantity": 0.0,
+              "state_id": "ps_b10e7c073d431b665b0fbbf995707da2c5e10ce78d4bd91d2ab990ddbc5dcc41"
+            }
+          ],
+          "quantity_at_drawdown": {
+            "observed_at": "2025-01-10T00:00:00",
+            "quantity": 60.0,
+            "reason": null,
+            "state_id": null,
+            "status": "available"
+          }
+        },
+        "presentation_items": [
+          {
+            "item_id": "pattern_pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1_high_quantity_during_daily_price_drawdown",
+            "kind": "pattern",
+            "pattern_id": "pattern_pe_ff4b04470b29e6329227b6b2f53284b1de6f200d983f98115365f7497cc60dd1_high_quantity_during_daily_price_drawdown",
+            "phase_id": null,
+            "reason_code": "high_quantity_during_daily_price_drawdown"
+          },
+          {
+            "item_id": "phase_3e16c9cb0d8d354091d83d874fe2938163d9d70ee0598221d1d3d1cf20e81029",
+            "kind": "phase",
+            "pattern_id": null,
+            "phase_id": "phase_3e16c9cb0d8d354091d83d874fe2938163d9d70ee0598221d1d3d1cf20e81029",
+            "reason_code": "episode_path_phase"
+          },
+          {
+            "item_id": "phase_f42874572aa41e7ef9f42751808e1dbaefbf4b4417caba65a660e43fbd665d71",
+            "kind": "phase",
+            "pattern_id": null,
+            "phase_id": "phase_f42874572aa41e7ef9f42751808e1dbaefbf4b4417caba65a660e43fbd665d71",
+            "reason_code": "large_quantity_change"
+          },
+          {
+            "item_id": "phase_d6fed9bcce25051e43f62dbecd10f626157137384ed73921437c44bb46f9fa23",
+            "kind": "phase",
+            "pattern_id": null,
+            "phase_id": "phase_d6fed9bcce25051e43f62dbecd10f626157137384ed73921437c44bb46f9fa23",
+            "reason_code": "large_quantity_change"
+          },
+          {
+            "item_id": "phase_4a56aaa223c6d81899cfc076b33629daf7994b429dbb15da37d0d03082ae277b",
+            "kind": "phase",
+            "pattern_id": null,
+            "phase_id": "phase_4a56aaa223c6d81899cfc076b33629daf7994b429dbb15da37d0d03082ae277b",
+            "reason_code": "large_quantity_change"
+          },
+          {
+            "item_id": "phase_c58f76d3e4b6fecba236a0b53c583d44d3a19a1f312645ccad1ac8e0a5c04320",
+            "kind": "phase",
+            "pattern_id": null,
+            "phase_id": "phase_c58f76d3e4b6fecba236a0b53c583d44d3a19a1f312645ccad1ac8e0a5c04320",
+            "reason_code": "large_quantity_change"
+          }
+        ]
+      }
+    },
+    "b_position_shape": [
+      {
+        "as_of": "2025-01-02T10:00:00",
+        "average_cost": null,
+        "boundary": "before_execution",
+        "decision_ref": "de_93aad4ff2a96e9abf17629d4becc12b4fddfcaf1adaee9ff8fac4c9c96775b8d",
+        "normalized_quantity": 0.0,
+        "quantity": 0.0,
+        "state_ref": "ps_84153725b6ed92bb95d0821d866d466a6b260891acc460fb474d9b9868fcd157"
+      },
+      {
+        "as_of": "2025-01-02T10:00:00",
+        "average_cost": 10.0,
+        "boundary": "after_execution",
+        "decision_ref": "de_93aad4ff2a96e9abf17629d4becc12b4fddfcaf1adaee9ff8fac4c9c96775b8d",
+        "normalized_quantity": 1.0,
+        "quantity": 100.0,
+        "state_ref": "ps_9d6b98ecd7bb01b041fea3c26341bc558cd9727b69b238f9df81294ccd2bd1ad"
+      },
+      {
+        "as_of": "2025-01-07T10:00:00",
+        "average_cost": 10.0,
+        "boundary": "after_execution",
+        "decision_ref": "de_63a8f28936843925cc12db395334edfb7e8533fc077ac13ad5a8c40731b5c386",
+        "normalized_quantity": 0.6,
+        "quantity": 60.0,
+        "state_ref": "ps_2e894b926ed768a5423f7aae4107f3ba6f12688c3ad34f0e6662aede654d8f9d"
+      },
+      {
+        "as_of": "2025-01-14T10:00:00",
+        "average_cost": 10.4,
+        "boundary": "after_execution",
+        "decision_ref": "de_30e6d4ac35ab5e7b776258b449ab6bdff98bcae664a990689fcb5e663bff2fe7",
+        "normalized_quantity": 1.0,
+        "quantity": 100.0,
+        "state_ref": "ps_af0498709b48ca0f53a7f8f3b179cbfdb45ae627fe77c97b8b7f1afd86f50d88"
+      },
+      {
+        "as_of": "2025-01-16T10:00:00",
+        "average_cost": 10.4,
+        "boundary": "after_execution",
+        "decision_ref": "de_2271f42c9d6117e935f19d2ac63eccfe5e0541300e419d0abc0037266e42cfb6",
+        "normalized_quantity": 0.6,
+        "quantity": 60.0,
+        "state_ref": "ps_296f4d1a7735609caeaedd63e3d1fed21676e669a8398db9cd70e11b6713a48c"
+      },
+      {
+        "as_of": "2025-01-17T10:00:00",
+        "average_cost": null,
+        "boundary": "after_execution",
+        "decision_ref": "de_215bb43cf6cf5ed3e05877568c03b1fdd1e98866fc2cebdbbf65cc59e963f681",
+        "normalized_quantity": 0.0,
+        "quantity": 0.0,
+        "state_ref": "ps_b10e7c073d431b665b0fbbf995707da2c5e10ce78d4bd91d2ab990ddbc5dcc41"
+      }
+    ],
+    "common_end": "2025-01-17T10:00:00",
+    "common_start": "2025-01-02T10:00:00",
+    "comparison_id": "compare_340aeef43d254941f2909b848085fa7e8122ac84a58b94a0a09d81c2ac637ecf",
+    "differences": [
+      {
+        "a_decision_refs": [
+          "de_50b8a3de906f82ce09966d6c886d7f2734d62e5c1275a065f18333b404f0d993",
+          "de_de154253848cf01354dab35109f249280a38557ca7f60354d928f582137a0f02"
+        ],
+        "a_value": 2,
+        "b_decision_refs": [
+          "de_30e6d4ac35ab5e7b776258b449ab6bdff98bcae664a990689fcb5e663bff2fe7"
+        ],
+        "b_value": 1,
+        "dimension": "add_position",
+        "fact_id": "difference_e228e5a3e81da536b66031ab4a28540a151e3e0a35d3e13532cf306c046a5c82",
+        "fact_refs": [
+          "eo_f47770bcffdf282e4e61adbafc0f456bb719e0fb8f898b8506b824ac79def72b",
+          "eo_325c03b8d793d7c1edf23c35eb6dc0bf4c5a57521b159d708cc282134af6139a",
+          "do_c2fae39f3f4ccfce62c217f712238a3586fdca9c352e4adb56580eb0d7d858fe",
+          "do_705300b676c4fadff31887f6a707439324fd53218ab5d80d26f3a352be08c0e7",
+          "do_aa890d24b9cff1824afc26b9ddae9bc85002bc121cefdd62996b7667162c8c7e"
+        ],
+        "interpretation_boundary": "仅陈述共同时间范围内的操作次数；不解释意图、优劣或收益归因份额。",
+        "market_observation_refs": [
+          "market_88e334dcf576e81cf0a7ac013bc8ae900f329c8f0cb14fd551ffbded0f0bef29",
+          "market_dcd8a1686166283dc3fea67180b30879d2210d316f3306355b547153c92d72f3",
+          "market_e1b4ab264e881fc106be16c763f5b52aba365a95d48bdd3ad30ab772f89dca51",
+          "market_fb50945b772607eacaa7e064bb72b3b062fa17fb136fe750b155aaf185da0dc6",
+          "market_79590e5fb3e20e62ac5d2884234c473820f8f4fd72c3f28d4dc7e46f1fd549fa",
+          "market_d04ff4e09bd84201470e7bd5c3d4d4de8a6b7ae523635a63d1af5a1cd2e3a8fb",
+          "market_e3b6d01b8e9754857c48ea5d4cb02634f71d3b5b072c64abca4463cd14c08234",
+          "market_ec0773ffa44c63e2de6389d9d4ebac05e83ef42ceef689e332d68a5dc76a7b43",
+          "market_e7b0ea4708d04bdbb894a291f85d699979254739b4a8cb4dbb87075174977f13",
+          "market_8be234195330da46769e3a7b7aace8da246d661a5f702f6d1dc562ebebbe593c",
+          "market_d048ab8ccaa05ec9f8c158a6cdbb366509f5247b8e1297c840a8f0fa26020b0f",
+          "market_06c3b5cd49ca198c9221696932df590e2d2e5c0cca67d6b0fdf8bee90442b1c2"
+        ],
+        "window_end": "2025-01-17T10:00:00",
+        "window_start": "2025-01-02T10:00:00"
+      },
+      {
+        "a_decision_refs": [
+          "de_c27d343ad7e66fdb188fcb0e0ce7084b1a63b1af7a807f0971dbcaf9f2c14e4b"
+        ],
+        "a_value": 1,
+        "b_decision_refs": [
+          "de_63a8f28936843925cc12db395334edfb7e8533fc077ac13ad5a8c40731b5c386",
+          "de_2271f42c9d6117e935f19d2ac63eccfe5e0541300e419d0abc0037266e42cfb6"
+        ],
+        "b_value": 2,
+        "dimension": "reduce_position",
+        "fact_id": "difference_097f6b600174fb2bcc38af6029508de83684ff495b217d239929e8876e8a245a",
+        "fact_refs": [
+          "eo_f47770bcffdf282e4e61adbafc0f456bb719e0fb8f898b8506b824ac79def72b",
+          "eo_325c03b8d793d7c1edf23c35eb6dc0bf4c5a57521b159d708cc282134af6139a",
+          "do_ba9ffc76f960d35d643e7712a3c152795f47eb9a04c9faa80c21754b86cf03d1",
+          "do_9277bbbf0aabe9290680a09f6fd5080c5de6cce999729f8c0d4f2eb37e402d72",
+          "do_f31fb6c6e0d22cc60d570c02468b59461995d2b54c34a01cd66f7a52fabbbacf"
+        ],
+        "interpretation_boundary": "仅陈述共同时间范围内的操作次数；不解释意图、优劣或收益归因份额。",
+        "market_observation_refs": [
+          "market_88e334dcf576e81cf0a7ac013bc8ae900f329c8f0cb14fd551ffbded0f0bef29",
+          "market_dcd8a1686166283dc3fea67180b30879d2210d316f3306355b547153c92d72f3",
+          "market_e1b4ab264e881fc106be16c763f5b52aba365a95d48bdd3ad30ab772f89dca51",
+          "market_fb50945b772607eacaa7e064bb72b3b062fa17fb136fe750b155aaf185da0dc6",
+          "market_79590e5fb3e20e62ac5d2884234c473820f8f4fd72c3f28d4dc7e46f1fd549fa",
+          "market_d04ff4e09bd84201470e7bd5c3d4d4de8a6b7ae523635a63d1af5a1cd2e3a8fb",
+          "market_e3b6d01b8e9754857c48ea5d4cb02634f71d3b5b072c64abca4463cd14c08234",
+          "market_ec0773ffa44c63e2de6389d9d4ebac05e83ef42ceef689e332d68a5dc76a7b43",
+          "market_e7b0ea4708d04bdbb894a291f85d699979254739b4a8cb4dbb87075174977f13",
+          "market_8be234195330da46769e3a7b7aace8da246d661a5f702f6d1dc562ebebbe593c",
+          "market_d048ab8ccaa05ec9f8c158a6cdbb366509f5247b8e1297c840a8f0fa26020b0f",
+          "market_06c3b5cd49ca198c9221696932df590e2d2e5c0cca67d6b0fdf8bee90442b1c2"
+        ],
+        "window_end": "2025-01-17T10:00:00",
+        "window_start": "2025-01-02T10:00:00"
+      }
+    ],
+    "limitations": [
+      "各自完整投资期间的结果，不是共同区间收益，也不是能力排名。",
+      "标准化持仓仅显示各自加减仓形状，不等于账户风险暴露。",
+      "共同价格仅使用双方一致的已记录日观察；不补齐缺失日期，不代表盘中已知价格。",
+      "操作差异与结果并列存在，不构成因果归因或复制对方交易的可行性结论。"
+    ],
+    "market_observations": [
+      {
+        "data_source": "same_stock_pair_fixture",
+        "data_version": "1",
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "observed_at": "2025-01-02T00:00:00",
+        "price": 10.0,
+        "price_type": "synthetic"
+      },
+      {
+        "data_source": "same_stock_pair_fixture",
+        "data_version": "1",
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "observed_at": "2025-01-03T00:00:00",
+        "price": 10.8,
+        "price_type": "synthetic"
+      },
+      {
+        "data_source": "same_stock_pair_fixture",
+        "data_version": "1",
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "observed_at": "2025-01-06T00:00:00",
+        "price": 12.0,
+        "price_type": "synthetic"
+      },
+      {
+        "data_source": "same_stock_pair_fixture",
+        "data_version": "1",
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "observed_at": "2025-01-07T00:00:00",
+        "price": 13.0,
+        "price_type": "synthetic"
+      },
+      {
+        "data_source": "same_stock_pair_fixture",
+        "data_version": "1",
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "observed_at": "2025-01-08T00:00:00",
+        "price": 11.5,
+        "price_type": "synthetic"
+      },
+      {
+        "data_source": "same_stock_pair_fixture",
+        "data_version": "1",
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "observed_at": "2025-01-09T00:00:00",
+        "price": 9.0,
+        "price_type": "synthetic"
+      },
+      {
+        "data_source": "same_stock_pair_fixture",
+        "data_version": "1",
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "observed_at": "2025-01-10T00:00:00",
+        "price": 8.5,
+        "price_type": "synthetic"
+      },
+      {
+        "data_source": "same_stock_pair_fixture",
+        "data_version": "1",
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "observed_at": "2025-01-13T00:00:00",
+        "price": 9.5,
+        "price_type": "synthetic"
+      },
+      {
+        "data_source": "same_stock_pair_fixture",
+        "data_version": "1",
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "observed_at": "2025-01-14T00:00:00",
+        "price": 11.0,
+        "price_type": "synthetic"
+      },
+      {
+        "data_source": "same_stock_pair_fixture",
+        "data_version": "1",
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "observed_at": "2025-01-15T00:00:00",
+        "price": 10.0,
+        "price_type": "synthetic"
+      },
+      {
+        "data_source": "same_stock_pair_fixture",
+        "data_version": "1",
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "observed_at": "2025-01-16T00:00:00",
+        "price": 11.5,
+        "price_type": "synthetic"
+      },
+      {
+        "data_source": "same_stock_pair_fixture",
+        "data_version": "1",
+        "instrument_id": "inst_v2_6b208df82da9ed32167e46bbefd095b7ee018f42c488c75023bfd8b3321e0bc3",
+        "observed_at": "2025-01-17T00:00:00",
+        "price": 11.0,
+        "price_type": "synthetic"
+      }
+    ],
+    "method_id": "same_stock_descriptive_comparison_v1",
+    "method_version": "1",
+    "reasons": [],
+    "status": "comparable"
+  },
   "schema_version": "1",
   "selected_episode": {
     "avg_entry_price": 10.333333333333334,

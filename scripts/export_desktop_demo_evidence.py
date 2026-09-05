@@ -54,6 +54,7 @@ from src.behavior.portfolio_concentration import (  # noqa: E402
 )
 from src.behavior.turnover_intensity import build_turnover_intensity_evidence  # noqa: E402
 from src.core.portfolio_replay import replay_multi_asset_executions  # noqa: E402
+from src.compare.demo import build_pair  # noqa: E402
 from src.data.csv_importer import load_normalized_csv  # noqa: E402
 from src.data.local_market_data_provider import LocalMarketDataProvider  # noqa: E402
 from src.evidence.adapters import adapt_evidence  # noqa: E402
@@ -755,6 +756,7 @@ def build_export() -> dict[str, object]:
     return {
         "schema_version": "1",
         "export_version": "desktop-demo-evidence-v1",
+        "same_stock_compare_demo": build_pair(),
         "data_tier": "synthetic",
         "explainability": {
             "schema_version": CALCULATION_TRACE_SCHEMA_VERSION,

@@ -12,6 +12,7 @@ export const PRODUCT_ROUTE_IDS = [
   "settings",
   "advanced_evidence",
   "investment_episode",
+  "same_stock_example",
 ] as const;
 
 export type ProductRouteId = (typeof PRODUCT_ROUTE_IDS)[number];
@@ -225,6 +226,22 @@ export const productRoutes: readonly ProductRouteDefinition[] = [
     showInSidebar: false,
     availability: "advanced",
     parentId: null,
+    inspectorPolicy: "supported",
+  }),
+  route({
+    id: "same_stock_example",
+    path: "/investments/compare-example",
+    legacyPaths: [],
+    labelKey: "Same stock, different investment paths",
+    pageTitleKey: "Same stock, different investment paths",
+    descriptionKey: "Compare recorded decisions, not investor ability.",
+    icon: "episode",
+    navigationSection: null,
+    navigationGroup: null,
+    navigationOrder: 12,
+    showInSidebar: false,
+    availability: "available",
+    parentId: "investments",
     inspectorPolicy: "supported",
   }),
   route({

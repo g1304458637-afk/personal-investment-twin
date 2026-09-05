@@ -15,6 +15,7 @@ import {
   type ProductRouteId,
 } from "@/routing/productRoutes";
 const InvestmentsPage = lazy(async () => ({ default: (await import("@/pages/InvestmentsPage")).InvestmentsPage }));
+const SameStockComparePage = lazy(async () => ({ default: (await import("@/pages/SameStockComparePage")).SameStockComparePage }));
 const ReviewPage = lazy(async () => ({ default: (await import("@/pages/ReviewPage")).ReviewPage }));
 const MyTwinPage = lazy(() => import("@/pages/MyTwinPage"));
 const EvidencePage = lazy(() => import("@/pages/EvidencePage"));
@@ -28,6 +29,7 @@ const DataAccountsPage = lazy(async () => ({ default: (await import("@/pages/Dat
 const routeElements: Partial<Record<ProductRouteId, React.ReactNode>> = {
   overview: <Navigate to="/investments" replace />,
   investments: <InvestmentsPage />,
+  same_stock_example: <SameStockComparePage />,
   review: <ReviewPage />,
   review_decisions: <DecisionsPage />,
   review_patterns: <BehaviorPage />,
