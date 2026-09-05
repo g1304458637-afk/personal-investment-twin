@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { isTauriRuntime, realUserApi, type RuntimeAccount } from "./runtimeService";
+import { readCurrentAccounts } from "./currentAccountRead";
 
 type DataMode = "demo" | "real_user";
 interface State { mode: DataMode; setMode: (mode: DataMode) => void; accounts: RuntimeAccount[]; activeAccount: RuntimeAccount | null; setActiveAccount: (account: RuntimeAccount | null) => void; refresh: () => Promise<void>; runtimeAvailable: boolean }
@@ -16,14 +17,21 @@ export function DataModeProvider({ children }: { children: ReactNode }) {
   const refresh = async () => {
     if (!runtimeAvailable) return;
     const request = ++generation.current;
-    const result = await realUserApi.accounts();
-    if (request !== generation.current) return;
+    let result;
+    try {
+      result = await readCurrentAccounts(realUserApi.accounts, () => request === generation.current);
+    } catch (value) {
+      if (request !== generation.current) return;
+      setError(String(value));
+      throw value;
+    }
+    if (!result || request !== generation.current) return;
     setError(null);
     setAccounts(result.accounts);
     setActiveAccount((current) => result.accounts.find((x) => x.account_id === current?.account_id && x.subject_id === current?.subject_id) ?? result.accounts[0] ?? null);
   };
   useEffect(() => {
-    void refresh().catch((value) => setError(String(value)));
+    void refresh().catch(() => { /* Current failures are already displayed by refresh. */ });
     return () => { generation.current += 1; };
   }, []); // runtime lifecycle is app-scoped
   const setMode = (next: DataMode) => { localStorage.setItem("toujing.dataMode", next); setModeState(next); };
