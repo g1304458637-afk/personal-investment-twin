@@ -58,6 +58,11 @@ def build(mode: str) -> Path:
         "vectorbt",
         "--recursive-copy-metadata",
         "vectorbt",
+        # Agents SDK dependencies inspect installed distribution metadata at import time.
+        "--recursive-copy-metadata",
+        "openai-agents",
+        "--collect-data",
+        "agents",
         "--distpath",
         str(dist_root),
         "--workpath",
