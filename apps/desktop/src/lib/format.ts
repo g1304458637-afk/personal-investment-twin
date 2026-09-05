@@ -2,10 +2,10 @@ import type { EvidenceStatus } from "@/demo/types";
 
 export type FormattingLocale = "zh-CN" | "en-US";
 
-export const formatCurrencyValue = (value: number, locale: FormattingLocale = "zh-CN") =>
-  new Intl.NumberFormat(locale, {
+export const formatCurrencyValue = (value: number, locale: FormattingLocale = "zh-CN", currency: string | null = "CNY") =>
+  currency === null ? `${new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(value)} (${locale === "zh-CN" ? "币种未知" : "currency unknown"})` : new Intl.NumberFormat(locale, {
     style: "currency",
-    currency: "CNY",
+    currency,
     maximumFractionDigits: 2,
   }).format(value);
 

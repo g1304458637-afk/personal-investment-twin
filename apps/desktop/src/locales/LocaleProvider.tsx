@@ -30,6 +30,8 @@ interface LocaleContextValue {
 }
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
+const CurrencyContext = createContext<string | null | undefined>(undefined);
+export const CurrencyProvider = CurrencyContext.Provider;
 
 function initialLocale(): Locale {
   const requested = new URLSearchParams(window.location.search).get("locale");
@@ -75,6 +77,8 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
 
 export function useLocale() {
   const context = useContext(LocaleContext);
+  const currency = useContext(CurrencyContext);
   if (!context) throw new Error("useLocale must be used within LocaleProvider");
-  return context;
+  return currency === undefined ? context : { ...context,
+    formatCurrency: (amount: number) => formatCurrencyValue(amount, context.locale, currency) };
 }

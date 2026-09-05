@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import { formatCurrencyValue } from "@/lib/format";
 import type { InvestmentEpisodeRowView } from "@/data/investments";
 import { useLocale } from "@/locales/LocaleProvider";
 
@@ -13,7 +14,8 @@ export function FinancialObjectRow({
   compact?: boolean;
   primary?: boolean;
 }) {
-  const { locale, t, formatCurrency, formatNumber } = useLocale();
+  const { locale, t, formatNumber } = useLocale();
+  const formatCurrency = (value: number) => formatCurrencyValue(value, locale, episode.currency);
   const date = (value: string) => new Intl.DateTimeFormat(locale, {
     year: "numeric",
     month: "short",

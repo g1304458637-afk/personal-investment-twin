@@ -1,6 +1,14 @@
 import { enUS } from "./en-US";
 
 export const zhCN = {
+  "Current marked total profit": "当前按市价计量的总盈利",
+  "Current marked total loss": "当前按市价计量的总亏损",
+  "Recorded quantity during the daily price peak-to-trough path": "每日价格峰谷区间内的记录持仓量",
+  "Market segment: rise": "上涨区间",
+  "Market segment: drawdown": "回撤区间",
+  "Market segment: recovery": "恢复区间",
+  "Market segment: flat": "平稳区间",
+  "No closed Position Episode is present in this account snapshot.": "当前账户快照中没有已关闭的持仓周期。",
   "Instrument resolutions": "标的消歧记录",
   "Instrument resolution": "确认标的归属",
   "Confirmed facts": "时间 · 标的 · 方向 · 数量 · 价格 · 费用状态 · 费用",

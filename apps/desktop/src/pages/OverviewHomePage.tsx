@@ -12,10 +12,14 @@ import { StateNotice } from "@/components/common/StateNotice";
 import { FinancialObjectRow } from "@/components/investments/FinancialObjectRow";
 import { Button } from "@/components/ui/button";
 import { investments, twinState } from "@/data/backendEvidence";
+import { useDataMode } from "@/data/DataModeProvider";
+import { InvestmentsPage } from "./InvestmentsPage";
 import { useLocale } from "@/locales/LocaleProvider";
 
 export default function OverviewHomePage() {
   const { locale, t, formatNumber } = useLocale();
+  const data = useDataMode();
+  if (data.mode === "real_user") return <InvestmentsPage />;
   const { currentSnapshot } = twinState;
   const date = (value: string) => new Intl.DateTimeFormat(locale, {
     year: "numeric",

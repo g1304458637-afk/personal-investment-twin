@@ -27,6 +27,7 @@ export interface InvestmentEpisodeRowView {
   instrumentId: string;
   displayName: string;
   isSynthetic: boolean;
+  currency: string | null;
   status: PositionEpisodeStatus;
   openedAt: string;
   closedAt: string | null;
@@ -79,6 +80,7 @@ function row(entry: PositionEpisodeEntryView): InvestmentEpisodeRowView {
     instrumentId: entry.episode.instrumentId,
     displayName: entry.instrument.displayName,
     isSynthetic: true,
+    currency: entry.instrument.currency,
     status: entry.episode.status,
     openedAt: entry.episode.openedAt,
     closedAt: entry.episode.closedAt,

@@ -1,5 +1,13 @@
 /** Stable source-message keys used by the lightweight desktop locale layer. */
 export const enUS = {
+  "Current marked total profit": "Current marked total profit",
+  "Current marked total loss": "Current marked total loss",
+  "Recorded quantity during the daily price peak-to-trough path": "Recorded quantity during the daily price peak-to-trough path",
+  "Market segment: rise": "Rise",
+  "Market segment: drawdown": "Drawdown",
+  "Market segment: recovery": "Recovery",
+  "Market segment: flat": "Flat",
+  "No closed Position Episode is present in this account snapshot.": "No closed Position Episode is present in this account snapshot.",
   "Instrument resolutions": "Instrument resolutions",
   "Instrument resolution": "Instrument resolution",
   "Confirmed facts": "Time · Instrument · Side · Quantity · Price · Fee status · Fee",

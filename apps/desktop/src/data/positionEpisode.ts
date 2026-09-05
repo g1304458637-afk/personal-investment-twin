@@ -89,6 +89,7 @@ export interface BackendPositionEpisodeEntry {
     instrument_id: string;
     display_name: string | null;
     is_synthetic: boolean;
+    currency?: string | null;
     data_tier: "synthetic" | "authorized_beta";
   };
   episode: BackendPositionEpisode;
@@ -184,6 +185,7 @@ export interface PositionEpisodeEntryView {
     instrumentId: string;
     displayName: string;
     isSynthetic: boolean;
+    currency: string | null;
     dataTier: "synthetic" | "authorized_beta";
   };
   episode: PositionEpisodeView;
@@ -643,6 +645,12 @@ function requiredState(
 
 function adaptEntry(entry: BackendPositionEpisodeEntry, expectedTier: "synthetic" | "authorized_beta" = "synthetic"): PositionEpisodeEntryView {
   if (entry.episode.data_tier !== expectedTier) throw new Error("Position episode data tier does not match its transport.");
+  if (entry.instrument.currency != null && !/^[A-Z]{3}$/.test(entry.instrument.currency)) throw new Error("Invalid listing currency metadata.");
+  for (const [ref, state] of Object.entries(entry.states_by_ref)) {
+    if (ref !== state.state_id || state.subject_id !== entry.episode.subject_id || state.account_id !== entry.episode.account_id || state.instrument_id !== entry.episode.instrument_id) {
+      throw new Error("Position state ownership/reference mismatch.");
+    }
+  }
   const statesByRef = Object.fromEntries(
     Object.entries(entry.states_by_ref).map(([ref, state]) => [ref, stateView(state)]),
   );
@@ -728,10 +736,16 @@ function adaptEntry(entry: BackendPositionEpisodeEntry, expectedTier: "synthetic
       || outcome.executionPrice !== decision.executionPrice
       || outcome.executionFee !== decision.fees
     ) throw new Error(`Position episode decision ${decision.decisionId} Outcome does not match replay facts.`);
+    for (const [result, state] of [[outcome.before, decision.stateBefore], [outcome.after, decision.stateAfter]] as const) {
+      if (result.quantity !== state.quantity || result.averageCost !== state.averageCost) {
+        throw new Error("Outcome state values do not match referenced replay state.");
+      }
+    }
     return { ...decision, outcome };
   });
 
   if (episode.status === "open") {
+    if (entry.price_points.some((point) => point.segment === "post_exit")) throw new Error("Open Episode cannot have post-exit context.");
     if (episode.closedAt !== null || episode.closingExecutionId !== null) {
       throw new Error("Open position episode must not expose a close timestamp or closing execution.");
     }
@@ -771,6 +785,7 @@ function adaptEntry(entry: BackendPositionEpisodeEntry, expectedTier: "synthetic
       instrumentId: episode.instrumentId,
       displayName,
       isSynthetic: entry.instrument.is_synthetic,
+      currency: expectedTier === "synthetic" ? "CNY" : entry.instrument.currency ?? null,
       dataTier: expectedTier,
     },
     episode,

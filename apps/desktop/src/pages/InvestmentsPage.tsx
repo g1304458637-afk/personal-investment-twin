@@ -12,18 +12,22 @@ import { useLocale } from "@/locales/LocaleProvider";
 export function InvestmentsPage() {
   const { locale, t, formatNumber } = useLocale();
   const data = useDataMode();
-  const [runtime, setRuntime] = useState<RuntimeInvestments | null>(null);
+  const [loadedRuntime, setRuntime] = useState<RuntimeInvestments | null>(null);
+  const runtime = loadedRuntime?.subject_id === data.activeAccount?.subject_id && loadedRuntime?.account_id === data.activeAccount?.account_id ? loadedRuntime : null;
   const [runtimeError, setRuntimeError] = useState<string | null>(null);
   useEffect(() => {
-    if (data.mode !== "real_user" || !data.activeAccount) { setRuntime(null); return; }
+    let cancelled = false;
+    setRuntime(null); setRuntimeError(null);
+    if (data.mode !== "real_user" || !data.activeAccount) return;
     void realUserApi.investments(data.activeAccount.subject_id, data.activeAccount.account_id)
-      .then(setRuntime).catch((value) => setRuntimeError(String(value)));
+      .then((value) => { if (!cancelled) setRuntime(value); }).catch((value) => { if (!cancelled) setRuntimeError(String(value)); });
+    return () => { cancelled = true; };
   }, [data.mode, data.activeAccount]);
   const view = useMemo(() => {
     if (data.mode !== "real_user" || !runtime) return investments;
     const rows = runtime.episodes.map((episode) => ({ episodeId: episode.episode_id,
       subjectId: runtime.subject_id, instrumentId: episode.instrument_id, displayName: episode.display_name,
-      isSynthetic: false, status: episode.status, openedAt: episode.opened_at, closedAt: episode.closed_at,
+      isSynthetic: false, currency: episode.currency, status: episode.status, openedAt: episode.opened_at, closedAt: episode.closed_at,
       durationDays: episode.duration_days, durationKind: episode.duration_kind,
       quantity: episode.quantity, averageCost: episode.average_cost, valuationAt: episode.valuation_at,
       valuationPrice: episode.valuation_price, marketValue: episode.market_value }));
@@ -143,7 +147,7 @@ export function InvestmentsPage() {
             state="empty"
             compact
             title={t("No closed investment experiences yet")}
-            detail={t("This subject has no closed Position Episode in the current synthetic snapshot.")}
+            detail={t("No closed Position Episode is present in this account snapshot.")}
           />
         )}
       </section>

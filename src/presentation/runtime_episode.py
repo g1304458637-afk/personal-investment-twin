@@ -28,7 +28,7 @@ def json_value(value: Any) -> Any:
 
 def episode_entry(lifecycle: PositionEpisodeLifecycle, executions: pd.DataFrame,
                   market_prices: pd.DataFrame, *, episode_id: str, init_cash: float,
-                  display_name: str) -> dict[str, object]:
+                  display_name: str, currency: str | None = None) -> dict[str, object]:
     episode = next(item for item in lifecycle.episodes if item.episode_id == episode_id)
     decisions = tuple(item for item in lifecycle.decisions if item.episode_id == episode_id)
     state_ids = {ref for decision in decisions for ref in (decision.state_before_ref, decision.state_after_ref)}
@@ -72,7 +72,7 @@ def episode_entry(lifecycle: PositionEpisodeLifecycle, executions: pd.DataFrame,
             counterfactuals.append(result)
     payload = {
         "instrument": {"instrument_id": episode.instrument_id, "display_name": display_name,
-                       "is_synthetic": False, "data_tier": "authorized_beta"},
+                       "is_synthetic": False, "data_tier": "authorized_beta", "currency": currency},
         "episode": episode, "snapshot": snapshot, "decisions": decisions,
         "states_by_ref": states, "evidence_references": refs, "price_points": display,
         "path_analysis": analysis,

@@ -68,6 +68,16 @@ def _summary_zero(total: int) -> ImportPreviewSummary:
     return ImportPreviewSummary(total, total, total, 0, 0, 0, 0, 0, 0, total, 0, 0, 0)
 
 
+def _currency_context(bundle, facts):
+    """Listing/fee/source metadata only; no FX conversion or inferred currency."""
+    currencies = {value.upper() for item in bundle.accepted_canonical_executions
+                  for value in (item.instrument.currency, item.fee.currency) if value}
+    currencies.update(item.currency.upper() for item in facts if item.currency)
+    mixed = len(currencies) > 1
+    unknown = any(not item.instrument.currency for item in bundle.accepted_canonical_executions)
+    return (None if mixed or unknown or not currencies else next(iter(currencies))), mixed
+
+
 def _trade_config(params: Mapping[str, object], subject: str, account: str) -> GenericCsvImportConfig:
     confirmed = None
     symbol = params.get("resolution_symbol")
@@ -293,6 +303,8 @@ class ProductRuntime:
         if not accounts:
             raise ValueError("account not found")
         bundle, facts = bundle_from_repository(self.repo, subject, account), self.repo.prices(subject, account)
+        if _currency_context(bundle, facts)[1]:
+            return accounts[0], bundle, facts, None, "unavailable_mixed_currency_without_fx"
         if not facts:
             return accounts[0], bundle, facts, None, "unavailable_pending_market_data"
         valuation_date = pd.Timestamp(max(x.date for x in facts))
@@ -311,7 +323,8 @@ class ProductRuntime:
         return accounts[0], bundle, facts, gated.lifecycle, gated.status
 
     def investments(self, params: Mapping[str, object]) -> dict[str, object]:
-        account, _, facts, lifecycle, status = self._lifecycle(params)
+        account, bundle, facts, lifecycle, status = self._lifecycle(params)
+        currency, _ = _currency_context(bundle, facts)
         if lifecycle is None:
             return {"subject_id": account["subject_id"], "account_id": account["account_id"],
                     "as_of": max((x.date.isoformat() for x in facts), default=account["updated_at"]),
@@ -328,7 +341,7 @@ class ProductRuntime:
         entries = []
         for item in lifecycle.episodes:
             state = snapshot_by_episode.get(item.episode_id) or closing_state_by_episode.get(item.episode_id)
-            entries.append({"episode_id": item.episode_id, "instrument_id": item.instrument_id,
+            entries.append({"episode_id": item.episode_id, "instrument_id": item.instrument_id, "currency": currency,
                 "display_name": display_by_instrument.get(item.instrument_id, item.instrument_id), "status": item.status,
                 "opened_at": item.opened_at.isoformat(), "closed_at": item.closed_at.isoformat() if item.closed_at else None,
                 "duration_days": item.duration_days, "duration_kind": item.duration_kind,
@@ -346,8 +359,11 @@ class ProductRuntime:
         if lifecycle is None:
             return {"status": status, "reason": "market prices are incomplete", "entry": None}
         episode_id = _required_text(params, "episode_id")
+        if not any(item.episode_id == episode_id for item in lifecycle.episodes):
+            return {"status": "unavailable", "reason": "episode does not belong to this account", "entry": None}
         entry = episode_entry(lifecycle, canonical_executions_to_frame(bundle.accepted_canonical_executions),
             facts_to_market_data_frame(facts), episode_id=episode_id, init_cash=float(account["initial_cash"]),
+            currency=_currency_context(bundle, facts)[0],
             display_name=next(x.instrument.display_name or x.instrument.display_symbol or x.instrument.local_symbol
                               for x in bundle.accepted_canonical_executions if x.instrument.instrument_id == next(e.instrument_id for e in lifecycle.episodes if e.episode_id == episode_id)))
         return {"status": "available", "reason": None, "entry": entry}
