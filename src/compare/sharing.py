@@ -1,10 +1,10 @@
 """Limited Episode sharing, not remote account access or identity certification.
 
-The sender explicitly exports derived facts and separately gives a recipient a
-bearer secret. HMAC binds the exact scope/payload to that secret. It verifies
-integrity and possession of the sender-provided secret, NOT the sender's legal
-identity, brokerage records, or independent replay correctness. Never send the
-secret to a model, store it in a share file, or treat it as cohort consent.
+The sender signs an exact derived payload with an ephemeral Ed25519 private
+key that is NEVER exported. The recipient separately verifies the public-key
+fingerprint with the sender. A recipient holding that fingerprint cannot
+re-sign altered permissions. This does not certify legal identity, brokerage
+truth or independent replay. HMAC v1 packages are deliberately rejected.
 """
 
 from __future__ import annotations
@@ -14,18 +14,20 @@ import hashlib
 import hmac
 import json
 import math
-import secrets
 import types
 from collections.abc import Mapping, Sequence
 from typing import Any, Literal, Union, get_args, get_origin, get_type_hints
 
 import pandas as pd
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey, Ed25519PublicKey
 
 from src.compare.same_stock import EpisodeCompareFacts, compare_same_stock
 from src.evidence.contracts import canonical_json_bytes
 from src.presentation.runtime_episode import json_value
 
-SHARE_VERSION = "episode_derived_share_v1"
+SHARE_VERSION = "episode_derived_share_v2"
+VERIFICATION = "pinned_sender_ed25519_signature_not_identity_or_independent_replay"
 MAX_SHARE_BYTES = 2_000_000
 
 
@@ -91,7 +93,8 @@ class AuthorizedEpisodeShare:
     facts: EpisodeCompareFacts
     allow_agent_review: bool
     expires_at: pd.Timestamp
-    verification: str = "sender_secret_integrity_only_not_identity_or_independent_replay"
+    signer_fingerprint: str
+    verification: str = VERIFICATION
 
 
 def create_episode_share(facts: EpisodeCompareFacts, *, recipient_subject_id: str,
@@ -121,26 +124,33 @@ def create_episode_share(facts: EpisodeCompareFacts, *, recipient_subject_id: st
             return {k: redact(x) for k, x in v.items()}
         return v
     payload = redact(payload)
-    secret = secrets.token_urlsafe(32)
-    signature = hmac.new(secret.encode(), canonical_json_bytes(payload), hashlib.sha256).hexdigest()
-    encoded = canonical_json_bytes({"payload": payload, "signature": signature})
+    private_key = Ed25519PrivateKey.generate()
+    public_key = private_key.public_key().public_bytes_raw()
+    signature = private_key.sign(canonical_json_bytes(payload)).hex()
+    encoded = canonical_json_bytes({"payload": payload, "public_key": public_key.hex(), "signature": signature})
     if len(encoded) > MAX_SHARE_BYTES:
         raise ValueError("share_too_large")
-    return encoded, secret
+    return encoded, hashlib.sha256(public_key).hexdigest()
 
 
-def accept_episode_share(content: bytes, secret: str, *, recipient_subject_id: str,
+def accept_episode_share(content: bytes, trusted_sender_fingerprint: str, *, recipient_subject_id: str,
                          recipient_account_id: str, now: pd.Timestamp) -> AuthorizedEpisodeShare:
-    if not isinstance(content, bytes) or len(content) > MAX_SHARE_BYTES or len(secret) < 32:
+    if not isinstance(content, bytes) or len(content) > MAX_SHARE_BYTES or not isinstance(trusted_sender_fingerprint, str):
         raise ValueError("invalid_share")
     try:
         envelope = json.loads(content)
-        if set(envelope) != {"payload", "signature"}:
+        if set(envelope) != {"payload", "public_key", "signature"}:
             raise ValueError("invalid_share_envelope")
         p = envelope["payload"]
-        expected = hmac.new(secret.encode(), canonical_json_bytes(p), hashlib.sha256).hexdigest()
-        if not isinstance(envelope["signature"], str) or not hmac.compare_digest(expected, envelope["signature"]):
-            raise ValueError("share_signature_mismatch")
+        public_bytes = bytes.fromhex(envelope["public_key"])
+        fingerprint = hashlib.sha256(public_bytes).hexdigest()
+        if not hmac.compare_digest(fingerprint, trusted_sender_fingerprint):
+            raise ValueError("share_signature_fingerprint_mismatch")
+        try:
+            Ed25519PublicKey.from_public_bytes(public_bytes).verify(
+                bytes.fromhex(envelope["signature"]), canonical_json_bytes(p))
+        except InvalidSignature as exc:
+            raise ValueError("share_signature_mismatch") from exc
         expected_keys = {"version", "scope", "recipient_subject_id", "recipient_account_id",
                          "allow_agent_review", "allow_raw_executions", "allow_cohort_contribution",
                          "expires_at", "facts"}
@@ -157,13 +167,15 @@ def accept_episode_share(content: bytes, secret: str, *, recipient_subject_id: s
         if compare_same_stock(facts, facts).status == "unavailable":
             raise ValueError("invalid_episode_facts")
         return AuthorizedEpisodeShare("share_" + hashlib.sha256(content).hexdigest(), recipient_subject_id,
-                                      recipient_account_id, facts, p["allow_agent_review"], expires)
+                                      recipient_account_id, facts, p["allow_agent_review"], expires, fingerprint)
     except (KeyError, TypeError, json.JSONDecodeError) as exc:
         raise ValueError("invalid_share") from exc
 
 
 def authorized_comparison(own: EpisodeCompareFacts, shared: AuthorizedEpisodeShare, *,
                           now: pd.Timestamp, for_agent: bool = False):
+    if shared.verification != VERIFICATION:
+        raise ValueError("legacy_share_requires_signed_reexport")
     if (own.episode.subject_id, own.episode.account_id) != (shared.recipient_subject_id, shared.recipient_account_id):
         raise ValueError("share_recipient_mismatch")
     if pd.Timestamp(now) >= shared.expires_at:

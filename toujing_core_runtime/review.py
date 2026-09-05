@@ -208,7 +208,7 @@ class ReviewRuntime:
 
     def export_share(self, params):
         own, _, _, _ = self._own(params)
-        content, secret = create_episode_share(own,
+        content, fingerprint = create_episode_share(own,
             recipient_subject_id=_text(params, "recipient_subject_id"),
             recipient_account_id=_text(params, "recipient_account_id"),
             expires_at=pd.Timestamp(_text(params, "expires_at")),
@@ -219,8 +219,8 @@ class ReviewRuntime:
         # Exclusive create prevents arbitrary overwrites through an RPC path.
         with path.open("xb") as output:
             output.write(content)
-        return {"filename": path.name, "recipient_secret": secret,
-                "warning": "单独交给指定接收者；不要发送给模型。此凭据不证明真实身份。"}
+        return {"filename": path.name, "signer_fingerprint": fingerprint,
+                "warning": "通过独立渠道核对发送方公钥指纹；它不证明真实身份，私钥不会导出。"}
 
     def import_share(self, params):
         subject, account = (_text(params, k) for k in ("subject_id", "account_id"))
@@ -231,9 +231,9 @@ class ReviewRuntime:
             raise ValueError("invalid_share_file")
         with path.open("rb") as source:
             content = source.read(MAX_SHARE_BYTES + 1)
-        share = accept_episode_share(content, _text(params, "recipient_secret"),
+        share = accept_episode_share(content, _text(params, "trusted_sender_fingerprint"),
             recipient_subject_id=subject, recipient_account_id=account, now=pd.Timestamp(utc_now()))
-        self.store.save_share(share)  # only validated derived facts, never the bearer secret
+        self.store.save_share(share)  # only validated derived facts, never a private signing key
         return {"share_id": share.share_id, "verification": share.verification}
 
     def list_shares(self, params):

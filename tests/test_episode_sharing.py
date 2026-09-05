@@ -34,7 +34,8 @@ def test_explicit_limited_share_roundtrip_and_raw_ids_redacted(pair):
     assert key.encode() not in content
     assert all(ref.encode() not in content for ref in pair.b.episode.execution_refs)
     assert all(ref.startswith("shared_execution_") for ref in shared.facts.episode.execution_refs)
-    assert shared.verification == "sender_secret_integrity_only_not_identity_or_independent_replay"
+    assert shared.verification == "pinned_sender_ed25519_signature_not_identity_or_independent_replay"
+    assert shared.signer_fingerprint == key
 
 
 def test_derived_permission_does_not_grant_agent_or_cohort_or_raw(pair):
@@ -70,3 +71,27 @@ def test_explicit_agent_consent_is_checked_before_counterpart_use(pair):
     assert result.b.episode.episode_id == pair.b.episode.episode_id
     with pytest.raises(ValueError, match="recipient"):
         authorized_comparison(pair.b, shared, now=pd.Timestamp("2026-09-05"), for_agent=True)
+
+
+def test_recipient_cannot_upgrade_permission_or_substitute_a_signing_key(pair):
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+    from src.evidence.contracts import canonical_json_bytes
+    content, trusted_fingerprint = export(pair, agent=False)
+    envelope = json.loads(content)
+    envelope["payload"]["allow_agent_review"] = True
+    with pytest.raises(ValueError, match="signature"):
+        accept(pair, canonical_json_bytes(envelope), trusted_fingerprint)
+    attacker = Ed25519PrivateKey.generate()
+    envelope["public_key"] = attacker.public_key().public_bytes_raw().hex()
+    envelope["signature"] = attacker.sign(canonical_json_bytes(envelope["payload"])).hex()
+    with pytest.raises(ValueError, match="fingerprint"):
+        accept(pair, canonical_json_bytes(envelope), trusted_fingerprint)
+
+
+def test_old_hmac_envelope_is_not_silently_treated_as_authorization(pair):
+    content, fingerprint = export(pair)
+    old = json.loads(content)
+    del old["public_key"]
+    old["payload"]["version"] = "episode_derived_share_v1"
+    with pytest.raises(ValueError, match="envelope"):
+        accept(pair, json.dumps(old).encode(), fingerprint)

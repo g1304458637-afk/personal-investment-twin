@@ -47,8 +47,8 @@ def test_share_export_import_permission_revocation_and_no_raw_file(product, tmp_
     target = tmp_path / "episode.toujing-share.json"
     result = service.export_share(params | {"recipient_subject_id": "local-user", "recipient_account_id": "ACC-1",
         "owner_confirmed": True, "allow_agent_review": False, "expires_at": "2099-01-01T00:00:00Z", "file_path": str(target)})
-    assert result["recipient_secret"] not in target.read_text()
-    imported = service.import_share(params | result | {"file_path": str(target)})
+    assert result["signer_fingerprint"] not in target.read_text()
+    imported = service.import_share(params | {"trusted_sender_fingerprint": result["signer_fingerprint"], "file_path": str(target)})
     shared_params = params | {"share_id": imported["share_id"]}
     assert service.context(shared_params)["comparison"]["status"] != "unavailable"
     with pytest.raises(ValueError, match="agent"):

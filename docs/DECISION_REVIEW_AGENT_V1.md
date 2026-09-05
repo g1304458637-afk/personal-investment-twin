@@ -47,22 +47,29 @@ new notes, data changes, or permission expiry/revocation.
 The user approved: the counterpart voluntarily exports one limited Episode's
 derived facts, which are imported locally; no raw trade CSV is shared.
 
-`episode_derived_share_v1` binds the qualified instrument, subject/account/Episode,
+`episode_derived_share_v2` binds the qualified instrument, subject/account/Episode,
 as-of, derived decisions/path/results, recipient subject/account, expiry and
 separate model-review permission. It contains decision times, quantities,
 execution prices and outcomes: this is still sensitive derived information.
 Original execution IDs are replaced by internal share refs. There is no raw
 file, cohort contribution permission or arbitrary remote account access.
 
-A separately conveyed bearer secret and HMAC protect exact package integrity.
+A per-export Ed25519 signature protects the exact payload and permission fields.
+The private signing key never leaves the exporter and is not persisted. The
+recipient verifies a separately conveyed public-key SHA-256 fingerprint. Merely
+possessing that fingerprint/public key cannot sign upgraded model permissions.
+An attacker-signed replacement is rejected against the pinned fingerprint.
+V1 HMAC envelopes are rejected rather than silently upgraded: a recipient who
+held a symmetric secret could otherwise re-sign altered permissions.
 This **does not verify legal identity, brokerage truth or independently replay
 the received facts**. The share source and Inspector disclose this limitation.
-It is a local explicit-consent boundary, not a multi-user authentication system.
+It is a local explicit-consent boundary relying on an independently verified
+sender fingerprint, not a multi-user authentication system.
 Both actors are trusted to own the local records they explicitly share.
 
 Local comparison permission does not authorize model transmission. Model review
 requires both the sender's separate permission and the recipient's explicit
-model consent. The secret is not persisted or sent to the model. Imports verify
+model consent. No private key is persisted or sent to the model. Imports verify
 the exact bytes read once; exports exclusively create a `.toujing-share.json`
 file and never overwrite an existing path. Permissions are checked before
 counterpart model facts are constructed, at tool use, and before accepting
@@ -80,3 +87,9 @@ It cannot claim a model call. Native runtime performs the actual tools/model loo
 Outstanding acceptance evidence must be recorded separately for browser, native
 runtime, live provider, and physical trackpad/WKWebView. Unit tests alone cannot
 certify any of those product interactions.
+
+The already-installed `cryptography==50.0.1` is now explicitly recorded as a
+direct dependency (no package upgrade). Signature use follows the official
+[Ed25519 signing and verification API](https://cryptography.io/en/latest/hazmat/primitives/asymmetric/ed25519/),
+not a hand-written cryptographic implementation. Fingerprint trust does not
+provide legal-identity verification or hide an offline package's contents.
