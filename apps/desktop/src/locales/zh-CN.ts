@@ -1506,6 +1506,18 @@ export const zhCN = {
   "Have the recipient confirm this public-key fingerprint through a separate trusted channel. The private signing key is never exported.": "请让接收者通过独立可信渠道核对该公钥指纹。签名私钥不会导出。",
   "Sender public-key fingerprint": "发送方公钥指纹",
   "Clear comparison and review only my records": "清除对比对象，仅看自己的记录",
+  "Optical experiment · Return to original": "视觉实验中 · 返回原版",
+  "Try Optical visual experiment": "体验 Optical 视觉实验",
+  "Select an execution. Bring its evidence into focus.": "选中一次操作，让依据更清晰。",
+  "The chart stays precise. The context comes closer.": "图表保持精确，背景在此展开。",
+  "In focus · Recorded execution": "当前聚焦 · 已记录的操作",
+  "Beyond the recorded facts": "从事实，继续追问",
+  "Review capabilities": "复盘能力",
+  "What is not established here": "记录尚未确认的事",
+  "This example contains recorded operations and outcomes, not the investor's contemporaneous intention or an authorized comparison for this Episode.": "当前示例记录了操作与结果，但没有投资者当时的意图，也没有针对这轮投资获授权的同股对比。",
+  "Ask Toujing · Not connected in this example": "问投镜 · 当前示例未接通",
+  "No model has been called. Live review remains in the desktop account workflow with explicit permission.": "尚未调用模型。实时分析仍通过桌面账户流程进入，并需明确授权。",
+  "Open separate A/B Synthetic example · not this investment": "查看独立 A/B Synthetic 示例 · 非当前这轮投资",
 } satisfies Record<keyof typeof enUS, string>;
 
 export type ZhCNMessage = keyof typeof zhCN;

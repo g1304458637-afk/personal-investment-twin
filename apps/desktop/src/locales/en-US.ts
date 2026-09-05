@@ -1505,6 +1505,18 @@ export const enUS = {
   "Have the recipient confirm this public-key fingerprint through a separate trusted channel. The private signing key is never exported.": "Have the recipient confirm this public-key fingerprint through a separate trusted channel. The private signing key is never exported.",
   "Sender public-key fingerprint": "Sender public-key fingerprint",
   "Clear comparison and review only my records": "Clear comparison and review only my records",
+  "Optical experiment · Return to original": "Optical experiment · Return to original",
+  "Try Optical visual experiment": "Try Optical visual experiment",
+  "Select an execution. Bring its evidence into focus.": "Select an execution. Bring its evidence into focus.",
+  "The chart stays precise. The context comes closer.": "The chart stays precise. The context comes closer.",
+  "In focus · Recorded execution": "In focus · Recorded execution",
+  "Beyond the recorded facts": "Beyond the recorded facts",
+  "Review capabilities": "Review capabilities",
+  "What is not established here": "What is not established here",
+  "This example contains recorded operations and outcomes, not the investor's contemporaneous intention or an authorized comparison for this Episode.": "This example contains recorded operations and outcomes, not the investor's contemporaneous intention or an authorized comparison for this Episode.",
+  "Ask Toujing · Not connected in this example": "Ask Toujing · Not connected in this example",
+  "No model has been called. Live review remains in the desktop account workflow with explicit permission.": "No model has been called. Live review remains in the desktop account workflow with explicit permission.",
+  "Open separate A/B Synthetic example · not this investment": "Open separate A/B Synthetic example · not this investment",
 } as const;
 
 export type LocaleMessage = keyof typeof enUS;

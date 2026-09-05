@@ -1,0 +1,216 @@
+/* Optical Intelligence Workspace · opt-in Episode experiment only.
+   No copied React Bits component, global theme mutation or chart filter. */
+.optical-review-scope {
+  --optical-fast: 130ms;
+  --optical-reveal: 240ms;
+  --optical-ambient: 700ms;
+  --optical-ease: cubic-bezier(.22, 1, .36, 1);
+  --optical-travel: 4px;
+  --optical-enter-opacity: .65;
+  --optical-blur: 0px; /* Data and text never blur; only the empty glass surface does. */
+  --foreground: 40 10% 91%;
+  --muted: 225 5% 65%;
+  --accent: 184 14% 76%;
+  --border: 225 6% 24%;
+  --positive: 151 30% 70%;
+  --negative: 8 48% 74%;
+  --warning: 40 39% 70%;
+  --overlay: 225 6% 10%;
+  color: hsl(var(--foreground));
+}
+
+.episode-review--optical {
+  position: relative;
+  isolation: isolate;
+  margin: -26px -28px -42px;
+  padding: 22px 40px 44px;
+  min-height: calc(100vh - 72px);
+  background: #151517;
+}
+
+/* Finite light falloff ends above the charts. No full-screen ambient loop. */
+.episode-review--optical::before {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: -1;
+  inset: 0 0 auto;
+  height: 180px;
+  background: radial-gradient(ellipse at 71% -90%, rgba(238, 230, 213, .13), transparent 72%);
+  animation: optical-light-arrive var(--optical-ambient) var(--optical-ease) both;
+}
+
+.optical-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 8px;
+  border: 1px solid hsl(var(--border) / .6);
+  border-radius: 5px;
+  color: hsl(var(--muted));
+  background: transparent;
+  font-size: 10px;
+  line-height: 18px;
+  cursor: pointer;
+}
+.optical-switch:hover { color: hsl(var(--foreground)); border-color: hsl(var(--muted) / .5); }
+.optical-switch:focus-visible { outline: 2px solid hsl(var(--accent)); outline-offset: 3px; }
+.episode-review--optical .episode-review__toolbar { margin-bottom: 32px; }
+.episode-review--optical .episode-review__account { font-size: 11px; color: hsl(var(--warning)); }
+.episode-review--optical .episode-review__heading { position: relative; align-items: center; flex-wrap: nowrap; }
+.episode-review--optical .episode-review__heading h1 { font-size: 28px; letter-spacing: .015em; font-weight: 550; }
+.episode-review--optical .episode-review__heading > div > p:first-child { font-size: 10px; letter-spacing: .12em; }
+.episode-review--optical [data-episode-result] > p:nth-child(2) { font-size: 34px; font-weight: 500; letter-spacing: -.035em; }
+.episode-review--optical [data-review-story] { margin-top: 24px; max-width: 78ch; color: hsl(var(--muted)); font-size: 12px; }
+
+.optical-eyebrow { font-size: 9px; line-height: 1.5; letter-spacing: .2em; color: hsl(var(--muted)); }
+.optical-focus-hint { display: flex; align-items: center; gap: 12px; margin: 0 12px; min-height: 78px; }
+.optical-focus-hint p { margin: 6px 0 3px; font-size: 12px; letter-spacing: .02em; }
+.optical-focus-hint > div > span:last-child { font-size: 10px; color: hsl(var(--muted)); }
+
+.optical-lens {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 82px;
+  height: 82px;
+  color: #a9abaf;
+  pointer-events: none;
+  isolation: isolate;
+}
+.optical-lens__reticle { position: absolute; inset: 0; width: 100%; height: 100%; }
+.optical-lens__calibration { opacity: .5; }
+.optical-lens__etched { opacity: .16; }
+.optical-lens__target { opacity: .35; transition: opacity var(--optical-fast) var(--optical-ease); }
+.optical-lens__glass {
+  position: absolute;
+  inset: 16.5%;
+  border-radius: 50%;
+  background: linear-gradient(132deg, rgba(255,255,255,.055), transparent 38%, rgba(236,225,211,.025));
+  box-shadow: inset 1px 1px 3px rgba(255,255,255,.18), inset -2px -1px 3px rgba(0,0,0,.5), 0 5px 14px rgba(0,0,0,.24);
+}
+.optical-lens__rim {
+  position: absolute;
+  inset: 15%;
+  border-radius: 50%;
+  border: 1px solid rgba(232,231,227,.34);
+  border-top-color: rgba(255,255,255,.64);
+  border-right-color: rgba(217,181,172,.33);
+  border-left-color: rgba(161,201,203,.48);
+  box-shadow: 0 0 0 2px rgba(255,255,255,.015), inset 0 0 0 2px rgba(255,255,255,.035);
+}
+.optical-lens__caustic { position: absolute; left: 32%; right: 29%; bottom: 14%; height: 1px; background: rgba(236,235,227,.4); box-shadow: 0 2px 4px rgba(212,210,199,.16); transform: rotate(-9deg); }
+.optical-lens[data-active="true"] .optical-lens__target { opacity: .95; }
+.optical-lens[data-active="true"] .optical-lens__rim { border-top-color: #e5e0d6; border-left-color: rgba(183,216,213,.65); }
+
+.episode-review--optical [data-price-path] {
+  position: relative;
+  margin-top: 12px;
+  padding: 18px 16px 12px;
+  border: 1px solid hsl(var(--border) / .65);
+  border-radius: 3px;
+  background: #101012;
+  /* Never transform, filter or dim this surface: it contains authoritative 2D data. */
+}
+.episode-review--optical [data-price-path] h2 { font-size: 12px; }
+.episode-review--optical [data-quantity-path] { margin-top: 4px; padding-top: 10px; }
+.episode-review--optical [data-review-facts] { margin-top: 34px; }
+.episode-review--optical [data-review-facts] h2 { margin-bottom: 8px; font-size: 16px; font-weight: 500; letter-spacing: .02em; }
+.episode-review--optical [data-review-fact] { padding: 20px 0; transition: background-color var(--optical-fast) var(--optical-ease); }
+.episode-review--optical [data-review-fact] strong { font-size: 13px; font-weight: 500; }
+.episode-review--optical [data-review-fact] > span:last-child { font-size: 11px; }
+.episode-review--optical [data-review-fact][aria-pressed="true"] { box-shadow: inset 2px 0 hsl(var(--accent)); padding-left: 12px; }
+.episode-review--optical > details { padding: 20px 0; }
+.episode-review--optical > details > summary { font-size: 12px; color: hsl(var(--muted)); }
+.episode-review--optical > details[open] > :not(summary),
+.episode-review--optical [data-selected-phase],
+.episode-review--optical [data-decision-analysis] > div:nth-child(2) {
+  animation: optical-context-reveal var(--optical-reveal) var(--optical-ease) both;
+}
+
+/* Existing workspace controls, consent, data flow and comparison panel unchanged. */
+.episode-review--optical [data-decision-analysis] { margin-top: 28px; padding: 22px 0; }
+.optical-mode-surface,
+.episode-review--optical [data-decision-analysis] > div:first-child {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid hsl(var(--foreground) / .12);
+  border-radius: 7px;
+  background: rgba(255,255,255,.025);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.055), 0 4px 10px rgba(0,0,0,.12);
+}
+.optical-mode-surface button { padding: 8px 14px; font-size: 12px; color: hsl(var(--muted)); }
+.optical-mode-surface button:disabled { cursor: not-allowed; }
+.episode-review--optical [data-decision-analysis] button[aria-pressed="true"] { background: rgba(255,255,255,.08); color: hsl(var(--foreground)); }
+.episode-review--optical [data-decision-analysis] h2 { font-weight: 500; }
+.episode-review--optical [data-decision-analysis] textarea { background: #111113; border-color: hsl(var(--border)); }
+.optical-example-boundary { margin-top: 36px; padding-top: 24px; border-top: 1px solid hsl(var(--border)); }
+.optical-section-label { display: flex; align-items: center; gap: 9px; margin-bottom: 20px; }
+.optical-section-label h2 { font-size: 14px; font-weight: 500; }
+.optical-boundary-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin: 24px 0; }
+.optical-boundary-columns h3 { margin-bottom: 9px; font-size: 12px; font-weight: 500; }
+.optical-boundary-columns p { max-width: 52ch; font-size: 12px; line-height: 1.9; color: hsl(var(--muted)); }
+.optical-example-link { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; color: hsl(var(--accent)); }
+
+/* Same Radix modal, close action, focus trap and evidence content. */
+.optical-decision-drawer { background: #19191b !important; padding: 28px 32px; border-left-color: rgba(235,229,218,.18); backdrop-filter: none !important; }
+.optical-decision-drawer[data-state="open"] { animation: optical-panel-reveal var(--optical-reveal) var(--optical-ease) both; }
+/* Keep the original modal/focus trap, but not its full-chart blur. Portal-local. */
+body > [data-state="open"]:has(+ .optical-decision-drawer) { background: rgba(5,5,7,.36); backdrop-filter: none; }
+.optical-decision-focus { display: flex; align-items: center; gap: 18px; margin: 0 32px 26px 0; padding-bottom: 20px; border-bottom: 1px solid hsl(var(--border)); }
+.optical-decision-focus .optical-lens { width: 96px; height: 96px; }
+.optical-decision-focus > div > p:last-child { margin-top: 8px; font-size: 12px; }
+.optical-decision-drawer > div.grid > div,
+.optical-decision-drawer .rounded-lg { border-radius: 2px; box-shadow: none; background: transparent; }
+.optical-decision-drawer > div.grid > div { border: 0; border-top: 1px solid hsl(var(--border)); padding: 18px 0; }
+.optical-decision-drawer > div.pr-10 { animation: optical-context-reveal var(--optical-reveal) var(--optical-ease) both; }
+.optical-decision-drawer h2 { font-weight: 500; letter-spacing: .015em; }
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .optical-lens__glass { -webkit-backdrop-filter: blur(.4px); backdrop-filter: blur(.4px); }
+  .optical-mode-surface,
+  .episode-review--optical [data-decision-analysis] > div:first-child { -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+}
+@keyframes optical-context-reveal {
+  from { opacity: var(--optical-enter-opacity); transform: translateY(var(--optical-travel)); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes optical-light-arrive { from { opacity: 0; } to { opacity: 1; } }
+@keyframes optical-panel-reveal {
+  from { opacity: var(--optical-enter-opacity); transform: translateX(var(--optical-travel)); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+:root[data-theme="light"] .optical-review-scope { --foreground: 225 7% 18%; --muted: 225 5% 42%; --accent: 184 18% 32%; --border: 225 6% 79%; --positive: 151 33% 34%; --negative: 8 47% 40%; --warning: 38 40% 36%; --overlay: 40 10% 96%; }
+:root[data-theme="light"] .episode-review--optical { background: #eeedeb; }
+/* Keep the existing chart's dark, fixed palette legible; do not recolor series. */
+:root[data-theme="light"] .episode-review--optical [data-price-path] { --foreground: 40 10% 91%; --muted: 225 5% 65%; --border: 225 6% 24%; color: hsl(var(--foreground)); }
+:root[data-theme="light"] .optical-decision-drawer { background: #f5f4f1 !important; }
+:root[data-theme="light"] .optical-lens { color: #525557; }
+:root[data-theme="light"] .optical-lens__rim { border-bottom-color: #848888; }
+:root[data-theme="light"] .episode-review--optical [data-decision-analysis] textarea { background: #faf9f7; }
+
+@media (max-width: 1320px) {
+  .episode-review--optical { margin: -23px -22px -36px; padding: 22px 28px 40px; }
+  .optical-focus-hint { margin-inline: 0; }
+  .optical-focus-hint > div > span:last-child { display: none; }
+  .optical-focus-hint p { max-width: 14em; font-size: 11px; }
+}
+@media (max-width: 1000px) {
+  .episode-review--optical { padding-inline: 22px; }
+  .episode-review--optical .episode-review__heading h1 { font-size: 24px; }
+  .episode-review--optical [data-episode-result] > p:nth-child(2) { font-size: 29px; }
+  .optical-boundary-columns { grid-template-columns: 1fr; gap: 24px; }
+  .optical-focus-hint { gap: 10px; }
+  .optical-focus-hint > div { display: none; }
+  .episode-review--optical [data-price-path] { padding-inline: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .episode-review--optical::before,
+  .optical-review-scope *, .optical-review-scope *::before, .optical-review-scope *::after {
+    animation: none !important; transition: none !important; scroll-behavior: auto !important;
+  }
+}
