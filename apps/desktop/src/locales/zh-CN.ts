@@ -1607,6 +1607,7 @@ export const zhCN = {
   "Recorded result": "记录结果",
   "Rule trades in window": "窗口内规则成交",
   "Net cash flow": "净现金流",
+  "Rule replay": "规则对照",
   "Regenerate via scripts/run_strategy_simulation.py": "可用 scripts/run_strategy_simulation.py 重新生成",
 } satisfies Record<keyof typeof enUS, string>;
 

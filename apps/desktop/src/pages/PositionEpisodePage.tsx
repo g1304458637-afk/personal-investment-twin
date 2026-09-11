@@ -11,6 +11,7 @@ import { isOpticalReview } from "@/experiments/optical-review/experiment";
 
 import { EpisodeChartWorkspace } from "@/components/charts/EpisodeChartWorkspace";
 import { InvestmentChartWorkspace } from "@/components/charts/InvestmentChartWorkspace";
+import { strategyComparison } from "@/data/strategyComparisonDemo";
 import { showcaseChartForEpisode, showcaseInstrumentName } from "@/data/showcaseDemo";
 import { uniqueDailyObservationTimes } from "@/components/charts/dailyTimeAxis";
 import { useDailyTimeNavigation } from "@/components/charts/useDailyTimeNavigation";
@@ -213,6 +214,12 @@ export function PositionEpisodePage() {
   const showcaseChart = data.mode === "demo" && episodeId ? showcaseChartForEpisode(episodeId) : null;
   const entry = data.mode === "demo" ? (demoEntry && belongsToExample(demoEntry, data.exampleAccount) ? demoEntry : null)
     : runtimeEntry?.episode.episodeId === episodeId && runtimeEntry?.episode.subjectId === data.activeAccount?.subject_id && runtimeEntry?.episode.accountId === data.activeAccount?.account_id ? runtimeEntry : null;
+  // Same-instrument rule replay fills for demo episodes (static deterministic artifact).
+  const comparisonRuleFills = useMemo(() => {
+    if (data.mode !== "demo" || !entry) return null;
+    const report = strategyComparison.reports.find((item) => item.episodeId === entry.episode.episodeId);
+    return report ? report.ruleFills.map((fill) => ({ day: fill.day, side: fill.side, price: fill.price, trigger: fill.trigger })) : null;
+  }, [data.mode, entry]);
   const lensMode = sample && sampleSection === "lens";
   const lensProjection = useMemo(() => {
     if (!entry) return {report: null, error: false};
@@ -338,7 +345,7 @@ export function PositionEpisodePage() {
     <div className="iw-episode-main" hidden={sample && sampleSection !== "process" && !lensMode}>
       {episodeGuideActive ? <ChartGuide guideId="episode-process" onExit={exitGuide} /> : null}
       <section ref={chartRef} data-price-path data-guide="episode-chart" className={cn(showcaseChart ? "iw-chart-panel iw-inset" : "iw-chart-panel--series")}>
-        {showcaseChart ? <InvestmentChartWorkspace entry={entry} market={showcaseChart.market} focus={lensMode && lensDecision ? { id: lensDecision.decisionId, startAt: lensDecision.occurredAt, endAt: lensDecision.occurredAt } : guidedDecision ? { id: guidedDecision.decisionId, startAt: guidedDecision.occurredAt, endAt: guidedDecision.occurredAt } : selectedFact ? { id: selectedFact.itemId, startAt: selectedFact.startAt, endAt: selectedFact.endAt } : null} onSelectDecision={lensMode ? selectLensDecision : setSelectedDecisionId} /> : <EpisodeChartWorkspace
+        {showcaseChart ? <InvestmentChartWorkspace entry={entry} market={showcaseChart.market} ruleFills={comparisonRuleFills} focus={lensMode && lensDecision ? { id: lensDecision.decisionId, startAt: lensDecision.occurredAt, endAt: lensDecision.occurredAt } : guidedDecision ? { id: guidedDecision.decisionId, startAt: guidedDecision.occurredAt, endAt: guidedDecision.occurredAt } : selectedFact ? { id: selectedFact.itemId, startAt: selectedFact.startAt, endAt: selectedFact.endAt } : null} onSelectDecision={lensMode ? selectLensDecision : setSelectedDecisionId} /> : <EpisodeChartWorkspace
           entry={chartEntry}
           selectedDecisionId={lensMode ? lensDecision?.decisionId ?? null : selectedDecisionId}
           emphasizedDecisionIds={lensMode && lensDecision ? [lensDecision.decisionId] : selectedFact?.decisionIds}

@@ -79,6 +79,21 @@ function ensureBackendIndicators() {
     draw: drawStepSeries<{ averageCost: number | null }, "averageCost">("averageCost", "rgba(250, 202, 112, .9)", [5, 3]),
   });
   registerOverlay({
+    name: "ToujingRuleMarker", totalStep: 2, needDefaultPointFigure: false,
+    createPointFigures: ({ coordinates, overlay }) => {
+      const point = coordinates[0];
+      if (!point) return [];
+      const meta = overlay.extendData as { side: "BUY" | "SELL"; label: string };
+      const color = meta.side === "BUY" ? "#7ee2b8" : "#ffb0bc";
+      // Rule fills sit on the opposite side of the recorded-trade labels.
+      const y = point.y + (meta.side === "BUY" ? 30 : -30);
+      return [
+        { type: "line", attrs: { coordinates: [point, { x: point.x, y }] }, styles: { color, style: "dashed" }, ignoreEvent: true },
+        { type: "text", attrs: { x: point.x, y, text: meta.label, align: "center", baseline: "middle" }, styles: { color, backgroundColor: "rgba(30,49,65,.85)", borderRadius: 4, paddingLeft: 5, paddingRight: 5, paddingTop: 3, paddingBottom: 3, size: 11 }, ignoreEvent: false },
+      ];
+    },
+  });
+  registerOverlay({
     name: "ToujingTradeMarker", totalStep: 2, needDefaultPointFigure: false,
     createPointFigures: ({ coordinates, overlay }) => {
       const point = coordinates[0];
@@ -167,12 +182,14 @@ export function InvestmentChartWorkspace({
   focus = null,
   onSelectDecision,
   comparison,
+  ruleFills = null,
 }: {
   entry: PositionEpisodeEntryView;
   market: StandardChartMarket;
   focus?: { id: string; startAt: string; endAt: string } | null;
   onSelectDecision?: (id: string) => void;
   comparison?: { view: CompareView; labelA: string; labelB: string; highlightedIds: string[] };
+  ruleFills?: { day: string; side: "BUY" | "SELL"; price: number; trigger: string }[] | null;
 }) {
   const { locale } = useLocale();
   const chinese = locale.startsWith("zh");
@@ -188,6 +205,7 @@ export function InvestmentChartWorkspace({
   const [readout, setReadout] = useState<ChartData | null>(null);
   const [selectedComparisonGroups, setSelectedComparisonGroups] = useState<ComparisonBarGroup[]>([]);
   const [showCosts, setShowCosts] = useState(true);
+  const [showRuleFills, setShowRuleFills] = useState(true);
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 0 });
 
   useEffect(() => {
@@ -309,6 +327,19 @@ export function InvestmentChartWorkspace({
       if (!bar) continue;
       const point = { timestamp: barTimestamp(group.date), value: bar.high };
       chart.createOverlay({ name: "ToujingTradeMarker", points: [point, point], extendData: group.decisions.length > 1 ? `${group.decisions.length}×` : decisionTitle(group.decisions[0], chinese), lock: true, fixedZLevel: true, onClick: () => setSelectedGroup(group) });
+    }
+    if (ruleFills && showRuleFills) {
+      for (const ruleFill of ruleFills) {
+        const bar = bars.find((candidate) => candidate.date === ruleFill.day);
+        if (!bar) continue;
+        const anchor = ruleFill.side === "BUY" ? bar.low : bar.high;
+        const point = { timestamp: barTimestamp(ruleFill.day), value: anchor };
+        chart.createOverlay({
+          name: "ToujingRuleMarker", points: [point, point],
+          extendData: { side: ruleFill.side, label: chinese ? (ruleFill.side === "BUY" ? "规买" : "规卖") : (ruleFill.side === "BUY" ? "R-B" : "R-S") },
+          lock: true, fixedZLevel: true,
+        });
+      }
     }
     for (const group of comparisonGroups) {
       const bar = bars.find(candidate => candidate.date === group.date);
@@ -433,7 +464,7 @@ export function InvestmentChartWorkspace({
       dispose(chart);
       if (chartRef.current === chart) chartRef.current = null;
     };
-  }, [bars, chinese, data, focusWindow, fullScreen, groupByTimestamp, groups, lineMode, showMa, showVolume, steps, visibleTicker, comparison, comparisonGroups, showCosts, onSelectDecision]);
+  }, [bars, chinese, data, focusWindow, fullScreen, groupByTimestamp, groups, lineMode, showMa, showRuleFills, showVolume, steps, visibleTicker, comparison, comparisonGroups, showCosts, ruleFills, onSelectDecision]);
 
   const price = readout?.close ?? null;
   const step = typeof readout?.chartIndex === "number" ? steps[readout.chartIndex] ?? null : null;
@@ -452,7 +483,7 @@ export function InvestmentChartWorkspace({
     </div> : null}
     <div className="investment-chart-toolbar" role="toolbar" aria-label={chinese ? "图表工具" : "Chart tools"}>
       <div className="investment-chart-tool-group"><button type="button" className={activeInterval("day")} onClick={() => setInterval("day")}>{chinese ? "日K" : "Day"}</button><button type="button" className={activeInterval("week")} onClick={() => setInterval("week")}>{chinese ? "周K" : "Week"}</button><button type="button" className={activeInterval("month")} onClick={() => setInterval("month")}>{chinese ? "月K" : "Month"}</button><button type="button" className={lineMode ? "is-active" : ""} onClick={() => setLineMode((value) => !value)}>{chinese ? "折线" : "Line"}</button></div>
-      <div className="investment-chart-tool-group"><button type="button" className={showMa ? "is-active" : ""} aria-pressed={showMa} onClick={() => setShowMa((value) => !value)}>MA {chinese ? "(价格)" : "(price)"}</button>{comparison ? <button type="button" className={showCosts ? "is-active" : ""} aria-pressed={showCosts} onClick={() => setShowCosts(value => !value)}>{chinese ? "双方平均成本" : "Both avg costs"}</button> : null}<button type="button" className="is-active" aria-pressed="true">{comparison ? (chinese ? "双方持仓数量" : "Both holdings") : (chinese ? "持仓数量" : "Held qty")}</button><button type="button" className={showVolume ? "is-active" : ""} aria-pressed={showVolume} onClick={() => setShowVolume((value) => !value)}>{chinese ? "成交量" : "Volume"}</button></div>
+      <div className="investment-chart-tool-group"><button type="button" className={showMa ? "is-active" : ""} aria-pressed={showMa} onClick={() => setShowMa((value) => !value)}>MA {chinese ? "(价格)" : "(price)"}</button>{ruleFills ? <button type="button" className={showRuleFills ? "is-active" : ""} aria-pressed={showRuleFills} onClick={() => setShowRuleFills((value) => !value)}>{chinese ? "规则对照" : "Rule replay"}</button> : null}{comparison ? <button type="button" className={showCosts ? "is-active" : ""} aria-pressed={showCosts} onClick={() => setShowCosts(value => !value)}>{chinese ? "双方平均成本" : "Both avg costs"}</button> : null}<button type="button" className="is-active" aria-pressed="true">{comparison ? (chinese ? "双方持仓数量" : "Both holdings") : (chinese ? "持仓数量" : "Held qty")}</button><button type="button" className={showVolume ? "is-active" : ""} aria-pressed={showVolume} onClick={() => setShowVolume((value) => !value)}>{chinese ? "成交量" : "Volume"}</button></div>
       <div className="investment-chart-tool-group investment-chart-view-tools"><button type="button" onClick={() => chartRef.current?.zoomAtCoordinate(1.05)} aria-label={chinese ? "放大" : "Zoom in"}>+</button><button type="button" onClick={() => chartRef.current?.zoomAtCoordinate(0.95)} aria-label={chinese ? "缩小" : "Zoom out"}>−</button><button type="button" onClick={() => resetView("episode")}>{chinese ? "重置" : "Reset"}</button><button type="button" onClick={() => resetView("all")}>{chinese ? "全历史" : "All history"}</button><button type="button" aria-pressed={fullScreen} onClick={() => setFullScreen((value) => !value)}>{fullScreen ? (chinese ? "退出全屏" : "Exit focus") : (chinese ? "专注" : "Focus")}</button></div>
     </div>
     <div className="investment-chart-readout"><span>{readout ? dateLabel(new Date(readout.timestamp).toISOString().slice(0, 10), locale) : (chinese ? "移动光标查看" : "Move cursor to inspect")}</span><span>{comparison && chinese ? "开" : "O"} {fixed(readout?.open)} {comparison && chinese ? "高" : "H"} {fixed(readout?.high)} {comparison && chinese ? "低" : "L"} {fixed(readout?.low)} {comparison && chinese ? "收" : "C"} {price === null ? "—" : money.format(price)}</span><span>{chinese ? "量" : "Vol"} {fixed(readout?.volume ?? null, 0)}</span>{!comparison ? <span>{chinese ? "持仓" : "Held"} {fixed(step?.quantity, 0)} · {chinese ? "平均成本" : "Avg cost"} {step?.averageCost === null || step?.averageCost === undefined ? "—" : money.format(step.averageCost)}</span> : null}</div>
@@ -476,6 +507,9 @@ export function InvestmentChartWorkspace({
       <span>{dateLabel(bars[Math.max(0, visibleRange.end)]?.date ?? "", locale)}</span>
     </div>
     <p className="investment-chart-hint">{chinese ? "横向双指滑动或拖动平移；捏合或 ⌘/Ctrl + 滚轮缩放；垂直滚动页面。数量与平均成本表示所选周期末的持仓状态。" : "Horizontal two-finger scroll or drag pans; pinch or Ctrl/⌘ + wheel zooms; vertical scroll moves the page. Quantity and average cost show period-end holdings."}</p>
+    {ruleFills ? <p className="investment-chart-hint">{chinese
+      ? "规买/规卖标记是同一套 T1 v1 规则在该标的自身历史上的独立重放结果，与你的记录并列；只陈述事实，不构成建议。"
+      : "R-B/R-S markers replay the same T1 v1 rules independently on this instrument's own history, shown beside your records. Facts only, not advice."}</p> : null}
     {comparison ? <section className="investment-chart-operations" data-guide="same-stock-trades">
       <div className="investment-chart-operations-title">{chinese ? "双方成交明细" : "Trades from both records"}<span>{chinese ? "选择图中标签，核对当时的价格与持仓变化" : "Select a label to inspect execution price and holdings"}</span></div>
       <div className="investment-chart-operation-list">

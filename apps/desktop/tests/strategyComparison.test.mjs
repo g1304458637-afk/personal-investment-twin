@@ -52,3 +52,14 @@ test('comparison source stays static, deterministic, and verdict-free', async ()
     assert.ok(!/应该买入|应该卖出|建议/.test(limitation), 'no verdict language in shipped limitations');
   }
 });
+
+test('episode chart overlays rule replay fills with its own toggle and boundary caption', async () => {
+  const page = await readFile(new URL('../src/pages/PositionEpisodePage.tsx', import.meta.url), 'utf8');
+  const chart = await readFile(new URL('../src/components/charts/InvestmentChartWorkspace.tsx', import.meta.url), 'utf8');
+  assert.match(page, /ruleFills=\{comparisonRuleFills\}/);
+  assert.match(page, /strategyComparison\.reports\.find/);
+  // The recorded-trade markers and the rule markers are separate overlay layers.
+  assert.match(chart, /ToujingTradeMarker/);
+  assert.match(chart, /ToujingRuleMarker/);
+  assert.match(chart, /不构成建议|not advice/);
+});
