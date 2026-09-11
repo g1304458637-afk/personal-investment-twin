@@ -1606,6 +1606,9 @@ export const enUS = {
   "Recorded result": "Recorded result",
   "Rule trades in window": "Rule trades in window",
   "Net cash flow": "Net cash flow",
+  "Why?": "Why?",
+  "Preparing explanation…": "Preparing explanation…",
+  "Explanation unavailable": "Explanation unavailable",
   "Rule replay": "Rule replay",
   "Regenerate via scripts/run_strategy_simulation.py": "Regenerate via scripts/run_strategy_simulation.py",
 } as const;

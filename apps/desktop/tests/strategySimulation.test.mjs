@@ -50,7 +50,10 @@ test('the artifact keeps simulated facts separate from real accounts', async () 
   // Only the vite-only demo wrapper binds the generated artifact.
   assert.match(demoModule, /import source from "@\/generated\/strategy-simulation-demo\.json"/);
   assert.doesNotMatch(dataModule, /generated\/|import source/);
-  assert.doesNotMatch(dataModule + page, /realUserApi|fetch\(|invoke\(|runtimeRequest/);
+  // Click-triggered teaching calls go through the sanctioned runtime bridge;
+  // direct network and the real-account API remain forbidden on this page.
+  assert.doesNotMatch(dataModule + page, /realUserApi|fetch\(|eval\(/);
+  assert.match(page, /"strategy_teaching\.explain"/);
   assert.match(page, /strategySimulationDemo/);
   // The route is registered and reachable from navigation.
   const routes = await readFile(new URL('../src/routing/productRoutes.ts', import.meta.url), 'utf8');

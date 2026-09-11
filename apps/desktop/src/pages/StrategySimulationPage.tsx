@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 
 import { EChart } from "@/components/charts/EChart";
 import { useTheme } from "@/components/layout/ThemeProvider";
-import { strategyComparison } from "@/data/strategyComparisonDemo";
+import { isTauriRuntime, runtimeRequest } from "@/data/runtimeService";
+import { rawComparisonReportFor, strategyComparison } from "@/data/strategyComparisonDemo";
 import { strategySimulation } from "@/data/strategySimulationDemo";
 import { useLocale } from "@/locales/LocaleProvider";
 import { formatCurrencyValue } from "@/lib/format";
@@ -41,6 +42,23 @@ export function StrategySimulationPage() {
   const currency = typeof simulation.strategy.params.currency === "string" ? simulation.strategy.params.currency : "CNY";
   const money = (value: number) => formatCurrencyValue(value, locale, currency);
   const [instrument, setInstrument] = useState<string>("all");
+  const [teaching, setTeaching] = useState<Record<string, { status: string; texts: string[]; reason: string | null } | "loading">>({});
+  const explain = async (episodeId: string) => {
+    if (!isTauriRuntime()) {
+      setTeaching((state) => ({ ...state, [episodeId]: { status: "unavailable", texts: [], reason: "需要桌面应用环境与本地模型设置（浏览器预览不调用模型）。" } }));
+      return;
+    }
+    const report = rawComparisonReportFor(episodeId);
+    if (!report) return;
+    setTeaching((state) => ({ ...state, [episodeId]: "loading" }));
+    try {
+      const result = await runtimeRequest<{ status: string; reason: string | null; texts: string[] }>(
+        "strategy_teaching.explain", { report, focus: null });
+      setTeaching((state) => ({ ...state, [episodeId]: result }));
+    } catch (value) {
+      setTeaching((state) => ({ ...state, [episodeId]: { status: "unavailable", texts: [], reason: value instanceof Error ? value.message : String(value) } }));
+    }
+  };
 
   const instruments = useMemo(
     () => [...new Set(simulation.fills.map((fill) => fill.instrument))].sort(),
@@ -214,11 +232,19 @@ export function StrategySimulationPage() {
           <details key={item.episodeId} className="strategy-compare">
             <summary>
               <strong>{item.instrument}</strong>
+              <button type="button" className="strategy-why" onClick={(event) => { event.preventDefault(); void explain(item.episodeId); }}>{t("Why?")}</button>
               <span>{item.windowStart ?? "—"} → {item.windowEnd ?? t("Window open-ended")}</span>
               <span>{t("Recorded result")} {item.recordedEpisodeResult.pnl === null ? "—" : money(item.recordedEpisodeResult.pnl)}</span>
               <span>{t("Rule trades in window")} {item.ruleFills.length}</span>
             </summary>
             <div className="strategy-compare__body">
+              {(() => {
+                const state = teaching[item.episodeId];
+                if (!state) return null;
+                if (state === "loading") return <p className="strategy-compare__note">{t("Preparing explanation…")}</p>;
+                if (state.status === "available") return <div className="strategy-teaching">{state.texts.map((line, index) => <p key={index}>{line}</p>)}<p className="strategy-compare__note">{strategyComparison.limitations[1] ?? ""}</p></div>;
+                return <p className="strategy-compare__note">{t("Explanation unavailable")}: {state.reason}</p>;
+              })()}
               <div className="strategy-compare__flows">
                 <div><span>{t("Recorded side")}</span><strong>{money(item.windowUserNetCashFlow)}</strong></div>
                 <div><span>{t("Rule side")}</span><strong>{money(item.windowRuleNetCashFlow)}</strong></div>

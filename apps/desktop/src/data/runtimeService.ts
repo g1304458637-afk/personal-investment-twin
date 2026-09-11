@@ -37,6 +37,8 @@ export const realUserApi = {
   investments: (subjectId: string, accountId: string) => runtimeRequest<RuntimeInvestments>("investments.list", { subject_id: subjectId, account_id: accountId }),
   episode: (subjectId: string, accountId: string, episodeId: string) => runtimeRequest<RuntimeEpisodeResult>("episode.get", { subject_id: subjectId, account_id: accountId, episode_id: episodeId }),
   deleteAccount: (subjectId: string, accountId: string) => runtimeRequest<{ deleted: boolean }>("data.delete_account", { subject_id: subjectId, account_id: accountId }),
+  strategyComparison: (subjectId: string, accountId: string, episodeId: string) => runtimeRequest<{ status: string; reason: string | null; report: unknown | null }>("strategy_comparison.get", { subject_id: subjectId, account_id: accountId, episode_id: episodeId }),
+  strategyTeaching: (report: Record<string, unknown>, focus: string | null) => runtimeRequest<{ status: string; reason: string | null; texts: string[]; dropped: unknown[]; note: string | null }>("strategy_teaching.explain", { report, focus }),
 };
 
 export interface RuntimeAccount { subject_id: string; account_id: string; display_name: string; initial_cash: number; created_at: string; updated_at: string }

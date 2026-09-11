@@ -414,3 +414,24 @@
   line-height: 1.6;
   color: var(--muted);
 }
+
+.strategy-why {
+  margin-left: auto;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: #8cdaf2;
+  font-size: 11px;
+  padding: 2px 10px;
+  cursor: pointer;
+}
+
+.strategy-teaching {
+  display: grid;
+  gap: 6px;
+  border-left: 2px solid rgba(140, 218, 242, .5);
+  padding-left: 12px;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--foreground);
+}

@@ -348,9 +348,13 @@ pub async fn runtime_product_request(
             "the desktop command only permits registered product methods",
         ));
     }
-    let params = if method == "review.start" {
+    let params = if method == "review.start" || method == "strategy_teaching.explain" {
         let params = crate::model_settings::with_saved_key(params).await?;
-        crate::model_settings::with_optional_search(params, &manager.app_data).await?
+        if method == "review.start" {
+            crate::model_settings::with_optional_search(params, &manager.app_data).await?
+        } else {
+            params
+        }
     } else {
         // Internal credentials are never accepted on general product requests.
         if params.get("_desktop_model_key").is_some()
