@@ -27,6 +27,7 @@ export function PositionQuantityTimeline({
   chartGroup,
   timeNavigation,
   onSelectDecision,
+  showNavigator = true,
   className = "h-[190px] w-full",
 }: {
   entry: PositionEpisodeEntryView;
@@ -38,6 +39,8 @@ export function PositionQuantityTimeline({
   chartGroup?: string;
   timeNavigation?: DailyTimeNavigationStore;
   onSelectDecision: (decisionId: string) => void;
+  /** The enclosing workspace owns the sole range control when false. */
+  showNavigator?: boolean;
 }) {
   const { locale, t, formatNumber } = useLocale();
   const option = useMemo<EChartsCoreOption>(() => {
@@ -66,7 +69,8 @@ export function PositionQuantityTimeline({
     return {
       animationDuration: 360,
       axisPointer: { link: [{ xAxisIndex: "all" }] },
-      grid: { left: 54, right: 24, top: 16, bottom: 46 },
+      // Keep the plot rails identical to the price pane: day-to-pixel mapping matches.
+      grid: { left: 64, right: 116, top: 16, bottom: showNavigator ? 46 : 30 },
       tooltip: {
         trigger: "axis",
         axisPointer: { type: "cross" },
@@ -90,7 +94,7 @@ export function PositionQuantityTimeline({
           ...entry.decisions.map((decision) => decision.occurredAt),
           ...entry.pathAnalysis.positionPath.points.map((point) => point.asOf),
         ]),
-        boundaryGap: ["4%", "6%"],
+        boundaryGap: ["4%", "8%"],
         axisLine: { lineStyle: { color: "rgba(148, 177, 204, .18)" } },
         axisTick: { show: false },
         axisLabel: {
@@ -106,7 +110,10 @@ export function PositionQuantityTimeline({
         axisLabel: { color: "rgba(177, 196, 214, .72)", formatter: (value: number) => formatNumber(value, 0) },
         splitLine: { lineStyle: { color: "rgba(148, 177, 204, .09)" } },
       },
-      dataZoom: dailyDataZoom(6, minValueSpan),
+      // Retain inside zoom for the shared store, but remove the duplicate slider.
+      dataZoom: showNavigator
+        ? dailyDataZoom(6, minValueSpan)
+        : dailyDataZoom(6, minValueSpan).filter((control) => control.type !== "slider"),
       series: [
         {
           id: "position-quantity",
@@ -134,7 +141,7 @@ export function PositionQuantityTimeline({
         { id: "quantity-events", type: "scatter", data: events, z: 4 },
       ],
     };
-  }, [emphasizedDecisionIds, entry, formatNumber, highlightEnd, highlightStart, locale, selectedDecisionId, t, timeNavigation]);
+  }, [emphasizedDecisionIds, entry, formatNumber, highlightEnd, highlightStart, locale, selectedDecisionId, showNavigator, t, timeNavigation]);
 
   const onClick = useCallback((event: ECElementEvent) => {
     if (event.seriesId !== "quantity-events") return;

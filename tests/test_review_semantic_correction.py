@@ -34,10 +34,35 @@ def duplicate_fact(choice, catalog):
     return choice | {"factual_option_ids": [catalog["factual_options"][0]["option_id"]] * 2}
 
 
-@pytest.mark.parametrize("failure", ["duplicate", "uncertainty_conflict"])
-def test_one_semantic_correction_revalidates_same_catalog_without_tools(pair, monkeypatch, failure):
+@pytest.mark.parametrize("repair", [True, False])
+def test_conflicting_claims_use_bounded_schema_retry_not_claim_expansion(pair, monkeypatch, repair):
     context = build_review_catalog(pair.a, comparison=pair, notes=(note(pair),))
-    bad = choose_options("unknown", change=duplicate_fact) if failure == "duplicate" else choose_options("unknown", "planned_staging_possible")
+    bad = choose_options("unknown", "planned_staging_possible")
+    model = model_for(context, [bad, choose_options("planned_staging_possible") if repair else bad])
+    audits = []
+    original = review._audit
+    def audit(result, local):
+        audits.append(result)
+        return original(result, local)
+    monkeypatch.setattr(review, "_audit", audit)
+    if repair:
+        result = execute(context, model)
+        assert result["possible_explanations"][0]["kind"] == "planned_staging_possible"
+        assert len(audits) == 2  # Pre-finalizer receipt gate plus accepted candidate.
+    else:
+        with pytest.raises(StructuredFinalizationUnavailable, match="schema_validation_failed"):
+            execute(context, model)
+        assert len(audits) == 1  # Required reads are audited before formatting too.
+    finals = [r for r in model.requests if not r["tools"]]
+    assert len(finals) == 2
+    assert finals[0]["output_schema"].json_schema() == finals[1]["output_schema"].json_schema()
+    assert all(r["model_settings"].tool_choice == "none" for r in finals)
+    assert all(r["model_settings"].reasoning.effort == "none" for r in finals)
+
+
+def test_one_semantic_correction_revalidates_same_catalog_without_tools(pair, monkeypatch):
+    context = build_review_catalog(pair.a, comparison=pair, notes=(note(pair),))
+    bad = choose_options("unknown", change=duplicate_fact)
     audited, validated = [], []
     original_verify, original_audit = review.validate_finalization, review._audit
     def verify(value, local):
@@ -51,12 +76,16 @@ def test_one_semantic_correction_revalidates_same_catalog_without_tools(pair, mo
     model = model_for(context, [bad, choose_options("unknown")])
     result = execute(context, model)
     assert len(validated) == 1  # Invalid combination cannot even expand to production refs.
-    assert len(audited) == 2 and audited[0] is audited[1]
+    assert len(audited) == 3 and all(item is audited[0] for item in audited)
     assert result["possible_explanations"][0]["kind"] == "unknown"
     assert result["facts"][0]["value"]["result"]["pnl"] == pair.a.outcome.actual_result.pnl
     before, after = map(input_payload, model.inputs[-2:])
     feedback = after.pop("semantic_correction")
-    assert feedback["code"] == ("duplicate_option_selection" if failure == "duplicate" else "uncertainty_option_conflict")
+    assert feedback["code"] == "duplicate_option_selection"
+    assert set(feedback["previous_selection"]) == {"factual_option_ids", "historical_option_ids",
+                                                    "claim_option_ids", "question_kind",
+                                                    "answer_focus", "finding_option_ids"}
+    assert feedback["previous_selection"]["factual_option_ids"][0] == feedback["previous_selection"]["factual_option_ids"][1]
     assert after == before
     assert context.retrieved == set()
     assert model.requests[-1]["output_schema"].json_schema() == model.requests[-2]["output_schema"].json_schema()

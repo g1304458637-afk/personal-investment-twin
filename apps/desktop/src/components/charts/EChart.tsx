@@ -14,7 +14,7 @@ import {
   type EChartsCoreOption,
 } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { clampVisibleDailyWindow } from "./dailyTimeAxis.ts";
 import {
@@ -26,6 +26,9 @@ import {
   type EpisodeVisibleTimeDomain,
 } from "./dailyTimeNavigation.ts";
 import type { DailyTimeNavigationStore } from "./useDailyTimeNavigation.ts";
+import { publishChartCursor, subscribeChartCursor } from "./chartCursor.ts";
+import { forwardChartPageScroll } from "./chartPageScroll.ts";
+import { useLocale } from "@/locales/LocaleProvider";
 import { cn } from "@/lib/utils";
 
 use([
@@ -82,6 +85,8 @@ export function EChart({
   observationTimes?: number[];
   timeNavigation?: DailyTimeNavigationStore;
 }) {
+  const { locale } = useLocale();
+  const [linkedCursor, setLinkedCursor] = useState<{ x: number; top: number; height: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ReturnType<typeof init> | null>(null);
   const resetKeyRef = useRef(resetKey);
@@ -133,7 +138,12 @@ export function EChart({
       const times = observationTimesRef.current;
       if (!navigation || !times || times.length === 0) return;
       const intent = classifyTimeNavigationIntent(event);
-      if (intent === "page-scroll") return;
+      if (intent === "page-scroll") {
+        // Do not let a canvas wheel listener swallow vertical page navigation.
+        event.stopPropagation();
+        forwardChartPageScroll(container, event);
+        return;
+      }
       if (!event.cancelable) return;
       if (gestureActive && intent === "zoom") { event.preventDefault(); event.stopPropagation(); return; }
       if (event.cancelable) {
@@ -226,14 +236,81 @@ export function EChart({
 
   useEffect(() => {
     const chart = chartRef.current;
+    if (!chart || !timeNavigation) return;
+    const source = chart;
+    let linkedTime: number | null = null;
+    const move = (event: { offsetX: number; offsetY: number }) => {
+      linkedTime = null;
+      setLinkedCursor(null);
+      if (!chart.containPixel({ gridIndex: 0 }, [event.offsetX, event.offsetY])) {
+        publishChartCursor(timeNavigation, null, source);
+        return;
+      }
+    };
+    const pointer = (raw: unknown) => {
+      const event = raw as { axesInfo?: Array<{ axisDim: string; axisIndex: number; value: number }> };
+      // ECharts may snap its active readout to an observed session. Broadcast
+      // that displayed date, rather than the raw mouse pixel before snapping.
+      const axis = event.axesInfo?.find((item) => item.axisDim === "x" && item.axisIndex === 0);
+      if (axis) publishChartCursor(timeNavigation, Number(axis.value), source);
+    };
+    const leave = () => publishChartCursor(timeNavigation, null, source);
+    const renderGuide = () => {
+      if (chart.isDisposed()) return;
+      const time = linkedTime;
+      const visible = timeNavigation.getDomain();
+      chart.dispatchAction({ type: "updateAxisPointer", currTrigger: "leave" }, { silent: true });
+      chart.dispatchAction({ type: "hideTip" }, { silent: true });
+      if (time === null || time < visible.start || time > visible.end) {
+        setLinkedCursor(null);
+        return;
+      }
+      const x = Number(chart.convertToPixel({ xAxisIndex: 0 }, time));
+      // A coordinate guide must not snap to the nearest execution in another
+      // pane, or label that old event as a new observation at the cursor date.
+      let top = -1, bottom = -1;
+      for (let y = 0; y < chart.getHeight(); y += 2) {
+        if (chart.containPixel({ gridIndex: 0 }, [x, y])) { if (top < 0) top = y; bottom = y; }
+      }
+      setLinkedCursor(top >= 0 ? { x, top, height: bottom - top } : null);
+    };
+    const unsubscribe = subscribeChartCursor(timeNavigation, (time, origin) => {
+      if (origin === source) return;
+      linkedTime = time;
+      renderGuide();
+    });
+    const unsubscribeDomain = timeNavigation.subscribe(renderGuide);
+    chart.getZr().on("mousemove", move);
+    chart.getZr().on("globalout", leave);
+    chart.on("updateAxisPointer", pointer);
+    return () => {
+      unsubscribe();
+      unsubscribeDomain();
+      publishChartCursor(timeNavigation, null, source);
+      if (!chart.isDisposed()) { chart.getZr().off("mousemove", move); chart.getZr().off("globalout", leave); chart.off("updateAxisPointer", pointer); }
+    };
+  }, [timeNavigation]);
+
+  useEffect(() => {
+    const chart = chartRef.current;
     if (!chart) return;
     const keyChanged = resetKeyRef.current !== resetKey;
     resetKeyRef.current = resetKey;
     if (keyChanged) timeNavigationRef.current?.reset();
-    chart.setOption(option, { notMerge: true });
+    const datePointer = (axis: Record<string, unknown>) => {
+      const pointer = (axis.axisPointer ?? {}) as Record<string, unknown>;
+      return { ...axis, axisPointer: { ...pointer, snap: true, label: {
+        ...((pointer.label ?? {}) as Record<string, unknown>),
+        formatter: ({ value }: { value: number }) => new Intl.DateTimeFormat(locale, { year: "numeric", month: "short", day: "numeric" }).format(value),
+      } } };
+    };
+    const xAxis = option.xAxis as Record<string, unknown> | Record<string, unknown>[] | undefined;
+    const datedOption = timeNavigation && xAxis ? { ...option, xAxis: Array.isArray(xAxis) ? xAxis.map(datePointer) : datePointer(xAxis) } : option;
+    chart.setOption(datedOption, { notMerge: true });
+    setLinkedCursor(null);
     const domain = timeNavigationRef.current?.getDomain();
     if (domain) applyChartDomain(domain);
-  }, [option, resetKey]);
+  }, [option, resetKey, locale, timeNavigation]);
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -264,5 +341,8 @@ export function EChart({
     else return;
     event.preventDefault();
   };
-  return <div tabIndex={timeNavigation ? 0 : undefined} onKeyDown={onKeyDown} ref={containerRef} className={cn("echart", className)} role="img" aria-label={label} />;
+  return <div tabIndex={timeNavigation ? 0 : undefined} onKeyDown={onKeyDown} ref={containerRef} className={cn("echart", className)} style={{ position: "relative" }} role="img" aria-label={label}>
+    {linkedCursor && <div aria-hidden="true" data-linked-time-cursor style={{ position: "absolute", pointerEvents: "none", zIndex: 2,
+      left: linkedCursor.x, top: linkedCursor.top, height: linkedCursor.height, borderLeft: "1px dashed rgba(170,210,234,.65)" }} />}
+  </div>;
 }

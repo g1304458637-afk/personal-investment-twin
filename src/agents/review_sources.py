@@ -9,8 +9,20 @@ from src.self_baseline.core import build_self_baseline_summary
 from src.twin.state import build_twin_snapshot_from_facts
 
 
-def build_owned_self_history(executions, prices, *, subject_id, account_id, as_of, init_cash, data_tier):
-    """Rebuild registered account facts through the exact review cutoff."""
+SELF_HISTORY_CALCULATION_CODE_VERSION = "review_sources_v1"
+
+
+def build_owned_self_history_with_hhi_history(
+    executions,
+    prices,
+    *,
+    subject_id,
+    account_id,
+    as_of,
+    init_cash,
+    data_tier,
+):
+    """Build the self summary and retain its already-computed HHI series."""
     frame = executions.loc[pd.to_datetime(executions.event_time) <= as_of].copy()
     market = prices.loc[pd.to_datetime(prices.date).dt.normalize() <= as_of.normalize()].copy()
     if "account_id" not in frame or not frame.account_id.eq(account_id).all():
@@ -24,13 +36,28 @@ def build_owned_self_history(executions, prices, *, subject_id, account_id, as_o
         frame["market_date"] = frame["market_date"].map(lambda value: pd.Timestamp(value).date().isoformat())
     hhi, records = build_portfolio_hhi_history_with_records(
         frame, market, init_cash=init_cash, subject_id=subject_id, data_tier=data_tier,
-        calculation_code_version="review_sources_v1")
+        calculation_code_version=SELF_HISTORY_CALCULATION_CODE_VERSION)
     turnover = build_turnover_intensity_evidence(frame, market, init_cash=init_cash)
     record = adapt_evidence(turnover, subject_id=subject_id, data_tier=data_tier,
-                            calculation_code_version="review_sources_v1")
+                            calculation_code_version=SELF_HISTORY_CALCULATION_CODE_VERSION)
     series = (hhi, build_turnover_history(turnover, parent_record=record))
     evidence = (*records, record)
     snapshot = build_twin_snapshot_from_facts(
         frame, market, evidence, series, subject_id=subject_id, account_id=account_id,
-        as_of=as_of, init_cash=init_cash, data_tier=data_tier, calculation_code_version="review_sources_v1")
-    return build_self_baseline_summary(snapshot, series, evidence)
+        as_of=as_of, init_cash=init_cash, data_tier=data_tier,
+        calculation_code_version=SELF_HISTORY_CALCULATION_CODE_VERSION)
+    return build_self_baseline_summary(snapshot, series, evidence), hhi
+
+
+def build_owned_self_history(executions, prices, *, subject_id, account_id, as_of, init_cash, data_tier):
+    """Rebuild registered account facts through the exact review cutoff."""
+    summary, _ = build_owned_self_history_with_hhi_history(
+        executions,
+        prices,
+        subject_id=subject_id,
+        account_id=account_id,
+        as_of=as_of,
+        init_cash=init_cash,
+        data_tier=data_tier,
+    )
+    return summary

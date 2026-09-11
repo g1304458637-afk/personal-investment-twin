@@ -5,7 +5,7 @@ import { useDataMode } from "@/data/DataModeProvider";
 import { positionEpisodeDemo } from "@/data/backendEvidence";
 import { realUserApi } from "@/data/runtimeService";
 import { adaptRuntimePositionEpisodeEntry, type PositionEpisodeEntryView } from "@/data/positionEpisode";
-import { DecisionAnalysisWorkspace } from "@/components/review/DecisionAnalysisWorkspace";
+import { episodeAnalysisTarget } from "./episodeSample";
 import { useLocale } from "@/locales/LocaleProvider";
 import { reviewCandidatesFromFixture, reviewCandidatesFromRuntime, scopedCandidate, type ReviewEpisodeCandidate } from "./reviewWorkspaceData";
 import { useWorkspaceCopy } from "./copy";
@@ -40,11 +40,11 @@ export function ReviewWorkspace({ view = "review" }: { view?: "review" | "journa
   useEffect(() => { setSelectedId(new URLSearchParams(location.search).get("episode")); }, [location.search]);
   const [candidates, setCandidates] = useState<ReviewEpisodeCandidate[]>([]);
   const [entry, setEntry] = useState<PositionEpisodeEntryView | null>(null);
-  const [loading, setLoading] = useState(false); const [error, setError] = useState<string | null>(null); const [question, setQuestion] = useState("");
+  const [loading, setLoading] = useState(false); const [error, setError] = useState<string | null>(null);
   const subject = data.mode === "demo" ? data.exampleAccount.subjectId : data.activeAccount?.subject_id;
   const account = data.mode === "demo" ? data.exampleAccount.accountId : data.activeAccount?.account_id;
   useEffect(() => {
-    let cancelled = false; setCandidates([]); setEntry(null); setError(null); setQuestion("");
+    let cancelled = false; setCandidates([]); setEntry(null); setError(null);
     if (!subject || !account) {setLoading(false); return;}
     if (data.mode === "demo") {setCandidates(reviewCandidatesFromFixture(positionEpisodeDemo.entries, subject, account)); setLoading(false); return;}
     setLoading(true);
@@ -56,7 +56,7 @@ export function ReviewWorkspace({ view = "review" }: { view?: "review" | "journa
   }, [data.mode, subject, account]);
   const current = useMemo(() => scopedCandidate(candidates, selectedId), [candidates, selectedId]);
   useEffect(() => {
-    let cancelled = false; setEntry(null); setError(null); setQuestion("");
+    let cancelled = false; setEntry(null); setError(null);
     if (!current) return;
     if (data.mode === "demo") {setEntry(positionEpisodeDemo.entries.find((item) => item.episode.episodeId === current.episodeId && item.episode.subjectId === subject && item.episode.accountId === account) ?? null); return;}
     setLoading(true);
@@ -76,8 +76,7 @@ export function ReviewWorkspace({ view = "review" }: { view?: "review" | "journa
       <section className="iw-panel"><div className="iw-panel__head"><div><span className="iw-kicker">{c.scope}</span><h2>{t(current.instrumentName)}</h2></div><Link className="iw-link" to={`/investments/episodes/${current.episodeId}`}>{c.open} ↗</Link></div>
         {view === "journal" ? <JournalDraft key={`${subject}:${account}:${current.episodeId}`} episodeId={current.episodeId} /> : <div className="iw-panel__body"><div className="iw-fact-grid"><div className="iw-fact"><span>{c.period}</span><strong>{date(current.openedAt)} → {current.closedAt ? date(current.closedAt) : c.holding}</strong></div><div className="iw-fact"><span>{c.all}</span><strong>{entry ? entry.decisions.length : "—"}</strong></div><div className="iw-fact"><span>{c.evidence}</span><strong>{entry ? entry.evidenceReferences.length : "—"}</strong></div></div>
           {view === "review" && entry?.reviewPresentation?.facts.length ? <section className="iw-selected-facts"><span className="iw-kicker">{c.factCount}</span>{entry.reviewPresentation.facts.map((fact) => { const pattern = entry.pathAnalysis.patterns.find((item) => item.patternId === fact.patternId); const labels: Record<string,string> = {consecutive_scaling_in:"Consecutive scaling in",consecutive_scaling_out:"Consecutive scaling out",add_after_positive_market_move:"Add after a recorded positive market move",exit_after_negative_market_move:"Exit after a recorded negative market move",high_quantity_during_daily_price_drawdown:"Recorded quantity during the daily price peak-to-trough path",long_no_execution_interval:"Long interval with no additional executions",price_following_scale_sequence:"Scaling sequence aligned with the recorded price path",loss_state_addition_reused:"Existing loss-state Evidence reused"}; return <Link key={fact.itemId} to={`/investments/episodes/${current.episodeId}?fact=${encodeURIComponent(fact.itemId)}`}><strong>{t(labels[pattern?.patternCode ?? ""] ?? "Facts worth revisiting")}</strong><span>{date(fact.startAt)} → {date(fact.endAt)}</span><ArrowRight size={14} /></Link>; })}</section> : null}
-          {view === "review" ? <section className="iw-section"><h2 className="iw-section__title">{c.facts}</h2><p className="iw-section__hint">{c.factHint}</p><ul className="iw-review-facts">{entry?.decisions.map((decision) => <li key={decision.decisionId}><Link to={`/investments/episodes/${current.episodeId}?decision=${encodeURIComponent(decision.decisionId)}`}><span>{t({open_position:"Open position",add_position:"Add position",reduce_position:"Reduce position",close_position:"Close position / final sale"}[decision.decisionType])}</span><small>{date(decision.occurredAt)} · {formatNumber(decision.executedQuantity)} @ {formatNumber(decision.executionPrice, 2)}</small><ArrowRight size={14} /></Link></li>)}</ul>{!entry?.decisions.length && <p className="iw-note">{c.noFacts}</p>}</section> : <section className="iw-section"><p className="iw-section__hint">{c.tools}</p>{data.mode === "demo" && <><label className="iw-form"><span>{c.question}</span><textarea value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={c.questionHint} /></label><div className="iw-question-suggestions">{c.askExamples.map((text) => <button key={text} onClick={() => setQuestion(text)}>{text}</button>)}</div><div className="iw-note"><strong>{c.offline}</strong><p>{c.offlineHint}</p></div><Link className="iw-text-link" to="/investments/compare-example">{c.pair}<ArrowRight size={14} /></Link></>}
-          {data.mode === "real_user" && <DecisionAnalysisWorkspace key={current.episodeId} scope={{subject_id:current.subjectId,account_id:current.accountId,episode_id:current.episodeId,data_mode:"real_user"}} onDecision={(id) => navigate(`/investments/episodes/${current.episodeId}?decision=${encodeURIComponent(id)}`)} />}</section>}
+          {view === "review" ? <section className="iw-section"><h2 className="iw-section__title">{c.facts}</h2><p className="iw-section__hint">{c.factHint}</p><ul className="iw-review-facts">{entry?.decisions.map((decision) => <li key={decision.decisionId}><Link to={`/investments/episodes/${current.episodeId}?decision=${encodeURIComponent(decision.decisionId)}`}><span>{t({open_position:"Open position",add_position:"Add position",reduce_position:"Reduce position",close_position:"Close position / final sale"}[decision.decisionType])}</span><small>{date(decision.occurredAt)} · {formatNumber(decision.executedQuantity)} @ {formatNumber(decision.executionPrice, 2)}</small><ArrowRight size={14} /></Link></li>)}</ul>{!entry?.decisions.length && <p className="iw-note">{c.noFacts}</p>}</section> : <section className="iw-section"><p className="iw-section__hint">{c.tools}</p><Link className="iw-primary" to={episodeAnalysisTarget(current.episodeId)}>{t("Analyze this investment")}<ArrowRight size={16} /></Link></section>}
         </div>}
       </section></div> : null}
     {data.mode === "demo" && <section className="iw-surface iw-method-study"><span className="iw-kicker">SYNTHETIC / INDEPENDENT METHOD STUDIES</span><h2>{t("Decision evidence")}</h2><p>{t("Standalone legacy example · not the selected account")}</p><div className="iw-context"><Link className="iw-text-link" to="/review/decisions">{t("Selection")} · {t("Sizing")} · {t("Exit")} · {t("Friction")}<ArrowRight size={14} /></Link><Link className="iw-text-link" to="/advanced/evidence">{t("Evidence, method, and source")}<ArrowRight size={14} /></Link></div></section>}

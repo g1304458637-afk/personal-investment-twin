@@ -11,6 +11,7 @@ import pandas as pd
 
 from src.attribution.decision_outcome import build_actual_outcomes, evaluate_historical_counterfactual
 from src.episodes.position_episode import PositionEpisodeLifecycle
+from src.lenses.history import evaluate_episode_lenses
 from src.path.analysis import build_episode_path_analysis
 from src.presentation.episode_review import review_presentation
 
@@ -81,4 +82,13 @@ def episode_entry(lifecycle: PositionEpisodeLifecycle, executions: pd.DataFrame,
         "outcome_story": {"episode_outcome": episode_outcome, "decision_outcomes": outcomes,
                           "counterfactuals": tuple(counterfactuals), "exit_followup": None},
     }
-    return json_value(payload)
+    # Lenses consume the same serialized episode facts the client receives, but
+    # retain the canonical execution frame for its exchange-calendar date map.
+    # They are descriptive and never feed back into the financial calculations.
+    result = json_value(payload)
+    try:
+        result["lens_review"] = evaluate_episode_lenses(result, market_prices, executions)
+    except (KeyError, TypeError, ValueError, OverflowError):
+        # A projection concern must never make the financial episode unavailable.
+        result["lens_review"] = {"status": "unavailable", "reason": "lens_projection_unavailable"}
+    return result

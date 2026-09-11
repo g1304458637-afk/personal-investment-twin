@@ -1,0 +1,10 @@
+{
+  "dataset": "Plotly datasets finance-charts-apple.csv",
+  "license": "MIT",
+  "license_sha256": "842e29495d9d99eef9b6d5f2e442785cdd0ab39d81792b2c6302d17bb0cc6030",
+  "license_url": "https://raw.githubusercontent.com/plotly/datasets/master/LICENSE",
+  "source_commit": "6a88de1c9a95f0019566d3b568eb26444feda686",
+  "source_sha256": "24c7604edfd5afe862ddb9f9535e2fd7351f43711bfc442bca52055e15e37bcd",
+  "source_url": "https://raw.githubusercontent.com/plotly/datasets/6a88de1c9a95f0019566d3b568eb26444feda686/finance-charts-apple.csv",
+  "source_version": "plotly-datasets@6a88de1c9a95f0019566d3b568eb26444feda686"
+}

@@ -1,30 +1,40 @@
 import { formatCurrencyValue } from "@/lib/format";
 import { DecisionAnalysisWorkspace } from "@/components/review/DecisionAnalysisWorkspace";
+import { LensMethodSelector, LensDecisionInspector, LensDecisionTimeline } from "@/components/review/DecisionLensPanel";
+import { adaptDecisionLensReport, selectLensState } from "@/data/episodeLens";
+import { demoLensForEpisode } from "@/data/episodeLensDemo";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { OpticalDecisionFocus, OpticalExampleBoundary } from "@/experiments/optical-review/OpticalReview";
 import { isOpticalReview } from "@/experiments/optical-review/experiment";
 
-import { PositionEpisodeTimeline } from "@/components/charts/PositionEpisodeTimeline";
-import { PositionQuantityTimeline } from "@/components/charts/PositionQuantityTimeline";
+import { EpisodeChartWorkspace } from "@/components/charts/EpisodeChartWorkspace";
+import { InvestmentChartWorkspace } from "@/components/charts/InvestmentChartWorkspace";
+import { showcaseChartForEpisode, showcaseInstrumentName } from "@/data/showcaseDemo";
 import { uniqueDailyObservationTimes } from "@/components/charts/dailyTimeAxis";
 import { useDailyTimeNavigation } from "@/components/charts/useDailyTimeNavigation";
+import { factFocusDomain } from "@/components/charts/factFocusDomain";
 import { StateNotice } from "@/components/common/StateNotice";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { EvidenceExplainButton } from "@/components/evidence/EvidenceInspector";
+import { ChartGuide } from "@/components/guidance/ChartGuide";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { explainabilityForEvidence, getPositionEpisodeById } from "@/data/backendEvidence";
-import { belongsToExample } from "@/data/accountContext";
+import { belongsToExample, exampleAccountLabel } from "@/data/accountContext";
 import { useDataMode } from "@/data/DataModeProvider";
 import { realUserApi } from "@/data/runtimeService";
+import { reviewService, reviewSessions } from "@/data/reviewService";
 import { selectPrimaryCounterfactuals, type HistoricalCounterfactualView, type OutcomeResultSign, type OutcomeResultView, type OutcomeTransition } from "@/data/decisionOutcome";
 import { adaptRuntimePositionEpisodeEntry, type DecisionPhaseView, type EpisodePatternObservationView, type PathPresentationItemView, type PositionDecisionType, type PositionDecisionView, type PositionEpisodeEntryView, type PositionEvidenceReferenceView, type PositionStateView } from "@/data/positionEpisode";
 import { CurrencyProvider, useLocale } from "@/locales/LocaleProvider";
 import { cn } from "@/lib/utils";
 
 import "./episode-workspace.css";
+import "./episode-review-sample.css";
+import { hasDemoReviewSource, episodeSections, episodeSection, episodeSampleCopy, isEpisodeSample, isVisibleReviewPattern, type EpisodeSection } from "@/workspace/episodeSample";
+import { isClassicWorkspace } from "@/workspace/workspaceMode";
 
 function DecisionName({ type }: { type: PositionDecisionType }) {
   const { t } = useLocale();
@@ -187,22 +197,64 @@ function DecisionDrawer({ entry, decision, open, onOpenChange, optical = false }
 
 export function PositionEpisodePage() {
   const { episodeId } = useParams();
-  const [search] = useSearchParams();
+  const [search, setSearch] = useSearchParams();
+  const sample = !isClassicWorkspace() && isEpisodeSample(search);
+  const sampleSection = episodeSection(search);
+  const setSampleSection = (section: EpisodeSection) => { const next = new URLSearchParams(search); next.set("section", section); setSearch(next, { replace: true }); };
+  const [analysisVisited, setAnalysisVisited] = useState(false);
+  useEffect(() => { if (sampleSection === "analysis") setAnalysisVisited(true); }, [sampleSection]);
   const optical = isOpticalReview(search);
   const { locale, t, formatNumber, formatPercent } = useLocale();
+  const c = episodeSampleCopy[locale];
   const data = useDataMode();
   const [runtimeEntry, setRuntimeEntry] = useState<PositionEpisodeEntryView | null>(null);
   const [runtimeError, setRuntimeError] = useState<string | null>(null);
   const demoEntry = episodeId ? getPositionEpisodeById(episodeId) : null;
+  const showcaseChart = data.mode === "demo" && episodeId ? showcaseChartForEpisode(episodeId) : null;
   const entry = data.mode === "demo" ? (demoEntry && belongsToExample(demoEntry, data.exampleAccount) ? demoEntry : null)
     : runtimeEntry?.episode.episodeId === episodeId && runtimeEntry?.episode.subjectId === data.activeAccount?.subject_id && runtimeEntry?.episode.accountId === data.activeAccount?.account_id ? runtimeEntry : null;
+  const lensMode = sample && sampleSection === "lens";
+  const lensProjection = useMemo(() => {
+    if (!entry) return {report: null, error: false};
+    const raw = data.mode === "demo" ? demoLensForEpisode(entry) : entry.lensReview;
+    if (!raw) return {report: null, error: false};
+    try { return {report: adaptDecisionLensReport(raw, entry), error: false}; }
+    catch { return {report: null, error: true}; }
+  }, [entry, data.mode]);
+  const lensState = lensProjection.report ? selectLensState(lensProjection.report, search.get("lens"), search.get("lensDecision")) : null;
+  const lensDecision = entry?.decisions.find(d => d.decisionId === lensState?.check?.decision_id) ?? null;
+  const selectLensMethod = (id: string) => {
+    if (!lensProjection.report?.methods.some(method => method.id === id)) return;
+    const next = new URLSearchParams(search);
+    next.set("lens", id);
+    // Freeze the selected real action while the observation method changes.
+    if (lensState?.check) next.set("lensDecision", lensState.check.decision_id);
+    setSearch(next, {replace: true});
+  };
+  const selectLensDecision = (id: string) => {
+    if (!entry?.decisions.some(decision => decision.decisionId === id)) return;
+    const next = new URLSearchParams(search); next.set("lensDecision", id);
+    setSearch(next, {replace: true});
+  };
   const requestedDecisionId = search.get("decision");
+  const episodeGuideActive = search.get("guide") === "episode-process";
   const [selectedDecisionId, setSelectedDecisionId] = useState<string | null>(null);
   const [selectedPathItemId, setSelectedPathItemId] = useState<string | null>(null);
   const [showBackground, setShowBackground] = useState(false);
   const chartRef = useRef<HTMLElement>(null);
+  const sampleTop = useRef<HTMLDivElement>(null);
+  useEffect(() => { sampleTop.current?.scrollIntoView({block:"start", behavior:"instant"}); }, [sample]);
   const selectedDecision = entry?.decisions.find((item) => item.decisionId === selectedDecisionId) ?? null;
-  useEffect(() => { setSelectedDecisionId(null); setSelectedPathItemId(null); setShowBackground(false); }, [episodeId, data.mode, data.exampleAccount, data.activeAccount]);
+  useEffect(() => {
+    if (!reviewService.available() || !entry?.episode.accountId) return;
+    const episode = entry.episode;
+    if (data.mode === "demo" && !hasDemoReviewSource(episode.subjectId, episode.accountId, episode.episodeId)) return;
+    // Start preparing while the user is looking at the chart, not on the
+    // later click into analysis. Shares are never speculatively read here.
+    void reviewSessions.prefetch({subject_id:episode.subjectId, account_id:episode.accountId!, episode_id:episode.episodeId,
+      data_mode:data.mode === "demo" ? "synthetic_showcase" : "real_user"});
+  }, [entry?.episode.subjectId, entry?.episode.accountId, entry?.episode.episodeId, data.mode]);
+  useEffect(() => { setSelectedDecisionId(null); setSelectedPathItemId(null); setShowBackground(false); setAnalysisVisited(false); }, [episodeId, data.mode, data.exampleAccount, data.activeAccount]);
   useEffect(() => {
     if (!entry || !requestedDecisionId) return;
     if (entry.decisions.some((decision) => decision.decisionId === requestedDecisionId)) setSelectedDecisionId(requestedDecisionId);
@@ -232,16 +284,37 @@ export function PositionEpisodePage() {
     const fact = entry?.reviewPresentation?.facts.find((item) => item.itemId === requestedFactId);
     if (!fact) return;
     setSelectedPathItemId(fact.itemId);
-    timeNavigation.apply({ start: Date.parse(fact.startAt), end: Date.parse(fact.endAt) }, "reset");
+    timeNavigation.apply(factFocusDomain(Date.parse(fact.startAt), Date.parse(fact.endAt), observationTimes), "reset");
   }, [entry, requestedFactId]);
+  useEffect(() => {
+    if (!episodeGuideActive || showcaseChart || !entry || !requestedDecisionId) return;
+    const decision = entry.decisions.find((item) => item.decisionId === requestedDecisionId);
+    const occurredAt = decision ? Date.parse(decision.occurredAt) : NaN;
+    if (!Number.isFinite(occurredAt)) return;
+    // The guide can only focus a decision already owned by this loaded Episode.
+    timeNavigation.apply(factFocusDomain(occurredAt, occurredAt, observationTimes), "reset");
+  }, [entry, episodeGuideActive, observationTimes, requestedDecisionId, showcaseChart, timeNavigation]);
+  useEffect(() => {
+    if (!lensMode || !lensDecision || showcaseChart) return;
+    const at = Date.parse(lensDecision.occurredAt);
+    timeNavigation.apply(factFocusDomain(at, at, observationTimes), "reset");
+  }, [lensMode, lensDecision?.decisionId, showcaseChart, observationTimes]);
   if (!entry || !chartEntry) return <div className="space-y-5"><Button asChild variant="quiet"><Link to="/investments"><ArrowLeft />{t("Back to My Investments")}</Link></Button><StateNotice state={data.mode === "real_user" && data.activeAccount && !runtimeError ? "loading" : "insufficient"} title={t(runtimeError || !data.activeAccount && data.mode === "real_user" || data.mode === "demo" ? "This investment is not available in the selected account" : "Loading…")} detail={runtimeError ?? t(data.mode === "real_user" && data.activeAccount ? "Rebuilding from local canonical facts." : "Select its account or return to My Investments.")} /></div>;
   const episode = entry.episode;
   const result = entry.outcomeStory.episodeOutcome.actualResult;
   const formatCurrency = (value: number) => formatCurrencyValue(value, locale, entry.instrument.currency);
   const dateOnly = new Intl.DateTimeFormat(locale, { year: "numeric", month: "2-digit", day: "2-digit" });
   const date = (value: string) => dateOnly.format(new Date(value));
-  const review = entry.reviewPresentation;
+  const review = entry.reviewPresentation ? {
+    ...entry.reviewPresentation,
+    facts: entry.reviewPresentation.facts.filter((fact) => isVisibleReviewPattern(
+      entry.pathAnalysis.patterns.find((pattern) => pattern.patternId === fact.patternId)?.patternCode,
+    )),
+  } : null;
   const selectedFact = review?.facts.find((fact) => fact.itemId === selectedPathItemId) ?? null;
+  const guidedDecision = episodeGuideActive && requestedDecisionId
+    ? entry.decisions.find((item) => item.decisionId === requestedDecisionId) ?? null
+    : null;
   const selectedPhase = selectedFact?.phaseId ? entry.pathAnalysis.phases.find((phase) => phase.phaseId === selectedFact.phaseId) ?? null : null;
   const phaseCounterfactual = selectedPhase ? entry.pathAnalysis.phaseCounterfactuals.find((item) => item.scenarioId === "omit_decision_phase_until_next_decision_v2" && item.decisionEventId === selectedPhase.decisionEventIds[0]) ?? null : null;
   const story = review?.storySteps.map((step) => {
@@ -250,18 +323,45 @@ export function PositionEpisodePage() {
   }).join(t("Story separator"));
   const chartGroup = `episode-path-${episode.episodeId}`;
   const hasBackground = entry.pricePoints.some((point) => point.segment !== "episode");
-  return <CurrencyProvider value={entry.instrument.currency}><div className={cn("iw-episode pb-8", optical && "episode-review--optical optical-review-scope")}>
-    <div className="iw-episode-toolbar"><Button asChild variant="quiet" size="sm" className="-ml-3"><Link to="/investments"><ArrowLeft />{t("My Investments")}</Link></Button><span className="iw-subtle">{data.mode === "demo" ? t("Example account · Synthetic") : data.activeAccount?.display_name}</span></div>
-    <header className="iw-episode-hero iw-inset"><div><p className="iw-kicker">{t("Investment episode")}</p><h1 className="iw-episode-title">{t(entry.instrument.displayName)}</h1><p className="iw-episode-period">{date(episode.openedAt)} → {episode.closedAt ? date(episode.closedAt) : t("Present")} · {t(episode.status === "open" ? "Holding" : "Closed")}</p>{story ? <p data-review-story className="iw-story">{story}{review?.abbreviated ? t("Further executions are listed below.") : t("Story full stop")}</p> : null}</div><div data-episode-result className="iw-outcome"><div><p className="iw-kicker">{t(result.resultKind === "marked" ? "Current marked result" : "Final realized result")}</p><p className={cn("iw-outcome-value", resultTone(result.resultSign))}>{formatCurrency(result.pnl)}</p>{result.returnValue !== null ? <p className="iw-subtle mt-2">{t("Position return")}: {formatPercent(result.returnValue, 2)}</p> : null}</div><p className="iw-outcome-foot">{result.resultKind === "marked" ? <>{t("This is a current mark, not a realized exit.")}<br />{t("Marked at {date}", {date: result.valuationAt ? date(result.valuationAt) : "—"})} · {t("Valuation price")}: {result.valuationPrice === null ? "—" : formatCurrency(result.valuationPrice)}</> : t("Final date: {date}", {date: episode.closedAt ? date(episode.closedAt) : "—"})}</p></div></header>
-    <div className="iw-episode-main"><section ref={chartRef} data-price-path className="iw-chart-panel iw-inset"><div className="iw-panel-heading"><div><p className="iw-kicker">{t("Recorded path")}</p><h2>{t("Price, quantity, and actual executions")}</h2></div>{hasBackground ? <button type="button" className="text-xs text-muted hover:text-foreground" aria-pressed={showBackground} onClick={() => setShowBackground((value) => !value)}>{t(showBackground ? "Hide outside-holding market context" : "Show outside-holding market context")}</button> : null}</div>{showBackground ? <p className="mb-3 text-xs text-warning">{t("Outside-holding market context does not extend this investment's lifecycle.")}</p> : null}<PositionEpisodeTimeline entry={chartEntry} selectedDecisionId={selectedDecisionId} emphasizedDecisionIds={selectedFact?.decisionIds} highlightStart={selectedFact?.startAt} highlightEnd={selectedFact?.endAt} chartGroup={chartGroup} timeNavigation={timeNavigation} onSelectDecision={setSelectedDecisionId} className="h-[300px] w-full" /><div data-quantity-path className="mt-2 border-t border-border/60 pt-3"><h2 className="mb-1 text-xs text-muted">{t("Position quantity")}</h2><PositionQuantityTimeline entry={chartEntry} selectedDecisionId={selectedDecisionId} emphasizedDecisionIds={selectedFact?.decisionIds} highlightStart={selectedFact?.startAt} highlightEnd={selectedFact?.endAt} chartGroup={chartGroup} timeNavigation={timeNavigation} onSelectDecision={setSelectedDecisionId} className="h-[138px] w-full" /></div>{selectedFact ? <div data-selected-phase className="mt-3 border-t border-border/60 pt-3"><p className="iw-subtle">{date(selectedFact.startAt)} → {date(selectedFact.endAt)}</p><div className="mt-2 flex flex-wrap gap-2">{selectedFact.decisionIds.map((id) => { const decision = entry.decisions.find((item) => item.decisionId === id)!; return <Button key={id} variant="quiet" size="sm" onClick={() => setSelectedDecisionId(id)}>{date(decision.occurredAt)} · <DecisionName type={decision.decisionType} /></Button>; })}</div>{phaseCounterfactual ? <details className="mt-3"><summary className="cursor-pointer text-xs text-accent">{t("Historical comparison under fixed assumptions")}</summary><div className="mt-3"><CounterfactualBlock item={phaseCounterfactual} scope="phase" /></div></details> : null}</div> : null}</section>
-    {review?.facts.length ? <aside data-review-facts className="iw-facts iw-inset"><div className="iw-facts-title"><p className="iw-kicker">{t("Review queue")}</p><h2 className="mt-1 text-sm font-semibold">{t("Facts worth revisiting")}</h2><p className="iw-subtle mt-1">{t("Select a fact to focus its recorded interval in the chart.")}</p></div>{review.facts.map((fact) => {
+  const instrumentName = data.mode === "demo"
+    ? showcaseInstrumentName(entry.instrument.instrumentId, locale, entry.instrument.displayName)
+    : t(entry.instrument.displayName);
+  const exitGuide = () => { const next = new URLSearchParams(search); next.delete("guide"); setSearch(next, { replace: true }); };
+  return <CurrencyProvider value={entry.instrument.currency}><div data-guide-scope="episode-process" className={cn("iw-episode pb-8", optical && "episode-review--optical optical-review-scope", sample && "episode-review-sample", showcaseChart && "iw-episode--standard")}>
+    <div ref={sampleTop} className="iw-episode-toolbar"><Button asChild variant="quiet" size="sm" className="-ml-3"><Link to="/investments"><ArrowLeft />{t("My Investments")}</Link></Button><div className="episode-sample-switch"><span className="iw-subtle">{data.mode === "demo" ? exampleAccountLabel(data.exampleAccount, locale) : data.activeAccount?.display_name}</span></div></div>
+    <header className="iw-episode-hero iw-inset"><div><p className="iw-kicker">{sample ? c.label : t("Investment episode")}</p><h1 className="iw-episode-title">{instrumentName}</h1><p className="iw-episode-period">{date(episode.openedAt)} → {episode.closedAt ? date(episode.closedAt) : t("Present")} · {t(episode.status === "open" ? "Holding" : "Closed")}</p>{story ? <p data-review-story className="iw-story">{story}{review?.abbreviated ? t("Further executions are listed below.") : t("Story full stop")}</p> : null}</div><div data-episode-result className="iw-outcome"><div><p className="iw-kicker">{t(result.resultKind === "marked" ? "Current marked result" : "Final realized result")}</p><p className={cn("iw-outcome-value", resultTone(result.resultSign))}>{formatCurrency(result.pnl)}</p>{result.returnValue !== null ? <p className="iw-subtle mt-2">{t("Position return")}: {formatPercent(result.returnValue, 2)}</p> : null}</div><p className="iw-outcome-foot">{result.resultKind === "marked" ? <>{t("This is a current mark, not a realized exit.")}<br />{t("Marked at {date}", {date: result.valuationAt ? date(result.valuationAt) : "—"})} · {t("Valuation price")}: {result.valuationPrice === null ? "—" : formatCurrency(result.valuationPrice)}</> : t("Final date: {date}", {date: episode.closedAt ? date(episode.closedAt) : "—"})}</p></div></header>
+    {sample && <nav className="episode-sample-nav" aria-label={c.label}>{episodeSections.map((section) => <button key={section} aria-pressed={sampleSection === section} onClick={() => setSampleSection(section)}>{c[section]}</button>)}</nav>}
+    {lensMode && (lensProjection.report && lensState ? <>
+      <LensMethodSelector report={lensProjection.report} methodId={lensState.method.id} onSelect={selectLensMethod} />
+      <LensDecisionTimeline entry={entry} method={lensState.method} decisionId={lensState.check?.decision_id ?? ""} onSelect={selectLensDecision} />
+    </> : <StateNotice state="insufficient" title={locale === "zh-CN" ? "这轮策略复盘暂不可用" : "Decision Lens is unavailable"} detail={locale === "zh-CN" ? (lensProjection.error ? "方法资料与当前投资记录未能核对一致。下方仍可查看原始投资过程。" : "当前运行环境尚未提供这轮的方法资料。原始行情和操作仍可查看。") : "The method projection is missing or could not be matched to this ledger. Recorded history remains available."} />)}
+    <div className="iw-episode-main" hidden={sample && sampleSection !== "process" && !lensMode}>
+      {episodeGuideActive ? <ChartGuide guideId="episode-process" onExit={exitGuide} /> : null}
+      <section ref={chartRef} data-price-path data-guide="episode-chart" className={cn(showcaseChart ? "iw-chart-panel iw-inset" : "iw-chart-panel--series")}>
+        {showcaseChart ? <InvestmentChartWorkspace entry={entry} market={showcaseChart.market} focus={lensMode && lensDecision ? { id: lensDecision.decisionId, startAt: lensDecision.occurredAt, endAt: lensDecision.occurredAt } : guidedDecision ? { id: guidedDecision.decisionId, startAt: guidedDecision.occurredAt, endAt: guidedDecision.occurredAt } : selectedFact ? { id: selectedFact.itemId, startAt: selectedFact.startAt, endAt: selectedFact.endAt } : null} onSelectDecision={lensMode ? selectLensDecision : setSelectedDecisionId} /> : <EpisodeChartWorkspace
+          entry={chartEntry}
+          selectedDecisionId={lensMode ? lensDecision?.decisionId ?? null : selectedDecisionId}
+          emphasizedDecisionIds={lensMode && lensDecision ? [lensDecision.decisionId] : selectedFact?.decisionIds}
+          highlightStart={lensMode ? lensDecision?.occurredAt : selectedFact?.startAt}
+          highlightEnd={lensMode ? lensDecision?.occurredAt : selectedFact?.endAt}
+          chartGroup={chartGroup}
+          timeNavigation={timeNavigation}
+          onSelectDecision={lensMode ? selectLensDecision : setSelectedDecisionId}
+          onReset={selectedFact ? () => setSelectedPathItemId(null) : undefined}
+          toolbar={hasBackground ? <button type="button" className="text-xs text-muted hover:text-foreground" aria-pressed={showBackground} onClick={() => setShowBackground((value) => !value)}>{t(showBackground ? "Hide outside-holding market context" : "Show outside-holding market context")}</button> : undefined}
+        />}
+        {showBackground && !showcaseChart ? <p className="episode-chart-workspace__context">{t("Outside-holding market context does not extend this investment's lifecycle.")}</p> : null}
+        {sample && selectedFact && <div className="episode-focus-toolbar"><span>{c.selected}</span><button onClick={() => { setSelectedPathItemId(null); timeNavigation.reset(); }}>{c.clear}</button></div>}
+        {selectedFact ? <div data-selected-phase className="mt-3 border-t border-border/60 pt-3"><p className="iw-subtle">{date(selectedFact.startAt)} → {date(selectedFact.endAt)}</p><div className="mt-2 flex flex-wrap gap-2">{selectedFact.decisionIds.map((id) => { const decision = entry.decisions.find((item) => item.decisionId === id)!; return <Button key={id} variant="quiet" size="sm" onClick={() => setSelectedDecisionId(id)}>{date(decision.occurredAt)} · <DecisionName type={decision.decisionType} /></Button>; })}</div>{phaseCounterfactual ? <details className="mt-3"><summary className="cursor-pointer text-xs text-accent">{t("Historical comparison under fixed assumptions")}</summary><div className="mt-3"><CounterfactualBlock item={phaseCounterfactual} scope="phase" /></div></details> : null}</div> : null}
+      </section>
+    {lensMode && lensState?.check && lensProjection.report ? <LensDecisionInspector report={lensProjection.report} onSelectMethod={selectLensMethod} method={lensState.method} check={lensState.check} currency={entry.instrument.currency} onViewActual={() => setSelectedDecisionId(lensState.check!.decision_id)} /> : review?.facts.length ? <aside data-review-facts className="iw-facts iw-inset"><div className="iw-facts-title"><p className="iw-kicker">{t("Review queue")}</p><h2 className="mt-1 text-sm font-semibold">{t("Facts worth revisiting")}</h2><p className="iw-subtle mt-1">{sample ? c.factHint : t("Select a fact to focus its recorded interval in the chart.")}</p></div>{review.facts.map((fact) => {
         const item = entry.pathAnalysis.presentationItems.find((item) => item.itemId === fact.itemId)!;
         const copy = pathItemCopy(item, entry.pathAnalysis.phases, entry.pathAnalysis.patterns, t, formatPercent, formatNumber);
-        return <button type="button" key={fact.itemId} data-review-fact={fact.itemId} className="iw-fact" aria-pressed={selectedPathItemId === fact.itemId} onClick={() => { setSelectedPathItemId(fact.itemId); timeNavigation.apply({start: Date.parse(fact.startAt), end: Date.parse(fact.endAt)}, "reset"); chartRef.current?.scrollIntoView({block: "start", behavior: "smooth"}); }}><strong>{copy.title}</strong><span>{copy.detail}</span></button>;
+        return <button type="button" key={fact.itemId} data-review-fact={fact.itemId} className="iw-fact" aria-pressed={selectedPathItemId === fact.itemId} onClick={() => { setSelectedPathItemId(fact.itemId); timeNavigation.apply(factFocusDomain(Date.parse(fact.startAt), Date.parse(fact.endAt), observationTimes), "reset"); chartRef.current?.scrollIntoView({block: "start", behavior: "smooth"}); }}><strong>{copy.title}</strong><span>{copy.detail}</span>{sample && <span className="episode-fact-action">{c.focus}<ArrowRight size={13} /></span>}</button>;
       })}</aside> : <aside className="iw-facts iw-inset"><div className="iw-facts-title"><p className="iw-kicker">{t("Review queue")}</p><h2 className="mt-1 text-sm font-semibold">{t("No review facts are available")}</h2><p className="iw-subtle mt-2">{t("The recorded investment path remains available below.")}</p></div></aside>}</div>
-    {data.mode === "real_user" && episode.accountId ? <DecisionAnalysisWorkspace key={episode.episodeId} scope={{ subject_id: episode.subjectId, account_id: episode.accountId, episode_id: episode.episodeId, data_mode: "real_user" }} onDecision={setSelectedDecisionId} /> : null}
-    <div className="iw-detail-grid"><section data-all-executions className="iw-executions iw-inset"><div className="iw-panel-heading"><div><p className="iw-kicker">{t("Recorded ledger")}</p><h2>{t("All executions")}</h2></div><span className="iw-subtle">{t("Select an execution for before-and-after detail")}</span></div>{entry.decisions.map((decision) => <button type="button" key={decision.decisionId} data-decision-event-id={decision.decisionId} className="iw-execution-row" onClick={() => setSelectedDecisionId(decision.decisionId)}><span className="text-xs text-muted">{date(decision.occurredAt)}</span><span className="text-sm text-foreground"><DecisionName type={decision.decisionType} /></span><span className="font-mono text-xs text-muted">{formatNumber(decision.executedQuantity, 0)} @ {formatCurrency(decision.executionPrice)}</span><ArrowRight className="size-4 text-accent" /></button>)}</section>
-    <section><details className="iw-disclosure iw-inset"><summary>{t("More recorded context")}</summary><div className="mt-4 space-y-3">{entry.pathAnalysis.presentationItems.map((item) => { const copy = pathItemCopy(item, entry.pathAnalysis.phases, entry.pathAnalysis.patterns, t, formatPercent, formatNumber); return <p key={item.itemId} className="text-xs leading-5 text-muted"><strong className="text-foreground">{copy.title}</strong> · {copy.detail}</p>; })}</div></details><details className="iw-disclosure iw-inset"><summary>{t("Evidence, method, and source")}</summary><div className="mt-4"><EvidenceLinks references={entry.evidenceReferences.filter((reference) => episode.evidenceRefs.includes(reference.evidenceId))} /></div><details className="mt-4"><summary className="cursor-pointer text-xs text-muted">{t("Technical details")}</summary><p className="mt-3 break-all font-mono text-[10px] leading-5">{episode.episodeId}<br />{episode.instrumentId}<br />{entry.outcomeStory.episodeOutcome.methodId}@{entry.outcomeStory.episodeOutcome.methodVersion}<br />{entry.pathAnalysis.methodId}@{entry.pathAnalysis.methodVersion}<br />{result.source.sourceRecordId}</p></details><p className="mt-3 text-xs text-muted">{t("This page describes recorded history and registered historical alternatives. It does not recommend, predict, or optimize a future action.")}</p></details></section></div>
+    {sample ? <section hidden={sampleSection !== "analysis"} className="episode-sample-analysis"><h2>{c.analyzeTitle}</h2><p className="episode-sample-description">{c.analyzeHint}</p>{(data.mode === "real_user" || (data.mode === "demo" && hasDemoReviewSource(episode.subjectId, episode.accountId, episode.episodeId))) && episode.accountId && (analysisVisited || sampleSection === "analysis") ? <DecisionAnalysisWorkspace initialMode="analysis" key={`${episode.subjectId}:${episode.accountId}:${episode.episodeId}`} scope={{ subject_id: episode.subjectId, account_id: episode.accountId, episode_id: episode.episodeId, data_mode: data.mode === "demo" ? "synthetic_showcase" : "real_user" }} onDecision={setSelectedDecisionId} /> : null}<div className="episode-sample-unavailable">{data.mode === "demo" && !hasDemoReviewSource(episode.subjectId, episode.accountId, episode.episodeId) ? <><strong>{c.demoTitle}</strong><p>{c.demoHint}</p></> : null}</div><p className="episode-sample-boundary">{c.analysisBoundary}</p></section> : data.mode === "real_user" && episode.accountId ? <DecisionAnalysisWorkspace key={episode.episodeId} scope={{ subject_id: episode.subjectId, account_id: episode.accountId, episode_id: episode.episodeId, data_mode: "real_user" }} onDecision={setSelectedDecisionId} /> : null}
+    <div className="iw-detail-grid" hidden={sample && sampleSection !== "executions" && sampleSection !== "evidence"}><section hidden={sample && sampleSection !== "executions"} data-all-executions data-guide="episode-ledger" className="iw-executions iw-inset"><div className="iw-panel-heading"><div><p className="iw-kicker">{t("Recorded ledger")}</p><h2>{t("All executions")}</h2></div><span className="iw-subtle">{t("Select an execution for before-and-after detail")}</span></div>{entry.decisions.map((decision) => <button type="button" key={decision.decisionId} data-decision-event-id={decision.decisionId} className="iw-execution-row" onClick={() => setSelectedDecisionId(decision.decisionId)}><span className="text-xs text-muted">{date(decision.occurredAt)}</span><span className="text-sm text-foreground"><DecisionName type={decision.decisionType} /></span><span className="font-mono text-xs text-muted">{formatNumber(decision.executedQuantity, 0)} @ {formatCurrency(decision.executionPrice)}</span><ArrowRight className="size-4 text-accent" /></button>)}</section>
+    <section hidden={sample && sampleSection !== "evidence"}>{sample && <p className="episode-sample-description">{c.sourceHint}</p>}<details className="iw-disclosure iw-inset"><summary>{t("More recorded context")}</summary><div className="mt-4 space-y-3">{entry.pathAnalysis.presentationItems.map((item) => { const copy = pathItemCopy(item, entry.pathAnalysis.phases, entry.pathAnalysis.patterns, t, formatPercent, formatNumber); return <p key={item.itemId} className="text-xs leading-5 text-muted"><strong className="text-foreground">{copy.title}</strong> · {copy.detail}</p>; })}</div></details><details className="iw-disclosure iw-inset"><summary>{t("Evidence, method, and source")}</summary><div className="mt-4"><EvidenceLinks references={entry.evidenceReferences.filter((reference) => episode.evidenceRefs.includes(reference.evidenceId))} /></div><details className="mt-4"><summary className="cursor-pointer text-xs text-muted">{t("Technical details")}</summary><p className="mt-3 break-all font-mono text-[10px] leading-5">{episode.episodeId}<br />{episode.instrumentId}<br />{entry.outcomeStory.episodeOutcome.methodId}@{entry.outcomeStory.episodeOutcome.methodVersion}<br />{entry.pathAnalysis.methodId}@{entry.pathAnalysis.methodVersion}<br />{result.source.sourceRecordId}</p></details><p className="mt-3 text-xs text-muted">{t("This page describes recorded history and registered historical alternatives. It does not recommend, predict, or optimize a future action.")}</p></details></section></div>
     {optical && data.mode === "demo" ? <OpticalExampleBoundary /> : null}
     <DecisionDrawer entry={entry} decision={selectedDecision} open={selectedDecision !== null} onOpenChange={(open) => !open && setSelectedDecisionId(null)} optical={optical} />
   </div></CurrencyProvider>;

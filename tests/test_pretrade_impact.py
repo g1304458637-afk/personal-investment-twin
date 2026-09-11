@@ -93,6 +93,33 @@ def _simulate(trade, executions, prices, hhi_history, peer_context):
     )
 
 
+def test_no_peer_context_skips_peer_benchmark_builders(
+    monkeypatch, executions, prices, hhi_history
+) -> None:
+    import src.pretrade.impact as impact
+
+    monkeypatch.setattr(
+        impact,
+        "_hhi_peer_result",
+        lambda **_: pytest.fail("peer benchmark must not run when disabled"),
+    )
+    result = impact.simulate_trade_impact(
+        _trade(),
+        executions,
+        prices,
+        init_cash=INITIAL_CASH,
+        hhi_history=hhi_history,
+        cohort_definition=synthetic_cohort_definition(),
+        peer_members=(),
+        peer_metric_values=(),
+        calculation_code_version=CALCULATION_VERSION,
+        include_peer_context=False,
+    )
+    assert result.simulation_status == "complete"
+    assert result.peer_context is None
+    assert result.delta is not None and result.self_context is not None
+
+
 def test_simulation_is_deterministic_and_does_not_mutate_executions(
     executions, prices, hhi_history, peer_context
 ) -> None:
@@ -252,6 +279,41 @@ def test_before_and_after_hhi_are_existing_builder_outputs(
     assert result.before is not None and result.after is not None
     assert result.before.hhi == expected_before.hhi
     assert result.after.hhi == expected_after.hhi
+    for state, expected in ((result.before, expected_before), (result.after, expected_after)):
+        components = {component.symbol: component for component in expected.weight_components}
+        assert state.valuation_observation_date == expected.as_of_time.date().isoformat()
+        for row in state.allocations:
+            if row.kind == "cash":
+                assert row.symbol is None and row.security_weight is None
+                assert row.value == state.cash
+            else:
+                assert row.value == components[row.symbol].asset_value
+                assert row.security_weight == components[row.symbol].weight
+            assert row.account_weight == pytest.approx(row.value / state.portfolio_value)
+        assert sum(row.value for row in state.allocations) == pytest.approx(state.portfolio_value)
+        assert sum(row.account_weight for row in state.allocations) == pytest.approx(1)
+
+
+def test_allocation_target_change_has_exact_replay_values(executions, prices, hhi_history, peer_context):
+    result = _simulate(_trade(), executions, prices, hhi_history, peer_context)
+    before = {row.symbol: row for row in result.before.allocations}
+    after = {row.symbol: row for row in result.after.allocations}
+    # 450 existing / 650 hypothetical units, both valued at the existing 13 mark.
+    assert before["SYN_PAPER_WIN"].value == 5850
+    assert after["SYN_PAPER_WIN"].value == 8450
+    assert before[None].value == 91900
+    assert after[None].value == 89295
+    assert result.before.portfolio_value == 100600
+    assert result.after.portfolio_value == 100595
+    for symbol in before.keys() - {None, "SYN_PAPER_WIN"}:
+        assert before[symbol].value == after[symbol].value
+
+
+def test_fully_sold_holding_is_not_retained_as_a_fake_slice(executions, prices, hhi_history, peer_context):
+    result = _simulate(_trade(side="SELL", quantity=450), executions, prices, hhi_history, peer_context)
+    assert result.simulation_status == "complete"
+    assert any(row.symbol == "SYN_PAPER_WIN" for row in result.before.allocations)
+    assert not any(row.symbol == "SYN_PAPER_WIN" for row in result.after.allocations)
 
 
 def test_before_and_after_state_values_are_read_from_vectorbt(

@@ -28,9 +28,15 @@ const PositionEpisodePage = lazy(async () => ({ default: (await import("@/pages/
 const DataAccountsPage = lazy(async () => ({ default: (await import("@/pages/DataAccountsPage")).DataAccountsPage }));
 const HistoryWorkspace = lazy(async () => ({ default: (await import("@/workspace/HistoryWorkspace")).HistoryWorkspace }));
 const ReviewWorkspace = lazy(async () => ({ default: (await import("@/workspace/ReviewWorkspace")).ReviewWorkspace }));
+const AgentWorkspace = lazy(async () => ({ default: (await import("@/workspace/AgentWorkspace")).AgentWorkspace }));
 const PretradeWorkspace = lazy(async () => ({ default: (await import("@/workspace/PretradeWorkspace")).PretradeWorkspace }));
 const DataWorkspace = lazy(async () => ({ default: (await import("@/workspace/DataWorkspace")).DataWorkspace }));
 const SettingsWorkspace = lazy(async () => ({ default: (await import("@/workspace/SettingsWorkspace")).SettingsWorkspace }));
+const AnalysisWorkspace = lazy(async () => ({ default: (await import("@/workspace/AnalysisWorkspace")).AnalysisWorkspace }));
+const SelfComparisonWorkspace = lazy(async () => ({ default: (await import("@/workspace/SelfComparisonWorkspace")).SelfComparisonWorkspace }));
+const ProfessionalComparisonWorkspace = lazy(async () => ({ default: (await import("@/workspace/ProfessionalComparisonWorkspace")).ProfessionalComparisonWorkspace }));
+const WelcomePage = lazy(async () => ({ default: (await import("@/workspace/WelcomePage")).WelcomePage }));
+const WelcomeEntry = lazy(async () => ({ default: (await import("@/workspace/WelcomePage")).WelcomeEntry }));
 
 const routeElements: Partial<Record<ProductRouteId, React.ReactNode>> = {
   overview: <Navigate to="/investments" replace />,
@@ -82,17 +88,21 @@ export default function App() {
           <TooltipProvider delayDuration={360} skipDelayDuration={120}>
             <HashRouter>
               <Routes>
+                <Route index element={load(<WelcomeEntry />)} />
+                <Route path="/welcome" element={load(<WelcomePage />)} />
                 <Route element={<WorkspaceShell />}>
-                  <Route index element={<Navigate to="/investments" replace />} />
                   {productRoutes.map((definition) => {
                     const element = workspacePages[definition.id] ?? routeElements[definition.id];
                     const legacy = !workspacePages[definition.id] && ["review", "review_decisions", "review_patterns", "twin", "pretrade", "advanced_evidence"].includes(definition.id);
                     return element ? <Route key={definition.id} path={definition.path} element={load(legacy ? <LegacyExample>{element}</LegacyExample> : element)} /> : null;
                   })}
                   <Route path="/history" element={load(<HistoryWorkspace />)} />
-                  <Route path="/comparison" element={load(<HistoryWorkspace initialSection="comparison" />)} />
+                  <Route path="/analysis" element={load(<AnalysisWorkspace />)} />
+                  <Route path="/comparison" element={<Navigate to="/analysis" replace />} />
+                  <Route path="/comparison/history" element={load(<SelfComparisonWorkspace />)} />
+                  <Route path="/comparison/professional" element={load(<ProfessionalComparisonWorkspace />)} />
                   <Route path="/journal" element={load(<ReviewWorkspace view="journal" />)} />
-                  <Route path="/ask" element={load(<ReviewWorkspace view="ask" />)} />
+                  <Route path="/ask" element={load(<AgentWorkspace />)} />
                   {legacyRoutePaths().map((path) => (
                     <Route key={`legacy:${path}`} path={path} element={<LegacyRouteRedirect />} />
                   ))}

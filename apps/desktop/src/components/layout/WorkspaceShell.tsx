@@ -9,6 +9,7 @@ import { InspectorProvider } from "@/components/inspector/InspectorContext";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDataMode } from "@/data/DataModeProvider";
+import { exampleAccountLabel } from "@/data/accountContext";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/locales/LocaleProvider";
 import {
@@ -27,7 +28,7 @@ import { isClassicWorkspace } from "@/workspace/workspaceMode";
 function WorkspaceShellContent() {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [commandOpen, setCommandOpen] = useState(false);
   const data = useDataMode();
   const currentRouteId = activeNavigationRouteId(location.pathname);
@@ -101,7 +102,7 @@ function WorkspaceShellContent() {
             {!data.accounts.length ? <option value="none">{t("My account · not imported")}</option> : null}
             {data.accounts.map((account) => <option key={JSON.stringify([account.subject_id, account.account_id])} value={`real:${JSON.stringify([account.subject_id, account.account_id])}`}>{account.display_name}</option>)}
             <optgroup label={t("Example accounts · Synthetic")}>
-              {data.examples.map((account) => <option key={account.key} value={`example:${account.key}`}>{t(account.label)}</option>)}
+              {data.examples.map((account) => <option key={account.key} value={`example:${account.key}`}>{exampleAccountLabel(account, locale)}</option>)}
             </optgroup>
           </select>
         </div>
@@ -137,7 +138,7 @@ function WorkspaceShellContent() {
 
         <div className="workspace-sidebar__footer">
           <strong className="text-xs text-foreground">{t(data.mode === "demo" ? "Example account · Synthetic" : data.activeAccount ? "Real account · Local" : "No account")}</strong>
-          <p>{data.mode === "demo" ? t(data.exampleAccount.label) : data.activeAccount?.display_name ?? t("Import data to begin")}</p>
+          <p>{data.mode === "demo" ? exampleAccountLabel(data.exampleAccount, locale) : data.activeAccount?.display_name ?? t("Import data to begin")}</p>
         </div>
       </aside>
 

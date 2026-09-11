@@ -87,6 +87,7 @@ export interface BackendPositionEpisodeSnapshot {
 
 export interface BackendPositionEpisodeEntry {
   review_presentation?: unknown;
+  lens_review?: unknown;
   instrument: {
     instrument_id: string;
     display_name: string | null;
@@ -184,6 +185,8 @@ export interface PositionEpisodeSnapshotView {
 
 export interface PositionEpisodeEntryView {
   reviewPresentation: EpisodeReview | null;
+  /** An optional projection; validated independently so a Lens cannot hide the actual ledger. */
+  lensReview?: unknown;
   instrument: {
     instrumentId: string;
     displayName: string;
@@ -802,7 +805,7 @@ function adaptEntry(entry: BackendPositionEpisodeEntry, expectedTier: "synthetic
       instrumentId: episode.instrumentId,
       displayName,
       isSynthetic: entry.instrument.is_synthetic,
-      currency: expectedTier === "synthetic" ? "CNY" : entry.instrument.currency ?? null,
+      currency: entry.instrument.currency ?? (expectedTier === "synthetic" ? "CNY" : null),
       dataTier: expectedTier,
     },
     episode,
@@ -817,6 +820,7 @@ function adaptEntry(entry: BackendPositionEpisodeEntry, expectedTier: "synthetic
     })),
     pathAnalysis,
     reviewPresentation: adaptEpisodeReview(entry.review_presentation, episode, pathAnalysis),
+    lensReview: entry.lens_review,
     outcomeStory,
   };
 }

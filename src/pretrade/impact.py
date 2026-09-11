@@ -71,6 +71,21 @@ class ProposedTrade:
 
 
 @dataclass(frozen=True, slots=True)
+class AllocationComponent:
+    """Replay values, with account and existing HHI denominators kept separate.
+
+    This is a direct holding, not an inferred fund constituent or industry.
+    Cash has no security-only weight. Names are never inferred from symbols.
+    """
+
+    symbol: str | None
+    kind: Literal["security", "cash"]
+    value: float
+    account_weight: float
+    security_weight: float | None
+
+
+@dataclass(frozen=True, slots=True)
 class PortfolioImpactState:
     """State read from vectorbt; symbol_weight uses total portfolio value.
 
@@ -85,6 +100,8 @@ class PortfolioImpactState:
     valuation_price: float
     hhi: float
     active_assets: int
+    allocations: tuple[AllocationComponent, ...] = ()
+    valuation_observation_date: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -270,6 +287,17 @@ def _state_from_replay(
         valuation_price=valuation_price,
         hhi=float(hhi.hhi),
         active_assets=hhi.active_asset_count,
+        allocations=(
+            AllocationComponent(None, "cash", cash, cash / portfolio_value, None),
+            *(AllocationComponent(
+                component.symbol,
+                "security",
+                float(asset_values[component.symbol]),
+                float(asset_values[component.symbol]) / portfolio_value,
+                component.weight,
+            ) for component in sorted(hhi.weight_components, key=lambda item: item.symbol)),
+        ),
+        valuation_observation_date=hhi.as_of_time.date().isoformat(),
     )
 
 
@@ -343,17 +371,28 @@ def simulate_trade_impact(
     peer_members: Iterable[CohortMember],
     peer_metric_values: Iterable[PeerMetricValue],
     calculation_code_version: str,
+    include_peer_context: bool = True,
 ) -> TradeImpact:
     """Replay current and hypothetical states without mutating canonical facts."""
 
     rejection = _trade_rejection_reason(proposed_trade)
     if rejection is not None:
         return _result(proposed_trade, "rejected", rejection)
-    if proposed_trade.proposed_time.normalize() != cohort_definition.observation_end:
+    if include_peer_context and proposed_trade.proposed_time.normalize() != cohort_definition.observation_end:
         return _result(
             proposed_trade,
             "insufficient_evidence",
             "Proposed trade date is not aligned to the synthetic cohort observation end",
+        )
+    if not include_peer_context and (
+        not hhi_history.points
+        or proposed_trade.proposed_time.normalize()
+        != hhi_history.points[-1].as_of.normalize()
+    ):
+        return _result(
+            proposed_trade,
+            "insufficient_evidence",
+            "Proposed trade date is not aligned to the registered account source as of",
         )
 
     try:
@@ -444,6 +483,28 @@ def simulate_trade_impact(
             data_tier="synthetic",
             calculation_code_version=calculation_code_version,
         )
+        if not include_peer_context:
+            self_context = _self_context(
+                proposed_trade,
+                hhi_history,
+                current_hhi=before.hhi,
+                proposed_hhi=after.hhi,
+            )
+            return _result(
+                proposed_trade,
+                "complete",
+                None,
+                before=before,
+                after=after,
+                delta=TradeImpactDelta(
+                    cash=after.cash - before.cash,
+                    symbol_weight=after.symbol_weight - before.symbol_weight,
+                    hhi=after.hhi - before.hhi,
+                ),
+                self_context=self_context,
+                before_hhi_evidence_id=before_record.evidence_id,
+                after_hhi_evidence_id=after_record.evidence_id,
+            )
         members = tuple(peer_members)
         peer_hhi_values = tuple(
             item

@@ -1,0 +1,121 @@
+.mirror-orb-visual {
+  --mirror-orb-accent: var(--accent, 181 58% 58%);
+  --mirror-orb-ease: var(--ease-mirror, cubic-bezier(0.22, 1, 0.36, 1));
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+  transform-style: preserve-3d;
+}
+
+.mirror-orb__halo {
+  position: absolute;
+  inset: -17%;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsl(var(--mirror-orb-accent) / 0.26), transparent 67%);
+  filter: blur(9px);
+  opacity: 0.5;
+  transform: translateZ(-2px);
+  transition: opacity 220ms ease, transform 220ms var(--mirror-orb-ease);
+}
+
+.mirror-orb__lens {
+  position: absolute;
+  inset: 5%;
+  overflow: hidden;
+  border: 1px solid rgba(220, 255, 255, 0.3);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 33% 25%, rgba(255, 255, 255, 0.54), transparent 13%),
+    radial-gradient(circle at 67% 74%, rgba(90, 185, 201, 0.35), transparent 36%),
+    radial-gradient(circle at 50% 50%, rgba(43, 70, 88, 0.72), rgba(7, 12, 20, 0.94) 72%);
+  box-shadow:
+    inset 7px 7px 18px rgba(255, 255, 255, 0.12),
+    inset -9px -12px 22px rgba(0, 0, 0, 0.46),
+    0 7px 24px rgba(57, 166, 183, 0.14);
+  transform: translateZ(8px);
+  animation: orb-breathe 8s ease-in-out infinite;
+}
+
+.mirror-orb__caustic {
+  position: absolute;
+  inset: -38%;
+  border-radius: 45%;
+  background: conic-gradient(from 18deg, transparent 0 22%, rgba(145, 237, 242, 0.32) 31%, transparent 42% 67%, rgba(139, 145, 235, 0.22) 77%, transparent 88%);
+  filter: blur(3px);
+  opacity: 0.72;
+  animation: orb-caustic 17s linear infinite;
+}
+
+.mirror-orb__core {
+  position: absolute;
+  inset: 30%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #eaffff, #72d2db 38%, rgba(52, 103, 132, 0.16) 74%);
+  box-shadow: 0 0 18px rgba(115, 225, 232, 0.38);
+  opacity: 0.72;
+  transition: translate 90ms linear, opacity 220ms ease, transform 320ms var(--mirror-orb-ease), box-shadow 220ms ease;
+}
+
+.mirror-orb__reflection {
+  position: absolute;
+  top: 8%;
+  left: 18%;
+  width: 54%;
+  height: 27%;
+  border-radius: 50%;
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.65), rgba(203, 253, 255, 0.03));
+  filter: blur(0.4px);
+  opacity: 0.7;
+  transform: rotate(-24deg);
+  transition: translate 120ms linear, transform 320ms var(--mirror-orb-ease), opacity 220ms ease;
+}
+
+.mirror-orb__rim {
+  position: absolute;
+  inset: 1px;
+  border: 1px solid rgba(227, 255, 255, 0.22);
+  border-right-color: rgba(116, 157, 207, 0.18);
+  border-bottom-color: rgba(4, 8, 15, 0.65);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.045);
+}
+
+.mirror-orb-visual[data-state="hover"] .mirror-orb__halo,
+.mirror-orb-visual[data-state="active"] .mirror-orb__halo {
+  opacity: 0.76;
+  transform: translateZ(-2px) scale(1.08);
+}
+
+.mirror-orb-visual[data-state="hover"] .mirror-orb__reflection {
+  opacity: 0.9;
+  transform: translate(5%, 4%) rotate(-17deg);
+}
+
+.mirror-orb-visual[data-state="active"] .mirror-orb__core {
+  opacity: 0.98;
+  box-shadow: 0 0 22px rgba(119, 228, 236, 0.55);
+}
+
+.mirror-orb-visual[data-state="thinking"] .mirror-orb__caustic {
+  animation-duration: 2.8s;
+  opacity: 1;
+}
+
+.mirror-orb-visual[data-state="thinking"] .mirror-orb__core {
+  animation: orb-thinking 1.7s ease-in-out infinite;
+}
+
+@keyframes orb-breathe {
+  0%, 100% { transform: translate3d(0, 0, 8px) scale(1); }
+  50% { transform: translate3d(0, -1px, 8px) scale(1.012); }
+}
+
+@keyframes orb-caustic {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes orb-thinking {
+  0%, 100% { transform: scale(0.9); opacity: 0.65; }
+  50% { transform: scale(1.09); opacity: 1; }
+}

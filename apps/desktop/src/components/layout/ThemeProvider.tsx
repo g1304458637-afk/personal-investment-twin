@@ -1,6 +1,7 @@
 import { createContext, useContext, useLayoutEffect, useMemo, useState } from "react";
+import { applyTheme, resolveTheme, type Theme } from "@/lib/theme";
 
-export type Theme = "dark" | "light";
+export type { Theme } from "@/lib/theme";
 
 interface ThemeContextValue {
   theme: Theme;
@@ -11,17 +12,14 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function getInitialTheme(): Theme {
-  const requested = new URLSearchParams(window.location.search).get("theme");
-  return requested === "light" ? "light" : "dark";
+  return resolveTheme(window.location.search);
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
   useLayoutEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle("dark", theme === "dark");
-    root.dataset.theme = theme;
+    applyTheme(document.documentElement, theme);
   }, [theme]);
 
   const value = useMemo<ThemeContextValue>(

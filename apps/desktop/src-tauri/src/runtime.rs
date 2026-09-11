@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::HashMap;
-#[cfg(debug_assertions)]
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -15,7 +14,18 @@ const PROTOCOL_VERSION: &str = "1";
 #[cfg(not(debug_assertions))]
 const SIDECAR_NAME: &str = "toujing-core";
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
+// Packaged cold account-context construction includes analytics imports and
+// replay compilation (cold QA exceeded 180s under concurrent desktop load). Only initial context
+// gets this deadline; start reuses fingerprint-bound facts, never a cached answer.
+const REVIEW_CONTEXT_TIMEOUT: Duration = Duration::from_secs(300);
 const STARTUP_TIMEOUT: Duration = Duration::from_secs(90);
+fn request_timeout(method: &str) -> Duration {
+    if method == "review.context" {
+        REVIEW_CONTEXT_TIMEOUT
+    } else {
+        REQUEST_TIMEOUT
+    }
+}
 const PRODUCT_METHODS: &[&str] = &[
     "ingestion.preview_trade_csv",
     "ingestion.commit_trade_import",
@@ -71,7 +81,11 @@ pub struct RuntimeManager {
     pending: Pending,
     alive: Arc<AtomicBool>,
     next_request: AtomicU64,
+    pub(crate) app_data: PathBuf,
 }
+
+#[cfg(debug_assertions)]
+use std::path::Path;
 
 #[cfg(debug_assertions)]
 fn project_root() -> PathBuf {
@@ -155,6 +169,10 @@ impl RuntimeManager {
             .args(["--db-path", db_arg.as_str()]);
 
         let (mut events, child) = command
+            // A packaged desktop must not inherit verbose model/tool payload logging.
+            .env("OPENAI_AGENTS_DONT_LOG_MODEL_DATA", "1")
+            .env("OPENAI_AGENTS_DONT_LOG_TOOL_DATA", "1")
+            .env("OPENAI_LOG", "warning")
             .spawn()
             .map_err(|error| format!("failed to start core runtime: {error}"))?;
         let pending: Pending = Arc::new(Mutex::new(HashMap::new()));
@@ -189,10 +207,18 @@ impl RuntimeManager {
             pending,
             alive,
             next_request: AtomicU64::new(1),
+            app_data,
         };
-        let handshake = manager
+        let handshake = match manager
             .request_with_timeout("runtime.handshake", json!({}), STARTUP_TIMEOUT)
-            .await?;
+            .await
+        {
+            Ok(response) => response,
+            Err(error) => {
+                manager.kill();
+                return Err(error);
+            }
+        };
         if !handshake.ok
             || handshake
                 .result
@@ -208,7 +234,7 @@ impl RuntimeManager {
     }
 
     pub async fn request(&self, method: &str, params: Value) -> Result<RuntimeResponse, String> {
-        self.request_with_timeout(method, params, REQUEST_TIMEOUT)
+        self.request_with_timeout(method, params, request_timeout(method))
             .await
     }
 
@@ -321,6 +347,19 @@ pub async fn runtime_product_request(
             "the desktop command only permits registered product methods",
         ));
     }
+    let params = if method == "review.start" {
+        let params = crate::model_settings::with_saved_key(params).await?;
+        crate::model_settings::with_optional_search(params, &manager.app_data).await?
+    } else {
+        // Internal credentials are never accepted on general product requests.
+        if params.get("_desktop_model_key").is_some()
+            || params.get("_desktop_bocha_key").is_some()
+            || params.get("_desktop_search_enabled").is_some()
+        {
+            return Err("invalid_params".into());
+        }
+        params
+    };
     manager.request(&method, params).await
 }
 
@@ -336,6 +375,14 @@ pub fn install(builder: tauri::Builder<tauri::Wry>) -> tauri::Builder<tauri::Wry
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn cold_review_context_has_a_bounded_separate_deadline() {
+        assert_eq!(request_timeout("review.context"), Duration::from_secs(300));
+        for method in ["review.start", "review.poll", "account.list", "runtime.health"] {
+            assert_eq!(request_timeout(method), Duration::from_secs(30));
+        }
+    }
 
     #[test]
     fn malformed_response_fails_all_pending_requests() {
@@ -394,6 +441,9 @@ mod tests {
     fn product_allowlist_excludes_shell_and_sql() {
         assert!(!PRODUCT_METHODS.contains(&"shell.execute"));
         assert!(!PRODUCT_METHODS.contains(&"sql.query"));
+        assert!(!PRODUCT_METHODS.contains(&"model.test_connection"));
+        assert!(!PRODUCT_METHODS.contains(&"search.test_connection"));
+        assert!(!PRODUCT_METHODS.contains(&"quotes.status"));
         assert!(PRODUCT_METHODS.contains(&"episode.get"));
     }
 }

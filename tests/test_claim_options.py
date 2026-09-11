@@ -15,6 +15,7 @@ from src.agents.decision_review import (Hypothesis, ReviewSelection, ReviewVerif
     prepare_finalization_options, expand_finalization, validate_finalization, verify_selection)
 from src.agents.review_catalog import build_review_catalog
 from src.agents.structured_finalizer import FinalizerOutputSchema
+from src.agents.review_answer import answer_choice_type
 from src.compare.demo import build_pair
 from test_decision_review_agent import note, selection
 from test_review_claim_contract import positive_path_own  # Existing real Path fixture.
@@ -38,6 +39,45 @@ def choice(options, *, kinds=("unknown",), facts=(), history=()):
         historical_option_ids=[o.option_id for o in options.historical_options if set(o.evidence_refs) & set(history)],
         claim_option_ids=[next(o.option_id for o in options.claim_options if o.claim_kind == k) for k in kinds],
         question_kind="need_contemporaneous_records")
+
+
+@pytest.mark.parametrize("with_answer", [False, True])
+def test_uncertainty_exclusive_on_wire_and_local_even_for_forged_choice(pair, with_answer):
+    context = read(build_review_catalog(pair.a, notes=(note(pair),)))
+    options = prepare_finalization_options(context)
+    output_type = options.choice_type(ReviewSelection)
+    if with_answer:
+        output_type = answer_choice_type(output_type, ())
+    schema = FinalizerOutputSchema(output_type)
+    validator = Draft202012Validator(schema.json_schema())
+    base = choice(options).model_dump()
+    if with_answer:
+        base.update(answer_focus="available_facts", finding_option_ids=[])
+    unknown = next(o.option_id for o in options.claim_options if o.claim_kind == "unknown")
+    supported = [o.option_id for o in options.claim_options if o.claim_kind != "unknown"]
+    assert supported
+    for ids in ([unknown], *([x] for x in supported), supported):
+        raw = base | {"claim_option_ids": ids}
+        assert not list(validator.iter_errors(raw))
+        parsed = schema.validate_json(json.dumps(raw))
+        validate_finalization(expand_finalization(parsed, options), context)
+    for ids in ([], [unknown, supported[0]], [supported[0], unknown], [unknown, unknown]):
+        raw = base | {"claim_option_ids": ids}
+        assert list(validator.iter_errors(raw))
+        with pytest.raises(ModelBehaviorError):
+            schema.validate_json(json.dumps(raw))
+    forged = output_type.model_construct(**(base | {"claim_option_ids": [unknown, supported[0]]}))
+    with pytest.raises(ReviewVerificationError, match="uncertainty_option_conflict"):
+        options.expand(forged)
+
+
+def test_unknown_only_catalog_keeps_valid_terminal_option(pair):
+    context = read(build_review_catalog(pair.a))
+    options = prepare_finalization_options(context)
+    options = replace(options, claim_options=tuple(o for o in options.claim_options if o.claim_kind == "unknown"))
+    schema = FinalizerOutputSchema(options.choice_type(ReviewSelection))
+    raw = choice(options).model_dump()
+    assert schema.validate_json(json.dumps(raw)).claim_option_ids == raw["claim_option_ids"]
 
 
 def test_comparison_context_contains_b_but_no_claim_option_can_use_b(pair):

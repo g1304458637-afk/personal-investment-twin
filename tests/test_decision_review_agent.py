@@ -97,10 +97,15 @@ def test_native_sdk_loop_calls_real_tools_and_preserves_financial_facts(pair):
     assert context.retrieved == set()  # receipts cannot leak into a subsequent run
 
 
-def test_no_counterevidence_tool_means_no_accepted_final_output(pair):
+def test_omitted_counterevidence_is_really_read_before_finalization(pair):
     context = build_review_catalog(pair.a)
-    with pytest.raises(ReviewVerificationError, match="not_executed"):
-        execute(context, choose_options("unknown"), contradict=False)
+    result, model = execute(context, choose_options("unknown"), contradict=False)
+    from review_option_helpers import input_payload
+    payload = input_payload(model.inputs[-1])
+    assert any(r["stance"] == "contradict" for r in payload["executed_tool_receipts"])
+    assert payload["contradiction_search_returned_refs"]
+    assert result["facts"] and not context.searched
+    assert model.calls == 6  # Missing local read does not add a model turn.
 
 
 def test_reference_existence_is_not_sufficient_grounding(pair):
@@ -192,9 +197,10 @@ def test_revoked_context_cannot_accept_previously_retrieved_evidence(pair):
         verify_selection(selection(context), context)
 
 
-def test_missing_registered_history_tool_is_not_an_accepted_run(pair):
+def test_missing_registered_history_is_read_before_answer(pair):
     context = build_review_catalog(pair.a)
     model = ScriptedModel([("get_episode_facts", {}), ("search_review_facts", {"stance": "support", "topic": "all"}),
         ("search_review_facts", {"stance": "contradict", "topic": "all"}), ("get_self_history", {}), "内部分析", choose_options("unknown")])
-    with pytest.raises(ReviewVerificationError, match="not_executed"):
-        asyncio.run(run_decision_review("我一直这样吗？", context, runtime=runtime(model)))
+    result = asyncio.run(run_decision_review("我一直这样吗？", context, runtime=runtime(model)))
+    assert "get_registered_historical_comparisons" in result["executed_tools"]
+    assert model.calls == 6

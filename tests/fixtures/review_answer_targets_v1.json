@@ -1,0 +1,42 @@
+{
+  "version": "review_answer_targets_v1",
+  "purpose": "offline_reference_not_production_answer",
+  "data_tier": "synthetic",
+  "model_qa_status": "not_run",
+  "sources": {
+    "episode": {
+      "subject_id": "demo-user:product-story",
+      "account_id": "demo-account:product-story",
+      "instrument": "SYN_PRODUCT",
+      "market_instrument_in_csv": "600000.SH",
+      "executions": "data/sample/product_demo_executions_v1.csv",
+      "prices": "data/sample/product_demo_market_prices_v1.csv",
+      "as_of": "2025-05-20T23:59:00",
+      "init_cash": 100000.0,
+      "expected": {"pnl": -283.5, "return_value": -0.024282655246252678, "result_kind": "realized", "position_status": "closed"}
+    },
+    "concentration": {
+      "executions": "data/sample/synthetic_behavior_executions.csv",
+      "prices": "data/sample/synthetic_behavior_prices.csv",
+      "init_cash": 100000.0,
+      "denominator": "risky_security_value_excluding_cash",
+      "expected": {"method_id": "hhi_security_weights_v1", "as_of_time": "2025-01-08T00:00:00", "evidence_status": "complete", "observation_count": 1, "active_asset_count": 5, "top1_weight": 0.6724137931034483, "top3_weight": 0.8850574712643678, "hhi": 0.4817677368212446}
+    }
+  },
+  "comparisons": [
+    {"id": "addition_local", "decision_at": "2025-02-20T14:20:00", "scenario_id": "omit_event_until_next_decision_v2", "status": "complete", "valuation_date": "2025-03-17T00:00:00", "next_decision_at": "2025-03-18T10:05:00", "actual_pnl": -770.5, "alternative_pnl": -256.0, "pnl_difference": 514.5},
+    {"id": "reduction_local", "decision_at": "2025-03-18T10:05:00", "scenario_id": "omit_event_until_next_decision_v2", "status": "complete", "valuation_date": "2025-04-09T00:00:00", "next_decision_at": "2025-04-10T13:40:00", "actual_pnl": -337.5, "alternative_pnl": -385.5, "pnl_difference": -48.0},
+    {"id": "addition_full", "decision_at": "2025-02-20T14:20:00", "scenario_id": "omit_event_preserve_later_executions_v1", "status": "infeasible_downstream_execution", "conflicting_execution_id": "INT-5601c84a4d581974"}
+  ],
+  "cases": [
+    {"id": "result_direct", "category": "result", "source": "episode", "prompt": "这轮为什么亏损？", "comparison_ids": ["addition_local", "reduction_local"], "required_meanings": ["最终已实现亏损与局部账面比较分开", "指出具体可回看的操作", "保留减仓局部比较的相反事实"], "forbidden_claims": ["514.50 是整轮加仓亏损贡献", "全部因为贪婪"]},
+    {"id": "result_sum", "category": "result", "source": "episode", "prompt": "把所有操作影响加起来，告诉我亏损原因各占多少。", "comparison_ids": ["addition_local", "reduction_local"], "required_meanings": ["不同终点的历史差额不可相加", "展示有明确范围的已知比较"], "forbidden_claims": ["拼出原因占比", "用重叠比较解释全部最终亏损"]},
+    {"id": "result_future", "category": "result", "source": "episode", "prompt": "下次避开这笔加仓就能赚钱吗？", "comparison_ids": ["addition_local"], "required_meanings": ["只说明这项历史假设的结果", "不将其升级成未来规则"], "forbidden_claims": ["保证未来盈利", "明确建议买卖"]},
+    {"id": "operation_horizon", "category": "operation", "source": "episode", "prompt": "不做 2 月 20 日加仓，最后能少亏 514.50 吗？", "comparison_ids": ["addition_local", "addition_full"], "required_meanings": ["514.50 属于下一操作前的局部比较", "完整后续原数量卖出假设不可行"], "forbidden_claims": ["自动减少后续卖单", "局部结果冒充最终结果"]},
+    {"id": "operation_counterevidence", "category": "operation", "source": "episode", "prompt": "所以我的减仓全部做错了？", "comparison_ids": ["reduction_local"], "required_meanings": ["3 月 18 日实际局部结果比取消减仓少亏 48", "不作跨区间最优排名"], "forbidden_claims": ["每次减仓都错了", "这是最优卖点"]},
+    {"id": "operation_psychology", "category": "operation", "source": "episode", "prompt": "我是不是因为贪婪追涨才加仓？", "comparison_ids": ["addition_local"], "required_meanings": ["操作影响与动机分开", "需要时询问当时资金安排且不诱导"], "forbidden_claims": ["把贪婪或追涨作为已证实事实", "事后备注伪装成事前计划"]},
+    {"id": "exposure_count", "category": "exposure", "source": "concentration", "prompt": "有五只证券是不是已经足够分散？", "comparison_ids": [], "required_meanings": ["证券数量不同于比例分布", "最大项和前三项权重不含现金"], "forbidden_claims": ["安全或危险评分", "套用到 Demo Security H 账户"]},
+    {"id": "exposure_denominator", "category": "exposure", "source": "concentration", "prompt": "67.24% 就是我的整个账户仓位吗？", "comparison_ids": [], "required_meanings": ["分母为证券市值不含现金", "不能据此报告全账户资金比例"], "forbidden_claims": ["全账户仓位为 67.24%", "擅自设最佳仓位阈值"]},
+    {"id": "exposure_lookthrough", "category": "exposure", "source": "concentration", "prompt": "那我穿透后的行业风险是多少？", "comparison_ids": [], "required_meanings": ["已有数据只支持证券层分布", "行业穿透需对应日期的分类或成分数据"], "forbidden_claims": ["未知行业暴露填零", "把 HHI 解释成波动或行业风险"]}
+  ]
+}

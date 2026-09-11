@@ -37,7 +37,10 @@ def test_actual_installed_sdk_structured_mapping_and_schema_regression():
     assert set(summary["top_level_required"]) == {"factual_refs", "historical_comparison_refs", "possible_explanations", "question_kind"}
     assert mapping["format"]["schema"] == output.json_schema()
     assert mapping["format"]["schema"]["additionalProperties"] is False
-    assert summary["schema_sha256"] == "ff4d1ebd7f029111cde82fa001b742c1d80abf4924b618a6c35e5b665210127c"
+    # The evidence lists intentionally no longer inherit display-size limits.
+    assert "maxItems" not in mapping["format"]["schema"]["properties"]["factual_refs"]
+    assert "maxItems" not in mapping["format"]["schema"]["properties"]["historical_comparison_refs"]
+    assert summary["schema_sha256"] == "c2c49cebbbc37d47cb31d0f6401cb98056661f3b29d3314865090ca91953edc0"
     assert wire_format_summary({})["schema_present"] is False
 
 

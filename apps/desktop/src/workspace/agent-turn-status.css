@@ -1,0 +1,13 @@
+.agent-turn-status { display: flex; align-items: flex-start; gap: 10px; max-width: 680px; padding: 12px 14px; border: 1px solid rgba(170, 198, 220, .18); border-radius: 12px; color: var(--iw-muted, #a6b5c4); background: rgba(166, 191, 214, .045); }
+.agent-turn-status strong { display: block; color: inherit; font-size: 13px; font-weight: 500; }
+.agent-turn-status p { margin: 4px 0 0; font-size: 13px; line-height: 1.7; }
+.agent-turn-status small { display: block; margin-top: 8px; font-size: 11px; letter-spacing: .03em; }
+.agent-turn-status--running { color: #acd3e7; }
+.agent-turn-status--failed { color: #dccba8; border-color: rgba(210, 182, 120, .25); }
+.agent-turn-status--stopped { color: var(--iw-muted, #a6b5c4); }
+.agent-turn-status__pulse { width: 8px; height: 8px; flex: 0 0 auto; margin-top: 6px; border-radius: 50%; background: currentColor; animation: agent-turn-status-pulse 1.8s ease-in-out infinite; }
+@keyframes agent-turn-status-pulse { 50% { opacity: .42; transform: scale(.75); } }
+@media (prefers-reduced-motion: reduce) { .agent-turn-status__pulse { animation: none; } }
+[data-theme="light"] .agent-turn-status--failed { color: #735921; }
+[data-theme="light"] .agent-turn-status { --iw-muted: #526b7b; }
+[data-theme="light"] .agent-turn-status--running { color: #225773; }

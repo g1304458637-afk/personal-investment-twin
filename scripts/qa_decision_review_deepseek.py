@@ -400,6 +400,8 @@ async def diagnose(context, secret, question=None):
              historical_refs=[r["ref"] for r in result["historical_comparisons"]],
              possible_explanations=result["possible_explanations"], question_kind=result["question_kind"])
         emit("accepted_quality_facts", facts=accepted_quality_facts(result, qa_context))
+        # Existing Synthetic-only scope; composed bounded text, never Stage 1 prose.
+        emit("accepted_answer", answer=result["answer"])
         state["qa_status"] = "PASS"
     except Exception as exc:
         cause = exc.__cause__ or exc.__context__

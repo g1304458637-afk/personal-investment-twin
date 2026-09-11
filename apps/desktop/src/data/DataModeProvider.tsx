@@ -4,8 +4,10 @@ import { isTauriRuntime, realUserApi, type RuntimeAccount } from "./runtimeServi
 import { readCurrentAccounts } from "./currentAccountRead";
 import { positionEpisodeDemo } from "./backendEvidence";
 import { exampleAccounts, type ExampleAccount } from "./accountContext";
+import { showcaseDemo } from "./showcaseDemo";
+import { reviewSessions } from "./reviewService";
 
-const examples = exampleAccounts(positionEpisodeDemo.entries);
+const examples = exampleAccounts(positionEpisodeDemo.entries, () => showcaseDemo.showcase.display_name);
 const primary = positionEpisodeDemo.entries.find((entry) => entry.episode.episodeId === positionEpisodeDemo.defaultEpisodeId)!;
 const defaultExample = examples.find((account) => account.subjectId === primary.episode.subjectId && account.accountId === primary.episode.accountId)!;
 
@@ -46,6 +48,28 @@ export function DataModeProvider({ children }: { children: ReactNode }) {
     void refresh().catch(() => { /* Current failures are already displayed by refresh. */ });
     return () => { generation.current += 1; };
   }, []); // runtime lifecycle is app-scoped
+  useEffect(() => {
+    if (!runtimeAvailable || accountsLoading) return;
+    let cancelled = false;
+    // Allow first paint/account selection first. Warm one likely review, not a
+    // queue of every account's expensive histories. No model or public API call.
+    const timer = setTimeout(() => {
+      const warm = async () => {
+        if (mode === "demo" || !activeAccount) {
+          const account = mode === "demo" ? exampleAccount : defaultExample;
+          const entries = positionEpisodeDemo.entries.filter(entry => entry.episode.subjectId === account.subjectId && entry.episode.accountId === account.accountId);
+          const episode = entries.find(entry => entry.episode.episodeId === positionEpisodeDemo.defaultEpisodeId)?.episode ?? entries[0]?.episode;
+          if (episode && !cancelled) await reviewSessions.prefetch({subject_id:episode.subjectId, account_id:account.accountId, episode_id:episode.episodeId, data_mode:"synthetic_showcase"});
+        } else {
+          const result = await realUserApi.investments(activeAccount.subject_id, activeAccount.account_id);
+          const episode = result.episodes[0];
+          if (episode && !cancelled) await reviewSessions.prefetch({subject_id:activeAccount.subject_id, account_id:activeAccount.account_id, episode_id:episode.episode_id, data_mode:"real_user"});
+        }
+      };
+      void warm().catch(() => { /* Opening analysis offers a retry. */ });
+    }, 800);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [runtimeAvailable, accountsLoading, mode, activeAccount?.subject_id, activeAccount?.account_id, exampleAccount.key]);
   const setMode = (next: DataMode) => { setModeState(next); };
   const value = useMemo(() => ({ mode, setMode, accounts, activeAccount, setActiveAccount, refresh, runtimeAvailable, accountsLoading, accountError: error, examples, exampleAccount, setExampleAccount }), [mode, accounts, activeAccount, runtimeAvailable, accountsLoading, error, exampleAccount]);
   return <Context.Provider value={value}>{children}</Context.Provider>;

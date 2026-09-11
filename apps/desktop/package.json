@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "check": "tsc -b",
     "preview": "vite preview --host 127.0.0.1",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "bundle:local": "tauri build --bundles app --config src-tauri/tauri.local-adhoc.conf.json"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",
@@ -24,6 +25,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "echarts": "^6.1.0",
+    "klinecharts": "10.0.3",
     "lucide-react": "^1.39.0",
     "motion": "^13.1.1",
     "react": "^19.2.8",

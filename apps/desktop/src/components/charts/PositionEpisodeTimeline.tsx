@@ -51,6 +51,7 @@ export function PositionEpisodeTimeline({
   chartGroup,
   timeNavigation,
   onSelectDecision,
+  showNavigator = true,
   className = "h-[360px] w-full",
 }: {
   entry: PositionEpisodeEntryView;
@@ -62,6 +63,8 @@ export function PositionEpisodeTimeline({
   chartGroup?: string;
   timeNavigation?: DailyTimeNavigationStore;
   onSelectDecision: (decisionId: string) => void;
+  /** The enclosing workspace owns the sole range control when false. */
+  showNavigator?: boolean;
 }) {
   const { locale, t, formatCurrency, formatNumber } = useLocale();
   const decisionLabel = useCallback(
@@ -194,7 +197,7 @@ export function PositionEpisodeTimeline({
       animationDuration: 420,
       animationEasing: "cubicOut",
       axisPointer: { link: [{ xAxisIndex: "all" }] },
-      grid: { left: 58, right: entry.snapshot ? 116 : 30, top: 48, bottom: 58 },
+      grid: { left: 64, right: 116, top: 48, bottom: showNavigator ? 58 : 30 },
       tooltip: {
         trigger: "axis",
         axisPointer: { type: "cross" },
@@ -286,7 +289,10 @@ export function PositionEpisodeTimeline({
         },
         splitLine: { lineStyle: { color: "rgba(148, 177, 204, .09)" } },
       },
-      dataZoom: dailyDataZoom(8, minValueSpan),
+      // Retain inside zoom for the shared store, but remove the duplicate slider.
+      dataZoom: showNavigator
+        ? dailyDataZoom(8, minValueSpan)
+        : dailyDataZoom(8, minValueSpan).filter((control) => control.type !== "slider"),
       series: [
         ...(bySegment("pre_entry").length
           ? [{
@@ -337,6 +343,15 @@ export function PositionEpisodeTimeline({
           showSymbol: false,
           connectNulls: false,
           lineStyle: { color: "rgba(188, 169, 255, .78)", width: costLineWidth, type: "dashed" },
+          endLabel: {
+            show: true,
+            formatter: `← ${t("Average cost")}`,
+            color: "#cdbfff",
+            fontSize: 11,
+            fontWeight: 600,
+            distance: 8,
+          },
+          labelLayout: { x: "86%", moveOverlap: "shiftY" },
           z: 3,
         },
         {
@@ -366,6 +381,7 @@ export function PositionEpisodeTimeline({
     highlightStart,
     locale,
     selectedDecisionId,
+    showNavigator,
     t,
     timeNavigation,
   ]);

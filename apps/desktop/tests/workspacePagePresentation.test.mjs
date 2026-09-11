@@ -17,12 +17,14 @@ test("investment workspace presents adapter-owned summaries and outcome values",
 
 test("episode workspace keeps marked outcomes dated and leaves charts wired to recorded state", async () => {
   const page = await source("../src/pages/PositionEpisodePage.tsx");
+  const workspace = await source("../src/components/charts/EpisodeChartWorkspace.tsx");
   assert.match(page, /result\.resultKind === "marked"/);
   assert.match(page, /result\.valuationAt/);
   assert.match(page, /This is a current mark, not a realized exit/);
-  assert.match(page, /<PositionEpisodeTimeline /);
-  assert.match(page, /<PositionQuantityTimeline /);
-  assert.match(page, /onSelectDecision=\{setSelectedDecisionId\}/);
+  assert.match(page, /<EpisodeChartWorkspace/);
+  assert.match(workspace, /<PositionEpisodeTimeline/);
+  assert.match(workspace, /<PositionQuantityTimeline/);
+  assert.match(page, /onSelectDecision=\{lensMode \? selectLensDecision : setSelectedDecisionId\}/);
   assert.doesNotMatch(page, /calculate(?:Pnl|Return|Portfolio)|Math\./);
 });
 

@@ -8,6 +8,7 @@ const {
   MS_PER_DAY,
   MIN_VISIBLE_DAILY_OBSERVATIONS,
   calendarDayTime,
+  dailyTimeCoordinate,
   clampVisibleDailyWindow,
   countDailyObservationsInRange,
   dailyDataZoom,
@@ -81,6 +82,15 @@ test("daily axis ticks collapse sub-day instants to one calendar date and never 
   assert.doesNotMatch(first, /\d{1,2}:\d{2}/);
 });
 
+test("date-only series values and their navigation domain share a local daily coordinate", () => {
+  const dateOnly = "2025-01-06";
+  const localMidnight = new Date(2025, 0, 6).getTime();
+  assert.equal(dailyTimeCoordinate(dateOnly), localMidnight);
+  assert.deepEqual(uniqueDailyObservationTimes([dateOnly]), [localMidnight]);
+  const execution = "2025-01-06T09:30:00+08:00";
+  assert.equal(dailyTimeCoordinate(execution), Date.parse(execution));
+});
+
 test("Episode charts lock observation-based zoom, persist across phase selection, and reset on Episode change", async () => {
   const axisSource = await readFile(new URL("../src/components/charts/dailyTimeAxis.ts", import.meta.url), "utf8");
   const chart = await readFile(new URL("../src/components/charts/EChart.tsx", import.meta.url), "utf8");
@@ -93,7 +103,8 @@ test("Episode charts lock observation-based zoom, persist across phase selection
   assert.match(chart, /clampVisibleDailyWindow/);
   assert.match(chart, /classifyTimeNavigationIntent/);
   assert.match(chart, /passive: false, capture: true/);
-  assert.match(chart, /if \(intent === "page-scroll"\) return/);
+  assert.match(chart, /if \(intent === "page-scroll"\) \{/);
+  assert.match(chart, /forwardChartPageScroll\(container, event\)/);
   assert.match(chart, /timeNavigationRef.current\?\.reset\(\)/);
   assert.match(price, /resetKey=\{entry.episode.episodeId\}/);
   assert.match(quantity, /resetKey=\{entry.episode.episodeId\}/);

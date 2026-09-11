@@ -14,11 +14,28 @@ export function calendarDayTime(value: number): number {
   return new Date(instant.getFullYear(), instant.getMonth(), instant.getDate()).getTime();
 }
 
+/**
+ * Daily-only backend series use a calendar date, not a UTC instant. Keep that
+ * date at local midnight so ECharts coordinates match the navigation domain.
+ * Full execution timestamps continue through Date.parse unchanged.
+ */
+export function dailyTimeCoordinate(value: string): number {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return Date.parse(value);
+  const year = Number(match[1]);
+  const month = Number(match[2]) - 1;
+  const day = Number(match[3]);
+  const local = new Date(year, month, day);
+  return local.getFullYear() === year && local.getMonth() === month && local.getDate() === day
+    ? local.getTime()
+    : Number.NaN;
+}
+
 export function uniqueDailyObservationTimes(timestamps: Array<string | null | undefined>): number[] {
   const days = new Set<number>();
   for (const item of timestamps) {
     if (!item) continue;
-    const parsed = Date.parse(item);
+    const parsed = dailyTimeCoordinate(item);
     if (Number.isNaN(parsed)) continue;
     days.add(calendarDayTime(parsed));
   }

@@ -1,0 +1,6 @@
+.glass-orb-logo { display:inline-block; position:relative; width:36px; height:36px; flex-shrink:0; border-radius:50%; overflow:hidden; isolation:isolate; box-shadow:0 0 13px #6caffb20; transition:filter .25s,box-shadow .25s; }
+.glass-orb-logo img { position:absolute; width:134%; height:134%; max-width:none; left:50%; top:51.5%; transform:translate(-50%,-50%) rotate(-7deg); animation:orb-drift 22s ease-in-out infinite alternate; }
+.glass-orb-logo--prominent { width:45px; height:45px; }.glass-orb-logo--prominent img { animation-duration:13s; }
+a:hover .glass-orb-logo { filter:brightness(1.12); box-shadow:0 0 18px #72adfa45; }
+@keyframes orb-drift { from{transform:translate(-50%,-50%) rotate(-7deg) scale(1)}to{transform:translate(-50%,-50%) rotate(17deg) scale(1.025)} }
+@media(prefers-reduced-motion:reduce) { .glass-orb-logo img { animation:none; }.glass-orb-logo { transition:none; } }

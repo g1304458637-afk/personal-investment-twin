@@ -9,9 +9,14 @@ empyrical-reloaded==0.5.12
 
 # Agent orchestration.
 openai-agents==0.22.0
+# Already installed transitively; explicit for DSA tool-schema validation.
+jsonschema==4.26.0
 
 # Existing environment version, now explicitly used for limited Episode signatures.
 cryptography==50.0.1
 
 # Reproducible macOS Apple Silicon production runtime build.
 pyinstaller==6.22.2
+
+# Public research quotes only. MIT. Not a quote SLA and not Evidence input.
+akshare==1.18.91

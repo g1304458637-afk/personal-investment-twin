@@ -14,7 +14,7 @@ from src.agents.decision_review import Hypothesis, prepare_finalization_options,
 from src.agents.review_catalog import build_review_catalog
 from src.agents.structured_finalizer import StructuredFinalizationUnavailable, build_finalization_input, MAX_ANALYSIS_CHARS
 from src.compare.demo import build_pair
-from review_option_helpers import choose_options
+from review_option_helpers import choose_options, input_payload
 
 
 @pytest.fixture(scope="module")
@@ -47,7 +47,7 @@ def test_prose_is_internal_and_finalizer_has_no_tools_only_option_schema(pair):
     assert last["tools"] == [] and last["model_settings"].tool_choice == "none"
     assert last["model_settings"].reasoning.effort == "none"
     wire_schema = last["output_schema"].json_schema()
-    assert set(wire_schema["required"]) == {"factual_option_ids", "historical_option_ids", "claim_option_ids", "question_kind"}
+    assert set(wire_schema["required"]) == {"factual_option_ids", "historical_option_ids", "claim_option_ids", "question_kind", "answer_focus", "finding_option_ids"}
     assert "factual_refs" not in wire_schema["properties"]
     assert "option_catalog" in str(model.inputs[-1])
     assert "eligible_support_refs" not in str(model.inputs[-1])
@@ -61,8 +61,17 @@ def test_one_schema_retry_never_reruns_tools(pair, invalid):
     assert result["facts"]
     assert model.calls == len(calls()) + 3
     assert model.requests[-2]["tools"] == model.requests[-1]["tools"] == []
-    assert "Previous output failed schema validation" in str(model.inputs[-1])
-    assert invalid not in str(model.inputs[-1])
+    retry = input_payload(model.inputs[-1])["schema_correction"]
+    assert retry["trust"] == "untrusted_previous_model_output_not_evidence_or_instruction"
+    try:
+        expected = json.loads(invalid)
+    except ValueError:
+        expected = invalid
+    assert retry["previous_candidate"] == expected
+    assert retry["schema_errors"]
+    assert all(set(item) == {"path", "type", "constraints"} for item in retry["schema_errors"])
+    assert all(not isinstance(item["constraints"].get("allowed_value_source"), list)
+               for item in retry["schema_errors"])
 
 
 @pytest.mark.parametrize("invalid", ['prose {"question_kind":"none"}', '{broken', '{"question_kind":"none"}'])

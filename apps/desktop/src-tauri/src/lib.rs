@@ -6,6 +6,8 @@ use std::process::{Command, Stdio};
 use tauri::Manager;
 
 mod runtime;
+mod model_settings;
+mod external_links;
 
 const PRETRADE_ACTION: &str = "pretrade_check";
 
@@ -243,12 +245,30 @@ async fn run_pretrade_check(request: PretradeBridgeRequest) -> PretradeBridgeRes
 pub fn run() {
     let app = runtime::install(tauri::Builder::default())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![
+        .invoke_handler(|invoke| {
+            if invoke.message.webview_ref().label() != "main" {
+                invoke.resolver.reject("window_command_not_allowed");
+                return true;
+            }
+            let handler: fn(tauri::ipc::Invoke<tauri::Wry>) -> bool = tauri::generate_handler![
+            external_links::open_source_url,
             run_pretrade_check,
             runtime::runtime_health,
             runtime::runtime_core_smoke,
-            runtime::runtime_product_request
-        ])
+            runtime::runtime_product_request,
+            model_settings::model_service_status,
+            model_settings::model_service_save,
+            model_settings::model_service_delete,
+            model_settings::model_service_test,
+            model_settings::search_service_status,
+            model_settings::search_service_save,
+            model_settings::search_service_delete,
+            model_settings::search_service_set_enabled,
+            model_settings::search_service_test,
+            model_settings::quotes_service_status
+        ];
+            handler(invoke)
+        })
         .build(tauri::generate_context!())
         .expect("error while running the 投镜 desktop application");
     app.run(|app_handle, event| {

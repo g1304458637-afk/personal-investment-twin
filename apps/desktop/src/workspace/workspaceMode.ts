@@ -1,6 +1,10 @@
-/** Presentation switch only. Never changes account, permissions or data mode. */
-export const isClassicWorkspace = (search = typeof window === "undefined" ? "" : window.location.search) =>
-  new URLSearchParams(search).get("workspace") === "classic";
+/** Retired presentation flag: old bookmarks always open the current workspace. */
+export const isClassicWorkspace = (_search = "") => false;
+
+/** Set before React renders; keep the same appearance through welcome/route transitions. */
+export function initializeWorkspaceAppearance(root: { dataset: { workspace?: string } }, _search: string) {
+  root.dataset.workspace = "intelligence";
+}
 
 export const workspaceDestinations = [
   { path: "/investments", label: "investments", group: "work" },

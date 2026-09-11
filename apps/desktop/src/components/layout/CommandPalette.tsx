@@ -16,6 +16,7 @@ import { useLocale } from "@/locales/LocaleProvider";
 import { commandNavigationItems } from "./navigation";
 import { isClassicWorkspace, workspaceDestinations } from "@/workspace/workspaceMode";
 import { useWorkspaceCopy } from "@/workspace/copy";
+import { useLiquidCopy } from "@/workspace/liquidCopy";
 
 export function CommandPalette({
   open,
@@ -27,6 +28,7 @@ export function CommandPalette({
   const navigate = useNavigate();
   const { t } = useLocale();
   const copy = useWorkspaceCopy();
+  const glass = useLiquidCopy();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -58,6 +60,7 @@ export function CommandPalette({
               {t("No workspace page found.")}
             </CommandEmpty>
             <CommandGroup heading={t("Workspace")}>
+              {!isClassicWorkspace() && <CommandItem value={glass.analysis} onSelect={() => selectRoute("/analysis")}><strong>{glass.analysis}</strong><CornerDownLeft className="ml-auto opacity-45" /></CommandItem>}
               {!isClassicWorkspace() ? [...workspaceDestinations, {path:"/ask",label:"ask" as const}].map((item) => <CommandItem key={item.path} value={copy[item.label]} onSelect={() => selectRoute(item.path)}><div><strong>{copy[item.label]}</strong></div><CornerDownLeft className="ml-auto opacity-45" /></CommandItem>) : commandNavigationItems.map((item) => {
                 const Icon = item.icon;
                 return (

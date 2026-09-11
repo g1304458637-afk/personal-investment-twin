@@ -86,11 +86,11 @@ test("Episode Story keeps path-first structure and Decision drilldown", async ()
   assert.match(page, /type="button"/);
   assert.match(page, /data-decision-event-id/);
   assert.match(page, /scrollIntoView/);
-  assert.match(page, /selectedDecisionId=\{selectedDecisionId\}/);
+  assert.match(page, /selectedDecisionId=\{lensMode \? lensDecision\?\.decisionId \?\? null : selectedDecisionId\}/);
   assert.match(page, /data-selected-phase/);
   assert.match(page, /entry\.reviewPresentation/);
   assert.match(page, /data-review-facts/);
-  assert.match(page, /<section data-all-executions className="iw-executions iw-inset">/);
+  assert.match(page, /<section hidden=\{sample && sampleSection !== "executions"\} data-all-executions data-guide="episode-ledger" className="iw-executions iw-inset">/);
   assert.match(page, /entry\.decisions\.map\(\(decision\) => <button[^>]+data-decision-event-id=\{decision\.decisionId\}/);
   assert.ok(page.indexOf("data-price-path") < page.indexOf("data-review-facts"));
   assert.match(page, /omit_decision_phase_until_next_decision_v1/);

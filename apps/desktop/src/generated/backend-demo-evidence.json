@@ -55933,21 +55933,111 @@
   "pretrade_demo": {
     "after": {
       "active_assets": 5,
+      "allocations": [
+        {
+          "account_weight": 0.8876683731795815,
+          "kind": "cash",
+          "security_weight": null,
+          "symbol": null,
+          "value": 89295.0
+        },
+        {
+          "account_weight": 0.00795268154480839,
+          "kind": "security",
+          "security_weight": 0.07079646017699115,
+          "symbol": "SYN_LOSS_SOLD",
+          "value": 800.0
+        },
+        {
+          "account_weight": 0.004970425965505244,
+          "kind": "security",
+          "security_weight": 0.04424778761061947,
+          "symbol": "SYN_NEUTRAL",
+          "value": 500.0
+        },
+        {
+          "account_weight": 0.010437894527561012,
+          "kind": "security",
+          "security_weight": 0.09292035398230089,
+          "symbol": "SYN_PAPER_LOSS",
+          "value": 1050.0
+        },
+        {
+          "account_weight": 0.08400019881703862,
+          "kind": "security",
+          "security_weight": 0.7477876106194691,
+          "symbol": "SYN_PAPER_WIN",
+          "value": 8450.0
+        },
+        {
+          "account_weight": 0.004970425965505244,
+          "kind": "security",
+          "security_weight": 0.04424778761061947,
+          "symbol": "SYN_WIN_SOLD",
+          "value": 500.0
+        }
+      ],
       "cash": 89295.0,
       "hhi": 0.576748374970632,
       "portfolio_value": 100595.0,
       "symbol_quantity": 650.0,
       "symbol_weight": 0.08400019881703862,
+      "valuation_observation_date": "2025-01-08",
       "valuation_price": 13.0
     },
     "after_hhi_evidence_id": "ev_12fcf5b981a9c51ddc1dd4c41896ca306e066e0951f57e6e4cc4e201fc3166a4",
     "before": {
       "active_assets": 5,
+      "allocations": [
+        {
+          "account_weight": 0.9135188866799204,
+          "kind": "cash",
+          "security_weight": null,
+          "symbol": null,
+          "value": 91900.0
+        },
+        {
+          "account_weight": 0.007952286282306162,
+          "kind": "security",
+          "security_weight": 0.09195402298850575,
+          "symbol": "SYN_LOSS_SOLD",
+          "value": 800.0
+        },
+        {
+          "account_weight": 0.004970178926441352,
+          "kind": "security",
+          "security_weight": 0.05747126436781609,
+          "symbol": "SYN_NEUTRAL",
+          "value": 500.0
+        },
+        {
+          "account_weight": 0.010437375745526839,
+          "kind": "security",
+          "security_weight": 0.1206896551724138,
+          "symbol": "SYN_PAPER_LOSS",
+          "value": 1050.0
+        },
+        {
+          "account_weight": 0.05815109343936382,
+          "kind": "security",
+          "security_weight": 0.6724137931034483,
+          "symbol": "SYN_PAPER_WIN",
+          "value": 5850.0
+        },
+        {
+          "account_weight": 0.004970178926441352,
+          "kind": "security",
+          "security_weight": 0.05747126436781609,
+          "symbol": "SYN_WIN_SOLD",
+          "value": 500.0
+        }
+      ],
       "cash": 91900.0,
       "hhi": 0.4817677368212446,
       "portfolio_value": 100600.0,
       "symbol_quantity": 450.0,
       "symbol_weight": 0.05815109343936382,
+      "valuation_observation_date": "2025-01-08",
       "valuation_price": 13.0
     },
     "before_hhi_evidence_id": "ev_51f0a6831a2c4937f00adb3d20eb2a2a06aaaf192a5795b153ad01f676f1a19d",

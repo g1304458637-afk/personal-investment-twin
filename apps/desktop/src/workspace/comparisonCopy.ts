@@ -1,0 +1,33 @@
+const zh = {
+  back: "返回对比", preview: "专业账户数据待接入", professionalIntro: "对照整个账户，理解不同的投资方式。",
+  professionalEmpty: "还没有可用于对比的专业账户",
+  professionalEmptyDetail: "接入具有来源记录的专业账户或公开披露数据后，这里再展示实际差异。当前不使用示例群体代替专业人员，也不展示虚构业绩。",
+  outcomes: "收益与回撤", outcomesDetail: "在一致的观察区间内，看收益路径和经历的回撤。",
+  allocation: "持仓配置", allocationDetail: "看资金如何分配、持仓是否集中，以及持仓结构的变化。",
+  decisions: "操作方式", decisionsDetail: "在有成交记录时，对照建仓、加减仓、退出和持有周期。",
+  planned: "计划对比范围 · 尚未生成结果", noHistory: "当前账户还没有接入可比较的历史",
+  noHistoryDetail: "自我对比只使用同一账户的记录。你也可以先打开年度投资示例，查看展示方式。",
+  example: "打开年度投资示例", exampleLabel: "年度投资示例 · Synthetic · 非真实账户",
+  selfIntro: "先看同一个账户，过去与现在有什么变化。", past: "过去", current: "现在",
+  hhi: "持仓集中度", turnover: "每日换手强度",
+  hhiDetail: "不含现金，描述资金在不同持仓间的集中程度。数值更高表示更集中，不代表投资更好。",
+  turnoverDetail: "描述记录中的日度交易强度。下面使用后端生成的历史点，不把交易频率当成能力评分。",
+  insufficient: "暂无足够历史证据", noOther: "当前已接入 HHI 与 Turnover 的真实历史。其他指标暂不展示前后对比。",
+};
+const en: Record<keyof typeof zh, string> = {
+  back: "Back to comparisons", preview: "Professional data not connected", professionalIntro: "Compare the whole account to understand different investment approaches.",
+  professionalEmpty: "No professional account is available for comparison yet",
+  professionalEmptyDetail: "Actual differences will appear once sourced professional-account or public-disclosure data is connected. Synthetic cohorts are not substitutes for professionals; no performance is fabricated.",
+  outcomes: "Returns and drawdowns", outcomesDetail: "Compare the return path and drawdowns over a consistent observation period.",
+  allocation: "Portfolio allocation", allocationDetail: "Compare the distribution of capital, concentration and changes in holdings.",
+  decisions: "Trading approach", decisionsDetail: "Where execution records exist, compare entries, additions, reductions, exits and holding periods.",
+  planned: "Planned comparison scope · no results yet", noHistory: "Comparable history is not connected for this account",
+  noHistoryDetail: "Self comparison uses records from the same account only. You can also open the investment-year showcase to explore the view.",
+  example: "Open investment-year showcase", exampleLabel: "Investment-year showcase · Synthetic · not a real account",
+  selfIntro: "Start with one account: what changed between then and now?", past: "Past", current: "Current",
+  hhi: "Holdings concentration", turnover: "Daily turnover intensity",
+  hhiDetail: "Excludes cash and describes concentration across holdings. A higher value means more concentration, not better performance.",
+  turnoverDetail: "Describes recorded daily trading activity. The chart uses backend-generated history, not an ability score.",
+  insufficient: "Not enough historical evidence", noOther: "Real HHI and Turnover history are connected. Other metrics do not yet have before-and-after comparisons.",
+};
+export const comparisonCopy = { "zh-CN": zh, "en-US": en };

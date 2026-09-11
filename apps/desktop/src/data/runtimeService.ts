@@ -1,6 +1,7 @@
 import type { ArchiveOutcome } from "./investments";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
+import { notifyRuntimeDataChange } from "./runtimeInvalidation";
 
 export interface RuntimeResponse<T> {
   request_id: string | null;
@@ -15,6 +16,7 @@ export async function runtimeRequest<T>(method: string, params: Record<string, u
   if (!isTauriRuntime()) throw new Error("desktop_runtime_required");
   const response = await invoke<RuntimeResponse<T>>("runtime_product_request", { method, params });
   if (!response.ok || !response.result) throw new Error(response.error?.message ?? "runtime_request_failed");
+  notifyRuntimeDataChange(method, params);
   return response.result;
 }
 

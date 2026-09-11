@@ -11,7 +11,8 @@ def input_payload(raw):
 
 def choose_options(*kinds, facts=(), history=(), change=None):
     def respond(request):
-        catalog = input_payload(request["input"])["option_catalog"]
+        payload = input_payload(request["input"])
+        catalog = payload["option_catalog"]
         choice = {
             "factual_option_ids": [o["option_id"] for o in catalog["factual_options"]
                                    if set(o["evidence_refs"]) & set(facts)],
@@ -21,5 +22,9 @@ def choose_options(*kinds, facts=(), history=(), change=None):
                                  for kind in kinds],
             "question_kind": "need_contemporaneous_records",
         }
+        if "answer_catalog" in payload:
+            # Existing tests exercise motive legality, not new relevance choices.
+            choice.update(answer_focus="decision_reason",
+                          finding_option_ids=[o["option_id"] for o in payload["answer_catalog"][:1]])
         return json.dumps(change(choice, catalog) if change else choice)
     return respond

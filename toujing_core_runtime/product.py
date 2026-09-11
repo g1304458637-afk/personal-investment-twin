@@ -16,12 +16,15 @@ from src.ingestion.contracts import CanonicalImportBundle, ImportPreviewSummary,
 from src.ingestion.generic_csv import GenericCsvImportConfig, preview_generic_csv
 from src.market_data.generic_csv import GenericHistoricalPriceCsvAdapter, GenericPriceCsvConfig
 from src.market_data.models import resolve_market_data_requirements
-from src.market_data.episode_gate import build_episode_when_market_ready
 from src.persistence import LocalRepository
-from src.presentation.runtime_episode import episode_entry
-from src.presentation.investment_archive import outcome_summaries
 from src.core.canonical_execution import canonical_executions_to_frame
 from src.market_data.models import facts_to_market_data_frame
+
+
+def build_episode_when_market_ready(*args, **kwargs):
+    # Defer the heavy replay import until an analytics request actually needs it.
+    from src.market_data.episode_gate import build_episode_when_market_ready as build
+    return build(*args, **kwargs)
 
 
 def _required_text(params: Mapping[str, object], name: str) -> str:
@@ -337,6 +340,7 @@ class ProductRuntime:
         return accounts[0], bundle, facts, gated.lifecycle, gated.status
 
     def investments(self, params: Mapping[str, object]) -> dict[str, object]:
+        from src.presentation.investment_archive import outcome_summaries
         account, bundle, facts, lifecycle, status = self._lifecycle(params)
         currency, _ = _currency_context(bundle, facts)
         if lifecycle is None:
@@ -374,6 +378,7 @@ class ProductRuntime:
                             "current_position_count": len(lifecycle.snapshots)}, "episodes": entries}
 
     def episode(self, params: Mapping[str, object]) -> dict[str, object]:
+        from src.presentation.runtime_episode import episode_entry
         account, bundle, facts, lifecycle, status = self._lifecycle(params)
         if lifecycle is None:
             return {"status": status, "reason": "market prices are incomplete", "entry": None}

@@ -1,4 +1,4 @@
-import generatedEvidence from "@/generated/backend-demo-evidence.json";
+import generatedEvidence from "@/generated/showcase-demo.json";
 import type {
   DemoEvidenceRecord,
   EvidenceMetric,
@@ -69,6 +69,7 @@ interface BackendEvidenceExport {
   position_episode_demo: BackendPositionEpisodeDemo;
   self_baseline: BackendSelfBaselinePayload;
   explainability: unknown;
+  same_stock_compare_demo: unknown;
 }
 
 interface BackendHistoricalMetricSeries {
@@ -148,6 +149,7 @@ export const selfBaseline = adaptSelfBaselinePayload(
   twinState.currentSnapshot.subjectId,
 );
 export const explainability = adaptExplainabilityPayload(backend.explainability);
+export const sameStockCompareDemo = backend.same_stock_compare_demo;
 
 export function explainabilityForEvidence(evidenceId: string): ExplainabilityView | null {
   return explainability.evidenceViews.find((item) => item.evidenceId === evidenceId) ?? null;

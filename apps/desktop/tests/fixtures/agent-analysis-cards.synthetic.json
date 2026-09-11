@@ -1,0 +1,929 @@
+{
+  "fixture": "local_synthetic_showcase_and_deterministic_public_test_adapters",
+  "live_public_data": false,
+  "cards": [
+    {
+      "id": "analysis_card_hypothetical_trade_impact_35ca0959a096c635",
+      "kind": "hypothetical_trade_impact",
+      "source_ref": "account_fact_173e7a4725e20959fdadc04a",
+      "title": {
+        "zh": "假设交易影响",
+        "en": "Hypothetical trade impact"
+      },
+      "subtitle": {
+        "zh": "Synthetic 情景：买入 300 单位 @ 14.40 CNY；费用 0.00 CNY。",
+        "en": "Synthetic scenario: BUY 300 units @ 14.40 CNY; fees 0.00 CNY."
+      },
+      "columns": [
+        {
+          "zh": "交易前",
+          "en": "Before trade"
+        },
+        {
+          "zh": "交易后",
+          "en": "After trade"
+        }
+      ],
+      "rows": [
+        {
+          "label": {
+            "zh": "现金",
+            "en": "Cash"
+          },
+          "cells": [
+            {
+              "zh": "58,170.00 CNY",
+              "en": "58,170.00 CNY"
+            },
+            {
+              "zh": "53,850.00 CNY",
+              "en": "53,850.00 CNY"
+            }
+          ],
+          "explanation": {
+            "zh": "账户现金，币种沿用记录。",
+            "en": "Account cash in the recorded currency."
+          }
+        },
+        {
+          "label": {
+            "zh": "账户总价值",
+            "en": "Total account value"
+          },
+          "cells": [
+            {
+              "zh": "114,330.00 CNY",
+              "en": "114,330.00 CNY"
+            },
+            {
+              "zh": "114,330.00 CNY",
+              "en": "114,330.00 CNY"
+            }
+          ],
+          "explanation": {
+            "zh": "当前状态的总账户估值。",
+            "en": "Total account value in the recorded state."
+          }
+        },
+        {
+          "label": {
+            "zh": "目标证券数量",
+            "en": "Target security quantity"
+          },
+          "cells": [
+            {
+              "zh": "900",
+              "en": "900"
+            },
+            {
+              "zh": "1,200",
+              "en": "1,200"
+            }
+          ],
+          "explanation": {
+            "zh": "目标证券的记录数量。",
+            "en": "Recorded quantity of the target security."
+          }
+        },
+        {
+          "label": {
+            "zh": "目标证券估值价",
+            "en": "Target security valuation price"
+          },
+          "cells": [
+            {
+              "zh": "14.40 CNY",
+              "en": "14.40 CNY"
+            },
+            {
+              "zh": "14.40 CNY",
+              "en": "14.40 CNY"
+            }
+          ],
+          "explanation": {
+            "zh": "按估值价计算持仓市值；与假设成交价分别记录，二者可以相同。",
+            "en": "Position value uses the valuation price; it is recorded separately from the hypothetical execution price, and the two may match."
+          }
+        },
+        {
+          "label": {
+            "zh": "目标证券账户价值权重",
+            "en": "Target security account-value weight"
+          },
+          "cells": [
+            {
+              "zh": "11.34%",
+              "en": "11.34%"
+            },
+            {
+              "zh": "15.11%",
+              "en": "15.11%"
+            }
+          ],
+          "explanation": {
+            "zh": "目标证券价值除以账户总价值的记录权重；不含未来预测。",
+            "en": "Recorded target value divided by total account value; no future prediction."
+          }
+        },
+        {
+          "label": {
+            "zh": "集中度 HHI（不含现金）",
+            "en": "Concentration HHI (cash excluded)"
+          },
+          "cells": [
+            {
+              "zh": "0.4596",
+              "en": "0.4596"
+            },
+            {
+              "zh": "0.4320",
+              "en": "0.4320"
+            }
+          ],
+          "explanation": {
+            "zh": "非现金风险资产归一化权重的平方和，范围为 0 至 1；数值越大表示越集中。",
+            "en": "Sum of squared normalized non-cash risk-asset weights, from 0 to 1; a larger value is more concentrated."
+          }
+        }
+      ],
+      "notes": [
+        {
+          "zh": "现金与估值基于记录中披露的状态；费用为用户明确输入。",
+          "en": "Cash and marks use the recorded state; fees are user-supplied."
+        }
+      ]
+    },
+    {
+      "id": "analysis_card_owned_period_comparison_aa29c3914d0586dc",
+      "kind": "owned_period_comparison",
+      "source_ref": "account_fact_e08f28c18128397c8c33c478",
+      "title": {
+        "zh": "账户期间比较",
+        "en": "Owned account period comparison"
+      },
+      "subtitle": {
+        "zh": "前期 2025-01-02 至 2025-03-31；后期 2025-03-31 至 2025-06-30。",
+        "en": "Earlier 2025-01-02 to 2025-03-31; later 2025-03-31 to 2025-06-30."
+      },
+      "columns": [
+        {
+          "zh": "前期",
+          "en": "Earlier"
+        },
+        {
+          "zh": "后期",
+          "en": "Later"
+        },
+        {
+          "zh": "后期－前期",
+          "en": "Later − earlier"
+        }
+      ],
+      "rows": [
+        {
+          "label": {
+            "zh": "期间时间加权回报（TWR）",
+            "en": "Period time-weighted return (TWR)"
+          },
+          "cells": [
+            {
+              "zh": "1.10%",
+              "en": "1.10%"
+            },
+            {
+              "zh": "4.25%",
+              "en": "4.25%"
+            },
+            {
+              "zh": "+3.15 pp（个百分点）",
+              "en": "+3.15 pp"
+            }
+          ],
+          "explanation": {
+            "zh": "把期间内各段账户收益连续相乘，衡量投资本身的表现；有外部入金、出金时须有对应估值边界，不能把入金算成盈利。",
+            "en": "Links account sub-period returns to measure investment performance. External deposits and withdrawals require corresponding valuation boundaries, so deposits are not counted as gains."
+          }
+        },
+        {
+          "label": {
+            "zh": "最大回撤幅度",
+            "en": "Maximum drawdown magnitude"
+          },
+          "cells": [
+            {
+              "zh": "1.26%",
+              "en": "1.26%"
+            },
+            {
+              "zh": "1.09%",
+              "en": "1.09%"
+            },
+            {
+              "zh": "-0.16 pp（个百分点）",
+              "en": "-0.16 pp"
+            }
+          ],
+          "explanation": {
+            "zh": "该期间账户收益路径从先前高点回落到随后低点的最大百分比，描述期间内曾经历的跌幅，不等于期末亏损。",
+            "en": "The largest percentage decline from an earlier peak to a subsequent trough on this period's account return path; it describes a past decline, not the ending loss."
+          }
+        },
+        {
+          "label": {
+            "zh": "平均日换手",
+            "en": "Mean daily turnover"
+          },
+          "cells": [
+            {
+              "zh": "0.34%",
+              "en": "0.34%"
+            },
+            {
+              "zh": "0.47%",
+              "en": "0.47%"
+            },
+            {
+              "zh": "+0.13 pp（个百分点）",
+              "en": "+0.13 pp"
+            }
+          ],
+          "explanation": {
+            "zh": "每天买入与卖出的成交金额合计除以当日账户价值，再对有效日期取平均；包含零成交日。",
+            "en": "Daily buy-plus-sell traded value divided by that day's account value, averaged across effective dates including zero-trade days."
+          }
+        },
+        {
+          "label": {
+            "zh": "期末持仓集中度 HHI",
+            "en": "End-of-period holding concentration HHI"
+          },
+          "cells": [
+            {
+              "zh": "0.3800",
+              "en": "0.3800"
+            },
+            {
+              "zh": "1.0000",
+              "en": "1.0000"
+            },
+            {
+              "zh": "+0.6200",
+              "en": "+0.6200"
+            }
+          ],
+          "explanation": {
+            "zh": "期末各项非现金持仓占风险资产的权重平方后相加；越大表示越集中。它是期末状态，不是全期平均。",
+            "en": "Sum of squared period-end holding weights normalized across non-cash risk assets. Larger means more concentrated; this is an ending state, not a period average."
+          }
+        },
+        {
+          "label": {
+            "zh": "已记录费用",
+            "en": "Recorded fees"
+          },
+          "cells": [
+            {
+              "zh": "25.00 CNY",
+              "en": "25.00 CNY"
+            },
+            {
+              "zh": "25.00 CNY",
+              "en": "25.00 CNY"
+            },
+            {
+              "zh": "0.00 CNY",
+              "en": "0.00 CNY"
+            }
+          ],
+          "explanation": {
+            "zh": "有效期间内已记录的费用总额。",
+            "en": "Total recorded fees in the effective period."
+          }
+        }
+      ],
+      "notes": [
+        {
+          "zh": "日期是已登记完整估值观察的实际计算边界，不补齐缺失边界；若两段共用边界，该日是后段计算基线。",
+          "en": "Dates are effective registered valuation boundaries; missing boundaries are not filled. When periods share a boundary, that day is the later period's calculation baseline."
+        },
+        {
+          "zh": "操作和换手统计从期初估值日之后开始，计至期末估值日（含当日）；期初当日操作已经包含在起点状态中。",
+          "en": "Behavior statistics use (effective_start, effective_end]; executions on the start date belong to the valuation baseline, not in-period actions."
+        },
+        {
+          "zh": "差值为后期减前期；pp 表示个百分点，例如 1% 到 2% 的差是 +1 个百分点。",
+          "en": "Differences are later minus earlier; pp means percentage points, e.g. 1% to 2% is +1 percentage point."
+        }
+      ]
+    },
+    {
+      "id": "analysis_card_public_technical_1cfc0a67836bb07b",
+      "kind": "public_technical",
+      "source_ref": "account_fact_4300d51360e0063b2f0cb2ca",
+      "title": {
+        "zh": "公开技术指标",
+        "en": "Public technical indicators"
+      },
+      "subtitle": {
+        "zh": "公开证券 SZSE:000001，最后完整日线 2026-09-04，前复权口径。",
+        "en": "Public security SZSE:000001; last completed daily bar 2026-09-04, Forward-adjusted basis."
+      },
+      "columns": [
+        {
+          "zh": "数值",
+          "en": "Value"
+        },
+        {
+          "zh": "单位",
+          "en": "Unit"
+        },
+        {
+          "zh": "定义",
+          "en": "Definition"
+        }
+      ],
+      "rows": [
+        {
+          "label": {
+            "zh": "SMA(5)",
+            "en": "SMA(5)"
+          },
+          "cells": [
+            {
+              "zh": "47.50",
+              "en": "47.50"
+            },
+            {
+              "zh": "CNY",
+              "en": "CNY"
+            },
+            {
+              "zh": "最近 5 个已完成日线收盘价的简单移动平均。",
+              "en": "Simple moving average of the last 5 completed daily closes."
+            }
+          ],
+          "explanation": {
+            "zh": "来自已完成的公开日线指标，不是交易结论。",
+            "en": "From completed public daily-bar indicators, not a trading conclusion."
+          }
+        },
+        {
+          "label": {
+            "zh": "SMA(20)",
+            "en": "SMA(20)"
+          },
+          "cells": [
+            {
+              "zh": "40.00",
+              "en": "40.00"
+            },
+            {
+              "zh": "CNY",
+              "en": "CNY"
+            },
+            {
+              "zh": "最近 20 个已完成日线收盘价的简单移动平均。",
+              "en": "Simple moving average of the last 20 completed daily closes."
+            }
+          ],
+          "explanation": {
+            "zh": "来自已完成的公开日线指标，不是交易结论。",
+            "en": "From completed public daily-bar indicators, not a trading conclusion."
+          }
+        },
+        {
+          "label": {
+            "zh": "EMA(12)",
+            "en": "EMA(12)"
+          },
+          "cells": [
+            {
+              "zh": "44.00",
+              "en": "44.00"
+            },
+            {
+              "zh": "CNY",
+              "en": "CNY"
+            },
+            {
+              "zh": "EMA(12)，以首个完整周期 SMA 初始化。",
+              "en": "EMA(12), seeded with the first full-period SMA."
+            }
+          ],
+          "explanation": {
+            "zh": "来自已完成的公开日线指标，不是交易结论。",
+            "en": "From completed public daily-bar indicators, not a trading conclusion."
+          }
+        },
+        {
+          "label": {
+            "zh": "EMA(26)",
+            "en": "EMA(26)"
+          },
+          "cells": [
+            {
+              "zh": "37.00",
+              "en": "37.00"
+            },
+            {
+              "zh": "CNY",
+              "en": "CNY"
+            },
+            {
+              "zh": "EMA(26)，以首个完整周期 SMA 初始化。",
+              "en": "EMA(26), seeded with the first full-period SMA."
+            }
+          ],
+          "explanation": {
+            "zh": "来自已完成的公开日线指标，不是交易结论。",
+            "en": "From completed public daily-bar indicators, not a trading conclusion."
+          }
+        },
+        {
+          "label": {
+            "zh": "MACD(12,26,9) 线",
+            "en": "MACD(12,26,9) line"
+          },
+          "cells": [
+            {
+              "zh": "7.00",
+              "en": "7.00"
+            },
+            {
+              "zh": "CNY",
+              "en": "CNY"
+            },
+            {
+              "zh": "MACD 线为 EMA(12)－EMA(26)；信号线为 MACD 的 EMA(9)；柱为两者之差，未额外倍增。",
+              "en": "MACD line is EMA(12) minus EMA(26); signal is its EMA(9); histogram is their difference, not additionally doubled."
+            }
+          ],
+          "explanation": {
+            "zh": "来自已完成的公开日线指标，不是交易结论。",
+            "en": "From completed public daily-bar indicators, not a trading conclusion."
+          }
+        },
+        {
+          "label": {
+            "zh": "MACD(12,26,9) 信号",
+            "en": "MACD(12,26,9) signal"
+          },
+          "cells": [
+            {
+              "zh": "7.00",
+              "en": "7.00"
+            },
+            {
+              "zh": "CNY",
+              "en": "CNY"
+            },
+            {
+              "zh": "MACD 线为 EMA(12)－EMA(26)；信号线为 MACD 的 EMA(9)；柱为两者之差，未额外倍增。",
+              "en": "MACD line is EMA(12) minus EMA(26); signal is its EMA(9); histogram is their difference, not additionally doubled."
+            }
+          ],
+          "explanation": {
+            "zh": "来自已完成的公开日线指标，不是交易结论。",
+            "en": "From completed public daily-bar indicators, not a trading conclusion."
+          }
+        },
+        {
+          "label": {
+            "zh": "MACD(12,26,9) 柱",
+            "en": "MACD(12,26,9) histogram"
+          },
+          "cells": [
+            {
+              "zh": "0.00",
+              "en": "0.00"
+            },
+            {
+              "zh": "CNY",
+              "en": "CNY"
+            },
+            {
+              "zh": "MACD 线为 EMA(12)－EMA(26)；信号线为 MACD 的 EMA(9)；柱为两者之差，未额外倍增。",
+              "en": "MACD line is EMA(12) minus EMA(26); signal is its EMA(9); histogram is their difference, not additionally doubled."
+            }
+          ],
+          "explanation": {
+            "zh": "来自已完成的公开日线指标，不是交易结论。",
+            "en": "From completed public daily-bar indicators, not a trading conclusion."
+          }
+        },
+        {
+          "label": {
+            "zh": "RSI(14)",
+            "en": "RSI(14)"
+          },
+          "cells": [
+            {
+              "zh": "100.00",
+              "en": "100.00"
+            },
+            {
+              "zh": "0–100",
+              "en": "0–100"
+            },
+            {
+              "zh": "Wilder RSI(14) 强弱振荡指标，不是预测。",
+              "en": "Wilder RSI(14) strength oscillator, not a forecast."
+            }
+          ],
+          "explanation": {
+            "zh": "来自已完成的公开日线指标，不是交易结论。",
+            "en": "From completed public daily-bar indicators, not a trading conclusion."
+          }
+        },
+        {
+          "label": {
+            "zh": "ATR(14)",
+            "en": "ATR(14)"
+          },
+          "cells": [
+            {
+              "zh": "2.00",
+              "en": "2.00"
+            },
+            {
+              "zh": "CNY",
+              "en": "CNY"
+            },
+            {
+              "zh": "Wilder ATR(14) 的价格波动范围。",
+              "en": "Wilder ATR(14) price range."
+            }
+          ],
+          "explanation": {
+            "zh": "来自已完成的公开日线指标，不是交易结论。",
+            "en": "From completed public daily-bar indicators, not a trading conclusion."
+          }
+        },
+        {
+          "label": {
+            "zh": "成交量比(5)",
+            "en": "Volume ratio(5)"
+          },
+          "cells": [
+            {
+              "zh": "1.02",
+              "en": "1.02"
+            },
+            {
+              "zh": "倍",
+              "en": "times"
+            },
+            {
+              "zh": "最新完整日成交量除以前 5 个完整日平均成交量。",
+              "en": "Latest completed volume divided by the prior 5 completed-day average."
+            }
+          ],
+          "explanation": {
+            "zh": "来自已完成的公开日线指标，不是交易结论。",
+            "en": "From completed public daily-bar indicators, not a trading conclusion."
+          }
+        }
+      ],
+      "notes": [
+        {
+          "zh": "公开研究资料，不是账户持仓事实、交易信号或建议。",
+          "en": "Public research, not an account holding fact, signal, or recommendation."
+        }
+      ]
+    },
+    {
+      "id": "analysis_card_public_financials_4be2ec68dbd5915d",
+      "kind": "public_financials",
+      "source_ref": "account_fact_ad9c57f2eceefb26599c4d67",
+      "title": {
+        "zh": "公开财务字段",
+        "en": "Public financial fields"
+      },
+      "subtitle": {
+        "zh": "公开证券 SZSE:000001；最新可取得披露不是历史时点重建。",
+        "en": "Public security SZSE:000001; latest retrievable disclosure is not a historical point-in-time reconstruction."
+      },
+      "columns": [
+        {
+          "zh": "数值",
+          "en": "Value"
+        },
+        {
+          "zh": "报告期",
+          "en": "Report period"
+        }
+      ],
+      "rows": [
+        {
+          "label": {
+            "zh": "营业收入",
+            "en": "Revenue"
+          },
+          "cells": [
+            {
+              "zh": "100.00 CNY",
+              "en": "100.00 CNY"
+            },
+            {
+              "zh": "2026-06-30",
+              "en": "2026-06-30"
+            }
+          ],
+          "explanation": {
+            "zh": "保留提供方报告期和单位；不混合不同报表期间。",
+            "en": "Provider report period and unit retained; statement periods are not mixed."
+          }
+        },
+        {
+          "label": {
+            "zh": "净利润",
+            "en": "Net income"
+          },
+          "cells": [
+            {
+              "zh": "-10.00 CNY",
+              "en": "-10.00 CNY"
+            },
+            {
+              "zh": "2026-06-30",
+              "en": "2026-06-30"
+            }
+          ],
+          "explanation": {
+            "zh": "保留提供方报告期和单位；不混合不同报表期间。",
+            "en": "Provider report period and unit retained; statement periods are not mixed."
+          }
+        },
+        {
+          "label": {
+            "zh": "资产总计",
+            "en": "Total assets"
+          },
+          "cells": [
+            {
+              "zh": "200.00 CNY",
+              "en": "200.00 CNY"
+            },
+            {
+              "zh": "2026-06-30",
+              "en": "2026-06-30"
+            }
+          ],
+          "explanation": {
+            "zh": "保留提供方报告期和单位；不混合不同报表期间。",
+            "en": "Provider report period and unit retained; statement periods are not mixed."
+          }
+        },
+        {
+          "label": {
+            "zh": "负债合计",
+            "en": "Total liabilities"
+          },
+          "cells": [
+            {
+              "zh": "50.00 CNY",
+              "en": "50.00 CNY"
+            },
+            {
+              "zh": "2026-06-30",
+              "en": "2026-06-30"
+            }
+          ],
+          "explanation": {
+            "zh": "保留提供方报告期和单位；不混合不同报表期间。",
+            "en": "Provider report period and unit retained; statement periods are not mixed."
+          }
+        },
+        {
+          "label": {
+            "zh": "净资产收益率",
+            "en": "Return on equity"
+          },
+          "cells": [
+            {
+              "zh": "8.50%",
+              "en": "8.50%"
+            },
+            {
+              "zh": "2026-06-30",
+              "en": "2026-06-30"
+            }
+          ],
+          "explanation": {
+            "zh": "保留提供方报告期和单位；不混合不同报表期间。",
+            "en": "Provider report period and unit retained; statement periods are not mixed."
+          }
+        },
+        {
+          "label": {
+            "zh": "资产负债率",
+            "en": "Debt-to-assets"
+          },
+          "cells": [
+            {
+              "zh": "25.00%",
+              "en": "25.00%"
+            },
+            {
+              "zh": "2026-06-30",
+              "en": "2026-06-30"
+            }
+          ],
+          "explanation": {
+            "zh": "该字段由记录列出的报表字段在本地派生；保留对应报告期和单位。",
+            "en": "This field is locally derived from the record-listed statement fields; its report period and unit are retained."
+          }
+        }
+      ],
+      "notes": [
+        {
+          "zh": "除特别标注为本地派生的字段外，金额、币种、规模及百分比沿用提供方披露；不可跨报告期混算。",
+          "en": "Except where explicitly marked locally derived, amounts, currency, scale, and percentages retain provider reporting; do not mix report periods."
+        },
+        {
+          "zh": "“资产负债率”等本地派生字段不应表述为提供方直接报告。",
+          "en": "Locally derived fields such as debt-to-assets are not provider-directly reported."
+        }
+      ]
+    },
+    {
+      "id": "analysis_card_owned_same_stock_comparison_b0d67de2a6058338",
+      "kind": "owned_same_stock_comparison",
+      "source_ref": "account_fact_1323376555e340e47d285741",
+      "title": {
+        "zh": "两轮记录并排查看（不可直接比较）",
+        "en": "Two episode records side by side (not directly comparable)"
+      },
+      "subtitle": {
+        "zh": "较早轮次 2025-01-13T10:02:00 至 2025-06-06T10:10:00；较晚轮次 2025-07-11T10:12:00 至 2025-12-31T00:00:00；未建立可核验的共同市场对比。",
+        "en": "Earlier episode 2025-01-13T10:02:00 to 2025-06-06T10:10:00; later episode 2025-07-11T10:12:00 to 2025-12-31T00:00:00; no verifiable shared-market comparison was established."
+      },
+      "columns": [
+        {
+          "zh": "较早轮次",
+          "en": "Earlier episode"
+        },
+        {
+          "zh": "较晚轮次",
+          "en": "Later episode"
+        }
+      ],
+      "rows": [
+        {
+          "label": {
+            "zh": "结果类型",
+            "en": "Result type"
+          },
+          "cells": [
+            {
+              "zh": "已实现",
+              "en": "Realized"
+            },
+            {
+              "zh": "账面估值",
+              "en": "Marked"
+            }
+          ],
+          "explanation": {
+            "zh": "明确区分已实现结果与持有中估值。",
+            "en": "Realized outcomes and open-position marks remain distinct."
+          }
+        },
+        {
+          "label": {
+            "zh": "实际结果",
+            "en": "Actual result"
+          },
+          "cells": [
+            {
+              "zh": "-630.00 CNY",
+              "en": "-630.00 CNY"
+            },
+            {
+              "zh": "3,880.00 CNY",
+              "en": "3,880.00 CNY"
+            }
+          ],
+          "explanation": {
+            "zh": "各轮自己的净结果，不是同一市场窗口的比较。",
+            "en": "Each episode's own net result, not a shared-market-window comparison."
+          }
+        },
+        {
+          "label": {
+            "zh": "已记录入场费用",
+            "en": "Recorded entry fees"
+          },
+          "cells": [
+            {
+              "zh": "15.00 CNY",
+              "en": "15.00 CNY"
+            },
+            {
+              "zh": "15.00 CNY",
+              "en": "15.00 CNY"
+            }
+          ],
+          "explanation": {
+            "zh": "各轮结果记录中的入场侧费用。",
+            "en": "Entry-side fees recorded in each outcome."
+          }
+        },
+        {
+          "label": {
+            "zh": "已记录离场费用",
+            "en": "Recorded exit fees"
+          },
+          "cells": [
+            {
+              "zh": "15.00 CNY",
+              "en": "15.00 CNY"
+            },
+            {
+              "zh": "5.00 CNY",
+              "en": "5.00 CNY"
+            }
+          ],
+          "explanation": {
+            "zh": "各轮结果记录中的离场侧费用。",
+            "en": "Exit-side fees recorded in each outcome."
+          }
+        },
+        {
+          "label": {
+            "zh": "持仓状态",
+            "en": "Position status"
+          },
+          "cells": [
+            {
+              "zh": "已结束",
+              "en": "Closed"
+            },
+            {
+              "zh": "持有中",
+              "en": "Open"
+            }
+          ],
+          "explanation": {
+            "zh": "状态来自各轮自己的结果记录。",
+            "en": "Status comes from each episode's own outcome record."
+          }
+        },
+        {
+          "label": {
+            "zh": "起始时间",
+            "en": "Opened at"
+          },
+          "cells": [
+            {
+              "zh": "2025-01-13T10:02:00",
+              "en": "2025-01-13T10:02:00"
+            },
+            {
+              "zh": "2025-07-11T10:12:00",
+              "en": "2025-07-11T10:12:00"
+            }
+          ],
+          "explanation": {
+            "zh": "各轮已登记的开始时间。",
+            "en": "Registered opening time of each episode."
+          }
+        },
+        {
+          "label": {
+            "zh": "结束或估值时间",
+            "en": "Closed or marked at"
+          },
+          "cells": [
+            {
+              "zh": "2025-06-06T10:10:00",
+              "en": "2025-06-06T10:10:00"
+            },
+            {
+              "zh": "2025-12-31T00:00:00",
+              "en": "2025-12-31T00:00:00"
+            }
+          ],
+          "explanation": {
+            "zh": "已结束轮次显示结束时间；持有中轮次显示估值时间。",
+            "en": "Closed episodes show close time; open episodes show mark time."
+          }
+        }
+      ],
+      "notes": [
+        {
+          "zh": "两轮投资期间没有重叠，因此没有共同市场窗口。",
+          "en": "The two investment periods do not overlap, so there is no shared market window."
+        },
+        {
+          "zh": "一轮为已实现结果，另一轮仍为持有中估值。",
+          "en": "One episode is realized while the other remains marked while open."
+        },
+        {
+          "zh": "完整投资期间不同，不能视为同区间表现。",
+          "en": "Full investment periods differ and are not same-window performance."
+        }
+      ]
+    }
+  ]
+}

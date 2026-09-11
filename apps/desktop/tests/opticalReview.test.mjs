@@ -24,9 +24,11 @@ test("switching the experiment preserves unrelated route parameters and never mu
 
 test("the single Episode page retains existing chart state and decision Drawer behavior", async () => {
   const page = await source("../src/pages/PositionEpisodePage.tsx");
-  assert.equal((page.match(/<PositionEpisodeTimeline /g) ?? []).length, 1);
-  assert.equal((page.match(/<PositionQuantityTimeline /g) ?? []).length, 1);
-  assert.match(page, /onSelectDecision=\{setSelectedDecisionId\}/);
+  const workspace = await source("../src/components/charts/EpisodeChartWorkspace.tsx");
+  assert.equal((page.match(/<EpisodeChartWorkspace/g) ?? []).length, 1);
+  assert.equal((workspace.match(/<PositionEpisodeTimeline/g) ?? []).length, 1);
+  assert.equal((workspace.match(/<PositionQuantityTimeline/g) ?? []).length, 1);
+  assert.match(page, /onSelectDecision=\{lensMode \? selectLensDecision : setSelectedDecisionId\}/);
   assert.match(page, /open=\{selectedDecision !== null\}/);
   assert.match(page, /!open && setSelectedDecisionId\(null\)/);
   assert.match(page, /<Sheet open=\{open\} onOpenChange=\{onOpenChange\}>/);

@@ -101,11 +101,37 @@ def _shutdown(params: object) -> Mapping[str, object]:
     return {"status": "shutting_down"}
 
 
+def _model_test(params):
+    from .model_service import test_connection
+    # Private stdio method: deliberately not in the frontend product allowlist.
+    return test_connection(params)
+
+
+def _search_test(params):
+    # Startup connectivity checks must not import the Agent or analytics runtime.
+    from .search_service import probe_search_connection
+    return probe_search_connection(params)
+
+
+def _quotes_status(params):
+    # Keep this private status endpoint independent of the Agent runtime: it
+    # runs during desktop startup before any review or analytics request.
+    from .quote_status import quotes_status
+    if params is None:
+        params = {}
+    if not isinstance(params, dict) or params:
+        raise ValueError("invalid_quotes_status_request")
+    return quotes_status()
+
+
 _METHODS: dict[str, Callable[[object], Mapping[str, object]]] = {
     "runtime.handshake": _handshake,
     "runtime.health": _health,
     "runtime.core_smoke": _core_smoke,
     "runtime.shutdown": _shutdown,
+    "model.test_connection": _model_test,
+    "search.test_connection": _search_test,
+    "quotes.status": _quotes_status,
 }
 
 

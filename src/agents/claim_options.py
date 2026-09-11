@@ -6,7 +6,7 @@ remain in the shared review catalog, not duplicated into every option.
 from dataclasses import asdict, dataclass
 import hashlib
 import json
-from typing import Literal
+from typing import Annotated, Literal, Union
 
 from pydantic import ConfigDict, Field, create_model
 
@@ -77,13 +77,22 @@ class FinalizationOptions:
             ids = tuple(o.option_id for o in options)
             item_type = Literal[ids] if ids else str
             return (list[item_type], Field(min_length=minimum, max_length=min(maximum, len(ids))))
-        fact_capacity = limits["factual_refs"]["maxItems"] - len(self.comparison_context.factual_refs)
-        if fact_capacity < 0:
-            raise ReviewVerificationError("required_facts_exceed_output_capacity")
+        # Catalog-sized wire bounds prevent unbounded model arrays without
+        # confusing display brevity with the evidence needed for a finding.
+        # Encode the existing terminal-uncertainty rule on the wire as well as
+        # locally. A mixed array must not reach expansion, even after a retry.
+        unknown = tuple(o for o in self.claim_options if o.claim_kind == "unknown")
+        supported = tuple(o for o in self.claim_options if o.claim_kind != "unknown")
+        branches = []
+        for group, maximum in ((unknown, 1), (supported, limits["possible_explanations"]["maxItems"])):
+            if group:
+                annotation, constraints = choices(group, maximum, 1)
+                branches.append(Annotated[annotation, constraints])
+        claim_type = Union[tuple(branches)] if len(branches) > 1 else branches[0]
         return create_model("FinalizationChoice", __config__=ConfigDict(extra="forbid"),
-            factual_option_ids=choices(self.factual_options, fact_capacity),
-            historical_option_ids=choices(self.historical_options, limits["historical_comparison_refs"]["maxItems"]),
-            claim_option_ids=choices(self.claim_options, limits["possible_explanations"]["maxItems"], 1),
+            factual_option_ids=choices(self.factual_options, len(self.factual_options)),
+            historical_option_ids=choices(self.historical_options, len(self.historical_options)),
+            claim_option_ids=(claim_type, ...),
             question_kind=(production_type.model_fields["question_kind"].annotation, ...))
 
     def expand(self, choice):
@@ -106,8 +115,8 @@ class FinalizationOptions:
         return self._production(facts=facts, history=history, claims=claims, question_kind=choice.question_kind)
 
     def _production(self, *, facts=(), history=(), claims=(), question_kind="none"):
-        return {"factual_refs": list(self.comparison_context.factual_refs) + [r for b in facts for r in b.evidence_refs],
-            "historical_comparison_refs": [r for b in history for r in b.evidence_refs],
+        return {"factual_refs": list(dict.fromkeys((*self.comparison_context.factual_refs, *(r for b in facts for r in b.evidence_refs)))),
+            "historical_comparison_refs": list(dict.fromkeys(r for b in history for r in b.evidence_refs)),
             "possible_explanations": [c.hypothesis() for c in claims], "question_kind": question_kind}
 
     def validation_cases(self):

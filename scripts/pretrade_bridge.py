@@ -37,6 +37,8 @@ PAYLOAD_FIELDS = {
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.data.csv_importer import load_normalized_csv  # noqa: E402
+from src.demo.showcase import SUBJECT_ID as SHOWCASE_SUBJECT_ID  # noqa: E402
+from src.demo.showcase_runtime import simulate_showcase_trade  # noqa: E402
 from src.history.metric_series import build_portfolio_hhi_history  # noqa: E402
 from src.pretrade.impact import ProposedTrade, simulate_synthetic_trade_impact  # noqa: E402
 
@@ -102,7 +104,7 @@ def _build_trade(payload: Mapping[str, object]) -> ProposedTrade:
     for name in ("subject_id", "proposed_time", "symbol", "side"):
         if not isinstance(payload[name], str) or not str(payload[name]).strip():
             raise ValueError(f"{name} must be a non-empty string")
-    if payload["subject_id"] != SUBJECT_ID:
+    if payload["subject_id"] not in {SUBJECT_ID, SHOWCASE_SUBJECT_ID}:
         raise ValueError("subject_id is not available in the local synthetic demo")
     return ProposedTrade(
         subject_id=str(payload["subject_id"]),
@@ -116,6 +118,11 @@ def _build_trade(payload: Mapping[str, object]) -> ProposedTrade:
 
 
 def _run_engine(trade: ProposedTrade):
+    # The original behavior-demo route intentionally remains tied to its fixed
+    # Jan. 2--8 cohort and source.  Showcase uses a separately declared 2025
+    # source/cohort adapter; no caller-selectable source exists.
+    if trade.subject_id == SHOWCASE_SUBJECT_ID:
+        return simulate_showcase_trade(trade)
     executions = load_normalized_csv(
         PROJECT_ROOT / "data" / "sample" / "synthetic_behavior_executions.csv"
     )

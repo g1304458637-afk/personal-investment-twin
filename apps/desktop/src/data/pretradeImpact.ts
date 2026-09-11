@@ -18,6 +18,8 @@ interface BackendPortfolioImpactState {
   valuation_price: number;
   hhi: number;
   active_assets: number;
+  allocations?: { symbol: string | null; kind: "cash" | "security"; value: number; account_weight: number; security_weight: number | null }[];
+  valuation_observation_date?: string | null;
 }
 
 interface BackendTradeImpactDelta {
@@ -65,6 +67,43 @@ export interface PretradeImpactStateView {
   valuationPrice: number;
   hhi: number;
   activeAssets: number;
+  allocations: AllocationView[] | null;
+  valuationDate: string | null;
+}
+
+export interface AllocationView {
+  id: string;
+  symbol: string | null;
+  kind: "cash" | "security";
+  value: number;
+  accountWeight: number;
+  securityWeight: number | null;
+}
+
+function allocations(value: BackendPortfolioImpactState["allocations"]): AllocationView[] | null {
+  // An older local runtime cannot supply the breakdown: never infer it from target weight.
+  if (!value?.length) return null;
+  const rows = value.map((item) => {
+    if ((item.kind !== "cash" && item.kind !== "security")
+      || (item.kind === "security" && !item.symbol)
+      || (item.kind === "cash" && (item.symbol !== null || item.security_weight !== null))) {
+      throw new Error("Invalid allocation identity or denominator.");
+    }
+    const amount = finite(item.value, "allocation value");
+    const accountWeight = finite(item.account_weight, "account weight");
+    const securityWeight = item.kind === "cash" ? null : finite(item.security_weight!, "security weight");
+    if (amount < 0 || accountWeight < 0 || accountWeight > 1 || (securityWeight !== null && (securityWeight < 0 || securityWeight > 1))) {
+      throw new Error("Allocation requires non-negative long-only weights.");
+    }
+    return { id: item.kind === "cash" ? "cash" : `security:${item.symbol}`, symbol: item.symbol,
+      kind: item.kind, value: amount, accountWeight, securityWeight };
+  });
+  if (new Set(rows.map((row) => row.id)).size !== rows.length
+    || Math.abs(rows.reduce((sum, row) => sum + row.accountWeight, 0) - 1) > 1e-8
+    || Math.abs(rows.reduce((sum, row) => sum + (row.securityWeight ?? 0), 0) - 1) > 1e-8) {
+    throw new Error("Incomplete allocation breakdown.");
+  }
+  return rows;
 }
 
 export interface PretradeDemoView {
@@ -116,6 +155,8 @@ function state(value: BackendPortfolioImpactState | null): PretradeImpactStateVi
     valuationPrice: finite(value.valuation_price, "valuation price"),
     hhi: finite(value.hhi, "HHI"),
     activeAssets: finite(value.active_assets, "active assets"),
+    allocations: allocations(value.allocations),
+    valuationDate: value.valuation_observation_date ?? null,
   };
 }
 
@@ -130,7 +171,7 @@ export function adaptPretradeImpact(value: BackendPretradeImpact): PretradeDemoV
   const after = state(value.after);
   if (
     value.simulation_status === "complete"
-    && (!before || !after || !value.delta || !value.self_context || !value.peer_context)
+    && (!before || !after || !value.delta || !value.self_context)
   ) {
     throw new Error("Complete pre-trade demo is missing deterministic context.");
   }

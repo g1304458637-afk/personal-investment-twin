@@ -1,8 +1,10 @@
 /** Review projection only. Numbers are copied from deterministic records. */
-export interface ReviewScope { subject_id: string; account_id: string; episode_id: string; data_mode?: "real_user" | "synthetic_pair"; pair_side?: "A" | "B"; compare_pair?: boolean; share_id?: string }
+import type { ReviewAnswerV2 } from "./reviewAnswer";
+export interface ReviewInference { answer?: ReviewAnswerV2; scope?: ReviewScope }
+export interface ReviewScope { subject_id: string; account_id: string; episode_id: string; data_mode?: "real_user" | "synthetic_pair" | "synthetic_episode" | "synthetic_showcase"; pair_side?: "A" | "B"; compare_pair?: boolean; share_id?: string }
 export interface ReviewFact { ref: string; kind: string; title: string; subject_id: string; account_id: string; episode_id: string; currency: string; as_of: string; method_id: string; method_version: string; availability: string; underlying_refs: string[]; value: Record<string, unknown> }
 export interface ReviewInference { inference_id: string; generated_at: string; invalidated: boolean; replaced_by: string | null; provider: string; model: string; facts: ReviewFact[]; historical_comparisons: ReviewFact[]; possible_explanations: { kind: string; claim: string; supporting_evidence_refs: string[]; contradictory_evidence_refs: string[]; alternative_explanations: string[]; missing_information: string[] }[]; question_kind: string; executed_tools: string[] }
-export interface ReviewContextView { scope: ReviewScope; as_of: string; data_tier: string; records: ReviewFact[]; comparison: unknown | null; inferences: ReviewInference[] }
+export interface ReviewContextView { scope: ReviewScope; as_of: string; data_tier: string; records: ReviewFact[]; comparison: unknown | null; inferences: ReviewInference[]; identity_mapping?: { version: string; display_episode_id: string; canonical_episode_id: string; decision_display_ids: Record<string, string> } | null }
 export interface ReviewRow { label: string; value: string | number | null; format?: "money" | "percent"; decisionId?: string }
 export function object(v: unknown): Record<string, unknown> { return v !== null && typeof v === "object" && !Array.isArray(v) ? v as Record<string, unknown> : {}; }
 function value(v: unknown): string | number | null { return typeof v === "number" && Number.isFinite(v) || typeof v === "string" ? v as string | number : null; }

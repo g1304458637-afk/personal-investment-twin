@@ -8,7 +8,7 @@ const source = async (name) => readFile(new URL(`../src/${name}`, import.meta.ur
 
 test("workspace presentation switch has no account or permission side effect", () => {
   assert.equal(isClassicWorkspace(""), false);
-  assert.equal(isClassicWorkspace("?workspace=classic"), true);
+  assert.equal(isClassicWorkspace("?workspace=classic"), false);
   assert.equal(isClassicWorkspace("?workspace=classicish"), false);
   assert.equal(isClassicWorkspace("?data_mode=demo"), false);
   assert.equal(workspaceSection("/investments/episodes/owned"), "/investments");
@@ -54,14 +54,18 @@ test("Ask preserves the existing consent runtime and query-selected context", as
   assert.match(page,/\[location\.search\]/);
   assert.match(page,/value\.subject_id !== subject \|\| value\.account_id !== account/);
   assert.match(page,/next\.episode\.subjectId !== subject \|\| next\.episode\.accountId !== account/);
-  assert.match(page,/data\.mode === "real_user" && <DecisionAnalysisWorkspace/);
+  assert.match(page,/episodeAnalysisTarget\(current\.episodeId\)/);
+  assert.doesNotMatch(page,/<DecisionAnalysisWorkspace/);
   assert.doesNotMatch(page,/reviewService\.start|allow_model_review|DEEPSEEK|api\.deepseek|setTimeout/);
 });
 
-test("pretrade remains an explicitly independent synthetic scenario without client accounting", async () => {
+test("pretrade identifies the selected showcase scenario by exact subject without client accounting", async () => {
   const page=await source("workspace/PretradeWorkspace.tsx");
   assert.match(page,/data\.mode === "demo" \|\| entered/);
   assert.match(page,/pretradeDemo\.subjectId/);
+  assert.match(page,/data\.mode === "demo" && data\.exampleAccount\.subjectId === pretradeDemo\.subjectId/);
+  assert.match(page,/exampleAccountLabel\(data\.exampleAccount, locale\)/);
+  assert.match(page,/selectedDemoScenario \? scenarioAccountName : p\.example/);
   assert.match(page,/<DecisionCheckPage \/>/);
   assert.doesNotMatch(page,/\.reduce\(|calculate|\.cash\s*[+\-]|portfolioValue\s*=/);
 });

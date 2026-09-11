@@ -1,0 +1,7 @@
+execution_id,order_id,event_time,market_date,subject_id,account_id,symbol,side,executed_quantity,executed_price,fee
+STD-AAPL-001,STD-AAPL-001,2016-03-04T16:00:00,2016-03-04,demo-user:standard-chart,demo-account:standard-chart,SYN_AAPL_HISTORY,BUY,30,100.877427,1.00
+STD-AAPL-002,STD-AAPL-002,2016-03-15T16:00:00,2016-03-15,demo-user:standard-chart,demo-account:standard-chart,SYN_AAPL_HISTORY,BUY,20,102.414924,1.00
+STD-AAPL-003,STD-AAPL-003,2016-04-01T16:00:00,2016-04-01,demo-user:standard-chart,demo-account:standard-chart,SYN_AAPL_HISTORY,BUY,10,107.712919,1.00
+STD-AAPL-004,STD-AAPL-004,2016-07-05T16:00:00,2016-07-05,demo-user:standard-chart,demo-account:standard-chart,SYN_AAPL_HISTORY,SELL,20,93.589829,1.00
+STD-AAPL-005,STD-AAPL-005,2016-08-01T16:00:00,2016-08-01,demo-user:standard-chart,demo-account:standard-chart,SYN_AAPL_HISTORY,SELL,20,104.486808,1.00
+STD-AAPL-006,STD-AAPL-006,2016-09-01T16:00:00,2016-09-01,demo-user:standard-chart,demo-account:standard-chart,SYN_AAPL_HISTORY,SELL,20,105.726441,1.00

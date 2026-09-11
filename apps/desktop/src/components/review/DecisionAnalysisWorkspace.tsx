@@ -1,26 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { reviewService, type SharedEpisode } from "@/data/reviewService";
-import { object, reviewRows, selfHistoryRows, ReviewRequestGuard, type ReviewContextView, type ReviewFact, type ReviewInference, type ReviewScope } from "@/data/decisionReview";
+import { reviewService, reviewSessions, type SharedEpisode } from "@/data/reviewService";
+import { selfHistoryRows, ReviewRequestGuard, type ReviewScope } from "@/data/decisionReview";
+import { answerCopy } from "@/data/reviewAnswer";
+import { ReviewAnswer } from "./ReviewAnswer";
 import { adaptSameStock } from "@/data/sameStock";
 import { SameStockComparisonPanel } from "./SameStockComparisonPanel";
 import { useLocale } from "@/locales/LocaleProvider";
 
 const inputClass = "w-full rounded-md border border-border bg-background/70 px-3 py-2 text-sm";
-
-function Fact({ fact, onDecision, expanded = false }: { fact: ReviewFact; onDecision?: (id: string) => void; expanded?: boolean }) {
-  const { t, locale } = useLocale();
-  const raw = object(fact.value);
-  const title = fact.kind === "decision" ? t(String(raw.event_type)) : fact.kind === "phase" ? t(String(raw.phase_type)) : t(fact.title);
-  const when = raw.event_time ?? raw.started_at ?? raw.decision_at;
-  const dateLabel = typeof when === "string" ? new Intl.DateTimeFormat(locale, {month:"numeric", day:"numeric"}).format(new Date(when)) : "";
-  return <details className="border-b border-border py-3" open={expanded || undefined}>
-    <summary className="cursor-pointer text-sm">{title} {dateLabel} · <span className="text-xs text-muted">{fact.subject_id}{fact.availability !== "complete" ? " · " + t(fact.availability) : ""}</span></summary>
-    <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">{reviewRows(fact).map((row) => <div key={row.label} className="min-w-0"><dt className="text-muted">{t(row.label)}</dt><dd className="mt-1 break-words">{row.decisionId && onDecision ? <button className="text-accent" onClick={() => onDecision(row.decisionId!)}>{t(String(row.value))} → {t("View this execution")}</button> : row.value === null ? "—" : typeof row.value === "number" ? new Intl.NumberFormat(locale, row.format === "money" ? { style: "currency", currency: fact.currency } : row.format === "percent" ? { style: "percent", maximumFractionDigits: 2 } : { maximumFractionDigits: 4 }).format(row.value) : t(row.value)}</dd></div>)}</dl>
-    {fact.kind === "historical_comparison" ? <p className="mt-3 text-xs text-warning">{t("A fixed historical hypothesis, not what you should have done. Prior daily marks are not intraday prices.")}</p> : null}
-    <details className="mt-3 text-xs text-muted"><summary>{t("Method and source details")}</summary><p className="mt-2 break-all font-mono">{fact.method_id}@{fact.method_version} · {fact.ref} · {fact.as_of}</p><pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-all text-[10px]">{JSON.stringify(fact.value, null, 2)}</pre></details>
-  </details>;
-}
 
 function Sharing({ scope, onChoose, onChange }: { scope: ReviewScope; onChoose: (id: string) => void; onChange: () => void }) {
   const { t } = useLocale();
@@ -53,60 +42,80 @@ function Sharing({ scope, onChoose, onChange }: { scope: ReviewScope; onChoose: 
   </div>;
 }
 
-export function DecisionAnalysisWorkspace({ scope: inputScope, onDecision }: { scope: ReviewScope; onDecision?: (id: string) => void }) {
-  const { t, formatNumber } = useLocale();
+export function DecisionAnalysisWorkspace({ scope: inputScope, onDecision: navigateDecision, initialMode = null }: { scope: ReviewScope; onDecision?: (id: string) => void; initialMode?: "analysis" | null }) {
+  const { t, formatNumber, locale } = useLocale();
+  const copy = answerCopy[locale === "zh-CN" ? "zh" : "en"];
   const key = JSON.stringify(inputScope), base = useMemo<ReviewScope>(() => JSON.parse(key), [key]);
-  const [mode, setMode] = useState<"analysis" | "compare" | "self" | null>(null), [shareId, setShareId] = useState<string | undefined>();
+  const [mode, setMode] = useState<"analysis" | "compare" | "self" | null>(initialMode), [shareId, setShareId] = useState<string | undefined>();
   const scope = useMemo(() => ({ ...base, ...(shareId ? { share_id: shareId } : {}) }), [base, shareId]);
-  const [context, setContext] = useState<ReviewContextView | null>(null), [answer, setAnswer] = useState<ReviewInference | null>(null);
-  const [question, setQuestion] = useState(""), [note, setNote] = useState(""), [noteKind, setNoteKind] = useState("reason");
-  const [consent, setConsent] = useState(false), [busy, setBusy] = useState(false), [loading, setLoading] = useState(false), [error, setError] = useState<string | null>(null);
-  const [focusedRef, setFocusedRef] = useState<string | null>(null), [revision, setRevision] = useState(0);
+  const supportsConversation = !scope.share_id && !scope.compare_pair
+    && (!scope.data_mode || scope.data_mode === "real_user" || scope.data_mode === "synthetic_showcase");
+  const session = useSyncExternalStore(
+    useCallback(listener => reviewSessions.subscribe(scope, listener), [scope]),
+    useCallback(() => reviewSessions.snapshot(scope), [scope]),
+  );
+  const { context, answer, question, note, noteKind, loading, revision } = session;
+  const [consent, setConsent] = useState(false), [saving, setSaving] = useState(false), [noteError, setNoteError] = useState<string | null>(null);
+  const busy = saving || session.busy, error = noteError ?? session.error;
   const guard = useRef(new ReviewRequestGuard());
   const live = reviewService.available();
-  useEffect(() => { setShareId(undefined); setNote(""); setQuestion(""); setConsent(false); setFocusedRef(null); }, [base]);
+  // Agent Evidence stays canonical.  A display-scoped showcase page may resolve
+  // its canonical decision ids, while a canonical same-stock scope must retain
+  // those ids exactly (and never borrow another episode's display mapping).
+  const onDecision = navigateDecision ? (id: string) => {
+    const mapping = context?.identity_mapping;
+    if (base.data_mode === "synthetic_showcase") {
+      if (!mapping) return;
+      if (base.episode_id === mapping.canonical_episode_id) {
+        navigateDecision(id);
+        return;
+      }
+      if (mapping?.display_episode_id !== base.episode_id) return;
+      const displayId = mapping.decision_display_ids[id];
+      if (displayId) navigateDecision(displayId);
+    } else if (base.data_mode === "synthetic_episode") {
+      if (mapping?.display_episode_id !== base.episode_id) return;
+      const displayId = mapping.decision_display_ids[id];
+      if (displayId) navigateDecision(displayId);
+    } else navigateDecision(id);
+  } : undefined;
+  useEffect(() => { setShareId(undefined); setConsent(false); setNoteError(null); }, [base]);
   useEffect(() => {
-    const ticket = guard.current.next(); setContext(null); setAnswer(null); setError(null); setBusy(false);
     if (!live || !mode) return;
-    setLoading(true);
-    void reviewService.context(scope).then((c) => { if (guard.current.accepts(ticket)) setContext(c); }).catch((e: Error) => { if (guard.current.accepts(ticket)) setError(e.message); }).finally(() => { if (guard.current.accepts(ticket)) setLoading(false); });
-    return () => { guard.current.next(); };
+    // Unmounting removes the listener, not the app-scoped read or analysis job.
+    void reviewSessions.load(scope).catch(() => { /* Shared state displays failures. */ });
   }, [scope, revision, live, mode]);
+  useEffect(() => () => { guard.current.next(); }, [scope]);
   const compare = useMemo(() => context?.comparison ? adaptSameStock(context.comparison) : null, [context]);
   async function analyze() {
-    const ticket = guard.current.next(); setBusy(true); setAnswer(null); setError(null);
-    try {
-      const job = await reviewService.start(scope, question || t("What happened in this investment, and what remains uncertain?"));
-      for (let i = 0; i < 110 && guard.current.accepts(ticket); i++) {
-        const response = await reviewService.poll(scope, job.job_id);
-        if (!guard.current.accepts(ticket)) return;
-        if (response.status === "complete") { setAnswer(response.result); return; }
-        if (response.status !== "running") throw new Error(response.reason ?? response.status);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-      if (guard.current.accepts(ticket)) throw new Error("review_timeout");
-    } catch (e) { if (guard.current.accepts(ticket)) setError(e instanceof Error ? e.message : String(e)); }
-    finally { if (guard.current.accepts(ticket)) setBusy(false); }
+    if (!live || !consent || !context || busy || loading) return;
+    setNoteError(null);
+    await reviewSessions.analyze(scope, question || copy.question, consent);
   }
   async function saveNote() {
-    const ticket = guard.current.next(); setAnswer(null); setBusy(true); setError(null);
-    try { await reviewService.note(scope, note, noteKind); if (guard.current.accepts(ticket)) { setNote(""); setRevision((r) => r + 1); } }
-    catch (e) { if (guard.current.accepts(ticket)) setError(e instanceof Error ? e.message : String(e)); }
-    finally { if (guard.current.accepts(ticket)) setBusy(false); }
+    const ticket = guard.current.next(); setSaving(true); setNoteError(null);
+    try { await reviewService.note(scope, note, noteKind); reviewSessions.edit(scope, {note:""}); }
+    catch (e) { if (guard.current.accepts(ticket)) setNoteError(e instanceof Error ? e.message : String(e)); }
+    finally { if (guard.current.accepts(ticket)) setSaving(false); }
   }
-  const facts = answer?.facts ?? context?.records.filter((r) => r.kind === "episode") ?? [];
-  const historical = answer?.historical_comparisons ?? context?.records.filter((r) => r.kind === "historical_comparison") ?? [];
-  const focused = context?.records.find((r) => r.ref === focusedRef);
-  const link = (ref: string) => { setFocusedRef(ref); const f = context?.records.find((r) => r.ref === ref); const d = object(f?.value).decision_event_id; if (typeof d === "string") onDecision?.(d); };
   return <section className="mt-6 border-y border-border py-4" data-decision-analysis>
-    <div className="flex flex-wrap gap-2">{(["analysis", "compare", "self"] as const).map((m) => <Button key={m} size="sm" disabled={!live} variant="quiet" aria-pressed={mode === m} onClick={() => setMode(mode === m ? null : m)}>{t({ analysis: "Analyze this investment", compare: "Compare same stock", self: "Against my own past" }[m])}</Button>)}</div>
-    {!live ? <p className="mt-3 text-xs text-warning">{t("Browser · Offline Runtime. The chart is a deterministic example; live review and sharing require the desktop app. No model has been called.")}</p> : null}
+    <div className="flex flex-wrap gap-2">
+      {supportsConversation ? (live
+        ? <Button asChild size="sm" variant="primary"><Link to={`/ask?episode=${encodeURIComponent(base.episode_id)}`}>{t("Analyze this investment")}</Link></Button>
+        : <Button size="sm" disabled variant="primary">{t("Analyze this investment")}</Button>)
+        : <Button size="sm" disabled={!live} variant="primary" aria-pressed={mode === "analysis"} onClick={() => setMode(mode === "analysis" ? null : "analysis")}>{t("Analyze this investment")}</Button>}
+      {(["compare", "self"] as const).map((m) => <Button key={m} size="sm" disabled={!live} variant="quiet" aria-pressed={mode === m} onClick={() => setMode(mode === m ? null : m)}>{t({ compare: "Compare same stock", self: "Against my own past" }[m])}</Button>)}
+      {supportsConversation ? <Button size="sm" disabled={!live} variant="quiet" aria-pressed={mode === "analysis"} onClick={() => setMode(mode === "analysis" ? null : "analysis")}>{locale === "zh-CN" ? "笔记与历史" : "Notes & history"}</Button> : null}
+    </div>
+    {!live ? <div className="review-offline"><p className="text-sm text-muted">{t("Browser · Offline Runtime. The chart is a deterministic example; live review and sharing require the desktop app. No model has been called.")}</p>{!supportsConversation ? <><label className="block mt-4 text-sm">{t("Continue with a question")}<textarea className={inputClass} disabled placeholder={t("What happened in this investment, and what remains uncertain?")} /></label><Button className="mt-3" disabled>{t("Analyze this investment")}</Button></> : null}</div> : null}
     {mode && live ? <div className="mt-5 space-y-5">
-      {loading ? <p role="status" className="text-sm text-muted">{t("Reading authorized deterministic facts…")}</p> : null}
-      {error ? <p role="alert" className="break-words text-sm text-warning">{t(error)}</p> : null}
+      {loading ? <p role="status" className="text-sm text-muted">{locale === "zh-CN" ? "正在准备这轮投资的分析资料，切换页面后仍会继续…" : "Preparing this investment’s analysis; preparation continues while you browse…"}</p> : null}
+      {!loading && context ? <p className="text-xs text-muted">{locale === "zh-CN" ? "分析资料已就绪 · 切换页面可继续查看，数据更新后自动刷新" : "Analysis ready · retained across pages and refreshed when records change"}</p> : null}
+      {error && !context && !loading ? <Button size="sm" variant="quiet" onClick={() => void reviewSessions.prefetch(scope)}>{locale === "zh-CN" ? "重新准备" : "Retry preparation"}</Button> : null}
+      {error ? <p role="alert" className="break-words text-sm text-warning">{t(error)}{["model_not_configured", "model_keychain_unavailable", "model_configuration_failed"].includes(error) && <a href="#/settings" className="ml-3 underline">{t("Configure model service")}</a>}</p> : null}
       {context?.data_tier === "synthetic" ? <p className="text-xs text-warning">{t("Example account · Synthetic")}</p> : null}
       {mode === "compare" ? <>
-        {base.data_mode !== "synthetic_pair" ? <Sharing scope={base} onChoose={setShareId} onChange={() => setRevision((r) => r + 1)} /> : null}
+        {(!base.data_mode || base.data_mode === "real_user") ? <Sharing scope={base} onChoose={setShareId} onChange={() => reviewSessions.invalidate(base.subject_id, base.account_id)} /> : null}
         {compare ? <SameStockComparisonPanel view={compare} /> : <p className="text-sm text-muted">{t("Choose a permitted Episode of the same qualified instrument. No automatic account matching.")}</p>}
       </> : null}
       {mode === "self" ? <>
@@ -115,22 +124,16 @@ export function DecisionAnalysisWorkspace({ scope: inputScope, onDecision }: { s
         <p className="text-xs text-muted">{t("Only HHI and mean daily turnover have registered self-history. Repeated chasing or long-term ability cannot be inferred here.")}</p>
       </> : null}
       {mode === "analysis" && context ? <>
-        <h2 className="text-base">{t("What the records establish")}</h2>
-        {facts.map((f) => <Fact key={f.ref} fact={f} onDecision={onDecision} />)}
-        <details><summary className="cursor-pointer text-sm">{t("Recorded operations and cost changes")}</summary>{context.records.filter((f) => ["decision", "phase"].includes(f.kind)).map((f) => <Fact key={f.ref} fact={f} onDecision={onDecision} />)}</details>
-        <details><summary className="cursor-pointer text-sm">{t("Recorded market and holding context")}</summary>{context.records.filter((f) => f.kind === "market").map((f) => <Fact key={f.ref} fact={f} onDecision={onDecision} />)}</details>
-        <details><summary className="cursor-pointer text-sm">{t("Historical comparisons under fixed assumptions")} ({historical.length})</summary>{historical.map((f) => <Fact key={f.ref} fact={f} onDecision={onDecision} />)}</details>
-        <h2 className="text-base">{t("Possible explanations")}</h2>
-        {!answer ? <p className="text-sm text-muted">{t("No model interpretation yet. The records above are deterministic, not an AI answer.")}</p> : <>
-          {answer.possible_explanations.map((h, i) => <div key={i} className="space-y-2 border-b border-border pb-3 text-sm"><p>{t(h.claim)}</p><p className="text-xs text-muted">{t("Alternative explanations")}: {h.alternative_explanations.map((s) => t(s)).join(" · ")}</p><p className="text-xs text-muted">{t("Missing information")}: {h.missing_information.map((s) => t(s)).join(" · ")}</p><div className="flex flex-wrap gap-2">{[...h.supporting_evidence_refs, ...h.contradictory_evidence_refs].map((ref) => <button key={ref} className="text-xs text-accent" onClick={() => link(ref)}>{t(h.contradictory_evidence_refs.includes(ref) ? "Contrary material" : "Supporting material")} → {t(context.records.find((r) => r.ref === ref)?.title ?? "View evidence")}</button>)}</div></div>)}
-          <p className="text-sm">{t(answer.question_kind)}</p><p className="text-xs text-muted">{answer.provider} · {answer.model} · {answer.generated_at}</p>
-          <details className="text-xs text-muted"><summary>{t("Executed review tools")}</summary>{answer.executed_tools.join(" · ")}</details>
+        <h2 className="text-base">{copy.title}</h2>
+        {!answer ? <p className="max-w-3xl text-sm leading-7 text-muted">{copy.empty}</p>
+          : answer.answer ? <ReviewAnswer answer={answer} context={context} onDecision={onDecision} />
+          : <div className="space-y-3"><p className="text-xs text-muted">{copy.legacy}</p>{answer.possible_explanations.filter(h => h.kind !== "unknown").map((h, i) => <p key={i} className="text-sm leading-7">{t(h.claim)}</p>)}</div>}
+        {supportsConversation ? <p className="text-xs text-muted">{locale === "zh-CN" ? "要继续连续对话，请使用上方“分析这轮”。" : "Use “Analyze this investment” above to continue the conversation."}</p> : <>
+          <label className="block space-y-2 text-sm"><span>{t("Continue with a question")}</span><textarea className={inputClass} maxLength={2000} value={question} disabled={busy} placeholder={copy.question} onChange={(e) => reviewSessions.edit(scope, {question:e.target.value})} /></label>
+          <label className="flex gap-2 text-xs text-muted"><input type="checkbox" checked={consent} disabled={busy} onChange={(e) => setConsent(e.target.checked)} />{t("Send these scoped derived facts and my notes to the configured review model. It cannot place trades.")}</label>
+          <Button disabled={busy || loading || !consent} onClick={() => void analyze()}>{t(busy ? "Reviewing facts and counterexamples…" : "Ask for an evidence-grounded review")}</Button>
         </>}
-        {focused ? <Fact key={focused.ref} fact={focused} onDecision={onDecision} expanded /> : null}
-        <label className="block space-y-2 text-sm"><span>{t("Continue with a question")}</span><textarea className={inputClass} maxLength={2000} value={question} disabled={busy} placeholder={t("What happened in this investment, and what remains uncertain?")} onChange={(e) => { setQuestion(e.target.value); setAnswer(null); guard.current.next(); }} /></label>
-        <label className="flex gap-2 text-xs text-muted"><input type="checkbox" checked={consent} disabled={busy} onChange={(e) => setConsent(e.target.checked)} />{t("Send these scoped derived facts and my notes to the configured review model. It cannot place trades.")}</label>
-        <Button disabled={busy || loading || !consent} onClick={() => void analyze()}>{t(busy ? "Reviewing facts and counterexamples…" : "Ask for an evidence-grounded review")}</Button>
-        <details className="border-t border-border pt-3"><summary className="cursor-pointer text-sm">{t("Add a reason or original plan (retrospective)")}</summary><div className="mt-3 space-y-3"><p className="text-xs text-muted">{t("This is recorded now, not proof that the information existed before the trade. New notes invalidate earlier interpretations.")}</p><select aria-label={t("Note type")} className={inputClass} value={noteKind} disabled={busy} onChange={(e) => setNoteKind(e.target.value)}><option value="reason">{t("My recalled reason")}</option><option value="plan">{t("My recalled staged plan")}</option></select><textarea aria-label={t("Retrospective user note")} className={inputClass} maxLength={4000} value={note} disabled={busy} onChange={(e) => setNote(e.target.value)} /><Button size="sm" disabled={busy || !note.trim()} onClick={() => void saveNote()}>{t("Save retrospective note")}</Button></div></details>
+        <details className="border-t border-border pt-3"><summary className="cursor-pointer text-sm">{t("Add a reason or original plan (retrospective)")}</summary><div className="mt-3 space-y-3"><p className="text-xs text-muted">{t("This is recorded now, not proof that the information existed before the trade. New notes invalidate earlier interpretations.")}</p><select aria-label={t("Note type")} className={inputClass} value={noteKind} disabled={busy} onChange={(e) => reviewSessions.edit(scope, {noteKind:e.target.value})}><option value="reason">{t("My recalled reason")}</option><option value="plan">{t("My recalled staged plan")}</option></select><textarea aria-label={t("Retrospective user note")} className={inputClass} maxLength={4000} value={note} disabled={busy} onChange={(e) => reviewSessions.edit(scope, {note:e.target.value})} /><Button size="sm" disabled={busy || !note.trim()} onClick={() => void saveNote()}>{t("Save retrospective note")}</Button></div></details>
         <details className="text-xs text-muted"><summary>{t("Previous interpretations (revisable)")}</summary>{context.inferences.map((r) => <p key={r.inference_id} className="mt-2">{r.generated_at} · {t(r.invalidated ? "Invalidated by newer information" : "Previous interpretation, not financial evidence")}</p>)}</details>
       </> : null}
     </div> : null}

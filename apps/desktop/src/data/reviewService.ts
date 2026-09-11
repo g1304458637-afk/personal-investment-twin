@@ -1,6 +1,8 @@
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { isTauriRuntime, runtimeRequest } from "./runtimeService";
 import type { ReviewContextView, ReviewInference, ReviewScope } from "./decisionReview";
+import { ReviewSessions } from "./reviewSession";
+import { onRuntimeDataChange } from "./runtimeInvalidation";
 
 export interface SharedEpisode { share_id: string; subject_id: string; episode_id: string; as_of: string; expires_at: string; allow_agent_review: boolean; instrument: { local_symbol: string }; verification: string }
 const params = (scope: ReviewScope) => ({ ...scope });
@@ -23,3 +25,6 @@ export const reviewService = {
     return runtimeRequest<{ signer_fingerprint: string }>("compare.export_share", { ...params(scope), file_path, recipient_subject_id, recipient_account_id, expires_at, allow_agent_review, owner_confirmed: true });
   },
 };
+
+export const reviewSessions = new ReviewSessions(reviewService);
+onRuntimeDataChange(({subject, account}) => reviewSessions.invalidate(subject, account));

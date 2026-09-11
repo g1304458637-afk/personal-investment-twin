@@ -1,0 +1,2125 @@
+{
+  "reports": [
+    {
+      "account_id": "SYN_STUDY_SHOWCASE",
+      "data_tier": "synthetic",
+      "episode_id": "pe_a92f86148e2030927e41ea94270250cd219dfbb1b84b937fe2cfe9b0078ecae2",
+      "instrument_id": "SYN_VALUE",
+      "limitations": [
+        "本结果只核对已记录操作与固定规则的一致性，不构成预测、收益评价或投资建议。",
+        "行情只按决策对应交易日之前的日收盘价截断；不会使用当日或之后的数据。",
+        "导入的复权历史不能保证公司行为在当时已知；日期截断并不等同于公司行为的时点可得性保证。",
+        "演示导出缺少规范交易所市场日期，因此仅在此演示文件中以操作时间日期代替；生产核对必须使用规范成交记录的市场日期。"
+      ],
+      "methods": [
+        {
+          "checks": [
+            {
+              "actual": {
+                "average_cost_before": null,
+                "price": 20.0,
+                "quantity": 600.0,
+                "quantity_before": 0.0,
+                "side": "BUY"
+              },
+              "conditions": [],
+              "decision_id": "de_847f7808fc6bcf9a3adf60ef4373ad5c405843f507e6dac4b50d7f852083ae27",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:01",
+              "expected_action": "无法判断",
+              "explanation": "趋势均线条件缺少可靠输入。",
+              "input_fingerprint": "f1ecc2d2afc7a979bbde9437bc581d9ce86ae4f9533784ccf37666958e53a95a",
+              "limitations": [
+                "决策前没有可用日收盘价"
+              ],
+              "market_date": "2025-01-02",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-01-02T10:00:00",
+              "state_before_ref": "ps_f1d44039582b4bfc0204b79464e1a8af9fd12f337effb24aa630218bac85cdc0",
+              "verdict": "insufficient"
+            },
+            {
+              "actual": {
+                "average_cost_before": 20.0,
+                "price": 21.0,
+                "quantity": 200.0,
+                "quantity_before": 600.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 20.8266,
+                  "label": "开仓／加仓条件：前一收盘价 vs SMA20",
+                  "operator": ">",
+                  "passed": true,
+                  "threshold": 19.775545,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_ba4a0da0b690d1634574ac02059848eb758bcab17dda6c7ee3b6b8503535ac57",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:07",
+              "expected_action": "持有或加仓",
+              "explanation": "前一有效收盘价为20.8266，20日简单移动平均线（SMA20）为19.7755；前者高于SMA20，操作与趋势条件相容。",
+              "input_fingerprint": "2e311723369396ff71d960ccce0a5b323d88ff744806eb4b582c391f1648b106",
+              "limitations": [],
+              "market_date": "2025-03-14",
+              "observation_count": 51,
+              "observed_through": "2025-03-13",
+              "occurred_at": "2025-03-14T10:06:00",
+              "state_before_ref": "ps_85e027dc40713eb1d3c836a9869c9fe5eb7b596dc5af852f2930e6beec75e7c5",
+              "verdict": "aligned"
+            },
+            {
+              "actual": {
+                "average_cost_before": 20.25,
+                "price": 24.0,
+                "quantity": 300.0,
+                "quantity_before": 800.0,
+                "side": "SELL"
+              },
+              "conditions": [
+                {
+                  "actual": 24.0428,
+                  "label": "减仓／退出条件：前一收盘价 vs SMA20",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 23.307284999999997,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_66f8f5c9737e44a97a0bea9d04053f22e8c1d1682d7bc1c029933fea4e63122d",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:10",
+              "expected_action": "持有或加仓",
+              "explanation": "前一有效收盘价为24.0428，20日简单移动平均线（SMA20）为23.3073；前者高于SMA20，记录的操作与趋势条件不相容。",
+              "input_fingerprint": "1cb556f436debf8706b1fc61791c23ecb2c8b7320a5db0ef2b0f3498f9b8b229",
+              "limitations": [],
+              "market_date": "2025-05-16",
+              "observation_count": 96,
+              "observed_through": "2025-05-15",
+              "occurred_at": "2025-05-16T10:09:00",
+              "state_before_ref": "ps_8d9280f5f3cf73b38af548b1fe05c37247fea9d7ecb45d9ebeb1dfb776787169",
+              "verdict": "different"
+            },
+            {
+              "actual": {
+                "average_cost_before": 20.25,
+                "price": 26.0,
+                "quantity": 500.0,
+                "quantity_before": 500.0,
+                "side": "SELL"
+              },
+              "conditions": [
+                {
+                  "actual": 25.7839,
+                  "label": "减仓／退出条件：前一收盘价 vs SMA20",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 24.94536,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_8a45b130346f28262036c7375fe7d146c3315b416b69fa4957001c8dee11955c",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:12",
+              "expected_action": "持有或加仓",
+              "explanation": "前一有效收盘价为25.7839，20日简单移动平均线（SMA20）为24.9454；前者高于SMA20，记录的操作与趋势条件不相容。",
+              "input_fingerprint": "d738fec421dc87d284b15fd2ca2e5b26a2f00a40b278b909cf1219d70ab43a90",
+              "limitations": [],
+              "market_date": "2025-06-13",
+              "observation_count": 116,
+              "observed_through": "2025-06-12",
+              "occurred_at": "2025-06-13T10:11:00",
+              "state_before_ref": "ps_5f716c059ce886e7e27a45c720e9162e08aa7d3cb23ffb38a044fa5bf32bbe97",
+              "verdict": "different"
+            }
+          ],
+          "description": "以决策前最近有效收盘价和20日均线核对操作方向。",
+          "id": "trend_ma20",
+          "parameters": {
+            "window": 20.0
+          },
+          "rule": "前一有效收盘价高于20日均线时允许开仓／加仓；持仓跌破时应减仓或退出。",
+          "title": "20日均线趋势",
+          "version": "1"
+        },
+        {
+          "checks": [
+            {
+              "actual": {
+                "average_cost_before": null,
+                "price": 20.0,
+                "quantity": 600.0,
+                "quantity_before": 0.0,
+                "side": "BUY"
+              },
+              "conditions": [],
+              "decision_id": "de_847f7808fc6bcf9a3adf60ef4373ad5c405843f507e6dac4b50d7f852083ae27",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:01",
+              "expected_action": "无法判断",
+              "explanation": "突破条件缺少可靠输入。",
+              "input_fingerprint": "b6abd87f5a30a27846b5e0a62e20649d7bb13a43c3746478425be5531d3b3f08",
+              "limitations": [
+                "决策前没有可用日收盘价"
+              ],
+              "market_date": "2025-01-02",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-01-02T10:00:00",
+              "state_before_ref": "ps_f1d44039582b4bfc0204b79464e1a8af9fd12f337effb24aa630218bac85cdc0",
+              "verdict": "insufficient"
+            },
+            {
+              "actual": {
+                "average_cost_before": 20.0,
+                "price": 21.0,
+                "quantity": 200.0,
+                "quantity_before": 600.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 20.8266,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": true,
+                  "threshold": 20.6927,
+                  "unit": "price"
+                },
+                {
+                  "actual": 20.8266,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 19.6934,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_ba4a0da0b690d1634574ac02059848eb758bcab17dda6c7ee3b6b8503535ac57",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:07",
+              "expected_action": "突破后加仓",
+              "explanation": "记录的操作符合突破／退出条件。",
+              "input_fingerprint": "cb90a6bd4b07926922e8163ce51da0d43424afc02147743a02a1211f9d2a9fcc",
+              "limitations": [],
+              "market_date": "2025-03-14",
+              "observation_count": 51,
+              "observed_through": "2025-03-13",
+              "occurred_at": "2025-03-14T10:06:00",
+              "state_before_ref": "ps_85e027dc40713eb1d3c836a9869c9fe5eb7b596dc5af852f2930e6beec75e7c5",
+              "verdict": "aligned"
+            },
+            {
+              "actual": {
+                "average_cost_before": 20.25,
+                "price": 24.0,
+                "quantity": 300.0,
+                "quantity_before": 800.0,
+                "side": "SELL"
+              },
+              "conditions": [
+                {
+                  "actual": 24.0428,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": true,
+                  "threshold": 23.897,
+                  "unit": "price"
+                },
+                {
+                  "actual": 24.0428,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 23.2219,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_66f8f5c9737e44a97a0bea9d04053f22e8c1d1682d7bc1c029933fea4e63122d",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:10",
+              "expected_action": "突破后加仓",
+              "explanation": "记录的操作不符合突破／退出条件。",
+              "input_fingerprint": "888510aaec16a0ab32686c036c1760364a9509c52b6f16dd542d0e52118c28dd",
+              "limitations": [],
+              "market_date": "2025-05-16",
+              "observation_count": 96,
+              "observed_through": "2025-05-15",
+              "occurred_at": "2025-05-16T10:09:00",
+              "state_before_ref": "ps_8d9280f5f3cf73b38af548b1fe05c37247fea9d7ecb45d9ebeb1dfb776787169",
+              "verdict": "different"
+            },
+            {
+              "actual": {
+                "average_cost_before": 20.25,
+                "price": 26.0,
+                "quantity": 500.0,
+                "quantity_before": 500.0,
+                "side": "SELL"
+              },
+              "conditions": [
+                {
+                  "actual": 25.7839,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": false,
+                  "threshold": 25.8272,
+                  "unit": "price"
+                },
+                {
+                  "actual": 25.7839,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 24.9528,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_8a45b130346f28262036c7375fe7d146c3315b416b69fa4957001c8dee11955c",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:12",
+              "expected_action": "持有不变",
+              "explanation": "记录的操作不符合突破／退出条件。",
+              "input_fingerprint": "185f4a52a6909b49fb138e4f11e70c0d15507be4052c0139db3e403fefe88b14",
+              "limitations": [],
+              "market_date": "2025-06-13",
+              "observation_count": 116,
+              "observed_through": "2025-06-12",
+              "occurred_at": "2025-06-13T10:11:00",
+              "state_before_ref": "ps_5f716c059ce886e7e27a45c720e9162e08aa7d3cb23ffb38a044fa5bf32bbe97",
+              "verdict": "different"
+            }
+          ],
+          "description": "以决策前日收盘价核对20日突破和10日低点退出条件。",
+          "id": "closing_breakout20",
+          "parameters": {
+            "breakout_window": 20.0,
+            "exit_window": 10.0
+          },
+          "rule": "突破严格高于此前20个收盘价；持仓时跌破此前10日低点才允许卖出。",
+          "title": "20日收盘突破",
+          "version": "1"
+        },
+        {
+          "checks": [
+            {
+              "actual": {
+                "average_cost_before": null,
+                "price": 20.0,
+                "quantity": 600.0,
+                "quantity_before": 0.0,
+                "side": "BUY"
+              },
+              "conditions": [],
+              "decision_id": "de_847f7808fc6bcf9a3adf60ef4373ad5c405843f507e6dac4b50d7f852083ae27",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:01",
+              "expected_action": "仅检查已有持仓后的买入",
+              "explanation": "该规则只适用于已有持仓后的买入操作。",
+              "input_fingerprint": "e7dc620a679ce78d9dd1f299e68824665fc2332f0e320dd8066180a391084a3e",
+              "limitations": [],
+              "market_date": "2025-01-02",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-01-02T10:00:00",
+              "state_before_ref": "ps_f1d44039582b4bfc0204b79464e1a8af9fd12f337effb24aa630218bac85cdc0",
+              "verdict": "not_applicable"
+            },
+            {
+              "actual": {
+                "average_cost_before": 20.0,
+                "price": 21.0,
+                "quantity": 200.0,
+                "quantity_before": 600.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 21.0,
+                  "label": "成交价",
+                  "operator": ">=",
+                  "passed": true,
+                  "threshold": 20.0,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_ba4a0da0b690d1634574ac02059848eb758bcab17dda6c7ee3b6b8503535ac57",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:07",
+              "expected_action": "成交价不低于操作前平均成本的加仓",
+              "explanation": "成交价不低于操作前平均成本。",
+              "input_fingerprint": "bf3ecae48038498478ff6994331e71f0b4b3679f7d69e0131b4d236732eb9801",
+              "limitations": [
+                "本规则只比较已记录成交价与未复算的回放平均成本；不使用行情价格。"
+              ],
+              "market_date": "2025-03-14",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-03-14T10:06:00",
+              "state_before_ref": "ps_85e027dc40713eb1d3c836a9869c9fe5eb7b596dc5af852f2930e6beec75e7c5",
+              "verdict": "aligned"
+            },
+            {
+              "actual": {
+                "average_cost_before": 20.25,
+                "price": 24.0,
+                "quantity": 300.0,
+                "quantity_before": 800.0,
+                "side": "SELL"
+              },
+              "conditions": [],
+              "decision_id": "de_66f8f5c9737e44a97a0bea9d04053f22e8c1d1682d7bc1c029933fea4e63122d",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:10",
+              "expected_action": "仅检查已有持仓后的买入",
+              "explanation": "该规则只适用于已有持仓后的买入操作。",
+              "input_fingerprint": "5e54b725da5b61ff994e6e4072c199b66992827de389a48bbed8b2352cda05e5",
+              "limitations": [],
+              "market_date": "2025-05-16",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-05-16T10:09:00",
+              "state_before_ref": "ps_8d9280f5f3cf73b38af548b1fe05c37247fea9d7ecb45d9ebeb1dfb776787169",
+              "verdict": "not_applicable"
+            },
+            {
+              "actual": {
+                "average_cost_before": 20.25,
+                "price": 26.0,
+                "quantity": 500.0,
+                "quantity_before": 500.0,
+                "side": "SELL"
+              },
+              "conditions": [],
+              "decision_id": "de_8a45b130346f28262036c7375fe7d146c3315b416b69fa4957001c8dee11955c",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:12",
+              "expected_action": "仅检查已有持仓后的买入",
+              "explanation": "该规则只适用于已有持仓后的买入操作。",
+              "input_fingerprint": "2f0c3dc96aef37222e430f5179f3311f9eaed0e49ddf9ccd9fe7e5cde80b32e8",
+              "limitations": [],
+              "market_date": "2025-06-13",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-06-13T10:11:00",
+              "state_before_ref": "ps_5f716c059ce886e7e27a45c720e9162e08aa7d3cb23ffb38a044fa5bf32bbe97",
+              "verdict": "not_applicable"
+            }
+          ],
+          "description": "仅核对已有持仓后的买入成交价是否不低于操作前平均成本。",
+          "id": "cost_addition",
+          "parameters": {
+            "minimum_cost_ratio": 1.0
+          },
+          "rule": "仅当已有持仓且为买入时，成交价应大于或等于回放操作前平均成本。",
+          "title": "成本加仓",
+          "version": "1"
+        }
+      ],
+      "schema_version": "decision_lens.v1",
+      "subject_id": "SYN_STUDY_SHOWCASE",
+      "temporal_policy": "prior_daily_close_only"
+    },
+    {
+      "account_id": "SYN_STUDY_SHOWCASE",
+      "data_tier": "synthetic",
+      "episode_id": "pe_3fe7915355a867569c23ad49fcacb9c1c55b50de3cb0b039955754b1d1fdfaa5",
+      "instrument_id": "SYN_FUND",
+      "limitations": [
+        "本结果只核对已记录操作与固定规则的一致性，不构成预测、收益评价或投资建议。",
+        "行情只按决策对应交易日之前的日收盘价截断；不会使用当日或之后的数据。",
+        "导入的复权历史不能保证公司行为在当时已知；日期截断并不等同于公司行为的时点可得性保证。",
+        "演示导出缺少规范交易所市场日期，因此仅在此演示文件中以操作时间日期代替；生产核对必须使用规范成交记录的市场日期。"
+      ],
+      "methods": [
+        {
+          "checks": [
+            {
+              "actual": {
+                "average_cost_before": null,
+                "price": 10.0,
+                "quantity": 2500.0,
+                "quantity_before": 0.0,
+                "side": "BUY"
+              },
+              "conditions": [],
+              "decision_id": "de_1eace69e7f7731b2db98c95c5a5f3af5bf4a5f558b88676286ecdf7004cf1ec0",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:02",
+              "expected_action": "无法判断",
+              "explanation": "趋势均线条件缺少可靠输入。",
+              "input_fingerprint": "166d59b34ad9b8c0661586f80b78d38abee5b8d26ee62cbab6964fde5a5c724e",
+              "limitations": [
+                "决策前没有可用日收盘价"
+              ],
+              "market_date": "2025-01-02",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-01-02T10:01:00",
+              "state_before_ref": "ps_f7e90aa8453fb1bcfeda1971c4d2dfef9c66354f59dfd1bec0523e02fe629801",
+              "verdict": "insufficient"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.0,
+                "price": 9.7,
+                "quantity": 500.0,
+                "quantity_before": 2500.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 9.6769,
+                  "label": "开仓／加仓条件：前一收盘价 vs SMA20",
+                  "operator": ">",
+                  "passed": false,
+                  "threshold": 9.775175,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_cda7a9edf22dfac8062f5ac8d98454d61c7f3364181ecd015d91849e2c99aa7d",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:05",
+              "expected_action": "减仓或退出",
+              "explanation": "前一有效收盘价为9.6769，20日简单移动平均线（SMA20）为9.77518；前者低于SMA20，记录的操作与趋势条件不相容。",
+              "input_fingerprint": "611e3df540a17647ee667bd297a8989d1ccc94fc770bd7b60a15b7b2f84f6a5b",
+              "limitations": [],
+              "market_date": "2025-03-03",
+              "observation_count": 42,
+              "observed_through": "2025-02-28",
+              "occurred_at": "2025-03-03T10:04:00",
+              "state_before_ref": "ps_7c55f14cadb2597872f704151ef88d7f88066720609bf009679a6eaeba875a72",
+              "verdict": "different"
+            },
+            {
+              "actual": {
+                "average_cost_before": 9.95,
+                "price": 11.2,
+                "quantity": 500.0,
+                "quantity_before": 3000.0,
+                "side": "SELL"
+              },
+              "conditions": [
+                {
+                  "actual": 11.15,
+                  "label": "减仓／退出条件：前一收盘价 vs SMA20",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 11.075230000000001,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_aa587a1c036da4891b9a3c7b887f858cb362b2d10d9f3ede9e0c60ae8e71c43d",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:16",
+              "expected_action": "持有或加仓",
+              "explanation": "前一有效收盘价为11.15，20日简单移动平均线（SMA20）为11.0752；前者高于SMA20，记录的操作与趋势条件不相容。",
+              "input_fingerprint": "cad59bf21aaad5bb3c0dfa30d15da2c3da1cc0a14c71e9ad9ed40cb780a06274",
+              "limitations": [],
+              "market_date": "2025-09-12",
+              "observation_count": 181,
+              "observed_through": "2025-09-11",
+              "occurred_at": "2025-09-12T10:15:00",
+              "state_before_ref": "ps_e882e3a1434e145fde0aa389ebcb2df5ab12c491145d2c3cdc1bbc2377e65a76",
+              "verdict": "different"
+            },
+            {
+              "actual": {
+                "average_cost_before": 9.95,
+                "price": 11.8,
+                "quantity": 400.0,
+                "quantity_before": 2500.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 11.7482,
+                  "label": "开仓／加仓条件：前一收盘价 vs SMA20",
+                  "operator": ">",
+                  "passed": true,
+                  "threshold": 11.638735,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_05b6144711d19bb245441823caa0b57ad6a9ee1ab3157e5a677f3716715cf626",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:19",
+              "expected_action": "持有或加仓",
+              "explanation": "前一有效收盘价为11.7482，20日简单移动平均线（SMA20）为11.6387；前者高于SMA20，操作与趋势条件相容。",
+              "input_fingerprint": "ac9a4bbb12b67ee265bc69d785eedb5e299a38f04c943244ddadfb97ba06c96d",
+              "limitations": [],
+              "market_date": "2025-11-07",
+              "observation_count": 221,
+              "observed_through": "2025-11-06",
+              "occurred_at": "2025-11-07T10:18:00",
+              "state_before_ref": "ps_2d47731b1bb56be35181984d684ee2a39b89ed41df65d0d2a051a89882f6b786",
+              "verdict": "aligned"
+            }
+          ],
+          "description": "以决策前最近有效收盘价和20日均线核对操作方向。",
+          "id": "trend_ma20",
+          "parameters": {
+            "window": 20.0
+          },
+          "rule": "前一有效收盘价高于20日均线时允许开仓／加仓；持仓跌破时应减仓或退出。",
+          "title": "20日均线趋势",
+          "version": "1"
+        },
+        {
+          "checks": [
+            {
+              "actual": {
+                "average_cost_before": null,
+                "price": 10.0,
+                "quantity": 2500.0,
+                "quantity_before": 0.0,
+                "side": "BUY"
+              },
+              "conditions": [],
+              "decision_id": "de_1eace69e7f7731b2db98c95c5a5f3af5bf4a5f558b88676286ecdf7004cf1ec0",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:02",
+              "expected_action": "无法判断",
+              "explanation": "突破条件缺少可靠输入。",
+              "input_fingerprint": "c13bfdb89376a1fd20e373802db34f16b70543e30d482b07dd8c0a54216ae872",
+              "limitations": [
+                "决策前没有可用日收盘价"
+              ],
+              "market_date": "2025-01-02",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-01-02T10:01:00",
+              "state_before_ref": "ps_f7e90aa8453fb1bcfeda1971c4d2dfef9c66354f59dfd1bec0523e02fe629801",
+              "verdict": "insufficient"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.0,
+                "price": 9.7,
+                "quantity": 500.0,
+                "quantity_before": 2500.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 9.6769,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": false,
+                  "threshold": 9.8791,
+                  "unit": "price"
+                },
+                {
+                  "actual": 9.6769,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": true,
+                  "threshold": 9.6809,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_cda7a9edf22dfac8062f5ac8d98454d61c7f3364181ecd015d91849e2c99aa7d",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:05",
+              "expected_action": "跌破10日低点后减仓或退出",
+              "explanation": "记录的操作不符合突破／退出条件。",
+              "input_fingerprint": "b04c3848df64a2686b81bb4dc06ad649e4c3a5eba759c87c7e1212806a518d23",
+              "limitations": [],
+              "market_date": "2025-03-03",
+              "observation_count": 42,
+              "observed_through": "2025-02-28",
+              "occurred_at": "2025-03-03T10:04:00",
+              "state_before_ref": "ps_7c55f14cadb2597872f704151ef88d7f88066720609bf009679a6eaeba875a72",
+              "verdict": "different"
+            },
+            {
+              "actual": {
+                "average_cost_before": 9.95,
+                "price": 11.2,
+                "quantity": 500.0,
+                "quantity_before": 3000.0,
+                "side": "SELL"
+              },
+              "conditions": [
+                {
+                  "actual": 11.15,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": false,
+                  "threshold": 11.2146,
+                  "unit": "price"
+                },
+                {
+                  "actual": 11.15,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 11.0465,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_aa587a1c036da4891b9a3c7b887f858cb362b2d10d9f3ede9e0c60ae8e71c43d",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:16",
+              "expected_action": "持有不变",
+              "explanation": "记录的操作不符合突破／退出条件。",
+              "input_fingerprint": "9c505c571923beb030683e8bd39fa1fc61113c0174f83a48a7f5958605bdb0b4",
+              "limitations": [],
+              "market_date": "2025-09-12",
+              "observation_count": 181,
+              "observed_through": "2025-09-11",
+              "occurred_at": "2025-09-12T10:15:00",
+              "state_before_ref": "ps_e882e3a1434e145fde0aa389ebcb2df5ab12c491145d2c3cdc1bbc2377e65a76",
+              "verdict": "different"
+            },
+            {
+              "actual": {
+                "average_cost_before": 9.95,
+                "price": 11.8,
+                "quantity": 400.0,
+                "quantity_before": 2500.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 11.7482,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": false,
+                  "threshold": 11.8042,
+                  "unit": "price"
+                },
+                {
+                  "actual": 11.7482,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 11.6108,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_05b6144711d19bb245441823caa0b57ad6a9ee1ab3157e5a677f3716715cf626",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:19",
+              "expected_action": "持有不变",
+              "explanation": "记录的操作不符合突破／退出条件。",
+              "input_fingerprint": "aa7c0a3c327493d8177e6aae181b71a2cdb97b2c7e3b9020919f9046c6114e68",
+              "limitations": [],
+              "market_date": "2025-11-07",
+              "observation_count": 221,
+              "observed_through": "2025-11-06",
+              "occurred_at": "2025-11-07T10:18:00",
+              "state_before_ref": "ps_2d47731b1bb56be35181984d684ee2a39b89ed41df65d0d2a051a89882f6b786",
+              "verdict": "different"
+            }
+          ],
+          "description": "以决策前日收盘价核对20日突破和10日低点退出条件。",
+          "id": "closing_breakout20",
+          "parameters": {
+            "breakout_window": 20.0,
+            "exit_window": 10.0
+          },
+          "rule": "突破严格高于此前20个收盘价；持仓时跌破此前10日低点才允许卖出。",
+          "title": "20日收盘突破",
+          "version": "1"
+        },
+        {
+          "checks": [
+            {
+              "actual": {
+                "average_cost_before": null,
+                "price": 10.0,
+                "quantity": 2500.0,
+                "quantity_before": 0.0,
+                "side": "BUY"
+              },
+              "conditions": [],
+              "decision_id": "de_1eace69e7f7731b2db98c95c5a5f3af5bf4a5f558b88676286ecdf7004cf1ec0",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:02",
+              "expected_action": "仅检查已有持仓后的买入",
+              "explanation": "该规则只适用于已有持仓后的买入操作。",
+              "input_fingerprint": "cf77fd9712d4cb5e927f972819c54f576bfe9e49168a42ff12609eb86584aab3",
+              "limitations": [],
+              "market_date": "2025-01-02",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-01-02T10:01:00",
+              "state_before_ref": "ps_f7e90aa8453fb1bcfeda1971c4d2dfef9c66354f59dfd1bec0523e02fe629801",
+              "verdict": "not_applicable"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.0,
+                "price": 9.7,
+                "quantity": 500.0,
+                "quantity_before": 2500.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 9.7,
+                  "label": "成交价",
+                  "operator": ">=",
+                  "passed": false,
+                  "threshold": 10.0,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_cda7a9edf22dfac8062f5ac8d98454d61c7f3364181ecd015d91849e2c99aa7d",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:05",
+              "expected_action": "成交价不低于操作前平均成本的加仓",
+              "explanation": "成交价低于操作前平均成本。",
+              "input_fingerprint": "2f79bc8be35dc5f55eddeb7f4a1b2b692473f385aad5f1a184e903a06c78e99a",
+              "limitations": [
+                "本规则只比较已记录成交价与未复算的回放平均成本；不使用行情价格。"
+              ],
+              "market_date": "2025-03-03",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-03-03T10:04:00",
+              "state_before_ref": "ps_7c55f14cadb2597872f704151ef88d7f88066720609bf009679a6eaeba875a72",
+              "verdict": "different"
+            },
+            {
+              "actual": {
+                "average_cost_before": 9.95,
+                "price": 11.2,
+                "quantity": 500.0,
+                "quantity_before": 3000.0,
+                "side": "SELL"
+              },
+              "conditions": [],
+              "decision_id": "de_aa587a1c036da4891b9a3c7b887f858cb362b2d10d9f3ede9e0c60ae8e71c43d",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:16",
+              "expected_action": "仅检查已有持仓后的买入",
+              "explanation": "该规则只适用于已有持仓后的买入操作。",
+              "input_fingerprint": "914f49d3850a46f0e2a51421bd414c81a432e803091602a067f5f6220b51ea59",
+              "limitations": [],
+              "market_date": "2025-09-12",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-09-12T10:15:00",
+              "state_before_ref": "ps_e882e3a1434e145fde0aa389ebcb2df5ab12c491145d2c3cdc1bbc2377e65a76",
+              "verdict": "not_applicable"
+            },
+            {
+              "actual": {
+                "average_cost_before": 9.95,
+                "price": 11.8,
+                "quantity": 400.0,
+                "quantity_before": 2500.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 11.8,
+                  "label": "成交价",
+                  "operator": ">=",
+                  "passed": true,
+                  "threshold": 9.95,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_05b6144711d19bb245441823caa0b57ad6a9ee1ab3157e5a677f3716715cf626",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:19",
+              "expected_action": "成交价不低于操作前平均成本的加仓",
+              "explanation": "成交价不低于操作前平均成本。",
+              "input_fingerprint": "5efb64bafd85d422eacc647fa01a14d304c111c13bf58357e794d0ca7c4dc6d6",
+              "limitations": [
+                "本规则只比较已记录成交价与未复算的回放平均成本；不使用行情价格。"
+              ],
+              "market_date": "2025-11-07",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-11-07T10:18:00",
+              "state_before_ref": "ps_2d47731b1bb56be35181984d684ee2a39b89ed41df65d0d2a051a89882f6b786",
+              "verdict": "aligned"
+            }
+          ],
+          "description": "仅核对已有持仓后的买入成交价是否不低于操作前平均成本。",
+          "id": "cost_addition",
+          "parameters": {
+            "minimum_cost_ratio": 1.0
+          },
+          "rule": "仅当已有持仓且为买入时，成交价应大于或等于回放操作前平均成本。",
+          "title": "成本加仓",
+          "version": "1"
+        }
+      ],
+      "schema_version": "decision_lens.v1",
+      "subject_id": "SYN_STUDY_SHOWCASE",
+      "temporal_policy": "prior_daily_close_only"
+    },
+    {
+      "account_id": "SYN_STUDY_SHOWCASE",
+      "data_tier": "synthetic",
+      "episode_id": "pe_6bcbc3de0f2a744a9e4b553187bb4dc1736f92c641e18dfee9dc0bfec309a964",
+      "instrument_id": "SYN_GROWTH",
+      "limitations": [
+        "本结果只核对已记录操作与固定规则的一致性，不构成预测、收益评价或投资建议。",
+        "行情只按决策对应交易日之前的日收盘价截断；不会使用当日或之后的数据。",
+        "导入的复权历史不能保证公司行为在当时已知；日期截断并不等同于公司行为的时点可得性保证。",
+        "演示导出缺少规范交易所市场日期，因此仅在此演示文件中以操作时间日期代替；生产核对必须使用规范成交记录的市场日期。"
+      ],
+      "methods": [
+        {
+          "checks": [
+            {
+              "actual": {
+                "average_cost_before": null,
+                "price": 10.0,
+                "quantity": 400.0,
+                "quantity_before": 0.0,
+                "side": "BUY"
+              },
+              "conditions": [],
+              "decision_id": "de_49e9602ab8db3843c5db21e074d35306752eea0e484373bb7e7fd2199ae00ae9",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:03",
+              "expected_action": "无法判断",
+              "explanation": "趋势均线条件缺少可靠输入。",
+              "input_fingerprint": "9ca0a2d2fea748b044a514a3815a7a64fc7d1330845121b5a580303b5243f6b8",
+              "limitations": [
+                "需要至少20个决策前有效日收盘价"
+              ],
+              "market_date": "2025-01-13",
+              "observation_count": 7,
+              "observed_through": "2025-01-10",
+              "occurred_at": "2025-01-13T10:02:00",
+              "state_before_ref": "ps_16d5e0ec4c10ee045a6b72a81b5edf6de930d74e2c2a88eaa8472bbba8f73d60",
+              "verdict": "insufficient"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.0,
+                "price": 11.2,
+                "quantity": 300.0,
+                "quantity_before": 400.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 11.0996,
+                  "label": "开仓／加仓条件：前一收盘价 vs SMA20",
+                  "operator": ">",
+                  "passed": true,
+                  "threshold": 10.53623,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_f6c413c192de60b6873c74bc8f6ed0eb9c10c7af993440d4cefd3628698ad83a",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:04",
+              "expected_action": "持有或加仓",
+              "explanation": "前一有效收盘价为11.0996，20日简单移动平均线（SMA20）为10.5362；前者高于SMA20，操作与趋势条件相容。",
+              "input_fingerprint": "c8c13a9c30b3b1adab94ab890cd664b5d1424347a8d28fef1513b7fab83ab46e",
+              "limitations": [],
+              "market_date": "2025-02-07",
+              "observation_count": 26,
+              "observed_through": "2025-02-06",
+              "occurred_at": "2025-02-07T10:03:00",
+              "state_before_ref": "ps_9d0c59db5bacfcaa7fa96423b529905fcc2a418d9e88a2e82b570b8ca900f31b",
+              "verdict": "aligned"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.514285714285714,
+                "price": 12.2,
+                "quantity": 400.0,
+                "quantity_before": 700.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 12.1887,
+                  "label": "开仓／加仓条件：前一收盘价 vs SMA20",
+                  "operator": ">",
+                  "passed": true,
+                  "threshold": 11.676425000000002,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_9eff92c05201ecd7b7a8869ae9bb2cb29866eeafad4b08919a6e518d1f22dff6",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:06",
+              "expected_action": "持有或加仓",
+              "explanation": "前一有效收盘价为12.1887，20日简单移动平均线（SMA20）为11.6764；前者高于SMA20，操作与趋势条件相容。",
+              "input_fingerprint": "12f71e837ba986507e04920384010f2de78e8aef559bc436795331d5b394e904",
+              "limitations": [],
+              "market_date": "2025-03-07",
+              "observation_count": 46,
+              "observed_through": "2025-03-06",
+              "occurred_at": "2025-03-07T10:05:00",
+              "state_before_ref": "ps_555f00a8ccad4e339925c7d50823fedfadc21045695fbe32deb6cfa53f6dd0d3",
+              "verdict": "aligned"
+            },
+            {
+              "actual": {
+                "average_cost_before": 11.127272727272727,
+                "price": 10.8,
+                "quantity": 400.0,
+                "quantity_before": 1100.0,
+                "side": "SELL"
+              },
+              "conditions": [
+                {
+                  "actual": 10.5494,
+                  "label": "减仓／退出条件：前一收盘价 vs SMA20",
+                  "operator": "<",
+                  "passed": true,
+                  "threshold": 11.530695000000001,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_88b72188dbcbd934fbf623865a4cc6eb16ed5c1f6780151f7da7a012a9065151",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:08",
+              "expected_action": "减仓或退出",
+              "explanation": "前一有效收盘价为10.5494，20日简单移动平均线（SMA20）为11.5307；前者低于SMA20，操作与趋势条件相容。",
+              "input_fingerprint": "b7202616ac0fea37048abbaee91562240d0027791de5e19b19fd342e6a47a489",
+              "limitations": [],
+              "market_date": "2025-04-10",
+              "observation_count": 70,
+              "observed_through": "2025-04-09",
+              "occurred_at": "2025-04-10T10:07:00",
+              "state_before_ref": "ps_c43a0a80438337123d938775e9ac72035980c90357a97c69cea044dd3d10309c",
+              "verdict": "aligned"
+            },
+            {
+              "actual": {
+                "average_cost_before": 11.127272727272727,
+                "price": 10.4,
+                "quantity": 300.0,
+                "quantity_before": 700.0,
+                "side": "SELL"
+              },
+              "conditions": [
+                {
+                  "actual": 10.4183,
+                  "label": "减仓／退出条件：前一收盘价 vs SMA20",
+                  "operator": "<",
+                  "passed": true,
+                  "threshold": 10.609575000000001,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_ed7db4391273224c1cddf84a13da787858136f8901a011520eafdd7c0cb3ed47",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:09",
+              "expected_action": "减仓或退出",
+              "explanation": "前一有效收盘价为10.4183，20日简单移动平均线（SMA20）为10.6096；前者低于SMA20，操作与趋势条件相容。",
+              "input_fingerprint": "a7b943d8b7d5f60f2fd1d3e3f9b04685f95da24fd7bc38f6550f83ea866ba914",
+              "limitations": [],
+              "market_date": "2025-05-08",
+              "observation_count": 90,
+              "observed_through": "2025-05-07",
+              "occurred_at": "2025-05-08T10:08:00",
+              "state_before_ref": "ps_1f6037feb5d6aa6535ba83523ad11b772f28fc3e0181b27f558a9c5d32d6b70c",
+              "verdict": "aligned"
+            },
+            {
+              "actual": {
+                "average_cost_before": 11.127272727272727,
+                "price": 10.5,
+                "quantity": 400.0,
+                "quantity_before": 400.0,
+                "side": "SELL"
+              },
+              "conditions": [
+                {
+                  "actual": 10.5463,
+                  "label": "减仓／退出条件：前一收盘价 vs SMA20",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 10.453025,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_2c63be4edbefad62ef29de1a6a4c6c8ee780c751ce9feb88754b1187d73c10e2",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:11",
+              "expected_action": "持有或加仓",
+              "explanation": "前一有效收盘价为10.5463，20日简单移动平均线（SMA20）为10.453；前者高于SMA20，记录的操作与趋势条件不相容。",
+              "input_fingerprint": "5850d3371cd20f947c4c9a2f55f8a199bde448f35890d03c6421491e49e5278b",
+              "limitations": [],
+              "market_date": "2025-06-06",
+              "observation_count": 111,
+              "observed_through": "2025-06-05",
+              "occurred_at": "2025-06-06T10:10:00",
+              "state_before_ref": "ps_a1e225cb3b1a40caa1be762b333934c4b26c8321006f080b7aefd916e400047e",
+              "verdict": "different"
+            }
+          ],
+          "description": "以决策前最近有效收盘价和20日均线核对操作方向。",
+          "id": "trend_ma20",
+          "parameters": {
+            "window": 20.0
+          },
+          "rule": "前一有效收盘价高于20日均线时允许开仓／加仓；持仓跌破时应减仓或退出。",
+          "title": "20日均线趋势",
+          "version": "1"
+        },
+        {
+          "checks": [
+            {
+              "actual": {
+                "average_cost_before": null,
+                "price": 10.0,
+                "quantity": 400.0,
+                "quantity_before": 0.0,
+                "side": "BUY"
+              },
+              "conditions": [],
+              "decision_id": "de_49e9602ab8db3843c5db21e074d35306752eea0e484373bb7e7fd2199ae00ae9",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:03",
+              "expected_action": "无法判断",
+              "explanation": "突破条件缺少可靠输入。",
+              "input_fingerprint": "1c75d9fb9aed725e12cd2542ded8c67b7a29340438c8411e9f5cda9227702fb2",
+              "limitations": [
+                "突破规则需要至少21个决策前有效日收盘价"
+              ],
+              "market_date": "2025-01-13",
+              "observation_count": 7,
+              "observed_through": "2025-01-10",
+              "occurred_at": "2025-01-13T10:02:00",
+              "state_before_ref": "ps_16d5e0ec4c10ee045a6b72a81b5edf6de930d74e2c2a88eaa8472bbba8f73d60",
+              "verdict": "insufficient"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.0,
+                "price": 11.2,
+                "quantity": 300.0,
+                "quantity_before": 400.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 11.0996,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": true,
+                  "threshold": 11.0583,
+                  "unit": "price"
+                },
+                {
+                  "actual": 11.0996,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 10.5436,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_f6c413c192de60b6873c74bc8f6ed0eb9c10c7af993440d4cefd3628698ad83a",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:04",
+              "expected_action": "突破后加仓",
+              "explanation": "记录的操作符合突破／退出条件。",
+              "input_fingerprint": "bff95b9747369f7c2e044be9cad599415195ea59ec2e01b7335e9958fdd005b7",
+              "limitations": [],
+              "market_date": "2025-02-07",
+              "observation_count": 26,
+              "observed_through": "2025-02-06",
+              "occurred_at": "2025-02-07T10:03:00",
+              "state_before_ref": "ps_9d0c59db5bacfcaa7fa96423b529905fcc2a418d9e88a2e82b570b8ca900f31b",
+              "verdict": "aligned"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.514285714285714,
+                "price": 12.2,
+                "quantity": 400.0,
+                "quantity_before": 700.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 12.1887,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": true,
+                  "threshold": 12.14,
+                  "unit": "price"
+                },
+                {
+                  "actual": 12.1887,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 11.6059,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_9eff92c05201ecd7b7a8869ae9bb2cb29866eeafad4b08919a6e518d1f22dff6",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:06",
+              "expected_action": "突破后加仓",
+              "explanation": "记录的操作符合突破／退出条件。",
+              "input_fingerprint": "7696c72ebcd362a90dbad8665833d3000862c898d65ae5d2bfdf769fb1c941ff",
+              "limitations": [],
+              "market_date": "2025-03-07",
+              "observation_count": 46,
+              "observed_through": "2025-03-06",
+              "occurred_at": "2025-03-07T10:05:00",
+              "state_before_ref": "ps_555f00a8ccad4e339925c7d50823fedfadc21045695fbe32deb6cfa53f6dd0d3",
+              "verdict": "aligned"
+            },
+            {
+              "actual": {
+                "average_cost_before": 11.127272727272727,
+                "price": 10.8,
+                "quantity": 400.0,
+                "quantity_before": 1100.0,
+                "side": "SELL"
+              },
+              "conditions": [
+                {
+                  "actual": 10.5494,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": false,
+                  "threshold": 12.8,
+                  "unit": "price"
+                },
+                {
+                  "actual": 10.5494,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 9.8,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_88b72188dbcbd934fbf623865a4cc6eb16ed5c1f6780151f7da7a012a9065151",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:08",
+              "expected_action": "持有不变",
+              "explanation": "记录的操作不符合突破／退出条件。",
+              "input_fingerprint": "8e84d52f6046ea5a8fa7909874001bf5706df37aeb3f77652bcc293c42c2026f",
+              "limitations": [],
+              "market_date": "2025-04-10",
+              "observation_count": 70,
+              "observed_through": "2025-04-09",
+              "occurred_at": "2025-04-10T10:07:00",
+              "state_before_ref": "ps_c43a0a80438337123d938775e9ac72035980c90357a97c69cea044dd3d10309c",
+              "verdict": "different"
+            },
+            {
+              "actual": {
+                "average_cost_before": 11.127272727272727,
+                "price": 10.4,
+                "quantity": 300.0,
+                "quantity_before": 700.0,
+                "side": "SELL"
+              },
+              "conditions": [
+                {
+                  "actual": 10.4183,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": false,
+                  "threshold": 10.8,
+                  "unit": "price"
+                },
+                {
+                  "actual": 10.4183,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": true,
+                  "threshold": 10.4327,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_ed7db4391273224c1cddf84a13da787858136f8901a011520eafdd7c0cb3ed47",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:09",
+              "expected_action": "跌破10日低点后减仓或退出",
+              "explanation": "记录的操作符合突破／退出条件。",
+              "input_fingerprint": "2210cfcb4004c7349dd06617219977cccce0ee58455a386f56f569833184627a",
+              "limitations": [],
+              "market_date": "2025-05-08",
+              "observation_count": 90,
+              "observed_through": "2025-05-07",
+              "occurred_at": "2025-05-08T10:08:00",
+              "state_before_ref": "ps_1f6037feb5d6aa6535ba83523ad11b772f28fc3e0181b27f558a9c5d32d6b70c",
+              "verdict": "aligned"
+            },
+            {
+              "actual": {
+                "average_cost_before": 11.127272727272727,
+                "price": 10.5,
+                "quantity": 400.0,
+                "quantity_before": 400.0,
+                "side": "SELL"
+              },
+              "conditions": [
+                {
+                  "actual": 10.5463,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": true,
+                  "threshold": 10.5244,
+                  "unit": "price"
+                },
+                {
+                  "actual": 10.5463,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 10.4037,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_2c63be4edbefad62ef29de1a6a4c6c8ee780c751ce9feb88754b1187d73c10e2",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:11",
+              "expected_action": "突破后加仓",
+              "explanation": "记录的操作不符合突破／退出条件。",
+              "input_fingerprint": "65746b776e3c4aae4c306ae7c20cb6b9a51efe1c726f820d4ac6cf3b2db6bb6c",
+              "limitations": [],
+              "market_date": "2025-06-06",
+              "observation_count": 111,
+              "observed_through": "2025-06-05",
+              "occurred_at": "2025-06-06T10:10:00",
+              "state_before_ref": "ps_a1e225cb3b1a40caa1be762b333934c4b26c8321006f080b7aefd916e400047e",
+              "verdict": "different"
+            }
+          ],
+          "description": "以决策前日收盘价核对20日突破和10日低点退出条件。",
+          "id": "closing_breakout20",
+          "parameters": {
+            "breakout_window": 20.0,
+            "exit_window": 10.0
+          },
+          "rule": "突破严格高于此前20个收盘价；持仓时跌破此前10日低点才允许卖出。",
+          "title": "20日收盘突破",
+          "version": "1"
+        },
+        {
+          "checks": [
+            {
+              "actual": {
+                "average_cost_before": null,
+                "price": 10.0,
+                "quantity": 400.0,
+                "quantity_before": 0.0,
+                "side": "BUY"
+              },
+              "conditions": [],
+              "decision_id": "de_49e9602ab8db3843c5db21e074d35306752eea0e484373bb7e7fd2199ae00ae9",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:03",
+              "expected_action": "仅检查已有持仓后的买入",
+              "explanation": "该规则只适用于已有持仓后的买入操作。",
+              "input_fingerprint": "aab50e1a6be97c9e581008dddb6bad5bb277e33bbe36cabb66c21cc631f18c97",
+              "limitations": [],
+              "market_date": "2025-01-13",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-01-13T10:02:00",
+              "state_before_ref": "ps_16d5e0ec4c10ee045a6b72a81b5edf6de930d74e2c2a88eaa8472bbba8f73d60",
+              "verdict": "not_applicable"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.0,
+                "price": 11.2,
+                "quantity": 300.0,
+                "quantity_before": 400.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 11.2,
+                  "label": "成交价",
+                  "operator": ">=",
+                  "passed": true,
+                  "threshold": 10.0,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_f6c413c192de60b6873c74bc8f6ed0eb9c10c7af993440d4cefd3628698ad83a",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:04",
+              "expected_action": "成交价不低于操作前平均成本的加仓",
+              "explanation": "成交价不低于操作前平均成本。",
+              "input_fingerprint": "dd98fdf07bd1263a155c77836814e59165d7b155b7d88de89a82b7edefd686ac",
+              "limitations": [
+                "本规则只比较已记录成交价与未复算的回放平均成本；不使用行情价格。"
+              ],
+              "market_date": "2025-02-07",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-02-07T10:03:00",
+              "state_before_ref": "ps_9d0c59db5bacfcaa7fa96423b529905fcc2a418d9e88a2e82b570b8ca900f31b",
+              "verdict": "aligned"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.514285714285714,
+                "price": 12.2,
+                "quantity": 400.0,
+                "quantity_before": 700.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 12.2,
+                  "label": "成交价",
+                  "operator": ">=",
+                  "passed": true,
+                  "threshold": 10.514285714285714,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_9eff92c05201ecd7b7a8869ae9bb2cb29866eeafad4b08919a6e518d1f22dff6",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:06",
+              "expected_action": "成交价不低于操作前平均成本的加仓",
+              "explanation": "成交价不低于操作前平均成本。",
+              "input_fingerprint": "ce982ea93b935b15f0f66cba204ee5ce3b12f4ae589e855769b5d4cebc9b3fe6",
+              "limitations": [
+                "本规则只比较已记录成交价与未复算的回放平均成本；不使用行情价格。"
+              ],
+              "market_date": "2025-03-07",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-03-07T10:05:00",
+              "state_before_ref": "ps_555f00a8ccad4e339925c7d50823fedfadc21045695fbe32deb6cfa53f6dd0d3",
+              "verdict": "aligned"
+            },
+            {
+              "actual": {
+                "average_cost_before": 11.127272727272727,
+                "price": 10.8,
+                "quantity": 400.0,
+                "quantity_before": 1100.0,
+                "side": "SELL"
+              },
+              "conditions": [],
+              "decision_id": "de_88b72188dbcbd934fbf623865a4cc6eb16ed5c1f6780151f7da7a012a9065151",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:08",
+              "expected_action": "仅检查已有持仓后的买入",
+              "explanation": "该规则只适用于已有持仓后的买入操作。",
+              "input_fingerprint": "9d619dd735ad2f70c6c15a15b8c70bf27577464d325ac1aaeea5d991edac6ce9",
+              "limitations": [],
+              "market_date": "2025-04-10",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-04-10T10:07:00",
+              "state_before_ref": "ps_c43a0a80438337123d938775e9ac72035980c90357a97c69cea044dd3d10309c",
+              "verdict": "not_applicable"
+            },
+            {
+              "actual": {
+                "average_cost_before": 11.127272727272727,
+                "price": 10.4,
+                "quantity": 300.0,
+                "quantity_before": 700.0,
+                "side": "SELL"
+              },
+              "conditions": [],
+              "decision_id": "de_ed7db4391273224c1cddf84a13da787858136f8901a011520eafdd7c0cb3ed47",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:09",
+              "expected_action": "仅检查已有持仓后的买入",
+              "explanation": "该规则只适用于已有持仓后的买入操作。",
+              "input_fingerprint": "b12a02c2097215dea2037138af1d67a8b2cc0f58a91836847ef19079ea76bd67",
+              "limitations": [],
+              "market_date": "2025-05-08",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-05-08T10:08:00",
+              "state_before_ref": "ps_1f6037feb5d6aa6535ba83523ad11b772f28fc3e0181b27f558a9c5d32d6b70c",
+              "verdict": "not_applicable"
+            },
+            {
+              "actual": {
+                "average_cost_before": 11.127272727272727,
+                "price": 10.5,
+                "quantity": 400.0,
+                "quantity_before": 400.0,
+                "side": "SELL"
+              },
+              "conditions": [],
+              "decision_id": "de_2c63be4edbefad62ef29de1a6a4c6c8ee780c751ce9feb88754b1187d73c10e2",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:11",
+              "expected_action": "仅检查已有持仓后的买入",
+              "explanation": "该规则只适用于已有持仓后的买入操作。",
+              "input_fingerprint": "968586f8c63119ca8812fa2d21367c5aacb055f0916092b300bf976b3f976541",
+              "limitations": [],
+              "market_date": "2025-06-06",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-06-06T10:10:00",
+              "state_before_ref": "ps_a1e225cb3b1a40caa1be762b333934c4b26c8321006f080b7aefd916e400047e",
+              "verdict": "not_applicable"
+            }
+          ],
+          "description": "仅核对已有持仓后的买入成交价是否不低于操作前平均成本。",
+          "id": "cost_addition",
+          "parameters": {
+            "minimum_cost_ratio": 1.0
+          },
+          "rule": "仅当已有持仓且为买入时，成交价应大于或等于回放操作前平均成本。",
+          "title": "成本加仓",
+          "version": "1"
+        }
+      ],
+      "schema_version": "decision_lens.v1",
+      "subject_id": "SYN_STUDY_SHOWCASE",
+      "temporal_policy": "prior_daily_close_only"
+    },
+    {
+      "account_id": "SYN_STUDY_SHOWCASE",
+      "data_tier": "synthetic",
+      "episode_id": "pe_b50024ffc458fa2d3fbc48fd88059e3fdf7e798f7b6566921faadaef055406b0",
+      "instrument_id": "SYN_GROWTH",
+      "limitations": [
+        "本结果只核对已记录操作与固定规则的一致性，不构成预测、收益评价或投资建议。",
+        "行情只按决策对应交易日之前的日收盘价截断；不会使用当日或之后的数据。",
+        "导入的复权历史不能保证公司行为在当时已知；日期截断并不等同于公司行为的时点可得性保证。",
+        "演示导出缺少规范交易所市场日期，因此仅在此演示文件中以操作时间日期代替；生产核对必须使用规范成交记录的市场日期。"
+      ],
+      "methods": [
+        {
+          "checks": [
+            {
+              "actual": {
+                "average_cost_before": null,
+                "price": 10.8,
+                "quantity": 600.0,
+                "quantity_before": 0.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 10.8187,
+                  "label": "开仓／加仓条件：前一收盘价 vs SMA20",
+                  "operator": ">",
+                  "passed": true,
+                  "threshold": 10.606225,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_2ca52f922bedfba7466d48a4030a35adfd40503e54b882dda4c0d48eb79f475e",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:13",
+              "expected_action": "允许开仓",
+              "explanation": "前一有效收盘价为10.8187，20日简单移动平均线（SMA20）为10.6062；前者高于SMA20，操作与趋势条件相容。",
+              "input_fingerprint": "e0fa03758df2f9d1744c042d566eb305ab17694f5d7a1876f0ba033b75811c68",
+              "limitations": [],
+              "market_date": "2025-07-11",
+              "observation_count": 136,
+              "observed_through": "2025-07-10",
+              "occurred_at": "2025-07-11T10:12:00",
+              "state_before_ref": "ps_628b6f724ffe03a367ded478b4e1a77ef8267aa6920a73953f7f80e7836188a6",
+              "verdict": "aligned"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.8,
+                "price": 10.2,
+                "quantity": 400.0,
+                "quantity_before": 600.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 10.1841,
+                  "label": "开仓／加仓条件：前一收盘价 vs SMA20",
+                  "operator": ">",
+                  "passed": false,
+                  "threshold": 10.512805,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_59fda0d32c91719b3587a7ce0fbd4a1091a5523b619be0f106256b3c25d31706",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:15",
+              "expected_action": "减仓或退出",
+              "explanation": "前一有效收盘价为10.1841，20日简单移动平均线（SMA20）为10.5128；前者低于SMA20，记录的操作与趋势条件不相容。",
+              "input_fingerprint": "de71977ed1b00779f225108d5af78538655a5e8be312dd972e0318dae49c64e9",
+              "limitations": [],
+              "market_date": "2025-08-08",
+              "observation_count": 156,
+              "observed_through": "2025-08-07",
+              "occurred_at": "2025-08-08T10:14:00",
+              "state_before_ref": "ps_2326f06211d472994b5175f94bf339a9a24808bd9223b33e290cc8c3f44f8c62",
+              "verdict": "different"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.56,
+                "price": 13.4,
+                "quantity": 300.0,
+                "quantity_before": 1000.0,
+                "side": "SELL"
+              },
+              "conditions": [
+                {
+                  "actual": 13.2679,
+                  "label": "减仓／退出条件：前一收盘价 vs SMA20",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 12.276385000000001,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_678176dc4903422d0de7cbce0eaf4cf897cde54c45ede40da8173be5c2674ff2",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:17",
+              "expected_action": "持有或加仓",
+              "explanation": "前一有效收盘价为13.2679，20日简单移动平均线（SMA20）为12.2764；前者高于SMA20，记录的操作与趋势条件不相容。",
+              "input_fingerprint": "d0d593a7d26f7363c3ad6c19507e54ab243d386bf1f34dbff0602f0ff4161e41",
+              "limitations": [],
+              "market_date": "2025-09-19",
+              "observation_count": 186,
+              "observed_through": "2025-09-18",
+              "occurred_at": "2025-09-19T10:16:00",
+              "state_before_ref": "ps_888bd9f781d5024e8d7777fda03f71a36be27094a169ed973cecce5df8ce74f5",
+              "verdict": "different"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.559999999999999,
+                "price": 12.6,
+                "quantity": 200.0,
+                "quantity_before": 700.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 12.6246,
+                  "label": "开仓／加仓条件：前一收盘价 vs SMA20",
+                  "operator": ">",
+                  "passed": false,
+                  "threshold": 13.055674999999999,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_0067514d93a80b34ee8aabe396daeb3b857110acbcf1726b2472a0232c647b1e",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:20",
+              "expected_action": "减仓或退出",
+              "explanation": "前一有效收盘价为12.6246，20日简单移动平均线（SMA20）为13.0557；前者低于SMA20，记录的操作与趋势条件不相容。",
+              "input_fingerprint": "4c544f24806fb2dc4fbcee21bc033937116d9827ad3da1935f3b7671baf07fc4",
+              "limitations": [],
+              "market_date": "2025-11-14",
+              "observation_count": 226,
+              "observed_through": "2025-11-13",
+              "occurred_at": "2025-11-14T10:19:00",
+              "state_before_ref": "ps_d42aa2fbf885024c982290a775fd9f0048d3ac4b010dd6a1ec2efd6e9886301a",
+              "verdict": "different"
+            }
+          ],
+          "description": "以决策前最近有效收盘价和20日均线核对操作方向。",
+          "id": "trend_ma20",
+          "parameters": {
+            "window": 20.0
+          },
+          "rule": "前一有效收盘价高于20日均线时允许开仓／加仓；持仓跌破时应减仓或退出。",
+          "title": "20日均线趋势",
+          "version": "1"
+        },
+        {
+          "checks": [
+            {
+              "actual": {
+                "average_cost_before": null,
+                "price": 10.8,
+                "quantity": 600.0,
+                "quantity_before": 0.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 10.8187,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": true,
+                  "threshold": 10.73,
+                  "unit": "price"
+                },
+                {
+                  "actual": 10.8187,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 10.5338,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_2ca52f922bedfba7466d48a4030a35adfd40503e54b882dda4c0d48eb79f475e",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:13",
+              "expected_action": "突破后开仓",
+              "explanation": "记录的操作符合突破／退出条件。",
+              "input_fingerprint": "79b428663d9bee82208a96edd2fc9997975c4a96091fb90a638b6bd17d344542",
+              "limitations": [],
+              "market_date": "2025-07-11",
+              "observation_count": 136,
+              "observed_through": "2025-07-10",
+              "occurred_at": "2025-07-11T10:12:00",
+              "state_before_ref": "ps_628b6f724ffe03a367ded478b4e1a77ef8267aa6920a73953f7f80e7836188a6",
+              "verdict": "aligned"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.8,
+                "price": 10.2,
+                "quantity": 400.0,
+                "quantity_before": 600.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 10.1841,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": false,
+                  "threshold": 10.8187,
+                  "unit": "price"
+                },
+                {
+                  "actual": 10.1841,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": true,
+                  "threshold": 10.2785,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_59fda0d32c91719b3587a7ce0fbd4a1091a5523b619be0f106256b3c25d31706",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:15",
+              "expected_action": "跌破10日低点后减仓或退出",
+              "explanation": "记录的操作不符合突破／退出条件。",
+              "input_fingerprint": "b97f349e260242b1ab97765f813d423f1616d765b88d01b3abfeb39900d0d2db",
+              "limitations": [],
+              "market_date": "2025-08-08",
+              "observation_count": 156,
+              "observed_through": "2025-08-07",
+              "occurred_at": "2025-08-08T10:14:00",
+              "state_before_ref": "ps_2326f06211d472994b5175f94bf339a9a24808bd9223b33e290cc8c3f44f8c62",
+              "verdict": "different"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.56,
+                "price": 13.4,
+                "quantity": 300.0,
+                "quantity_before": 1000.0,
+                "side": "SELL"
+              },
+              "conditions": [
+                {
+                  "actual": 13.2679,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": true,
+                  "threshold": 13.1305,
+                  "unit": "price"
+                },
+                {
+                  "actual": 13.2679,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 12.2826,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_678176dc4903422d0de7cbce0eaf4cf897cde54c45ede40da8173be5c2674ff2",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:17",
+              "expected_action": "突破后加仓",
+              "explanation": "记录的操作不符合突破／退出条件。",
+              "input_fingerprint": "843768daecc4f1d8bf42deac6709decc45800601f1be1c6ae3fba05f868679b0",
+              "limitations": [],
+              "market_date": "2025-09-19",
+              "observation_count": 186,
+              "observed_through": "2025-09-18",
+              "occurred_at": "2025-09-19T10:16:00",
+              "state_before_ref": "ps_888bd9f781d5024e8d7777fda03f71a36be27094a169ed973cecce5df8ce74f5",
+              "verdict": "different"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.559999999999999,
+                "price": 12.6,
+                "quantity": 200.0,
+                "quantity_before": 700.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 12.6246,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": false,
+                  "threshold": 13.5419,
+                  "unit": "price"
+                },
+                {
+                  "actual": 12.6246,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": true,
+                  "threshold": 12.6308,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_0067514d93a80b34ee8aabe396daeb3b857110acbcf1726b2472a0232c647b1e",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:20",
+              "expected_action": "跌破10日低点后减仓或退出",
+              "explanation": "记录的操作不符合突破／退出条件。",
+              "input_fingerprint": "15f338538963a754497e64c42583474c3cf93440b51c2bb072cfce33d907e1a6",
+              "limitations": [],
+              "market_date": "2025-11-14",
+              "observation_count": 226,
+              "observed_through": "2025-11-13",
+              "occurred_at": "2025-11-14T10:19:00",
+              "state_before_ref": "ps_d42aa2fbf885024c982290a775fd9f0048d3ac4b010dd6a1ec2efd6e9886301a",
+              "verdict": "different"
+            }
+          ],
+          "description": "以决策前日收盘价核对20日突破和10日低点退出条件。",
+          "id": "closing_breakout20",
+          "parameters": {
+            "breakout_window": 20.0,
+            "exit_window": 10.0
+          },
+          "rule": "突破严格高于此前20个收盘价；持仓时跌破此前10日低点才允许卖出。",
+          "title": "20日收盘突破",
+          "version": "1"
+        },
+        {
+          "checks": [
+            {
+              "actual": {
+                "average_cost_before": null,
+                "price": 10.8,
+                "quantity": 600.0,
+                "quantity_before": 0.0,
+                "side": "BUY"
+              },
+              "conditions": [],
+              "decision_id": "de_2ca52f922bedfba7466d48a4030a35adfd40503e54b882dda4c0d48eb79f475e",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:13",
+              "expected_action": "仅检查已有持仓后的买入",
+              "explanation": "该规则只适用于已有持仓后的买入操作。",
+              "input_fingerprint": "d0da1a41d753682c23e2736dacefb9f9a18eaa9884a15e711a7199b40804f35f",
+              "limitations": [],
+              "market_date": "2025-07-11",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-07-11T10:12:00",
+              "state_before_ref": "ps_628b6f724ffe03a367ded478b4e1a77ef8267aa6920a73953f7f80e7836188a6",
+              "verdict": "not_applicable"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.8,
+                "price": 10.2,
+                "quantity": 400.0,
+                "quantity_before": 600.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 10.2,
+                  "label": "成交价",
+                  "operator": ">=",
+                  "passed": false,
+                  "threshold": 10.8,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_59fda0d32c91719b3587a7ce0fbd4a1091a5523b619be0f106256b3c25d31706",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:15",
+              "expected_action": "成交价不低于操作前平均成本的加仓",
+              "explanation": "成交价低于操作前平均成本。",
+              "input_fingerprint": "079c6928898bd78ef1eb4ba28597f70b57339f74c1d7bdac5f1b4d247660f8d0",
+              "limitations": [
+                "本规则只比较已记录成交价与未复算的回放平均成本；不使用行情价格。"
+              ],
+              "market_date": "2025-08-08",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-08-08T10:14:00",
+              "state_before_ref": "ps_2326f06211d472994b5175f94bf339a9a24808bd9223b33e290cc8c3f44f8c62",
+              "verdict": "different"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.56,
+                "price": 13.4,
+                "quantity": 300.0,
+                "quantity_before": 1000.0,
+                "side": "SELL"
+              },
+              "conditions": [],
+              "decision_id": "de_678176dc4903422d0de7cbce0eaf4cf897cde54c45ede40da8173be5c2674ff2",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:17",
+              "expected_action": "仅检查已有持仓后的买入",
+              "explanation": "该规则只适用于已有持仓后的买入操作。",
+              "input_fingerprint": "a344b95590eca8705540de6765e8de28c041496f69a35e3004e03c7f8b9da85b",
+              "limitations": [],
+              "market_date": "2025-09-19",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-09-19T10:16:00",
+              "state_before_ref": "ps_888bd9f781d5024e8d7777fda03f71a36be27094a169ed973cecce5df8ce74f5",
+              "verdict": "not_applicable"
+            },
+            {
+              "actual": {
+                "average_cost_before": 10.559999999999999,
+                "price": 12.6,
+                "quantity": 200.0,
+                "quantity_before": 700.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 12.6,
+                  "label": "成交价",
+                  "operator": ">=",
+                  "passed": true,
+                  "threshold": 10.559999999999999,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_0067514d93a80b34ee8aabe396daeb3b857110acbcf1726b2472a0232c647b1e",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:20",
+              "expected_action": "成交价不低于操作前平均成本的加仓",
+              "explanation": "成交价不低于操作前平均成本。",
+              "input_fingerprint": "487f75e65a60ec160d611734f47dc4e22fca08f1e517b2f21411dbf5d07b769a",
+              "limitations": [
+                "本规则只比较已记录成交价与未复算的回放平均成本；不使用行情价格。"
+              ],
+              "market_date": "2025-11-14",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-11-14T10:19:00",
+              "state_before_ref": "ps_d42aa2fbf885024c982290a775fd9f0048d3ac4b010dd6a1ec2efd6e9886301a",
+              "verdict": "aligned"
+            }
+          ],
+          "description": "仅核对已有持仓后的买入成交价是否不低于操作前平均成本。",
+          "id": "cost_addition",
+          "parameters": {
+            "minimum_cost_ratio": 1.0
+          },
+          "rule": "仅当已有持仓且为买入时，成交价应大于或等于回放操作前平均成本。",
+          "title": "成本加仓",
+          "version": "1"
+        }
+      ],
+      "schema_version": "decision_lens.v1",
+      "subject_id": "SYN_STUDY_SHOWCASE",
+      "temporal_policy": "prior_daily_close_only"
+    },
+    {
+      "account_id": "SYN_STUDY_SHOWCASE",
+      "data_tier": "synthetic",
+      "episode_id": "pe_bd08cece56c4864ae21d513ca1b6373f20e675f351f4050bd237d4f544790e64",
+      "instrument_id": "SYN_VALUE",
+      "limitations": [
+        "本结果只核对已记录操作与固定规则的一致性，不构成预测、收益评价或投资建议。",
+        "行情只按决策对应交易日之前的日收盘价截断；不会使用当日或之后的数据。",
+        "导入的复权历史不能保证公司行为在当时已知；日期截断并不等同于公司行为的时点可得性保证。",
+        "演示导出缺少规范交易所市场日期，因此仅在此演示文件中以操作时间日期代替；生产核对必须使用规范成交记录的市场日期。"
+      ],
+      "methods": [
+        {
+          "checks": [
+            {
+              "actual": {
+                "average_cost_before": null,
+                "price": 25.0,
+                "quantity": 500.0,
+                "quantity_before": 0.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 25.0403,
+                  "label": "开仓／加仓条件：前一收盘价 vs SMA20",
+                  "operator": ">",
+                  "passed": false,
+                  "threshold": 25.102294999999998,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_c1a06e1ab562ddef14ae8cc9e2de8c2b9a21406c7e6feb9c8e6ed3911b9701cf",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:14",
+              "expected_action": "等待",
+              "explanation": "前一有效收盘价为25.0403，20日简单移动平均线（SMA20）为25.1023；前者低于SMA20，记录的操作与趋势条件不相容。",
+              "input_fingerprint": "7c3fa711c0bc2ec310d6b815697c65dd21878aef9ef125820298a6e0ce11929e",
+              "limitations": [],
+              "market_date": "2025-08-01",
+              "observation_count": 151,
+              "observed_through": "2025-07-31",
+              "occurred_at": "2025-08-01T10:13:00",
+              "state_before_ref": "ps_2641305d50fab8bf78bd090c9f45ae7dfbfe8734049b8c40c6900c6045174fba",
+              "verdict": "different"
+            },
+            {
+              "actual": {
+                "average_cost_before": 25.0,
+                "price": 27.0,
+                "quantity": 200.0,
+                "quantity_before": 500.0,
+                "side": "SELL"
+              },
+              "conditions": [
+                {
+                  "actual": 27.0934,
+                  "label": "减仓／退出条件：前一收盘价 vs SMA20",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 26.585615,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_1cc140faa2e44a05918520dae0694d92919acf28cdba70d0e97c2cc8cbc32799",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:18",
+              "expected_action": "持有或加仓",
+              "explanation": "前一有效收盘价为27.0934，20日简单移动平均线（SMA20）为26.5856；前者高于SMA20，记录的操作与趋势条件不相容。",
+              "input_fingerprint": "a303c5516e8c680932f284bd09bc3e7f2a8502fa5550076a04cee17f40418205",
+              "limitations": [],
+              "market_date": "2025-10-10",
+              "observation_count": 201,
+              "observed_through": "2025-10-09",
+              "occurred_at": "2025-10-10T10:17:00",
+              "state_before_ref": "ps_a069911f1ad3f95bc8298806be4d68a8bffac6ba3f3fe8d55cb4337cbb66e0f3",
+              "verdict": "different"
+            }
+          ],
+          "description": "以决策前最近有效收盘价和20日均线核对操作方向。",
+          "id": "trend_ma20",
+          "parameters": {
+            "window": 20.0
+          },
+          "rule": "前一有效收盘价高于20日均线时允许开仓／加仓；持仓跌破时应减仓或退出。",
+          "title": "20日均线趋势",
+          "version": "1"
+        },
+        {
+          "checks": [
+            {
+              "actual": {
+                "average_cost_before": null,
+                "price": 25.0,
+                "quantity": 500.0,
+                "quantity_before": 0.0,
+                "side": "BUY"
+              },
+              "conditions": [
+                {
+                  "actual": 25.0403,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": false,
+                  "threshold": 25.3066,
+                  "unit": "price"
+                },
+                {
+                  "actual": 25.0403,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 24.9431,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_c1a06e1ab562ddef14ae8cc9e2de8c2b9a21406c7e6feb9c8e6ed3911b9701cf",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:14",
+              "expected_action": "等待",
+              "explanation": "记录的操作不符合突破／退出条件。",
+              "input_fingerprint": "be5e1fb38087ed527169464127a8eaccba0b5eb8fcfb002c885a148368c0fd62",
+              "limitations": [],
+              "market_date": "2025-08-01",
+              "observation_count": 151,
+              "observed_through": "2025-07-31",
+              "occurred_at": "2025-08-01T10:13:00",
+              "state_before_ref": "ps_2641305d50fab8bf78bd090c9f45ae7dfbfe8734049b8c40c6900c6045174fba",
+              "verdict": "different"
+            },
+            {
+              "actual": {
+                "average_cost_before": 25.0,
+                "price": 27.0,
+                "quantity": 200.0,
+                "quantity_before": 500.0,
+                "side": "SELL"
+              },
+              "conditions": [
+                {
+                  "actual": 27.0934,
+                  "label": "前一有效收盘价 vs 此前20日最高收盘价",
+                  "operator": ">",
+                  "passed": true,
+                  "threshold": 26.9184,
+                  "unit": "price"
+                },
+                {
+                  "actual": 27.0934,
+                  "label": "前一有效收盘价 vs 此前10日最低收盘价",
+                  "operator": "<",
+                  "passed": false,
+                  "threshold": 26.467,
+                  "unit": "price"
+                }
+              ],
+              "decision_id": "de_1cc140faa2e44a05918520dae0694d92919acf28cdba70d0e97c2cc8cbc32799",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:18",
+              "expected_action": "突破后加仓",
+              "explanation": "记录的操作不符合突破／退出条件。",
+              "input_fingerprint": "ed018527c793411ba1f134a96ac4ce3b9e37015f58fe55b6920402cdcd1203f1",
+              "limitations": [],
+              "market_date": "2025-10-10",
+              "observation_count": 201,
+              "observed_through": "2025-10-09",
+              "occurred_at": "2025-10-10T10:17:00",
+              "state_before_ref": "ps_a069911f1ad3f95bc8298806be4d68a8bffac6ba3f3fe8d55cb4337cbb66e0f3",
+              "verdict": "different"
+            }
+          ],
+          "description": "以决策前日收盘价核对20日突破和10日低点退出条件。",
+          "id": "closing_breakout20",
+          "parameters": {
+            "breakout_window": 20.0,
+            "exit_window": 10.0
+          },
+          "rule": "突破严格高于此前20个收盘价；持仓时跌破此前10日低点才允许卖出。",
+          "title": "20日收盘突破",
+          "version": "1"
+        },
+        {
+          "checks": [
+            {
+              "actual": {
+                "average_cost_before": null,
+                "price": 25.0,
+                "quantity": 500.0,
+                "quantity_before": 0.0,
+                "side": "BUY"
+              },
+              "conditions": [],
+              "decision_id": "de_c1a06e1ab562ddef14ae8cc9e2de8c2b9a21406c7e6feb9c8e6ed3911b9701cf",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:14",
+              "expected_action": "仅检查已有持仓后的买入",
+              "explanation": "该规则只适用于已有持仓后的买入操作。",
+              "input_fingerprint": "a3341e8decc9af7aa8c27e038bae17fd37e577da555b58653357093b026cbe9d",
+              "limitations": [],
+              "market_date": "2025-08-01",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-08-01T10:13:00",
+              "state_before_ref": "ps_2641305d50fab8bf78bd090c9f45ae7dfbfe8734049b8c40c6900c6045174fba",
+              "verdict": "not_applicable"
+            },
+            {
+              "actual": {
+                "average_cost_before": 25.0,
+                "price": 27.0,
+                "quantity": 200.0,
+                "quantity_before": 500.0,
+                "side": "SELL"
+              },
+              "conditions": [],
+              "decision_id": "de_1cc140faa2e44a05918520dae0694d92919acf28cdba70d0e97c2cc8cbc32799",
+              "execution_id": "SYN_STUDY_SHOWCASE:execution:18",
+              "expected_action": "仅检查已有持仓后的买入",
+              "explanation": "该规则只适用于已有持仓后的买入操作。",
+              "input_fingerprint": "1f0c78a4ff394505600b38daee23ebec400230325a4ffcd51d69d24bd82ec9b4",
+              "limitations": [],
+              "market_date": "2025-10-10",
+              "observation_count": 0,
+              "observed_through": null,
+              "occurred_at": "2025-10-10T10:17:00",
+              "state_before_ref": "ps_a069911f1ad3f95bc8298806be4d68a8bffac6ba3f3fe8d55cb4337cbb66e0f3",
+              "verdict": "not_applicable"
+            }
+          ],
+          "description": "仅核对已有持仓后的买入成交价是否不低于操作前平均成本。",
+          "id": "cost_addition",
+          "parameters": {
+            "minimum_cost_ratio": 1.0
+          },
+          "rule": "仅当已有持仓且为买入时，成交价应大于或等于回放操作前平均成本。",
+          "title": "成本加仓",
+          "version": "1"
+        }
+      ],
+      "schema_version": "decision_lens.v1",
+      "subject_id": "SYN_STUDY_SHOWCASE",
+      "temporal_policy": "prior_daily_close_only"
+    }
+  ]
+}

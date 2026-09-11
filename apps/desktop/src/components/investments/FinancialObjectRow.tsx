@@ -3,13 +3,17 @@ import { Link } from "react-router-dom";
 import { formatCurrencyValue } from "@/lib/format";
 import type { InvestmentEpisodeRowView } from "@/data/investments";
 import { useLocale } from "@/locales/LocaleProvider";
+import { showcaseInstrumentName } from "@/data/showcaseDemo";
 
 export function FinancialObjectRow({ episode, compact = false }: { episode: InvestmentEpisodeRowView; compact?: boolean; primary?: boolean }) {
   const { locale, t, formatPercent } = useLocale();
   const date = (value: string) => new Intl.DateTimeFormat(locale, { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value));
   const result = episode.outcome;
+  const displayName = episode.isSynthetic
+    ? showcaseInstrumentName(episode.instrumentId, locale, episode.displayName)
+    : t(episode.displayName);
   return <Link className="archive-row" data-compact={compact || undefined} to={`/investments/episodes/${episode.episodeId}`}>
-    <div><strong className="block text-sm font-medium">{t(episode.displayName)}</strong><span className="mt-1 block text-xs text-muted">{t(episode.status === "open" ? "Holding" : "Closed")}</span></div>
+    <div><strong className="block text-sm font-medium">{displayName}</strong><span className="mt-1 block text-xs text-muted">{t(episode.status === "open" ? "Holding" : "Closed")}</span></div>
     <div className="text-xs leading-6 text-muted">{date(episode.openedAt)} → {episode.closedAt ? date(episode.closedAt) : t("Present")}</div>
     <div className="flex items-center justify-between gap-3">
       <div>{result.availability === "available" && result.pnl !== null ? <>

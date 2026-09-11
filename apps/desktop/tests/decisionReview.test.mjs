@@ -31,9 +31,11 @@ test("desktop gate, loading, explicit model consent and note invalidation remain
   assert.match(source, /Browser · Offline Runtime/);
   assert.match(source, /No model has been called/);
   assert.match(source, /disabled=\{busy \|\| loading \|\| !consent\}/);
-  assert.match(source, /response.status !== "running"/);
+  const session = await readFile(new URL("../src/data/reviewSession.ts", import.meta.url), "utf8");
+  assert.match(session, /response.status !== "running"/);
   assert.match(source, /guard.current.accepts\(ticket\)/);
-  assert.match(source, /setAnswer\(null\)/);
+  assert.match(session, /invalidate\(subject: string, account: string\)/);
+  assert.match(session, /answer:null/);
   assert.doesNotMatch(source, /dangerouslySetInnerHTML/);
 });
 test("service uses only narrow review/share RPC and never invents a browser model response", async () => {

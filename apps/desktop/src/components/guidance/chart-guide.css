@@ -1,0 +1,32 @@
+.chart-guide {
+  position: sticky;
+  z-index: 12;
+  top: 0.75rem;
+  margin: 0.75rem 0;
+  max-width: 42rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--border));
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--background) 76%, transparent);
+  box-shadow: 0 16px 48px rgb(0 0 0 / 18%);
+  backdrop-filter: blur(18px) saturate(130%);
+  padding: 0.9rem 1rem;
+}
+.chart-guide__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.chart-guide__head p { margin: 0; color: var(--muted); font-size: .71rem; letter-spacing: .08em; }
+.chart-guide__head h2, .chart-guide h3, .chart-guide p { margin-top: .35rem; }
+.chart-guide__head h2 { font-size: .95rem; }
+.chart-guide__head button, .chart-guide__actions button { border: 0; background: transparent; color: var(--foreground); cursor: pointer; }
+.chart-guide__head button { display: inline-grid; place-items: center; padding: .25rem; }
+.chart-guide h3 { font-size: .92rem; }
+.chart-guide > p { color: var(--muted); font-size: .8rem; line-height: 1.55; }
+.chart-guide__actions { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; margin-top: .8rem; }
+.chart-guide__actions button { display: inline-flex; align-items: center; gap: .15rem; border-radius: .55rem; padding: .38rem .55rem; font-size: .76rem; }
+.chart-guide__actions button:not(.chart-guide__skip) { background: color-mix(in srgb, var(--accent) 15%, transparent); }
+.chart-guide__actions button:disabled { cursor: default; opacity: .42; }
+.chart-guide__skip { color: var(--muted) !important; }
+[data-chart-guide-highlight="true"] { outline: 2px solid color-mix(in srgb, var(--accent) 78%, white); outline-offset: 5px; border-radius: .8rem; box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 13%, transparent); }
+.investment-chart-canvas-guide { position: relative; }
+/* KLineChart draws both panes inside one canvas; this bounded overlay follows its 115px quantity pane. */
+.investment-chart-quantity-guide-target { position: absolute; right: 0; bottom: 0; left: 0; height: 115px; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { [data-chart-guide-highlight="true"] { transition: none; } }
+@media (max-width: 640px) { .chart-guide { top: .35rem; margin-inline: -.25rem; } }

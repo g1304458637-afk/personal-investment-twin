@@ -22,7 +22,8 @@ def test_archive_results_copy_outcome_once_without_building_paths(tmp_path, monk
         calls.append(result)
         return result
     monkeypatch.setattr(investment_archive, "build_actual_outcomes", recorded)
-    monkeypatch.setattr("toujing_core_runtime.product.episode_entry", lambda *a, **k: pytest.fail("list built full Episode"))
+    # ProductRuntime now imports this function lazily; patch its defining module.
+    monkeypatch.setattr("src.presentation.runtime_episode.episode_entry", lambda *a, **k: pytest.fail("list built full Episode"))
     try:
         result = runtime.investments(trade_params())
         assert len(calls) == 1

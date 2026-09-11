@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 
 import { StateNotice } from "@/components/common/StateNotice";
 import { positionEpisodeDemo } from "@/data/backendEvidence";
+import { showcaseInstrumentName } from "@/data/showcaseDemo";
 import { adaptDemoInvestmentsCatalog, archiveRows } from "@/data/investments";
-import { belongsToExample } from "@/data/accountContext";
+import { belongsToExample, exampleAccountLabel } from "@/data/accountContext";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useDataMode } from "@/data/DataModeProvider";
@@ -14,24 +15,30 @@ import { formatCurrencyValue } from "@/lib/format";
 import { useLocale } from "@/locales/LocaleProvider";
 
 import "./episode-workspace.css";
+import { useLiquidCopy } from "@/workspace/liquidCopy";
 
 function InvestmentRow({ episode }: { episode: import("@/data/investments").InvestmentEpisodeRowView }) {
   const { locale, t, formatPercent } = useLocale();
+  const c = useLiquidCopy();
+  const displayName = episode.isSynthetic
+    ? showcaseInstrumentName(episode.instrumentId, locale, episode.displayName)
+    : t(episode.displayName);
   const date = (value: string) => new Intl.DateTimeFormat(locale, { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value));
   const outcome = episode.outcome;
   const pnl = outcome.pnl;
   const resultAvailable = outcome.availability === "available" && pnl !== null;
-  return <Link className="iw-investment-row" to={`/investments/episodes/${episode.episodeId}`}>
-    <div><strong className="iw-row-name">{t(episode.displayName)}</strong><span className="iw-row-meta">{episode.instrumentId} · {t("One investment experience")}</span></div>
+  return <Link className="iw-investment-row lg-interactive" to={`/investments/episodes/${episode.episodeId}`}>
+    <div><strong className="iw-row-name">{displayName}</strong><span className="iw-row-meta">{episode.instrumentId} · {t("One investment experience")}</span></div>
     <div><span className="iw-status" data-open={episode.status === "open" || undefined}>{t(episode.status === "open" ? "Holding" : "Closed")}</span><span className="iw-row-meta">{date(episode.openedAt)} → {episode.closedAt ? date(episode.closedAt) : t("Present")}</span></div>
     <div className="iw-result">{resultAvailable && pnl !== null ? <><strong className={`iw-result-value ${pnl < 0 ? "text-negative" : pnl > 0 ? "text-positive" : "text-foreground"}`}>{formatCurrencyValue(pnl, locale, episode.currency)}</strong><p className="iw-result-label">{t(outcome.result_kind === "marked" ? "Current marked result" : "Final realized result")}{outcome.return_value !== null ? ` · ${formatPercent(outcome.return_value, 2)}` : ""}</p></> : <><strong className="text-sm text-foreground">{t("Result unavailable")}</strong><p className="iw-result-label">{t(outcome.reason ?? "No authoritative result is available.")}</p></>}</div>
-    <ArrowUpRight className="size-4 text-muted" aria-hidden="true" />
+    <span className="lg-investment-action">{c.cardAction}<ArrowUpRight className="size-4" aria-hidden="true" /></span>
   </Link>;
 }
 
 export function InvestmentsPage() {
   const { locale, t } = useLocale();
   const data = useDataMode();
+  const glass = useLiquidCopy();
   const [filter, setFilter] = useState<"open" | "closed" | "all">("all");
   const [query, setQuery] = useState("");
   useEffect(() => { setFilter("all"); setQuery(""); }, [data.mode, data.activeAccount, data.exampleAccount]);
@@ -64,7 +71,7 @@ export function InvestmentsPage() {
       primaryEpisodeId: null };
   }, [data.mode, runtime, data.exampleAccount]);
   if (data.mode === "real_user" && !data.activeAccount) return <div className="page iw-investments iw-investments--empty">
-    <header className="iw-investments-head"><div><p className="iw-kicker">{t("Investment intelligence")}</p><h1 className="iw-investments-title">{t("Start with recorded facts")}</h1><p className="iw-subtle mt-3 max-w-xl">{t("Choose a local account or import executions to reconstruct investment experiences. Nothing is estimated, sent to a model, or written back from this workspace.")}</p></div></header>
+    <header className="iw-investments-head"><div><p className="iw-kicker">{t("Investment intelligence")}</p><h1 className="iw-investments-title">{glass.emptyTitle}</h1><p className="iw-subtle mt-3 max-w-xl">{glass.emptyDetail}</p></div></header>
     <section className="iw-onboarding iw-inset"><div><p className="iw-kicker">{t("Account required")}</p><h2>{t("Open your investment workspace")}</h2><p className="iw-subtle mt-2">{t("An account context is required before authoritative investment experiences can be shown.")}</p></div><div className="iw-onboarding-actions"><div><span>01</span><strong>{t("Import recorded executions")}</strong><p>{t("Create a local account context from your own files, then review each complete investment path.")}</p><Button asChild variant="primary"><Link to="/data">{t("Import data")}</Link></Button></div><div><span>02</span><strong>{t("Explore a synthetic preview")}</strong><p>{t("Preview data is clearly labelled, stays separate from your account, and never writes to your records.")}</p><Button variant="quiet" onClick={() => data.setMode("demo")}>{t("View example account")}</Button></div></div></section>
     {data.accountsLoading || data.accountError ? <div className="mt-4"><StateNotice compact state={data.accountError ? "error" : "loading"} title={t(data.accountError ? "Could not read local accounts" : "Opening local accounts…")} detail={data.accountError ?? t("Checking the local account directory.")} /></div> : null}
   </div>;
@@ -72,7 +79,7 @@ export function InvestmentsPage() {
   const date = (value: string) => Number.isNaN(Date.parse(value)) ? "—" : new Intl.DateTimeFormat(locale, { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value));
   const rows = archiveRows([...view.openEpisodes, ...view.closedEpisodes], filter, query);
   const hasInvestments = view.openEpisodes.length > 0 || view.closedEpisodes.length > 0;
-  const accountName = data.mode === "demo" ? t("Example account · Synthetic") : data.activeAccount?.display_name ?? t("Selected account");
+  const accountName = data.mode === "demo" ? exampleAccountLabel(data.exampleAccount, locale) : data.activeAccount?.display_name ?? t("Selected account");
   return <div className="page iw-investments">
     <header className="iw-investments-head"><div><p className="iw-kicker">{t("Investment intelligence")}</p><h1 className="iw-investments-title">{t("My Investments")}</h1><p className="iw-subtle mt-3 max-w-2xl">{t("Every entry is one complete investment experience reconstructed from recorded executions — including later re-entries in the same security.")}</p></div><div className="iw-context"><span><strong>{accountName}</strong></span><span>{t("Data as of {date}", {date: date(view.asOf)})}</span><span>{view.dataTier === "synthetic" ? t("Synthetic preview") : t("Authorized account")}</span></div></header>
     {view.portfolioState.status !== "available" ? <StateNotice state="insufficient" title={t("Portfolio state is unavailable")} detail={t(view.portfolioState.reason ?? "The current position state cannot be shown from the available facts.")} /> : null}

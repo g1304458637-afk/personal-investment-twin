@@ -1,0 +1,30 @@
+.pretrade-allocation { padding: 28px; background: linear-gradient(125deg, rgba(141,187,220,.055), transparent 60%); }
+.pretrade-allocation h2 { font-size: clamp(20px, 2vw, 28px); font-weight: 500; margin: 0 0 10px; }
+.pretrade-allocation header p, .allocation-caption, .pretrade-allocation footer p { color: hsl(var(--muted)); font-size: 13px; line-height: 1.8; }
+.allocation-basis { display: flex; flex-wrap: wrap; gap: 6px; margin: 20px 0 8px; }
+.allocation-basis button { padding: 9px 16px; border-radius: 20px; background: rgba(135,164,197,.06); font-size: 13px; transition: background .2s; }
+.allocation-basis button[aria-pressed=true] { background: rgba(147,195,227,.18); }
+.allocation-pair { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 24px; margin: 25px 0; }
+.allocation-state { text-align: center; min-width: 0; }
+.allocation-state h3 { font-size: 15px; font-weight: 500; }
+.allocation-ring { position: relative; height: 280px; }
+.allocation-ring .allocation-chart { height: 280px !important; width: 100%; }
+.allocation-center { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; pointer-events: none; }
+.allocation-center span { max-width: 50%; overflow-wrap: anywhere; font-size: 12px; opacity: .75; }
+.allocation-center strong { font-size: clamp(22px,3vw,34px); font-weight: 500; font-variant-numeric: tabular-nums; }
+.allocation-center small { font-size: 11px; opacity: .6; }
+.allocation-legend { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 5px 16px; }
+.allocation-legend button { display: grid; grid-template-columns: 8px minmax(0,1fr) auto; align-items: center; gap: 10px; padding: 12px; border-radius: 10px; text-align: left; transition: background .2s; }
+.allocation-legend button:hover, .allocation-legend button[aria-pressed=true] { background: linear-gradient(110deg,rgba(147,195,227,.15),rgba(173,159,218,.04)); }
+.allocation-legend i { width: 8px; height: 8px; border-radius: 50%; }
+.allocation-legend span { font-size: 12px; overflow-wrap: anywhere; }
+.allocation-legend small { font-size: 11px; font-variant-numeric: tabular-nums; opacity: .7; }
+.allocation-detail { display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px; padding: 20px 12px; margin-top: 12px; background: rgba(140,175,203,.05); border-radius: 12px; font-size: 13px; }
+.allocation-detail span { opacity: .6; }.allocation-detail b { margin-left: auto; font-weight: 500; font-variant-numeric: tabular-nums; }
+.pretrade-allocation footer { margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(147,180,200,.12); }
+.pretrade-allocation footer strong { font-size: 13px; font-weight: 500; }
+.pretrade-allocation footer p { margin-top: 6px; }
+.pretrade-allocation button:focus-visible { outline: 2px solid #9ccfea; outline-offset: 3px; }
+@media(max-width: 720px) { .pretrade-allocation { padding: 20px; }.allocation-pair { gap: 8px; }.allocation-ring,.allocation-ring .allocation-chart { height: 210px !important; }.allocation-legend { grid-template-columns: 1fr; } }
+@media(max-width: 460px) { .allocation-pair { grid-template-columns: 1fr; } }
+@media(prefers-reduced-motion: reduce) { .pretrade-allocation button { transition: none; } }

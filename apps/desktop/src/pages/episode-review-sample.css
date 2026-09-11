@@ -1,0 +1,43 @@
+/* Approved default review layout. Legacy detail remains explicitly available. */
+.intelligence-workspace .episode-review-sample { max-width:1320px; }
+.intelligence-workspace .episode-review-sample [hidden] { display:none!important; }
+.episode-sample-switch { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.episode-sample-switch button { font-size:11px; color:var(--iw-soft); text-decoration:underline; text-underline-offset:4px; }
+.intelligence-workspace.liquid-workspace .episode-review-sample .iw-episode-hero { padding:4px 0 12px; background:none; box-shadow:none; border:0; backdrop-filter:none; border-radius:0; gap:36px; }
+.intelligence-workspace.liquid-workspace .episode-review-sample .iw-episode-hero::before { display:none; }
+.intelligence-workspace .episode-review-sample .iw-episode-title { font-size:30px; }
+.intelligence-workspace .episode-review-sample .iw-story { font-size:12px; line-height:1.8; max-width:72ch; border:0; padding-top:0; margin-top:10px; color:var(--iw-soft); }
+.intelligence-workspace .episode-review-sample .iw-episode-period { margin-top:8px; }
+.intelligence-workspace .episode-review-sample .iw-episode-toolbar { margin-bottom:4px; }
+.intelligence-workspace .episode-review-sample .iw-outcome { border:0; padding:0 0 0 20px; }
+.intelligence-workspace .episode-review-sample .iw-outcome-value { font-size:32px; margin-top:8px; }
+.intelligence-workspace .episode-review-sample .iw-outcome-foot { margin-top:7px; }
+.episode-sample-nav { display:flex; gap:26px; border-bottom:1px solid hsl(var(--border)/.6); margin:2px 0 18px; overflow-x:auto; }
+.episode-sample-nav button { flex-shrink:0; position:relative; padding:14px 0; color:hsl(var(--muted)); font-size:12px; }
+.episode-sample-nav button[aria-pressed="true"] { color:hsl(var(--foreground)); box-shadow:inset 0 -2px hsl(var(--accent)); }
+.episode-sample-nav button:focus-visible,.episode-sample-switch button:focus-visible { outline:2px solid hsl(var(--accent)); outline-offset:3px; }
+.intelligence-workspace .episode-review-sample .iw-episode-main { margin-top:0; grid-template-columns:minmax(0,1fr) 270px; gap:20px; align-items:start; }
+.intelligence-workspace.liquid-workspace .episode-review-sample .iw-chart-panel[data-price-path] { background:hsl(var(--canvas)/.92); border-radius:16px; }
+.intelligence-workspace.liquid-workspace .episode-review-sample .iw-facts { background:hsl(var(--canvas)/.25); border:0; box-shadow:none; padding:2px 0; backdrop-filter:blur(12px); }
+.intelligence-workspace.liquid-workspace .episode-review-sample .iw-facts::before { display:none; }
+.intelligence-workspace .episode-review-sample .iw-facts-title { padding:4px 16px 12px; }
+.intelligence-workspace .episode-review-sample .iw-fact { padding:17px 16px; margin:3px 0; border-bottom:1px solid hsl(var(--border)/.35); border-radius:8px; }
+.intelligence-workspace .episode-review-sample .iw-fact strong { font-size:13px; font-weight:500; }
+.intelligence-workspace .episode-review-sample .iw-fact span { margin-top:9px; line-height:1.8; }
+.episode-fact-action { display:flex!important; align-items:center; justify-content:space-between; color:hsl(var(--accent))!important; font-size:10px!important; }
+.episode-focus-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; font-size:11px; color:hsl(var(--muted)); margin-bottom:14px; }
+.episode-focus-toolbar button { color:hsl(var(--accent)); }
+.intelligence-workspace .episode-review-sample .iw-detail-grid { display:block; margin-top:0; }
+.episode-sample-description { font-size:12px; color:hsl(var(--muted)); line-height:1.8; margin-bottom:18px; }
+.episode-sample-analysis { padding:26px; border-radius:18px; background:hsl(var(--canvas)/.72); }
+.episode-sample-analysis h2 { font-size:22px; margin-bottom:10px; font-weight:450; }
+.episode-sample-unavailable { margin-top:26px; border-top:1px solid hsl(var(--border)/.6); padding-top:24px; max-width:70ch; }
+.episode-sample-unavailable strong { font-weight:500; font-size:14px; }
+.episode-sample-unavailable p { margin-top:12px; font-size:13px; line-height:1.9; color:hsl(var(--muted)); }
+.episode-sample-boundary { color:hsl(var(--muted)); font-size:11px; line-height:1.8; margin-top:28px; }
+.episode-sample-analysis [data-decision-analysis] { margin-top:18px; }
+.review-answer-basis { padding-top:10px; }
+.review-answer-basis[open] { display:grid; gap:12px; }
+.review-offline textarea { min-height:90px; margin-top:10px; opacity:.6; }
+@media(max-width:1050px) { .intelligence-workspace .episode-review-sample .iw-episode-main { grid-template-columns:minmax(0,1fr); }.intelligence-workspace .episode-review-sample .iw-facts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }.intelligence-workspace .episode-review-sample .iw-facts-title { grid-column:1/-1; } }
+@media(max-width:640px) { .intelligence-workspace.liquid-workspace .episode-review-sample .iw-episode-hero { grid-template-columns:1fr; gap:18px; }.intelligence-workspace .episode-review-sample .iw-outcome { text-align:left; padding:0; }.intelligence-workspace .episode-review-sample .iw-facts { display:block; }.episode-sample-nav { gap:24px; }.episode-sample-analysis { padding:20px; } }

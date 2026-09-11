@@ -10,6 +10,7 @@
     "frontendDist": "../dist"
   },
   "app": {
+    "macOSPrivateApi": true,
     "withGlobalTauri": false,
     "windows": [
       {
@@ -30,11 +31,18 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' asset: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ipc: http://ipc.localhost ws://127.0.0.1:1421"
+      "csp": "default-src 'self'; media-src 'self' https://d8j0ntlcm91z4.cloudfront.net; img-src 'self' asset: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ipc: http://ipc.localhost ws://127.0.0.1:1421"
     }
   },
   "bundle": {
     "active": true,
+    "icon": [
+      "icons/toujing/32x32.png",
+      "icons/toujing/128x128.png",
+      "icons/toujing/128x128@2x.png",
+      "icons/toujing/icon.icns",
+      "icons/toujing/icon.ico"
+    ],
     "externalBin": ["binaries/toujing-core"],
     "targets": "all",
     "category": "Finance",

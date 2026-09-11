@@ -1,27 +1,37 @@
-import { AlertCircle, FlaskConical, LoaderCircle, Scale } from "lucide-react";
+import { LoaderCircle, Scale } from "lucide-react";
 import { useMemo, useReducer, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { GlassPanel } from "@/components/common/GlassPanel";
-import { EvidenceExplainButton } from "@/components/evidence/EvidenceInspector";
+import { ChartGuide } from "@/components/guidance/ChartGuide";
+import { PretradeAllocation } from "@/components/charts/PretradeAllocation";
 import { PageHeader, SectionHeading } from "@/components/common/PageHeader";
 import { StateNotice } from "@/components/common/StateNotice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { pretradeDemo, pretradeExplainability } from "@/data/backendEvidence";
+import { pretradeDemo } from "@/data/backendEvidence";
+import { showcaseInstrumentName } from "@/data/showcaseDemo";
 import {
   checkPretrade,
   createPretradeRequestId,
   currentPretradeRuntime,
   emptyPretradeRequestState,
   inputFromDemo,
-  matchesOfflineDemo,
   PretradeServiceError,
   pretradeRequestReducer,
 } from "@/data/pretradeService";
 import { useLocale } from "@/locales/LocaleProvider";
+import { pretradeCopy } from "@/locales/pretrade";
 
 export function DecisionCheckPage() {
+  const [search, setSearch] = useSearchParams();
+  const allocationGuideActive = search.get("guide") === "pretrade-allocation";
   const { formatNumber, formatPercent, locale, t } = useLocale();
+  const c = pretradeCopy[locale];
+  const instrumentLabel = (instrumentId: string) => {
+    const name = showcaseInstrumentName(instrumentId, locale, instrumentId);
+    return name === instrumentId ? instrumentId : `${name} (${instrumentId})`;
+  };
   const runtime = useMemo(currentPretradeRuntime, []);
   const [symbol, setSymbol] = useState(pretradeDemo.symbol);
   const [side, setSide] = useState<"BUY" | "SELL">(pretradeDemo.side);
@@ -33,11 +43,6 @@ export function DecisionCheckPage() {
     emptyPretradeRequestState,
   );
   const impact = requestState.phase === "success" ? requestState.outcome.impact : null;
-  // The generated explanation belongs only to its registered input, not a changed live scenario.
-  const hasRegisteredExplanation = matchesOfflineDemo({
-    ...inputFromDemo(pretradeDemo), symbol, side,
-    quantity: Number(quantity), executionPrice: Number(executionPrice), fees: Number(fees),
-  }, pretradeDemo);
 
   const markInputChanged = (update: () => void) => {
     dispatch({ type: "input_changed" });
@@ -92,33 +97,30 @@ export function DecisionCheckPage() {
     && impact.after
     && impact.delta
     && impact.selfContext
-    && impact.peerContext
     ? {
         before: impact.before,
         after: impact.after,
         delta: impact.delta,
         selfContext: impact.selfContext,
-        peerContext: impact.peerContext,
         executionPrice: impact.executionPrice,
         symbol: impact.symbol,
       }
     : null;
 
   return (
-    <div className="page-stack">
+    <div data-guide-scope="pretrade-allocation" className="page-stack">
       <PageHeader
         eyebrow={t("Pre-decision context")}
         title={t("Decision Check")}
         description={t("Review deterministic evidence context before a proposed action. This interface does not provide a buy or sell recommendation.")}
       />
 
-      <GlassPanel className="p-6">
+      {allocationGuideActive ? <ChartGuide guideId="pretrade-allocation" onExit={() => { const next = new URLSearchParams(search); next.delete("guide"); setSearch(next, { replace: true }); }} /> : null}
+      <GlassPanel data-guide="pretrade-input" className="p-6">
         <SectionHeading
-          eyebrow={runtime === "tauri_local" ? t("Local Python Runtime") : t("Demo / Offline Runtime")}
-          title={t("Describe the proposed action")}
-          description={runtime === "tauri_local"
-            ? t("The desktop runtime sends this proposed action through a fixed local bridge to the existing deterministic engine.")
-            : t("Browser mode cannot invoke local Python. Only the registered generated scenario is available as an offline demo.")}
+          eyebrow={runtime === "tauri_local" ? c.local : c.offline}
+          title={c.form}
+          description={c.formHelp}
         />
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <label className="grid gap-2 text-sm font-medium">
@@ -128,6 +130,7 @@ export function DecisionCheckPage() {
               onChange={(event) => markInputChanged(() => setSymbol(event.target.value))}
               aria-label={t("Symbol")}
             />
+            <span className="text-xs font-normal text-muted">{instrumentLabel(symbol)}</span>
           </label>
           <label className="grid gap-2 text-sm font-medium">
             {t("Side")}
@@ -182,14 +185,14 @@ export function DecisionCheckPage() {
             {requestState.phase === "loading" ? t("Checking changes…") : t("Check changes")}
           </Button>
           <span className="text-xs text-muted">
-            {runtime === "tauri_local" ? t("Tauri → local Python → deterministic engine") : t("Synthetic generated fallback; not a live Python result")}
+            {runtime === "tauri_local" ? c.localDetail : c.offlineDetail}
           </span>
         </div>
         <p className="mt-4 text-xs leading-5 text-muted">
           {t("Registered offline scenario: {side} {quantity} {symbol} at CNY {price}, recorded fees CNY {fees}, at {time}.", {
             side: t(pretradeDemo.side === "BUY" ? "Buy" : "Sell"),
             quantity: formatNumber(pretradeDemo.quantity),
-            symbol: pretradeDemo.symbol,
+            symbol: instrumentLabel(pretradeDemo.symbol),
             price: formatNumber(pretradeDemo.executionPrice, 2),
             fees: formatNumber(pretradeDemo.fees, 2),
             time: proposedAt,
@@ -197,42 +200,33 @@ export function DecisionCheckPage() {
         </p>
       </GlassPanel>
 
-      {complete ? (
+      <div data-guide="pretrade-allocation">{!complete && requestState.phase !== "loading" ? <p className="mb-3 px-2 text-xs leading-5 text-muted">{t("先填写并检查，再看前后变化")}</p> : null}{complete ? (
         <GlassPanel className="overflow-hidden">
+          <PretradeAllocation before={complete.before} after={complete.after} symbol={complete.symbol} />
           <div className="p-6 pb-4">
             <SectionHeading
-              eyebrow={runtime === "tauri_local" ? t("Live deterministic vectorbt replay") : t("Generated offline deterministic replay")}
-              title={t("Current → proposed trade")}
-              description={t("If executed at the stated proposed price and quantity, the portfolio would change as follows. No future return or price is estimated.")}
-              action={hasRegisteredExplanation ? (
-                <EvidenceExplainButton
-                  view={pretradeExplainability}
-                  label="Explain this change"
-                  context={{
-                    label: t("Pre-trade evidence"),
-                    title: complete.symbol,
-                    detail: t("Current → proposed trade"),
-                  }}
-                />
-              ) : undefined}
+              title={c.outcome}
             />
           </div>
           <dl className="grid border-t border-border/60 md:grid-cols-3">
             {[
               {
                 label: t("Target symbol weight"),
+                help: c.weightHelp,
                 before: formatPercent(complete.before.symbolWeight, 2),
                 after: formatPercent(complete.after.symbolWeight, 2),
                 delta: signed(complete.delta.symbolWeight * 100, (value) => `${formatNumber(value, 2)} pp`),
               },
               {
                 label: t("Cash"),
+                help: c.cashHelp,
                 before: currency(complete.before.cash),
                 after: currency(complete.after.cash),
                 delta: signed(complete.delta.cash, currency),
               },
               {
-                label: "HHI",
+                label: c.hhi,
+                help: c.hhiHelp,
                 before: formatNumber(complete.before.hhi, 4),
                 after: formatNumber(complete.after.hhi, 4),
                 delta: signed(complete.delta.hhi, (value) => formatNumber(value, 4)),
@@ -244,6 +238,7 @@ export function DecisionCheckPage() {
                   {item.before} <span className="px-1 text-muted">→</span> {item.after}
                 </dd>
                 <p className="mt-1 text-xs tabular-nums text-muted">{t("Change {value}", { value: item.delta })}</p>
+                <p className="mt-3 text-xs leading-6 text-muted">{item.help}</p>
               </div>
             ))}
           </dl>
@@ -274,7 +269,7 @@ export function DecisionCheckPage() {
             </p>
           ) : null}
 
-          <div className="grid gap-4 p-6 lg:grid-cols-2">
+          <div className="p-6">
             <div className="rounded-md border border-border/70 bg-white/[0.025] p-4">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Scale className="size-4 text-accent" aria-hidden="true" />
@@ -295,50 +290,11 @@ export function DecisionCheckPage() {
                 </div>
               </dl>
               <p className="mt-3 text-xs text-muted">
-                {t("{count} valid historical HHI observations · {method}", {
-                  count: formatNumber(complete.selfContext.historicalObservationCount),
-                  method: complete.selfContext.historyMethodId,
-                })}
-              </p>
-            </div>
-
-            <div className="rounded-md border border-border/70 bg-white/[0.025] p-4">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <FlaskConical className="size-4 text-accent" aria-hidden="true" />
-                {t("Synthetic peer HHI context")}
-              </div>
-              <dl className="mt-3 space-y-2 text-sm">
-                <div className="flex justify-between gap-4">
-                  <dt className="text-muted">{t("Cohort HHI median")}</dt>
-                  <dd className="font-medium tabular-nums">{formatNumber(complete.peerContext.cohortHhiMedian, 4)}</dd>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <dt className="text-muted">{t("Current percentile")}</dt>
-                  <dd className="font-medium tabular-nums">{formatNumber(complete.peerContext.currentPercentile, 1)}</dd>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <dt className="text-muted">{t("Proposed-trade percentile")}</dt>
-                  <dd className="font-medium tabular-nums">{formatNumber(complete.peerContext.proposedPercentile, 1)}</dd>
-                </div>
-              </dl>
-              <p className="mt-3 text-xs text-muted">
-                {t("Synthetic cohort N={cohortN} · metric N={metricN} · {method}", {
-                  cohortN: formatNumber(complete.peerContext.cohortN),
-                  metricN: formatNumber(complete.peerContext.metricN),
-                  method: complete.peerContext.percentileMethod,
-                })}
+                {c.historyHelp} · N={formatNumber(complete.selfContext.historicalObservationCount)}
               </p>
             </div>
           </div>
 
-          <StateNotice
-            state="demo"
-            compact
-            title={runtime === "tauri_local" ? t("Synthetic local-runtime boundary") : t("Synthetic offline-runtime boundary")}
-            detail={runtime === "tauri_local"
-              ? t("This result was generated now by the local deterministic engine from synthetic data. It is not a recommendation and does not predict price or return.")
-              : t("This result is the registered generated offline demo, not a live Python calculation. It is not a recommendation and does not predict price or return.")}
-          />
         </GlassPanel>
       ) : impact ? (
         <StateNotice
@@ -370,15 +326,9 @@ export function DecisionCheckPage() {
               ? t("Run the check to calculate the current and proposed states with the local deterministic engine.")
               : t("Run the registered scenario to view the generated offline result. Live recalculation requires the Tauri desktop runtime.")}
         />
-      )}
+      )}</div>
 
-      <div className="flex items-start gap-3 rounded-md border border-border/70 bg-white/[0.025] p-4 text-sm leading-6 text-muted">
-        <AlertCircle className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
-        <p>
-          <span className="font-medium text-foreground">{t("No recommendation.")}</span>{" "}
-          {t("This check surfaces evidence context only; it does not tell you to buy, sell, hold, or change an order.")}
-        </p>
-      </div>
+      <p className="px-2 text-xs leading-6 text-muted">{c.shortBoundary}</p>
     </div>
   );
 }

@@ -52,7 +52,7 @@ test("workspace adapter keeps registered history references and a visible indepe
   assert.match(adapter, /historyWorkspaceAvailability\(scope, study\)/);
   assert.match(page, /c\.openStudy/);
   assert.match(page, /setExampleAccount\(registeredExample\)/);
-  assert.match(page, /href="\?workspace=classic#\/twin"/);
+  assert.doesNotMatch(page, /workspace=classic/);
   assert.match(page, /PeerRangeChart metric=\{metric\.chartMetric\}/);
   assert.doesNotMatch(adapter, /setMode\(|localStorage|Math\.pow|Math\.sqrt/);
 });

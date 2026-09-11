@@ -5,7 +5,7 @@ import {
   selfBaseline,
   twinState,
 } from "@/data/backendEvidence";
-import generatedEvidence from "@/generated/backend-demo-evidence.json";
+import generatedEvidence from "@/generated/showcase-demo.json";
 import type { BehaviorHistorySeries } from "@/data/behaviorHistory";
 import type { PeerBenchmarkView } from "@/data/peerBenchmark";
 import type { SelfBaselineSummaryView } from "@/data/selfBaseline";
@@ -18,9 +18,20 @@ import {
 } from "./historyWorkspaceScope";
 
 type TwinWorkspaceView = typeof twinState;
+type RegisteredPeerMetricSource = {
+  subject_id: string;
+  metric_n: number;
+  benchmark_status: string;
+  observation_start: string;
+  observation_end: string;
+};
 type RegisteredSyntheticSource = {
   evidence_records: Array<{ metric_id: string; subject_id: string }>;
-  peer_benchmark: { metrics: Record<string, { subject_id: string; metric_n: number; observation_start: string; observation_end: string }> };
+  historical_series: {
+    portfolio_hhi: { subject_id: string; metric_id: string };
+    turnover: { subject_id: string; metric_id: string };
+  };
+  peer_benchmark: { metrics: Record<string, RegisteredPeerMetricSource> };
 };
 
 export type { HistoryWorkspaceAvailability, HistoryWorkspaceScope, RegisteredHistoryStudy } from "./historyWorkspaceScope";
@@ -38,6 +49,25 @@ export interface HistoryWorkspaceData {
   behaviorMetrics: readonly EvidenceMetric[] | null;
 }
 
+function explicitlyUnavailablePeerMetric(
+  source: RegisteredPeerMetricSource,
+  view: PeerBenchmarkView["metrics"][number],
+) {
+  return source.metric_n === 0
+    && source.benchmark_status === "insufficient_cohort"
+    && view.metricN === 0
+    && view.status === "insufficient_cohort"
+    && view.chartMetric === null;
+}
+
+function noPeerStatistics(view: PeerBenchmarkView) {
+  return view.metrics.every((metric) => (
+    metric.metricN === 0
+    && metric.status === "insufficient_cohort"
+    && metric.chartMetric === null
+  ));
+}
+
 export function registeredHistoryStudy(): RegisteredHistoryStudy {
   const snapshot = twinState.currentSnapshot;
   const source = generatedEvidence as unknown as RegisteredSyntheticSource;
@@ -50,27 +80,39 @@ export function registeredHistoryStudy(): RegisteredHistoryStudy {
   const requiredBehaviorMetricIds = new Set([
     "portfolio_concentration_hhi", "mean_daily_turnover", "disposition_effect", "loss_averaging_event_rate",
   ]);
-  const behaviorSourcesMatch = source.evidence_records
+  const behaviorSources = source.evidence_records
     .filter((record) => requiredBehaviorMetricIds.has(record.metric_id))
-    .every((record) => record.subject_id === snapshot.subjectId);
-  const peerSources = Object.values(source.peer_benchmark.metrics);
+  const behaviorSourcesMatch = behaviorSources.length === requiredBehaviorMetricIds.size
+    && new Set(behaviorSources.map((record) => record.metric_id)).size === requiredBehaviorMetricIds.size
+    && behaviorSources.every((record) => record.subject_id === snapshot.subjectId);
+  const historySourcesMatch = source.historical_series.portfolio_hhi.subject_id === snapshot.subjectId
+    && source.historical_series.portfolio_hhi.metric_id === "portfolio_concentration_hhi"
+    && source.historical_series.turnover.subject_id === snapshot.subjectId
+    && source.historical_series.turnover.metric_id === "mean_daily_turnover";
+  const peerSources = Object.entries(source.peer_benchmark.metrics);
   const peerSourcesMatch = peerSources.length === peerBenchmark.metrics.length
-    && peerSources.every((metric) => (
-      metric.subject_id === snapshot.subjectId
-      && metric.metric_n > 0
-      && metric.observation_start <= metric.observation_end
-      && metric.observation_end <= snapshot.snapshotAt
-    ))
-    && peerBenchmark.metrics.every((metric) => (
-      metric.metricN > 0
-      && metric.observationStart <= metric.observationEnd
-      && metric.observationEnd <= snapshot.snapshotAt
-    ));
+    && peerSources.every(([metricId, sourceMetric]) => {
+      const viewMetric = peerBenchmark.metrics.find((metric) => metric.id === metricId);
+      if (!viewMetric) return false;
+      const scopeMatches = sourceMetric.subject_id === snapshot.subjectId
+        && sourceMetric.observation_start <= sourceMetric.observation_end
+        && sourceMetric.observation_end <= snapshot.snapshotAt
+        && viewMetric.observationStart === sourceMetric.observation_start
+        && viewMetric.observationEnd === sourceMetric.observation_end;
+      const countMatches = Number.isInteger(sourceMetric.metric_n)
+        && sourceMetric.metric_n >= 0
+        && viewMetric.metricN === sourceMetric.metric_n
+        && viewMetric.status === sourceMetric.benchmark_status;
+      return scopeMatches && countMatches && (
+        sourceMetric.metric_n > 0 || explicitlyUnavailablePeerMetric(sourceMetric, viewMetric)
+      );
+    });
   if (
     selfBaseline.subjectId !== snapshot.subjectId
     || behaviorHistory.hhi.metricId !== "portfolio_concentration_hhi"
     || behaviorHistory.turnover.metricId !== "mean_daily_turnover"
     || !behaviorSourcesMatch
+    || !historySourcesMatch
     || !peerSourcesMatch
   ) throw new Error("History study source references are not registered for this Twin snapshot.");
   return {
@@ -104,7 +146,7 @@ export function historyWorkspaceData(scope: HistoryWorkspaceScope): HistoryWorks
     twin: twinState,
     selfBaseline,
     history: behaviorHistory,
-    peer: peerBenchmark,
+    peer: noPeerStatistics(peerBenchmark) ? null : peerBenchmark,
     behaviorMetrics,
   };
 }
