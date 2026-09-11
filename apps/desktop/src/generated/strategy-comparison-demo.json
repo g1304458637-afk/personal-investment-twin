@@ -1,0 +1,1139 @@
+{
+ "schema_version": "strategy_comparison.v1",
+ "generated_from": "showcase-demo.json + t1_v1_result.json",
+ "reports": [
+  {
+   "episode_id": "pe_a92f86148e2030927e41ea94270250cd219dfbb1b84b937fe2cfe9b0078ecae2",
+   "instrument": "SYN_VALUE",
+   "is_synthetic": true,
+   "window_start": "2025-01-02",
+   "window_end": "2025-06-13",
+   "bar_count": 260,
+   "bars_covered": "2025-01-02..2025-12-31",
+   "user_executions": [
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:01",
+     "day": "2025-01-02",
+     "side": "BUY",
+     "quantity": 600.0,
+     "price": 20.0,
+     "fee": 5.0
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:07",
+     "day": "2025-03-14",
+     "side": "BUY",
+     "quantity": 200.0,
+     "price": 21.0,
+     "fee": 5.0
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:10",
+     "day": "2025-05-16",
+     "side": "SELL",
+     "quantity": 300.0,
+     "price": 24.0,
+     "fee": 5.0
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:12",
+     "day": "2025-06-13",
+     "side": "SELL",
+     "quantity": 500.0,
+     "price": 26.0,
+     "fee": 5.0
+    }
+   ],
+   "rule_fills": [
+    {
+     "fill_id": "FIL-000001",
+     "order_id": "ORD-000001",
+     "trigger": "signal_order",
+     "instrument": "SYN_VALUE",
+     "side": "BUY",
+     "quantity": 12600.0,
+     "price": 19.8553,
+     "fee": 75.053034,
+     "fee_detail": {
+      "commission": 75.053034,
+      "min_commission_applied": false,
+      "stamp_duty": 0.0
+     },
+     "day": "2025-02-28",
+     "note": null
+    },
+    {
+     "fill_id": "FIL-000002",
+     "order_id": "ORD-000002",
+     "trigger": "signal_order",
+     "instrument": "SYN_VALUE",
+     "side": "SELL",
+     "quantity": 12600.0,
+     "price": 25.5628,
+     "fee": 418.718664,
+     "fee_detail": {
+      "commission": 96.62738399999998,
+      "min_commission_applied": false,
+      "stamp_duty": 322.09128
+     },
+     "day": "2025-06-24",
+     "note": null
+    },
+    {
+     "fill_id": "FIL-000003",
+     "order_id": "ORD-000003",
+     "trigger": "signal_order",
+     "instrument": "SYN_VALUE",
+     "side": "BUY",
+     "quantity": 10500.0,
+     "price": 25.2605,
+     "fee": 79.57057499999999,
+     "fee_detail": {
+      "commission": 79.57057499999999,
+      "min_commission_applied": false,
+      "stamp_duty": 0.0
+     },
+     "day": "2025-08-11",
+     "note": null
+    }
+   ],
+   "rule_orders": [
+    {
+     "order_id": "ORD-000001",
+     "signal_date": "2025-02-27",
+     "instrument": "SYN_VALUE",
+     "side": "BUY",
+     "intended_quantity": 12600.0,
+     "reason_code": "signal_entry_breakout_trend",
+     "reason_text": "收盘19.69高于SMA20 19.31，并严格突破此前20个有效收盘高点19.55。",
+     "rank": 1,
+     "status": "filled",
+     "resolution_date": "2025-02-28",
+     "resolution_reason": "FIL-000001"
+    },
+    {
+     "order_id": "ORD-000002",
+     "signal_date": "2025-06-23",
+     "instrument": "SYN_VALUE",
+     "side": "SELL",
+     "intended_quantity": 12600.0,
+     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_text": "收盘25.50低于此前10个有效收盘低点25.60，按规则退出。",
+     "rank": null,
+     "status": "filled",
+     "resolution_date": "2025-06-24",
+     "resolution_reason": "FIL-000002"
+    },
+    {
+     "order_id": "ORD-000003",
+     "signal_date": "2025-08-08",
+     "instrument": "SYN_VALUE",
+     "side": "BUY",
+     "intended_quantity": 10500.0,
+     "reason_code": "signal_entry_breakout_trend",
+     "reason_text": "收盘25.28高于SMA20 25.08，并严格突破此前20个有效收盘高点25.22。",
+     "rank": 1,
+     "status": "filled",
+     "resolution_date": "2025-08-11",
+     "resolution_reason": "FIL-000003"
+    }
+   ],
+   "rule_summary": {
+    "initial_cash": 1000000.0,
+    "final_equity": 1100105.907727,
+    "total_return": 0.10010590772700012,
+    "max_drawdown": -0.006795253196315701,
+    "max_drawdown_peak_date": "2025-12-30",
+    "max_drawdown_trough_date": "2025-08-12",
+    "trading_days": 260,
+    "order_count": 3,
+    "fill_count": 3,
+    "rejected_order_count": 0,
+    "cancelled_order_count": 0,
+    "total_fees": 573.342273,
+    "round_trip_count": 1,
+    "win_rate": 1.0,
+    "average_invested_fraction": 0.19084947597426966,
+    "round_trips": [
+     {
+      "instrument": "SYN_VALUE",
+      "closed_on": "2025-06-24",
+      "pnl": 71420.72830199997,
+      "reason": "signal_exit_close_below_10d_low"
+     }
+    ]
+   },
+   "window_user_net_cash_flow": 3980.0,
+   "window_user_fill_count": 4,
+   "window_user_open_cost": 0.0,
+   "window_rule_net_cash_flow": -250251.833034,
+   "window_rule_fill_count": 1,
+   "window_rule_open_cost": 250251.833034,
+   "window_difference_note": "窗口净现金流 = 窗口内买入流出 − 卖出流入（含费用）；两侧仓位量级不同，不可直接相减为优劣。",
+   "limitations": [
+    "本报告只并列事实与条件差异，不构成任何买卖结论或能力评价。",
+    "窗口结束时规则侧仍有持仓：窗口净现金流主要是未平仓成本，不代表盈亏。",
+    "规则侧按策略自身仓位参数开仓（每仓=策略净值×25%），金额量级与记录侧不同；窗口净现金流不可直接相减为优劣。",
+    "演示导出缺少规范交易所市场日期，以记录时间日期代替；生产运行时必须使用规范成交的交易所日历日期。"
+   ],
+   "recorded_episode_result": {
+    "pnl": 3980.0,
+    "result_kind": "realized",
+    "result_sign": "profit",
+    "source_kind": "vectorbt_position"
+   }
+  },
+  {
+   "episode_id": "pe_3fe7915355a867569c23ad49fcacb9c1c55b50de3cb0b039955754b1d1fdfaa5",
+   "instrument": "SYN_FUND",
+   "is_synthetic": true,
+   "window_start": "2025-01-02",
+   "window_end": null,
+   "bar_count": 260,
+   "bars_covered": "2025-01-02..2025-12-31",
+   "user_executions": [
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:02",
+     "day": "2025-01-02",
+     "side": "BUY",
+     "quantity": 2500.0,
+     "price": 10.0,
+     "fee": 5.0
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:05",
+     "day": "2025-03-03",
+     "side": "BUY",
+     "quantity": 500.0,
+     "price": 9.7,
+     "fee": 5.0
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:16",
+     "day": "2025-09-12",
+     "side": "SELL",
+     "quantity": 500.0,
+     "price": 11.2,
+     "fee": 5.0
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:19",
+     "day": "2025-11-07",
+     "side": "BUY",
+     "quantity": 400.0,
+     "price": 11.8,
+     "fee": 5.0
+    }
+   ],
+   "rule_fills": [
+    {
+     "fill_id": "FIL-000001",
+     "order_id": "ORD-000001",
+     "trigger": "signal_order",
+     "instrument": "SYN_FUND",
+     "side": "BUY",
+     "quantity": 25400.0,
+     "price": 9.842,
+     "fee": 74.99604,
+     "fee_detail": {
+      "commission": 74.99604,
+      "min_commission_applied": false,
+      "stamp_duty": 0.0
+     },
+     "day": "2025-03-14",
+     "note": null
+    }
+   ],
+   "rule_orders": [
+    {
+     "order_id": "ORD-000001",
+     "signal_date": "2025-03-13",
+     "instrument": "SYN_FUND",
+     "side": "BUY",
+     "intended_quantity": 25400.0,
+     "reason_code": "signal_entry_breakout_trend",
+     "reason_text": "收盘9.81高于SMA20 9.74，并严格突破此前20个有效收盘高点9.81。",
+     "rank": 1,
+     "status": "filled",
+     "resolution_date": "2025-03-14",
+     "resolution_reason": "FIL-000001"
+    }
+   ],
+   "rule_summary": {
+    "initial_cash": 1000000.0,
+    "final_equity": 1054738.20396,
+    "total_return": 0.054738203960000176,
+    "max_drawdown": -0.002583143351925108,
+    "max_drawdown_peak_date": "2025-12-30",
+    "max_drawdown_trough_date": "2025-12-11",
+    "trading_days": 260,
+    "order_count": 1,
+    "fill_count": 1,
+    "rejected_order_count": 0,
+    "cancelled_order_count": 0,
+    "total_fees": 74.99604,
+    "round_trip_count": 0,
+    "win_rate": null,
+    "average_invested_fraction": 0.2170685631623715,
+    "round_trips": []
+   },
+   "window_user_net_cash_flow": -28990.0,
+   "window_user_fill_count": 4,
+   "window_user_open_cost": 28990.0,
+   "window_rule_net_cash_flow": -250061.79604000002,
+   "window_rule_fill_count": 1,
+   "window_rule_open_cost": 250061.79604000002,
+   "window_difference_note": "窗口净现金流 = 窗口内买入流出 − 卖出流入（含费用）；两侧仓位量级不同，不可直接相减为优劣。",
+   "limitations": [
+    "本报告只并列事实与条件差异，不构成任何买卖结论或能力评价。",
+    "窗口结束时记录侧仍有持仓：窗口净现金流主要是未平仓成本，不代表盈亏。",
+    "窗口结束时规则侧仍有持仓：窗口净现金流主要是未平仓成本，不代表盈亏。",
+    "规则侧按策略自身仓位参数开仓（每仓=策略净值×25%），金额量级与记录侧不同；窗口净现金流不可直接相减为优劣。",
+    "演示导出缺少规范交易所市场日期，以记录时间日期代替；生产运行时必须使用规范成交的交易所日历日期。"
+   ],
+   "recorded_episode_result": {
+    "pnl": 5810.0,
+    "result_kind": "marked",
+    "result_sign": "profit",
+    "source_kind": "vectorbt_position"
+   }
+  },
+  {
+   "episode_id": "pe_6bcbc3de0f2a744a9e4b553187bb4dc1736f92c641e18dfee9dc0bfec309a964",
+   "instrument": "SYN_GROWTH",
+   "is_synthetic": true,
+   "window_start": "2025-01-13",
+   "window_end": "2025-06-06",
+   "bar_count": 260,
+   "bars_covered": "2025-01-02..2025-12-31",
+   "user_executions": [
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:03",
+     "day": "2025-01-13",
+     "side": "BUY",
+     "quantity": 400.0,
+     "price": 10.0,
+     "fee": 5.0
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:04",
+     "day": "2025-02-07",
+     "side": "BUY",
+     "quantity": 300.0,
+     "price": 11.2,
+     "fee": 5.0
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:06",
+     "day": "2025-03-07",
+     "side": "BUY",
+     "quantity": 400.0,
+     "price": 12.2,
+     "fee": 5.0
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:08",
+     "day": "2025-04-10",
+     "side": "SELL",
+     "quantity": 400.0,
+     "price": 10.8,
+     "fee": 5.0
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:09",
+     "day": "2025-05-08",
+     "side": "SELL",
+     "quantity": 300.0,
+     "price": 10.4,
+     "fee": 5.0
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:11",
+     "day": "2025-06-06",
+     "side": "SELL",
+     "quantity": 400.0,
+     "price": 10.5,
+     "fee": 5.0
+    }
+   ],
+   "rule_fills": [
+    {
+     "fill_id": "FIL-000001",
+     "order_id": "ORD-000001",
+     "trigger": "signal_order",
+     "instrument": "SYN_GROWTH",
+     "side": "BUY",
+     "quantity": 23100.0,
+     "price": 10.9063,
+     "fee": 75.580659,
+     "fee_detail": {
+      "commission": 75.580659,
+      "min_commission_applied": false,
+      "stamp_duty": 0.0
+     },
+     "day": "2025-01-31",
+     "note": null
+    },
+    {
+     "fill_id": "FIL-000002",
+     "order_id": "ORD-000002",
+     "trigger": "signal_order",
+     "instrument": "SYN_GROWTH",
+     "side": "SELL",
+     "quantity": 23100.0,
+     "price": 11.9069,
+     "fee": 357.564207,
+     "fee_detail": {
+      "commission": 82.514817,
+      "min_commission_applied": false,
+      "stamp_duty": 275.04939
+     },
+     "day": "2025-03-26",
+     "note": null
+    },
+    {
+     "fill_id": "FIL-000003",
+     "order_id": "ORD-000003",
+     "trigger": "signal_order",
+     "instrument": "SYN_GROWTH",
+     "side": "BUY",
+     "quantity": 24200.0,
+     "price": 10.4921,
+     "fee": 76.172646,
+     "fee_detail": {
+      "commission": 76.172646,
+      "min_commission_applied": false,
+      "stamp_duty": 0.0
+     },
+     "day": "2025-06-02",
+     "note": null
+    },
+    {
+     "fill_id": "FIL-000004",
+     "order_id": "ORD-000004",
+     "trigger": "signal_order",
+     "instrument": "SYN_GROWTH",
+     "side": "SELL",
+     "quantity": 24200.0,
+     "price": 10.7176,
+     "fee": 337.175696,
+     "fee_detail": {
+      "commission": 77.80977599999999,
+      "min_commission_applied": false,
+      "stamp_duty": 259.36592
+     },
+     "day": "2025-07-21",
+     "note": null
+    },
+    {
+     "fill_id": "FIL-000005",
+     "order_id": "ORD-000005",
+     "trigger": "signal_order",
+     "instrument": "SYN_GROWTH",
+     "side": "BUY",
+     "quantity": 23800.0,
+     "price": 10.8643,
+     "fee": 77.571102,
+     "fee_detail": {
+      "commission": 77.571102,
+      "min_commission_applied": false,
+      "stamp_duty": 0.0
+     },
+     "day": "2025-08-18",
+     "note": null
+    },
+    {
+     "fill_id": "FIL-000006",
+     "order_id": "ORD-000006",
+     "trigger": "signal_order",
+     "instrument": "SYN_GROWTH",
+     "side": "SELL",
+     "quantity": 23800.0,
+     "price": 13.6554,
+     "fee": 422.498076,
+     "fee_detail": {
+      "commission": 97.499556,
+      "min_commission_applied": false,
+      "stamp_duty": 324.99852000000004
+     },
+     "day": "2025-10-14",
+     "note": null
+    },
+    {
+     "fill_id": "FIL-000007",
+     "order_id": "ORD-000007",
+     "trigger": "signal_order",
+     "instrument": "SYN_GROWTH",
+     "side": "BUY",
+     "quantity": 20800.0,
+     "price": 13.3586,
+     "fee": 83.357664,
+     "fee_detail": {
+      "commission": 83.357664,
+      "min_commission_applied": false,
+      "stamp_duty": 0.0
+     },
+     "day": "2025-12-01",
+     "note": null
+    }
+   ],
+   "rule_orders": [
+    {
+     "order_id": "ORD-000001",
+     "signal_date": "2025-01-30",
+     "instrument": "SYN_GROWTH",
+     "side": "BUY",
+     "intended_quantity": 23100.0,
+     "reason_code": "signal_entry_breakout_trend",
+     "reason_text": "收盘10.82高于SMA20 10.26，并严格突破此前20个有效收盘高点10.81。",
+     "rank": 1,
+     "status": "filled",
+     "resolution_date": "2025-01-31",
+     "resolution_reason": "FIL-000001"
+    },
+    {
+     "order_id": "ORD-000002",
+     "signal_date": "2025-03-25",
+     "instrument": "SYN_GROWTH",
+     "side": "SELL",
+     "intended_quantity": 23100.0,
+     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_text": "收盘12.19低于此前10个有效收盘低点12.38，按规则退出。",
+     "rank": null,
+     "status": "filled",
+     "resolution_date": "2025-03-26",
+     "resolution_reason": "FIL-000002"
+    },
+    {
+     "order_id": "ORD-000003",
+     "signal_date": "2025-05-30",
+     "instrument": "SYN_GROWTH",
+     "side": "BUY",
+     "intended_quantity": 24200.0,
+     "reason_code": "signal_entry_breakout_trend",
+     "reason_text": "收盘10.52高于SMA20 10.44，并严格突破此前20个有效收盘高点10.50。",
+     "rank": 1,
+     "status": "filled",
+     "resolution_date": "2025-06-02",
+     "resolution_reason": "FIL-000003"
+    },
+    {
+     "order_id": "ORD-000004",
+     "signal_date": "2025-07-18",
+     "instrument": "SYN_GROWTH",
+     "side": "SELL",
+     "intended_quantity": 24200.0,
+     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_text": "收盘10.60低于此前10个有效收盘低点10.66，按规则退出。",
+     "rank": null,
+     "status": "filled",
+     "resolution_date": "2025-07-21",
+     "resolution_reason": "FIL-000004"
+    },
+    {
+     "order_id": "ORD-000005",
+     "signal_date": "2025-08-15",
+     "instrument": "SYN_GROWTH",
+     "side": "BUY",
+     "intended_quantity": 23800.0,
+     "reason_code": "signal_entry_breakout_trend",
+     "reason_text": "收盘10.78高于SMA20 10.44，并严格突破此前20个有效收盘高点10.65。",
+     "rank": 1,
+     "status": "filled",
+     "resolution_date": "2025-08-18",
+     "resolution_reason": "FIL-000005"
+    },
+    {
+     "order_id": "ORD-000006",
+     "signal_date": "2025-10-13",
+     "instrument": "SYN_GROWTH",
+     "side": "SELL",
+     "intended_quantity": 23800.0,
+     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_text": "收盘13.60低于此前10个有效收盘低点13.71，按规则退出。",
+     "rank": null,
+     "status": "filled",
+     "resolution_date": "2025-10-14",
+     "resolution_reason": "FIL-000006"
+    },
+    {
+     "order_id": "ORD-000007",
+     "signal_date": "2025-11-28",
+     "instrument": "SYN_GROWTH",
+     "side": "BUY",
+     "intended_quantity": 20800.0,
+     "reason_code": "signal_entry_breakout_trend",
+     "reason_text": "收盘13.14高于SMA20 12.84，并严格突破此前20个有效收盘高点13.06。",
+     "rank": 1,
+     "status": "filled",
+     "resolution_date": "2025-12-01",
+     "resolution_reason": "FIL-000007"
+    }
+   ],
+   "rule_summary": {
+    "initial_cash": 1000000.0,
+    "final_equity": 1115230.33995,
+    "total_return": 0.11523033994999987,
+    "max_drawdown": -0.0215417620306724,
+    "max_drawdown_peak_date": "2025-12-31",
+    "max_drawdown_trough_date": "2025-06-03",
+    "trading_days": 260,
+    "order_count": 7,
+    "fill_count": 7,
+    "rejected_order_count": 0,
+    "cancelled_order_count": 0,
+    "total_fees": 1429.9200500000002,
+    "round_trip_count": 3,
+    "win_rate": 1.0,
+    "average_invested_fraction": 0.14044867512881992,
+    "round_trips": [
+     {
+      "instrument": "SYN_GROWTH",
+      "closed_on": "2025-03-26",
+      "pnl": 22680.715134,
+      "reason": "signal_exit_close_below_10d_low"
+     },
+     {
+      "instrument": "SYN_GROWTH",
+      "closed_on": "2025-07-21",
+      "pnl": 5043.751657999994,
+      "reason": "signal_exit_close_below_10d_low"
+     },
+     {
+      "instrument": "SYN_GROWTH",
+      "closed_on": "2025-10-14",
+      "pnl": 65928.11082200002,
+      "reason": "signal_exit_close_below_10d_low"
+     }
+    ]
+   },
+   "window_user_net_cash_flow": -630.0,
+   "window_user_fill_count": 6,
+   "window_user_open_cost": 630.0,
+   "window_rule_net_cash_flow": -231304.277512,
+   "window_rule_fill_count": 3,
+   "window_rule_open_cost": 231304.277512,
+   "window_difference_note": "窗口净现金流 = 窗口内买入流出 − 卖出流入（含费用）；两侧仓位量级不同，不可直接相减为优劣。",
+   "limitations": [
+    "本报告只并列事实与条件差异，不构成任何买卖结论或能力评价。",
+    "窗口结束时记录侧仍有持仓：窗口净现金流主要是未平仓成本，不代表盈亏。",
+    "窗口结束时规则侧仍有持仓：窗口净现金流主要是未平仓成本，不代表盈亏。",
+    "规则侧按策略自身仓位参数开仓（每仓=策略净值×25%），金额量级与记录侧不同；窗口净现金流不可直接相减为优劣。",
+    "演示导出缺少规范交易所市场日期，以记录时间日期代替；生产运行时必须使用规范成交的交易所日历日期。"
+   ],
+   "recorded_episode_result": {
+    "pnl": -630.0,
+    "result_kind": "realized",
+    "result_sign": "loss",
+    "source_kind": "vectorbt_position"
+   }
+  },
+  {
+   "episode_id": "pe_b50024ffc458fa2d3fbc48fd88059e3fdf7e798f7b6566921faadaef055406b0",
+   "instrument": "SYN_GROWTH",
+   "is_synthetic": true,
+   "window_start": "2025-07-11",
+   "window_end": null,
+   "bar_count": 260,
+   "bars_covered": "2025-01-02..2025-12-31",
+   "user_executions": [
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:13",
+     "day": "2025-07-11",
+     "side": "BUY",
+     "quantity": 600.0,
+     "price": 10.8,
+     "fee": 5.0
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:15",
+     "day": "2025-08-08",
+     "side": "BUY",
+     "quantity": 400.0,
+     "price": 10.2,
+     "fee": 5.0
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:17",
+     "day": "2025-09-19",
+     "side": "SELL",
+     "quantity": 300.0,
+     "price": 13.4,
+     "fee": 5.0
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:20",
+     "day": "2025-11-14",
+     "side": "BUY",
+     "quantity": 200.0,
+     "price": 12.6,
+     "fee": 5.0
+    }
+   ],
+   "rule_fills": [
+    {
+     "fill_id": "FIL-000001",
+     "order_id": "ORD-000001",
+     "trigger": "signal_order",
+     "instrument": "SYN_GROWTH",
+     "side": "BUY",
+     "quantity": 23100.0,
+     "price": 10.9063,
+     "fee": 75.580659,
+     "fee_detail": {
+      "commission": 75.580659,
+      "min_commission_applied": false,
+      "stamp_duty": 0.0
+     },
+     "day": "2025-01-31",
+     "note": null
+    },
+    {
+     "fill_id": "FIL-000002",
+     "order_id": "ORD-000002",
+     "trigger": "signal_order",
+     "instrument": "SYN_GROWTH",
+     "side": "SELL",
+     "quantity": 23100.0,
+     "price": 11.9069,
+     "fee": 357.564207,
+     "fee_detail": {
+      "commission": 82.514817,
+      "min_commission_applied": false,
+      "stamp_duty": 275.04939
+     },
+     "day": "2025-03-26",
+     "note": null
+    },
+    {
+     "fill_id": "FIL-000003",
+     "order_id": "ORD-000003",
+     "trigger": "signal_order",
+     "instrument": "SYN_GROWTH",
+     "side": "BUY",
+     "quantity": 24200.0,
+     "price": 10.4921,
+     "fee": 76.172646,
+     "fee_detail": {
+      "commission": 76.172646,
+      "min_commission_applied": false,
+      "stamp_duty": 0.0
+     },
+     "day": "2025-06-02",
+     "note": null
+    },
+    {
+     "fill_id": "FIL-000004",
+     "order_id": "ORD-000004",
+     "trigger": "signal_order",
+     "instrument": "SYN_GROWTH",
+     "side": "SELL",
+     "quantity": 24200.0,
+     "price": 10.7176,
+     "fee": 337.175696,
+     "fee_detail": {
+      "commission": 77.80977599999999,
+      "min_commission_applied": false,
+      "stamp_duty": 259.36592
+     },
+     "day": "2025-07-21",
+     "note": null
+    },
+    {
+     "fill_id": "FIL-000005",
+     "order_id": "ORD-000005",
+     "trigger": "signal_order",
+     "instrument": "SYN_GROWTH",
+     "side": "BUY",
+     "quantity": 23800.0,
+     "price": 10.8643,
+     "fee": 77.571102,
+     "fee_detail": {
+      "commission": 77.571102,
+      "min_commission_applied": false,
+      "stamp_duty": 0.0
+     },
+     "day": "2025-08-18",
+     "note": null
+    },
+    {
+     "fill_id": "FIL-000006",
+     "order_id": "ORD-000006",
+     "trigger": "signal_order",
+     "instrument": "SYN_GROWTH",
+     "side": "SELL",
+     "quantity": 23800.0,
+     "price": 13.6554,
+     "fee": 422.498076,
+     "fee_detail": {
+      "commission": 97.499556,
+      "min_commission_applied": false,
+      "stamp_duty": 324.99852000000004
+     },
+     "day": "2025-10-14",
+     "note": null
+    },
+    {
+     "fill_id": "FIL-000007",
+     "order_id": "ORD-000007",
+     "trigger": "signal_order",
+     "instrument": "SYN_GROWTH",
+     "side": "BUY",
+     "quantity": 20800.0,
+     "price": 13.3586,
+     "fee": 83.357664,
+     "fee_detail": {
+      "commission": 83.357664,
+      "min_commission_applied": false,
+      "stamp_duty": 0.0
+     },
+     "day": "2025-12-01",
+     "note": null
+    }
+   ],
+   "rule_orders": [
+    {
+     "order_id": "ORD-000001",
+     "signal_date": "2025-01-30",
+     "instrument": "SYN_GROWTH",
+     "side": "BUY",
+     "intended_quantity": 23100.0,
+     "reason_code": "signal_entry_breakout_trend",
+     "reason_text": "收盘10.82高于SMA20 10.26，并严格突破此前20个有效收盘高点10.81。",
+     "rank": 1,
+     "status": "filled",
+     "resolution_date": "2025-01-31",
+     "resolution_reason": "FIL-000001"
+    },
+    {
+     "order_id": "ORD-000002",
+     "signal_date": "2025-03-25",
+     "instrument": "SYN_GROWTH",
+     "side": "SELL",
+     "intended_quantity": 23100.0,
+     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_text": "收盘12.19低于此前10个有效收盘低点12.38，按规则退出。",
+     "rank": null,
+     "status": "filled",
+     "resolution_date": "2025-03-26",
+     "resolution_reason": "FIL-000002"
+    },
+    {
+     "order_id": "ORD-000003",
+     "signal_date": "2025-05-30",
+     "instrument": "SYN_GROWTH",
+     "side": "BUY",
+     "intended_quantity": 24200.0,
+     "reason_code": "signal_entry_breakout_trend",
+     "reason_text": "收盘10.52高于SMA20 10.44，并严格突破此前20个有效收盘高点10.50。",
+     "rank": 1,
+     "status": "filled",
+     "resolution_date": "2025-06-02",
+     "resolution_reason": "FIL-000003"
+    },
+    {
+     "order_id": "ORD-000004",
+     "signal_date": "2025-07-18",
+     "instrument": "SYN_GROWTH",
+     "side": "SELL",
+     "intended_quantity": 24200.0,
+     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_text": "收盘10.60低于此前10个有效收盘低点10.66，按规则退出。",
+     "rank": null,
+     "status": "filled",
+     "resolution_date": "2025-07-21",
+     "resolution_reason": "FIL-000004"
+    },
+    {
+     "order_id": "ORD-000005",
+     "signal_date": "2025-08-15",
+     "instrument": "SYN_GROWTH",
+     "side": "BUY",
+     "intended_quantity": 23800.0,
+     "reason_code": "signal_entry_breakout_trend",
+     "reason_text": "收盘10.78高于SMA20 10.44，并严格突破此前20个有效收盘高点10.65。",
+     "rank": 1,
+     "status": "filled",
+     "resolution_date": "2025-08-18",
+     "resolution_reason": "FIL-000005"
+    },
+    {
+     "order_id": "ORD-000006",
+     "signal_date": "2025-10-13",
+     "instrument": "SYN_GROWTH",
+     "side": "SELL",
+     "intended_quantity": 23800.0,
+     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_text": "收盘13.60低于此前10个有效收盘低点13.71，按规则退出。",
+     "rank": null,
+     "status": "filled",
+     "resolution_date": "2025-10-14",
+     "resolution_reason": "FIL-000006"
+    },
+    {
+     "order_id": "ORD-000007",
+     "signal_date": "2025-11-28",
+     "instrument": "SYN_GROWTH",
+     "side": "BUY",
+     "intended_quantity": 20800.0,
+     "reason_code": "signal_entry_breakout_trend",
+     "reason_text": "收盘13.14高于SMA20 12.84，并严格突破此前20个有效收盘高点13.06。",
+     "rank": 1,
+     "status": "filled",
+     "resolution_date": "2025-12-01",
+     "resolution_reason": "FIL-000007"
+    }
+   ],
+   "rule_summary": {
+    "initial_cash": 1000000.0,
+    "final_equity": 1115230.33995,
+    "total_return": 0.11523033994999987,
+    "max_drawdown": -0.0215417620306724,
+    "max_drawdown_peak_date": "2025-12-31",
+    "max_drawdown_trough_date": "2025-06-03",
+    "trading_days": 260,
+    "order_count": 7,
+    "fill_count": 7,
+    "rejected_order_count": 0,
+    "cancelled_order_count": 0,
+    "total_fees": 1429.9200500000002,
+    "round_trip_count": 3,
+    "win_rate": 1.0,
+    "average_invested_fraction": 0.14044867512881992,
+    "round_trips": [
+     {
+      "instrument": "SYN_GROWTH",
+      "closed_on": "2025-03-26",
+      "pnl": 22680.715134,
+      "reason": "signal_exit_close_below_10d_low"
+     },
+     {
+      "instrument": "SYN_GROWTH",
+      "closed_on": "2025-07-21",
+      "pnl": 5043.751657999994,
+      "reason": "signal_exit_close_below_10d_low"
+     },
+     {
+      "instrument": "SYN_GROWTH",
+      "closed_on": "2025-10-14",
+      "pnl": 65928.11082200002,
+      "reason": "signal_exit_close_below_10d_low"
+     }
+    ]
+   },
+   "window_user_net_cash_flow": -9080.0,
+   "window_user_fill_count": 4,
+   "window_user_open_cost": 9080.0,
+   "window_rule_net_cash_flow": 47014.617461999995,
+   "window_rule_fill_count": 4,
+   "window_rule_open_cost": 0.0,
+   "window_difference_note": "窗口净现金流 = 窗口内买入流出 − 卖出流入（含费用）；两侧仓位量级不同，不可直接相减为优劣。",
+   "limitations": [
+    "本报告只并列事实与条件差异，不构成任何买卖结论或能力评价。",
+    "窗口结束时记录侧仍有持仓：窗口净现金流主要是未平仓成本，不代表盈亏。",
+    "规则侧按策略自身仓位参数开仓（每仓=策略净值×25%），金额量级与记录侧不同；窗口净现金流不可直接相减为优劣。",
+    "演示导出缺少规范交易所市场日期，以记录时间日期代替；生产运行时必须使用规范成交的交易所日历日期。"
+   ],
+   "recorded_episode_result": {
+    "pnl": 3880.0,
+    "result_kind": "marked",
+    "result_sign": "profit",
+    "source_kind": "vectorbt_position"
+   }
+  },
+  {
+   "episode_id": "pe_bd08cece56c4864ae21d513ca1b6373f20e675f351f4050bd237d4f544790e64",
+   "instrument": "SYN_VALUE",
+   "is_synthetic": true,
+   "window_start": "2025-08-01",
+   "window_end": null,
+   "bar_count": 260,
+   "bars_covered": "2025-01-02..2025-12-31",
+   "user_executions": [
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:14",
+     "day": "2025-08-01",
+     "side": "BUY",
+     "quantity": 500.0,
+     "price": 25.0,
+     "fee": 5.0
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:18",
+     "day": "2025-10-10",
+     "side": "SELL",
+     "quantity": 200.0,
+     "price": 27.0,
+     "fee": 5.0
+    }
+   ],
+   "rule_fills": [
+    {
+     "fill_id": "FIL-000001",
+     "order_id": "ORD-000001",
+     "trigger": "signal_order",
+     "instrument": "SYN_VALUE",
+     "side": "BUY",
+     "quantity": 12600.0,
+     "price": 19.8553,
+     "fee": 75.053034,
+     "fee_detail": {
+      "commission": 75.053034,
+      "min_commission_applied": false,
+      "stamp_duty": 0.0
+     },
+     "day": "2025-02-28",
+     "note": null
+    },
+    {
+     "fill_id": "FIL-000002",
+     "order_id": "ORD-000002",
+     "trigger": "signal_order",
+     "instrument": "SYN_VALUE",
+     "side": "SELL",
+     "quantity": 12600.0,
+     "price": 25.5628,
+     "fee": 418.718664,
+     "fee_detail": {
+      "commission": 96.62738399999998,
+      "min_commission_applied": false,
+      "stamp_duty": 322.09128
+     },
+     "day": "2025-06-24",
+     "note": null
+    },
+    {
+     "fill_id": "FIL-000003",
+     "order_id": "ORD-000003",
+     "trigger": "signal_order",
+     "instrument": "SYN_VALUE",
+     "side": "BUY",
+     "quantity": 10500.0,
+     "price": 25.2605,
+     "fee": 79.57057499999999,
+     "fee_detail": {
+      "commission": 79.57057499999999,
+      "min_commission_applied": false,
+      "stamp_duty": 0.0
+     },
+     "day": "2025-08-11",
+     "note": null
+    }
+   ],
+   "rule_orders": [
+    {
+     "order_id": "ORD-000001",
+     "signal_date": "2025-02-27",
+     "instrument": "SYN_VALUE",
+     "side": "BUY",
+     "intended_quantity": 12600.0,
+     "reason_code": "signal_entry_breakout_trend",
+     "reason_text": "收盘19.69高于SMA20 19.31，并严格突破此前20个有效收盘高点19.55。",
+     "rank": 1,
+     "status": "filled",
+     "resolution_date": "2025-02-28",
+     "resolution_reason": "FIL-000001"
+    },
+    {
+     "order_id": "ORD-000002",
+     "signal_date": "2025-06-23",
+     "instrument": "SYN_VALUE",
+     "side": "SELL",
+     "intended_quantity": 12600.0,
+     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_text": "收盘25.50低于此前10个有效收盘低点25.60，按规则退出。",
+     "rank": null,
+     "status": "filled",
+     "resolution_date": "2025-06-24",
+     "resolution_reason": "FIL-000002"
+    },
+    {
+     "order_id": "ORD-000003",
+     "signal_date": "2025-08-08",
+     "instrument": "SYN_VALUE",
+     "side": "BUY",
+     "intended_quantity": 10500.0,
+     "reason_code": "signal_entry_breakout_trend",
+     "reason_text": "收盘25.28高于SMA20 25.08，并严格突破此前20个有效收盘高点25.22。",
+     "rank": 1,
+     "status": "filled",
+     "resolution_date": "2025-08-11",
+     "resolution_reason": "FIL-000003"
+    }
+   ],
+   "rule_summary": {
+    "initial_cash": 1000000.0,
+    "final_equity": 1100105.907727,
+    "total_return": 0.10010590772700012,
+    "max_drawdown": -0.006795253196315701,
+    "max_drawdown_peak_date": "2025-12-30",
+    "max_drawdown_trough_date": "2025-08-12",
+    "trading_days": 260,
+    "order_count": 3,
+    "fill_count": 3,
+    "rejected_order_count": 0,
+    "cancelled_order_count": 0,
+    "total_fees": 573.342273,
+    "round_trip_count": 1,
+    "win_rate": 1.0,
+    "average_invested_fraction": 0.19084947597426966,
+    "round_trips": [
+     {
+      "instrument": "SYN_VALUE",
+      "closed_on": "2025-06-24",
+      "pnl": 71420.72830199997,
+      "reason": "signal_exit_close_below_10d_low"
+     }
+    ]
+   },
+   "window_user_net_cash_flow": -7110.0,
+   "window_user_fill_count": 2,
+   "window_user_open_cost": 7110.0,
+   "window_rule_net_cash_flow": -265314.820575,
+   "window_rule_fill_count": 1,
+   "window_rule_open_cost": 265314.820575,
+   "window_difference_note": "窗口净现金流 = 窗口内买入流出 − 卖出流入（含费用）；两侧仓位量级不同，不可直接相减为优劣。",
+   "limitations": [
+    "本报告只并列事实与条件差异，不构成任何买卖结论或能力评价。",
+    "窗口结束时记录侧仍有持仓：窗口净现金流主要是未平仓成本，不代表盈亏。",
+    "窗口结束时规则侧仍有持仓：窗口净现金流主要是未平仓成本，不代表盈亏。",
+    "规则侧按策略自身仓位参数开仓（每仓=策略净值×25%），金额量级与记录侧不同；窗口净现金流不可直接相减为优劣。",
+    "演示导出缺少规范交易所市场日期，以记录时间日期代替；生产运行时必须使用规范成交的交易所日历日期。"
+   ],
+   "recorded_episode_result": {
+    "pnl": 1290.0,
+    "result_kind": "marked",
+    "result_sign": "profit",
+    "source_kind": "vectorbt_position"
+   }
+  }
+ ],
+ "portfolio": {
+  "user": {
+   "scope": "SYN_STUDY_SHOWCASE",
+   "realized_episode_count": 2,
+   "realized_pnl_total": 3350.0,
+   "note": "示例账户各 Episode 已实现结果合计（确定性导出）。"
+  },
+  "strategy": {
+   "strategy_id": "toujing_t1_breakout_trend",
+   "version": "1",
+   "final_equity": 1210639.2159000002,
+   "total_return": 0.21063921590000012,
+   "max_drawdown": -0.27427810489958354,
+   "total_fees": 95173.7841,
+   "round_trip_count": 188,
+   "win_rate": 0.10106382978723404,
+   "trading_days": 784
+  },
+  "note": "示例账户与策略账户并列展示；两者资金与标的池不同，不构成同口径比较。",
+  "limitations": [
+   "两者标的池与资金不同，并列不构成同口径绩效比较，更不是能力排名。",
+   "本报告只并列事实与条件差异，不构成任何买卖结论或能力评价。"
+  ]
+ },
+ "limitations": [
+  "示例数据为合成行情与合成成交，仅用于教学演示，不代表真实市场业绩。",
+  "本报告只并列事实与条件差异，不构成任何买卖结论或能力评价。"
+ ]
+}

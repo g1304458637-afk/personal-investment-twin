@@ -1598,6 +1598,14 @@ export const enUS = {
   "Delisting liquidation": "Delisting liquidation",
   "Method and provenance": "Method and provenance",
   "Data fingerprint": "Data fingerprint",
+  "Showcase episode comparison": "Showcase episode comparison",
+  "Recorded side": "Recorded side",
+  "Rule side": "Rule side",
+  "Realized PnL total": "Realized PnL total",
+  "Window open-ended": "Window open-ended",
+  "Recorded result": "Recorded result",
+  "Rule trades in window": "Rule trades in window",
+  "Net cash flow": "Net cash flow",
   "Regenerate via scripts/run_strategy_simulation.py": "Regenerate via scripts/run_strategy_simulation.py",
 } as const;
 

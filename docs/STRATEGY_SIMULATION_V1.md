@@ -100,6 +100,10 @@ report.py      JSON 安全序列化 + 汇总（收益、最大回撤、成交/�
 
 回归门：现有 Lens/投影/product runtime 22 项定向测试保持通过；真实账户事实与既有展示不受影响。
 
+## 7b. 同标的对比（第 3 步，进行中）
+
+`src/strategy/compare.py`（schema `strategy_comparison.v1`）：把 T1 v1 同一套规则在单标的自身 OHLC 历史上独立重放（`simulation_data_from_bars` 直建模拟数据），与该标的的规范成交并列。关键声明：窗口"净现金流" = 买入流出 − 卖出流入（含费用），窗口末仍有持仓时它主要是持仓成本而非盈亏；规则侧按策略自身仓位参数开仓，金额量级与记录侧不同，**不可直接相减为优劣**；合成隔离（SYN 前缀双向强制）；close-only 数据源 fail-closed（规则重放需要 OHLC）。示例导出 `scripts/export_strategy_comparison_demo.py` → `apps/desktop/src/generated/strategy-comparison-demo.json`（5 个示例 episode + 组合并列），策略模拟页新增「示例 Episode 对照」区块。待做：episode 图上规则买卖点叠加、真实账户 runtime 链路、CSV/akshare 行情接入。
+
 ## 8. 局限（当前明确不做）
 
 合成数据不模拟真实交易日历、除拆股外的公司行动（分红/送股/配股）、印花税历史税率调整、一字板排队、盘口深度；滑点默认 0。策略绩效不代表任何真实市场可得结果，不得对外宣称。UI 叠加策略净值路径、与用户真实历史的并列对比、逐笔差异与教学、AI 解释均为后续阶段，本阶段不实现。

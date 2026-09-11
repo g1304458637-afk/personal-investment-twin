@@ -1599,6 +1599,14 @@ export const zhCN = {
   "Delisting liquidation": "退市清算",
   "Method and provenance": "方法与出处",
   "Data fingerprint": "数据指纹",
+  "Showcase episode comparison": "示例 Episode 对照",
+  "Recorded side": "记录侧",
+  "Rule side": "规则侧",
+  "Realized PnL total": "已实现合计",
+  "Window open-ended": "窗口未闭合",
+  "Recorded result": "记录结果",
+  "Rule trades in window": "窗口内规则成交",
+  "Net cash flow": "净现金流",
   "Regenerate via scripts/run_strategy_simulation.py": "可用 scripts/run_strategy_simulation.py 重新生成",
 } satisfies Record<keyof typeof enUS, string>;
 

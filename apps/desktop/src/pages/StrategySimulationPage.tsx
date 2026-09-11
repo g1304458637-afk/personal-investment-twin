@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 
 import { EChart } from "@/components/charts/EChart";
 import { useTheme } from "@/components/layout/ThemeProvider";
+import { strategyComparison } from "@/data/strategyComparisonDemo";
 import { strategySimulation } from "@/data/strategySimulationDemo";
 import { useLocale } from "@/locales/LocaleProvider";
 import { formatCurrencyValue } from "@/lib/format";
@@ -188,6 +189,61 @@ export function StrategySimulationPage() {
           ))}
         </dl>
       </details>
+    </section>
+
+    <section className="iw-inset strategy-panel">
+      <div className="strategy-panel__head">
+        <p className="iw-kicker">{t("Showcase episode comparison")}</p>
+        <span className="iw-subtle">{strategyComparison.reports.length}</span>
+      </div>
+      <p className="strategy-comparison-note">{strategyComparison.portfolio.note}</p>
+      <div className="strategy-compare-parallel">
+        <div>
+          <span>{t("Recorded side")}</span>
+          <strong>{money(strategyComparison.portfolio.user.realizedPnlTotal)}</strong>
+          <small>{t("Realized PnL total")} · {strategyComparison.portfolio.user.realizedEpisodeCount}</small>
+        </div>
+        <div>
+          <span>{t("Rule side")}</span>
+          <strong>{money(strategyComparison.portfolio.strategy.finalEquity)}</strong>
+          <small>{t("Total return")} {percentLabel(strategyComparison.portfolio.strategy.totalReturn)}</small>
+        </div>
+      </div>
+      <div className="strategy-comparisons">
+        {strategyComparison.reports.map((item) => (
+          <details key={item.episodeId} className="strategy-compare">
+            <summary>
+              <strong>{item.instrument}</strong>
+              <span>{item.windowStart ?? "—"} → {item.windowEnd ?? t("Window open-ended")}</span>
+              <span>{t("Recorded result")} {item.recordedEpisodeResult.pnl === null ? "—" : money(item.recordedEpisodeResult.pnl)}</span>
+              <span>{t("Rule trades in window")} {item.ruleFills.length}</span>
+            </summary>
+            <div className="strategy-compare__body">
+              <div className="strategy-compare__flows">
+                <div><span>{t("Recorded side")}</span><strong>{money(item.windowUserNetCashFlow)}</strong></div>
+                <div><span>{t("Rule side")}</span><strong>{money(item.windowRuleNetCashFlow)}</strong></div>
+              </div>
+              <p className="strategy-compare__note">{item.windowDifferenceNote}</p>
+              <ul className="strategy-compare__fills">
+                {item.ruleFills.map((ruleFill) => (
+                  <li key={ruleFill.fillId}>
+                    <span>{ruleFill.day}</span>
+                    <strong className={ruleFill.side === "BUY" ? "is-buy" : "is-sell"}>{ruleFill.side === "BUY" ? t("Buy") : t("Sell")}</strong>
+                    <span>{ruleFill.quantity.toLocaleString(locale)} × {money(ruleFill.price)}</span>
+                    <em>{t(triggerKey[ruleFill.trigger as keyof typeof triggerKey] ?? "Signal order")}</em>
+                  </li>
+                ))}
+              </ul>
+              <details className="strategy-compare__limits">
+                <summary>{t("Method and provenance")}</summary>
+                <ul>{item.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul>
+                <p>{t("Data fingerprint")}: {item.barsCovered} · {item.barCount}</p>
+              </details>
+            </div>
+          </details>
+        ))}
+      </div>
+      <ul className="strategy-comparison-limits">{strategyComparison.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul>
     </section>
 
     <section className="iw-inset strategy-panel">
