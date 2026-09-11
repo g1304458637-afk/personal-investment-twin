@@ -391,3 +391,60 @@ class ProductRuntime:
             display_name=next(x.instrument.display_name or x.instrument.display_symbol or x.instrument.local_symbol
                               for x in bundle.accepted_canonical_executions if x.instrument.instrument_id == next(e.instrument_id for e in lifecycle.episodes if e.episode_id == episode_id)))
         return {"status": "available", "reason": None, "entry": entry}
+
+    def strategy_comparison(self, params: Mapping[str, object]) -> dict[str, object]:
+        """Same-instrument T1 replay comparison for one real-account episode.
+
+        OHLC bars come from the akshare public source (cache-first; declared
+        limitation: the imported close-only market contract cannot drive a
+        rule replay).  Failures are explainable statuses, never guesses, and
+        the method is read-only for user accounts.
+        """
+        from src.data.akshare_client import AkshareUnavailable, fetch_ohlc
+        from src.strategy.compare import ComparisonError, compare_episode
+        from src.strategy.strategies.t1 import build_t1_spec
+
+        account, bundle, facts, lifecycle, status = self._lifecycle(params)
+        if lifecycle is None:
+            return {"status": "unavailable", "reason": "market prices are incomplete", "report": None}
+        episode_id = _required_text(params, "episode_id")
+        episode = next((item for item in lifecycle.episodes if item.episode_id == episode_id), None)
+        if episode is None:
+            return {"status": "unavailable", "reason": "episode does not belong to this account", "report": None}
+        instrument = str(episode.instrument_id)
+        # The canonical instrument id is a qualified hash; the public market
+        # source needs the raw local code recorded on the executions.
+        raw_symbol = next((x.instrument.local_symbol or x.instrument.display_symbol or x.instrument.instrument_id
+                           for x in bundle.accepted_canonical_executions
+                           if x.instrument.instrument_id == instrument), instrument)
+        frame = canonical_executions_to_frame(bundle.accepted_canonical_executions)
+        scoped = frame.loc[frame["symbol"] == instrument] if "symbol" in frame.columns else frame.iloc[0:0]
+        if scoped.empty:
+            return {"status": "unavailable", "reason": "comparison_unavailable_no_executions", "report": None}
+        execution_rows = [{
+            "execution_id": str(item["execution_id"]),
+            "day": pd.Timestamp(item["market_date"]).date().isoformat(),
+            "side": str(item["side"]), "quantity": float(item["executed_quantity"]),
+            "price": float(item["executed_price"]), "fee": float(item["fee"]),
+        } for _, item in scoped.iterrows()]
+        first_execution = min(row["day"] for row in execution_rows)
+        last_execution = max(row["day"] for row in execution_rows)
+        window_start = pd.Timestamp(episode.opened_at).date().isoformat()
+        window_end = pd.Timestamp(episode.closed_at).date().isoformat() if episode.closed_at else None
+        fetch_start = (pd.Timestamp(min(first_execution, window_start)) - pd.Timedelta(days=120)).date().isoformat()
+        fetch_end = (pd.Timestamp(max(last_execution, window_end or last_execution)) + pd.Timedelta(days=7)).date().isoformat()
+        try:
+            bars = fetch_ohlc(raw_symbol, fetch_start, fetch_end)
+        except AkshareUnavailable as exc:
+            return {"status": "unavailable", "reason": str(exc), "report": None}
+        try:
+            report = compare_episode(build_t1_spec(), bars, instrument=instrument, is_synthetic=False,
+                executions=execution_rows, episode_id=episode_id,
+                window_start=pd.Timestamp(window_start).date(),
+                window_end=pd.Timestamp(window_end).date() if window_end else None)
+        except ComparisonError as exc:
+            return {"status": "unavailable", "reason": f"comparison_invalid_market_data: {exc}", "report": None}
+        report["limitations"] = [*report["limitations"],
+            "行情来自 akshare 公开数据（不复权日线，本地缓存）；与导入的规范成交并列，仅用于教学对照。",
+            "对照在真实账户上按只读方式运行，不会修改任何记录。"]
+        return {"status": "available", "reason": None, "report": report}
