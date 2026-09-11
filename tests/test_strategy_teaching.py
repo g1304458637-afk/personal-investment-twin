@@ -50,3 +50,44 @@ def test_schema_has_no_free_number_field_and_no_verdict_kind():
     assert set(segment["required"]) == {"kind", "template", "references"}
     assert "verdict" not in segment["properties"]["kind"]["enum"]
     assert segment["properties"]["template"]["maxLength"] <= 400
+
+
+def test_runner_renders_fake_model_output_and_drops_bad_references(monkeypatch):
+    import asyncio
+    from src.agents import strategy_teaching as teaching
+
+    class FakeResult:
+        final_output = teaching.TeachingAnswer(segments=[
+            teaching.TeachingSegment(kind="entry_teaching", template="记录侧 {user}。",
+                                     references={"user": "reports.0.window_user_net_cash_flow"}),
+            teaching.TeachingSegment(kind="risk_teaching", template="预测 {target}。",
+                                     references={"target": "reports.0.forecast"}),
+        ])
+
+    class FakeRunner:
+        @staticmethod
+        async def run(agent, prompt, **kwargs):
+            return FakeResult()
+
+    class FakeRuntime:
+        model = model_settings = run_config = None
+
+    monkeypatch.setattr(teaching, "Runner", FakeRunner)
+    result = asyncio.run(teaching.run_teaching(FakeRuntime(), REPORT))
+    assert result["status"] == "available" and len(result["texts"]) == 1
+    assert "3980.0" in result["texts"][0] and result["dropped"][0]["path"] == "reports.0.forecast"
+
+
+def test_protocol_entry_validates_report_and_model_key():
+    from src.agents.strategy_teaching import explain_report
+    import pytest
+    with pytest.raises(ValueError, match="invalid_teaching_report"):
+        explain_report({"report": {"schema_version": "nope"}})
+    with pytest.raises(ValueError, match="model_not_configured"):
+        explain_report({"report": {"schema_version": "strategy_comparison.v1"}})
+
+
+def test_teaching_agent_is_tool_free_structured_output():
+    from src.agents.strategy_teaching import build_teaching_agent
+    agent = build_teaching_agent(model="fake", model_settings=None, run_config=None)
+    assert agent.tools == [] and agent.output_type is not None
