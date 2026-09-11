@@ -1,7 +1,7 @@
 import { useLocale } from "@/locales/LocaleProvider";
 
 const zh = {
-  investments: "我的投资", analysis: "分析与对比", prepare: "决策准备", data: "数据与账户", settings: "设置",
+  investments: "我的投资", strategy: "策略历史模拟", analysis: "分析与对比", prepare: "决策准备", data: "数据与账户", settings: "设置",
   analysisHome: "开始分析", review: "投资复盘", history: "我的历史", comparison: "对比分析", ask: "问投镜", journal: "决策记录",
   pause: "暂停动态背景", play: "播放动态背景", menu: "打开导航", close: "关闭导航",
   intro: "把经历，变成下一次的判断依据。", introDetail: "从一轮投资开始，回看操作、对照历史，再追问差异背后的依据。",
@@ -22,7 +22,7 @@ const zh = {
   dark: "深海玻璃", light: "晨光玻璃",
 };
 const en: Record<keyof typeof zh, string> = {
-  investments: "My investments", analysis: "Analysis & comparison", prepare: "Decision preparation", data: "Data & accounts", settings: "Settings",
+  investments: "My investments", strategy: "Strategy simulation", analysis: "Analysis & comparison", prepare: "Decision preparation", data: "Data & accounts", settings: "Settings",
   analysisHome: "Start here", review: "Investment review", history: "My history", comparison: "Compare", ask: "Ask Toujing", journal: "Decision notes",
   pause: "Pause background motion", play: "Play background motion", menu: "Open navigation", close: "Close navigation",
   intro: "Turn experience into perspective.", introDetail: "Start with an investment. Revisit its decisions, compare the history, then ask what the evidence supports.",

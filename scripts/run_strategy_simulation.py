@@ -21,10 +21,35 @@ from src.strategy.report import result_to_dict  # noqa: E402
 from src.strategy.strategies.t1 import build_t1_spec  # noqa: E402
 
 
+def _desktop_payload(payload: dict) -> dict:
+    """Trimmed artifact for the desktop demo: no per-day event journal.
+
+    The full journal (selection reasons, signals, daily events, holdings)
+    stays in the data-directory result file; the desktop artifact keeps the
+    spec, summary, daily ledger, and the complete order/fill path.
+    """
+    return {
+        "schema_version": payload["schema_version"],
+        "strategy": payload["strategy"],
+        "data_fingerprint": payload["data_fingerprint"],
+        "summary": payload["summary"],
+        "equity": [
+            {"date": day["date"], "cash": day["cash"], "equity": day["equity"],
+             "invested_fraction": day["invested_fraction"],
+             "drawdown_from_peak": day["drawdown_from_peak"]}
+            for day in payload["days"]
+        ],
+        "orders": payload["orders"],
+        "fills": payload["fills"],
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", type=Path, default=ROOT / "data/sample/strategy_universe")
     parser.add_argument("--output", type=Path, default=None)
+    parser.add_argument("--desktop-output", type=Path,
+                        default=ROOT / "apps/desktop/src/generated/strategy-simulation-demo.json")
     args = parser.parse_args()
     output = args.output or (args.data_dir / "t1_v1_result.json")
 
@@ -37,9 +62,14 @@ def main() -> int:
     payload = result_to_dict(result)
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=1, sort_keys=False,
                                  allow_nan=False) + "\n", encoding="utf-8")
+    desktop = _desktop_payload(payload)
+    args.desktop_output.parent.mkdir(parents=True, exist_ok=True)
+    args.desktop_output.write_text(json.dumps(desktop, ensure_ascii=False, indent=1,
+                                              sort_keys=False, allow_nan=False) + "\n",
+                                   encoding="utf-8")
     summary = payload["summary"]
     print(json.dumps({
-        "output": str(output),
+        "output": str(output), "desktop_output": str(args.desktop_output),
         "data_fingerprint": payload["data_fingerprint"],
         "strategy": f"{result.spec.strategy_id}@{result.spec.version}",
         "final_equity": summary["final_equity"],

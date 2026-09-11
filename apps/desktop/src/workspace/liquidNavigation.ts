@@ -1,6 +1,7 @@
 /** Presentation hierarchy only; existing account/runtime gates remain in each destination. */
 export const liquidNavigation = [
   { path: "/investments", label: "investments", icon: "investments", group: "work" },
+  { path: "/strategy-simulation", label: "strategy", icon: "review", group: "work" },
   { path: "/analysis", label: "analysis", icon: "comparison", group: "work" },
   { path: "/pretrade", label: "prepare", icon: "pretrade", group: "work" },
   { path: "/ask", label: "ask", icon: "ask", group: "work" },

@@ -83,7 +83,7 @@ engine.py      逐日循环：开盘撮合 → 止损 → 估值 → 收盘信�
 report.py      JSON 安全序列化 + 汇总（收益、最大回撤、成交/拒单统计）
 ```
 
-产出 schema（`strategy_simulation.v1`）：策略与参数版本、数据指纹、逐日日志（选股理由、信号、订单、成交/拒单、现金、持仓、净值、回撤）、订单与成交全路径、汇总指标。落盘 `data/sample/strategy_universe/t1_v1_result.json`（可由脚本重生成）。
+产出 schema（`strategy_simulation.v1`）：策略与参数版本、数据指纹、逐日日志（选股理由、信号、订单、成交/拒单、现金、持仓、净值、回撤）、订单与成交全路径、汇总指标。落盘 `data/sample/strategy_universe/t1_v1_result.json`（可由脚本重生成）；运行脚本同时写入裁剪版桌面产物 `apps/desktop/src/generated/strategy-simulation-demo.json`（摘要 + 逐日净值 + 订单/成交全路径），由桌面端"策略历史模拟"页（`/strategy-simulation`）静态加载展示；浏览器端只做传输校验与账目一致性检查，不计算金融数值。
 
 ## 7. 首个验证目标
 
