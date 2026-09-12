@@ -19,3 +19,18 @@
   border-radius: 12px;
   font-weight: 600;
 }
+.formula-presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.formula-presets button { font-size: 11.5px; padding: 3px 10px; }
+.formula-input {
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 10px;
+  background: rgba(13, 24, 38, .8);
+  color: #e6f1f7;
+  padding: 8px 12px;
+  font-family: ui-monospace, monospace;
+  font-size: 12.5px;
+  width: 100%;
+  resize: vertical;
+}
+.workshop-name textarea { margin-top: 4px; }
+.workshop-name { color: var(--foreground); }

@@ -52,6 +52,22 @@ export function MyStrategiesPage() {
   const [saved, setSaved] = useState(loadSaved);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [workshopDraft, setWorkshopDraft] = useState<WorkshopDraft | null>(null);
+  const [formulaMode, setFormulaMode] = useState(false);
+  const [formulaName, setFormulaName] = useState("");
+  const [entryFormula, setEntryFormula] = useState("close > highest(20)");
+  const [exitFormula, setExitFormula] = useState("close < lowest(10)");
+  const [formulaStopPct, setFormulaStopPct] = useState<number | null>(null);
+  const [formulaAtrMult, setFormulaAtrMult] = useState<number | null>(null);
+  const [formulaError, setFormulaError] = useState<string | null>(null);
+
+  const FORMULA_PRESETS: Record<string, { entry: string; exit: string; label: string }> = {
+    toujing_t1_breakout_trend: { label: "T1 · 突破趋势", entry: "close > highest(20) and close > sma(20)", exit: "close < lowest(10)" },
+    toujing_dual_ma: { label: "双均线交叉", entry: "cross_up(5, 20)", exit: "cross_down(5, 20)" },
+    toujing_rsi_mean_reversion: { label: "RSI 均值回归", entry: "rsi(14) < 30", exit: "rsi(14) > 70" },
+    toujing_turtle_s2_long: { label: "海龟 S2", entry: "close > highest(55)", exit: "close < lowest(20)" },
+  };
+
+
   const [runStateMap, setRunState] = useState<Record<string, "loading" | "ready">>({});
   const [runErrors, setRunErrors] = useState<Record<string, string>>({});
   const [artifacts, setArtifacts] = useState<Record<string, StrategySimulationView>>({});
@@ -130,6 +146,75 @@ export function MyStrategiesPage() {
       </div>
     </header>
 
+    {formulaMode ? (
+      <section className="iw-inset strategy-panel">
+        <div className="strategy-panel__head">
+          <p className="iw-kicker">{t("Formula mode")}</p>
+        </div>
+        <div className="formula-form space-y-3">
+          <label className="workshop-name">{t("Strategy name")}
+            <input value={formulaName} maxLength={60} placeholder="例如：超卖买入"
+              onChange={(event) => setFormulaName(event.target.value)} />
+          </label>
+          <label className="workshop-name">{t("Entry formula")}
+            <textarea className="formula-input" rows={2} value={entryFormula}
+              onChange={(event) => setEntryFormula(event.target.value)} />
+          </label>
+          <label className="workshop-name">{t("Exit formula")}
+            <textarea className="formula-input" rows={2} value={exitFormula}
+              onChange={(event) => setExitFormula(event.target.value)} />
+          </label>
+          <label className="workshop-check">
+            <input type="checkbox" checked={formulaStopPct !== null}
+              onChange={(event) => setFormulaStopPct(event.target.checked ? 10 : null)} />
+            {t("Fixed stop-loss")}：
+          </label>
+          {formulaStopPct !== null ? <span className="workshop-inline-num">
+            <input type="number" min={1} max={50} value={formulaStopPct}
+              onChange={(event) => setFormulaStopPct(Number(event.target.value) || 10)} /> %
+          </span> : null}
+          <label className="workshop-check">
+            <input type="checkbox" checked={formulaAtrMult !== null}
+              onChange={(event) => setFormulaAtrMult(event.target.checked ? 2 : null)} />
+            ATR 跟踪止损：前收 −
+          </label>
+          {formulaAtrMult !== null ? <span className="workshop-inline-num">
+            <input type="number" min={10} max={50} step={5} value={formulaAtrMult * 10}
+              onChange={(event) => setFormulaAtrMult((Number(event.target.value) || 20) / 10)} /> × ATR(14)
+          </span> : null}
+          <p className="workshop-misread">可用函数：sma(n) ema(n) highest(n) lowest(n) rsi(n) roc(n) atr(n) atr_ratio(n) volume_ratio(n) range_pos(n) streak_down() cross_up(s,l) cross_down(s,l)；字段：close entry_price（仅退出公式）</p>
+          <div className="formula-presets">
+            {Object.entries(FORMULA_PRESETS).map(([id, preset]) => (
+              <button key={id} type="button" className="workshop-remove" title={preset.entry}
+                onClick={() => { setEntryFormula(preset.entry); setExitFormula(preset.exit); }}>
+                {preset.label}
+              </button>
+            ))}
+          </div>
+          <p className="workshop-misread">{t("All functions are strictly backward-looking; formulas cannot access files, network, or your account data.")}</p>
+          <div className="workshop-actions">
+            <button type="button" className="workshop-save" onClick={() => {
+              if (!isTauriRuntime()) { setFormulaError(t("Running custom strategies needs the desktop app (browser preview cannot execute them).")); return; }
+              const spec = {
+                schema_version: "user_strategy_formula.v1",
+                name: formulaName.trim() || "公式策略",
+                entry_formula: entryFormula,
+                exit_formula: exitFormula,
+                stop_loss_pct: formulaStopPct,
+                sizing: { mode: "equal_weight", fraction: 0.25 },
+                constraints: { max_positions: 4 },
+              };
+              const id = `user_formula_${Date.now().toString(36)}`;
+              persist([...saved, { id, name: formulaName.trim() || "公式策略", savedAt: new Date().toISOString().slice(0, 10), spec }]);
+              setSelectedId(id);
+            }}>{t("Save and validate")}</button>
+            <button type="button" onClick={() => setFormulaMode(false)}>{t("Cancel")}</button>
+          </div>
+          {formulaError ? <p className="workshop-error" role="alert">{formulaError}</p> : null}
+        </div>
+      </section>
+    ) : null}
+
     {workshopDraft ? (
       <section className="iw-inset strategy-panel">
         <div className="strategy-panel__head">
@@ -147,6 +232,10 @@ export function MyStrategiesPage() {
           name: "", entry: [{ factor: "breakout_high", op: "true", threshold: 0, window: 20 }],
           exitFactor: null, stopPct: 10, atrMult: null, addsUnits: null, fraction: 25, maxPositions: 4,
         })}>＋ {t("Build your own")}</button>
+        <button type="button" className="workshop-save" onClick={() => {
+          setFormulaMode(true);
+          if (!formulaName) setFormulaName("我的公式策略");
+        }}>λ {t("Write a formula")}</button>
       </div>
       {saved.length === 0 ? <p className="strategy-comparison-note">{t("No custom strategies yet — build one, or start from a library template below.")}</p> : (
         <div className="my-strategy-list">
