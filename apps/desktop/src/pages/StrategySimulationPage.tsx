@@ -97,6 +97,18 @@ export function StrategySimulationPage() {
   // A user strategy that has not been run yet must NOT show another
   // strategy's stale numbers: gate every data section on readiness.
   const simulationReady = !isUserStrategy || !!userArtifacts[strategyId];
+  const selectedUserStrategy = isUserStrategy
+    ? userStrategies.find((item) => item.id === strategyId) ?? null : null;
+  // Hero identity must follow the selection even before the first run.
+  const hero = isUserStrategy && selectedUserStrategy ? {
+    title: `自建策略：${selectedUserStrategy.name}`,
+    description: "你在因子库内自建的规则组合；保存后可在桌面应用中于真实行情或合成历史上运行。",
+    meta: `${selectedUserStrategy.id} · 保存于 ${selectedUserStrategy.savedAt}`,
+  } : {
+    title: simulation.strategy.title,
+    description: simulation.strategy.description,
+    meta: `${simulation.strategy.strategyId}@${simulation.strategy.version} · ${t("Data fingerprint")} ${simulation.dataFingerprint.slice(0, 12)}…`,
+  };
   const saveWorkshopStrategy = (draft: WorkshopDraft, spec: Record<string, unknown>) => {
     const id = `user_${JSON.stringify(spec).length}_${Math.abs(draft.name.length)}_${Date.now().toString(36)}`;
     const entry = { id, name: draft.name.trim(), savedAt: new Date().toISOString().slice(0, 10), spec };
@@ -136,8 +148,6 @@ export function StrategySimulationPage() {
     localStorage.setItem("toujing.userStrategies", JSON.stringify(next));
     if (strategyId === id) setStrategyId("toujing_t1_breakout_trend");
   };
-  const selectedUserStrategy = isUserStrategy
-    ? userStrategies.find((item) => item.id === strategyId) ?? null : null;
   const currency = typeof simulation.strategy.params.currency === "string" ? simulation.strategy.params.currency : "CNY";
   const money = (value: number) => formatCurrencyValue(value, locale, currency);
   const [instrument, setInstrument] = useState<string>("all");
@@ -305,9 +315,9 @@ export function StrategySimulationPage() {
             onClick={() => { setWorkshopOpen(true); }}>＋ {t("Build your own")}</button>
           {loadingStrategy ? <span className="iw-subtle">{t("Loading…")}</span> : null}
         </div>
-        <h1 className="strategy-hero__title">{simulation.strategy.title}</h1>
-        <p className="strategy-hero__desc">{simulation.strategy.description}</p>
-        <p className="strategy-hero__meta">{simulation.strategy.strategyId}@{simulation.strategy.version} · {t("Data fingerprint")} {simulation.dataFingerprint.slice(0, 12)}…</p>
+        <h1 className="strategy-hero__title">{hero.title}</h1>
+        <p className="strategy-hero__desc">{hero.description}</p>
+        <p className="strategy-hero__meta">{hero.meta}</p>
       </div>
       <div className="strategy-hero__boundary">
         <p>{t("This path is replayed by deterministic code on synthetic prices. It is not advice, not a prediction, and not real market performance.")}</p>
