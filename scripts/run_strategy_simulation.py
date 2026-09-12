@@ -18,6 +18,8 @@ sys.path.insert(0, str(ROOT))
 from src.strategy.data import load_simulation_data  # noqa: E402
 from src.strategy.engine import run_simulation  # noqa: E402
 from src.strategy.report import result_to_dict  # noqa: E402
+from src.strategy.strategies.dual_ma import build_dual_ma_spec  # noqa: E402
+from src.strategy.strategies.rsi_mr import build_rsi_mr_spec  # noqa: E402
 from src.strategy.strategies.t1 import build_t1_spec  # noqa: E402
 
 
@@ -61,12 +63,26 @@ def main() -> int:
     output = args.output or (args.data_dir / "t1_v1_result.json")
 
     data = load_simulation_data(args.data_dir)
-    result = run_simulation(build_t1_spec(), data)
-    # Determinism guard: the second run must be identical to the first.
-    second = result_to_dict(run_simulation(build_t1_spec(), data))
-    if second != result_to_dict(result):
-        raise SystemExit("simulation_is_not_deterministic")
-    payload = result_to_dict(result)
+    # One full run per registered strategy: the canonical artifact (T1) plus
+    # lazily-loaded desktop files for the other strategies.
+    strategies = [build_t1_spec(), build_dual_ma_spec(), build_rsi_mr_spec()]
+    payloads: dict[str, dict] = {}
+    for spec in strategies:
+        result = run_simulation(spec, data)
+        second = result_to_dict(run_simulation(spec, data))
+        if second != result_to_dict(result):
+            raise SystemExit("simulation_is_not_deterministic")
+        payload = result_to_dict(result)
+        payloads[spec.strategy_id] = payload
+        if spec.strategy_id != "toujing_t1_breakout_trend":
+            slug = spec.strategy_id.split("_", 1)[1].replace("_", "-")
+            (args.data_dir / f"{slug}_result.json").write_text(
+                json.dumps(payload, ensure_ascii=False, indent=1, allow_nan=False) + "\n", encoding="utf-8")
+            desktop_path = args.desktop_output.parent / f"strategy-simulation-{slug}.json"
+            desktop_path.write_text(json.dumps(_desktop_payload(payload, data), ensure_ascii=False,
+                                               indent=1, allow_nan=False) + "\n", encoding="utf-8")
+    result = run_simulation(strategies[0], data)
+    payload = payloads[strategies[0].strategy_id]
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=1, sort_keys=False,
                                  allow_nan=False) + "\n", encoding="utf-8")
     desktop = _desktop_payload(payload, data)
@@ -77,6 +93,7 @@ def main() -> int:
     summary = payload["summary"]
     print(json.dumps({
         "output": str(output), "desktop_output": str(args.desktop_output),
+        "strategies": {key: value["summary"]["final_equity"] for key, value in payloads.items()},
         "data_fingerprint": payload["data_fingerprint"],
         "strategy": f"{result.spec.strategy_id}@{result.spec.version}",
         "final_equity": summary["final_equity"],

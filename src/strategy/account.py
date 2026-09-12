@@ -18,7 +18,7 @@ class Position:
     average_cost: float        # Per-share cost including buy fees.
     entry_price: float         # Raw fill price of the opening buy.
     entry_date: date
-    stop_price: float
+    stop_price: float | None  # None = the strategy declares no price stop.
 
 
 @dataclass(slots=True)
@@ -32,7 +32,7 @@ class StrategyAccount:
         return cls(initial_cash=initial_cash, cash=initial_cash)
 
     def apply_buy(self, instrument: str, quantity: float, price: float, fee: float, *, day: date,
-                  stop_price: float) -> None:
+                  stop_price: float | None) -> None:
         amount = quantity * price
         self.cash -= amount + fee
         existing = self.positions.get(instrument)
@@ -46,7 +46,7 @@ class StrategyAccount:
         total_cost = existing.average_cost * existing.quantity + amount + fee
         existing.quantity = total_quantity
         existing.average_cost = total_cost / total_quantity
-        # T1 never adds, but keep the merge correct anyway; stop refreshes from the new fill.
+        # Adds refresh the stop from the newest fill when the strategy uses one.
         existing.stop_price = stop_price
 
     def apply_sell(self, instrument: str, quantity: float, price: float, fee: float) -> None:
@@ -70,7 +70,8 @@ class StrategyAccount:
         position.available_quantity *= ratio
         position.average_cost /= ratio
         position.entry_price /= ratio
-        position.stop_price /= ratio
+        if position.stop_price is not None:
+            position.stop_price /= ratio
 
     def settle_day(self) -> None:
         """End of day: shares bought today become sellable tomorrow."""

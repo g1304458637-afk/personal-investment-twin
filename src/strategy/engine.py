@@ -37,7 +37,8 @@ from src.strategy.records import (
     TRIGGER_STOP_LOSS,
 )
 from src.strategy.spec import StrategySpec
-from src.strategy.strategies.t1 import evaluate_close_signals
+from src.strategy.strategies.registry import resolve_signals
+from src.strategy.strategies.t1 import evaluate_close_signals as _t1_signals  # noqa: F401 (default provider)
 
 
 class SimulationResult:
@@ -64,7 +65,16 @@ def _marks_for(account: StrategyAccount, data: SimulationData, day: date) -> dic
     return marks
 
 
-def run_simulation(spec: StrategySpec, data: SimulationData) -> SimulationResult:
+def run_simulation(spec: StrategySpec, data: SimulationData,
+                   signal_provider=None) -> SimulationResult:
+    """Run one strategy spec over the dataset.
+
+    ``signal_provider`` defaults to the registered close-signal provider for
+    the spec's strategy_id; strategies with no registered provider fall back
+    to T1's breakout-trend signals.
+    """
+    if signal_provider is None:
+        signal_provider = resolve_signals(spec.strategy_id, _t1_signals)
     params = spec.params
     execution = ExecutionModel(
         commission_rate=float(params["commission_rate"]),
@@ -218,6 +228,8 @@ def run_simulation(spec: StrategySpec, data: SimulationData) -> SimulationResult
                 events.append({"kind": "stop_deferred", "instrument": instrument,
                                "reason": "no_session"})
                 continue
+            if position.stop_price is None:
+                continue  # Strategy declares no price stop; exit rules only.
             if bar.open <= position.stop_price:
                 price = execution.sell_fill_price(bar.open)
                 note = "stop_gap_open_below_stop"
@@ -274,7 +286,7 @@ def run_simulation(spec: StrategySpec, data: SimulationData) -> SimulationResult
             order.resolution_date = day
             order.resolution_reason = fill.fill_id
             account.apply_buy(order.instrument, quantity, price, fee, day=day,
-                              stop_price=price * (1.0 - stop_loss_pct))
+                              stop_price=price * (1.0 - stop_loss_pct) if stop_loss_pct > 0 else None)
             events.append({"kind": "fill", "fill_id": fill.fill_id, "order_id": order.order_id,
                            "trigger": fill.trigger, "instrument": order.instrument, "side": "BUY",
                            "quantity": fill.quantity, "price": fill.price, "fee": fill.fee,
@@ -305,7 +317,7 @@ def run_simulation(spec: StrategySpec, data: SimulationData) -> SimulationResult
         if day != last_day:
             held = set(account.positions)
             pending_buys = {item.instrument for item in pending if item.side == "BUY"}
-            exits, entries = evaluate_close_signals(params, data, day, held, pending_buys)
+            exits, entries = signal_provider(params, data, day, held, pending_buys)
             for signal in exits:
                 order = create_order(day, signal.instrument, "SELL",
                                      account.positions[signal.instrument].quantity,
