@@ -11,6 +11,7 @@ import { isOpticalReview } from "@/experiments/optical-review/experiment";
 
 import { EpisodeChartWorkspace } from "@/components/charts/EpisodeChartWorkspace";
 import { InvestmentChartWorkspace } from "@/components/charts/InvestmentChartWorkspace";
+import { adaptSingleComparisonReport, type ComparisonReportView } from "@/data/strategyComparison";
 import { adaptStrategyComparison, type StrategyComparisonView } from "@/data/strategyComparison";
 import { strategyComparison } from "@/data/strategyComparisonDemo";
 import { showcaseChartForEpisode, showcaseInstrumentName } from "@/data/showcaseDemo";
@@ -242,6 +243,22 @@ export function PositionEpisodePage() {
     const report = comparisonView.reports.find((item) => item.episodeId === entry.episode.episodeId);
     return report ? report.ruleFills.map((fill) => ({ day: fill.day, side: fill.side, price: fill.price, trigger: fill.trigger })) : null;
   }, [data.mode, entry, comparisonView]);
+  // Real accounts: on-demand same-instrument comparison via the sidecar.
+  const [realCompare, setRealCompare] = useState<
+    { state: "loading" } | { state: "ready"; report: ComparisonReportView } | { state: "error"; reason: string } | null>(null);
+  const loadRealCompare = () => {
+    if (!episode.accountId) return;
+    setRealCompare({ state: "loading" });
+    realUserApi.strategyComparison(episode.subjectId, episode.accountId, episode.episodeId)
+      .then((result) => {
+        if (result.status === "available" && result.report) {
+          setRealCompare({ state: "ready", report: adaptSingleComparisonReport(result.report) });
+        } else {
+          setRealCompare({ state: "error", reason: result.reason ?? "comparison_unavailable" });
+        }
+      })
+      .catch((value) => setRealCompare({ state: "error", reason: value instanceof Error ? value.message : String(value) }));
+  };
   const currentVerdicts = useMemo(() => {
     if (data.mode !== "demo" || !entry) return [];
     return comparisonView.reports.find((item) => item.episodeId === entry.episode.episodeId)?.decisionVerdicts ?? [];
@@ -379,6 +396,29 @@ export function PositionEpisodePage() {
         <option value="toujing_turtle_s2_long">海龟 S2</option>
       </select>
     </div> : null}
+    {data.mode === "real_user" ? <div className="episode-compare-strategy">
+      <button type="button" className="workshop-save" onClick={loadRealCompare}>
+        {realCompare?.state === "loading" ? t("Running on history…") : t("Check against your strategy")}
+      </button>
+    </div> : null}
+    {realCompare?.state === "ready" ? <section className="iw-inset strategy-panel strategy-decision-verdicts">
+      <div className="strategy-panel__head">
+        <p className="iw-kicker">{t("Check against your strategy")}</p>
+        <span className="iw-subtle">{realCompare.report.instrument} · {realCompare.report.windowStart ?? "—"} → {realCompare.report.windowEnd ?? "—"}</span>
+      </div>
+      {realCompare.report.decisionVerdicts.map((verdict) => (
+        <div key={verdict.executionId} className="strategy-decision-verdict">
+          <span>{verdict.day}</span>
+          <strong className={verdict.side === "BUY" ? "is-buy" : "is-sell"}>{verdict.side === "BUY" ? t("Buy") : t("Sell")}</strong>
+          <em className={verdict.verdict === "aligned" ? "is-aligned" : verdict.verdict === "different" ? "is-different" : "is-insufficient"}>
+            {verdict.verdict === "aligned" ? t("Rules match") : verdict.verdict === "different" ? t("Rules differ") : t("Insufficient data")}
+          </em>
+          <p className="strategy-trade__reason">{verdict.reasonText}</p>
+        </div>
+      ))}
+      <ul className="strategy-comparison-limits">{realCompare.report.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul>
+    </section> : null}
+    {realCompare?.state === "error" ? <p className="iw-subtle">{t("Comparison unavailable")}: {realCompare.reason}</p> : null}
     {lensMode && (lensProjection.report && lensState ? <>
       <LensMethodSelector report={lensProjection.report} methodId={lensState.method.id} onSelect={selectLensMethod} />
       <LensDecisionTimeline entry={entry} method={lensState.method} decisionId={lensState.check?.decision_id ?? ""} onSelect={selectLensDecision} />

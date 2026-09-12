@@ -152,3 +152,11 @@ export function adaptStrategyComparison(raw: unknown): StrategyComparisonView {
   }
   return view;
 }
+
+
+/** Runtime path: adapt one raw report from strategy_comparison.get. */
+export function adaptSingleComparisonReport(raw: unknown): ComparisonReportView {
+  const value = object(raw);
+  if (value.schema_version !== "strategy_comparison.v1") fail();
+  return report(value);
+}

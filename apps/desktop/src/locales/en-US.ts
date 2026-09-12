@@ -1606,6 +1606,7 @@ export const enUS = {
   "Recorded result": "Recorded result",
   "Rule trades in window": "Rule trades in window",
   "Net cash flow": "Net cash flow",
+  "Comparison unavailable": "Comparison unavailable",
   "Parameter sensitivity": "Parameter sensitivity",
   "Facts only: the rows keep your order, nothing is ranked": "Facts only: the rows keep your order, nothing is ranked",
   "See how fragile a conclusion is: change one parameter, rerun the same history, compare. High sensitivity means the historical result leans on that assumption.": "See how fragile a conclusion is: change one parameter, rerun the same history, compare. High sensitivity means the historical result leans on that assumption.",

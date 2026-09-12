@@ -1607,6 +1607,7 @@ export const zhCN = {
   "Recorded result": "记录结果",
   "Rule trades in window": "窗口内规则成交",
   "Net cash flow": "净现金流",
+  "Comparison unavailable": "对照暂不可用",
   "Parameter sensitivity": "参数敏感度",
   "Facts only: the rows keep your order, nothing is ranked": "只呈现事实：行序即输入顺序，不做任何排名",
   "See how fragile a conclusion is: change one parameter, rerun the same history, compare. High sensitivity means the historical result leans on that assumption.": "看看一个结论有多脆弱：改一个参数，重放同一段历史，再对比。敏感度高，说明历史结论依赖这个假设。",
