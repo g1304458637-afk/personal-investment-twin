@@ -287,3 +287,28 @@ def decision_verdicts(spec, bars: Sequence[Mapping[str, Any]], *, instrument: st
                             "reason_text": f"该策略在 {eve.isoformat()} 收盘没有为 {instrument} 产生退出信号，按其规则应继续持有。",
                             "conditions": []})
     return out
+
+
+def multi_simulation_data(bars_by_instrument: Mapping[str, Sequence[Mapping[str, Any]]],
+                          *, is_synthetic: bool) -> SimulationData:
+    """Build a multi-instrument SimulationData from validated OHLC rows.
+
+    Each instrument's first bar date is its point-in-time listing; every
+    row is validated (unique dates, positive, consistent OHLC) exactly like
+    the single-instrument path.  Used to run user strategies on real market
+    history (backward-adjusted bars) instead of the synthetic universe.
+    """
+    series: dict[str, InstrumentSeries] = {}
+    members: dict[str, UniverseMember] = {}
+    all_dates: set[date] = set()
+    for instrument, rows in sorted(bars_by_instrument.items()):
+        single = simulation_data_from_bars(instrument, rows, is_synthetic=is_synthetic)
+        series[instrument] = single.series[instrument]
+        members[instrument] = single.members[instrument]
+        all_dates.update(single.dates)
+    if not series:
+        raise ComparisonError("no_instruments_could_be_loaded")
+    return SimulationData(
+        dates=tuple(sorted(all_dates)), series=series, members=members, actions=(),
+        fingerprint=f"multi:{len(series)}:{sorted(member.list_date.isoformat() for member in members.values())}",
+    )

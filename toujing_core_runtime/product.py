@@ -409,6 +409,7 @@ class ProductRuntime:
             build_user_strategy_spec,
             make_provider,
         )
+        from src.strategy.compare import multi_simulation_data
         from src.strategy.data import load_simulation_data, truncate_simulation_data
         from src.strategy.report import desktop_payload, result_to_dict
         from src.strategy.engine import run_simulation
@@ -420,7 +421,49 @@ class ProductRuntime:
             spec, normalized = build_user_strategy_spec(raw)
         except UserStrategyError as exc:
             return {"status": "unavailable", "reason": f"invalid_strategy_spec: {exc}", "artifact": None}
-        data = load_simulation_data(_bundled_universe_dir())
+        universe = params.get("universe", "synthetic")
+        limitations_extra: list[str] = []
+        if universe == "own_account":
+            subject_id = params.get("subject_id")
+            account_id = params.get("account_id")
+            if not isinstance(subject_id, str) or not isinstance(account_id, str) or not subject_id or not account_id:
+                return {"status": "unavailable", "reason": "own_account_requires_account", "artifact": None}
+            bundle = bundle_from_repository(self.repo, subject_id, account_id)
+            # Collect per-instrument raw symbol and date span.
+            grouped2: dict[str, dict] = {}
+            for execution in bundle.accepted_canonical_executions:
+                instrument_id = execution.instrument.instrument_id
+                raw_symbol = execution.instrument.local_symbol or execution.instrument.display_symbol
+                day = execution.event_time.calendar_date
+                entry = grouped2.setdefault(instrument_id, {"raw": raw_symbol, "min": day, "max": day})
+                entry["min"] = min(entry["min"], day)
+                entry["max"] = max(entry["max"], day)
+            from src.data.akshare_client import AkshareUnavailable, fetch_ohlc
+            from datetime import timedelta
+            bars_by: dict[str, list] = {}
+            skipped: list[str] = []
+            for instrument_id, entry in sorted(grouped2.items()):
+                fetch_start = (entry["min"] - timedelta(days=400)).isoformat()
+                fetch_end = (entry["max"] + timedelta(days=7)).isoformat()
+                try:
+                    bars_by[instrument_id] = fetch_ohlc(entry["raw"], fetch_start, fetch_end, adjust="hfq")
+                except Exception:
+                    skipped.append(instrument_id)
+            if not bars_by:
+                return {"status": "unavailable", "reason": "no_real_instruments_could_be_loaded", "artifact": None}
+            from src.strategy.compare import multi_simulation_data
+            data = multi_simulation_data(bars_by, is_synthetic=False)
+            limitations_extra = [
+                "运行范围：你在本账户中真实交易过、且可识别为 A 股的标的（" + str(len(bars_by)) + " 只" +
+                (f"；另有 {len(skipped)} 只非 A 股或不可识别标的已跳过" if skipped else "") + "）。",
+                "行情使用 akshare 公开后复权日线（连续序列），成交价即复权价，与盘面价格不同。",
+                "只包含你自己交易过的标的——结论存在幸存者偏差，不代表全市场。",
+            ]
+            data_full = data
+        else:
+            data_full = load_simulation_data(_bundled_universe_dir())
+            limitations_extra = []
+        data = data_full
         try:
             result = run_simulation(spec, data, signal_provider=make_provider(normalized))
             cutoff = data.dates[len(data.dates) // 2]
@@ -436,8 +479,11 @@ class ProductRuntime:
         common = [day for day in base["days"] if day["date"] < cutoff.isoformat()]
         if common[:-1] != prefix_dict["days"][:-1]:
             return {"status": "unavailable", "reason": "future_function_self_check_failed", "artifact": None}
+        artifact = desktop_payload(base, data)
+        if limitations_extra:
+            artifact["limitations"] = limitations_extra
         return {"status": "available", "reason": None,
-                "artifact": desktop_payload(base, data)}
+                "artifact": artifact}
 
     def strategy_sensitivity_run(self, params: Mapping[str, object]) -> dict[str, object]:
         """Parameter sensitivity: one strategy, one parameter, several values.

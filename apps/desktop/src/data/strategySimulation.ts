@@ -81,6 +81,7 @@ export interface StrategyBar { date: string; open: number; high: number; low: nu
 
 export interface StrategySimulationView {
   barsByInstrument: Record<string, StrategyBar[]>;
+  limitations: string[] | null;
   strategy: StrategySpecView;
   dataFingerprint: string;
   summary: StrategySummaryView;
@@ -217,8 +218,11 @@ export function adaptStrategySimulation(raw: unknown): StrategySimulationView {
       if (rows[index].date <= rows[index - 1].date) fail();
     }
   }
+  const limitations = "limitations" in value && Array.isArray(value.limitations)
+    ? (value.limitations as string[]) : null;
   return {
     barsByInstrument,
+    limitations,
     strategy: spec(value.strategy),
     dataFingerprint: fingerprint,
     summary: summaryView,

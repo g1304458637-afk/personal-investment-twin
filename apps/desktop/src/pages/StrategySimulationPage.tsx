@@ -5,6 +5,7 @@ import { EChart } from "@/components/charts/EChart";
 import { InvestmentChartWorkspace } from "@/components/charts/InvestmentChartWorkspace";
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { isTauriRuntime, runtimeRequest, type SensitivityReportView } from "@/data/runtimeService";
+import { useDataMode } from "@/data/DataModeProvider";
 import { adaptStrategySimulation, type StrategySimulationView } from "@/data/strategySimulation";
 import { StrategyWorkshop, conditionStatement, type ConditionDraft, type WorkshopDraft } from "@/components/strategy/StrategyWorkshop";
 import { rawComparisonReportFor, strategyComparison } from "@/data/strategyComparisonDemo";
@@ -47,6 +48,7 @@ const STRATEGY_FILES: Record<string, { title: string; load: () => Promise<{ defa
 
 export function StrategySimulationPage() {
   const { t, locale } = useLocale();
+  const data = useDataMode();
   const { theme } = useTheme();
   const dark = theme === "dark";
   const [search, setSearch] = useSearchParams();
@@ -104,11 +106,17 @@ export function StrategySimulationPage() {
     setWorkshopOpen(false);
     setStrategyId(id);
   };
+  const [userRunUniverse, setUserRunUniverse] = useState<"synthetic" | "own_account">("own_account");
   const runUserStrategy = (entry: { id: string; spec: Record<string, unknown> }) => {
     setUserRunState((state) => ({ ...state, [entry.id]: "loading" }));
     setUserRunError((state) => ({ ...state, [entry.id]: "" }));
+    const base: Record<string, unknown> = { strategy: entry.spec, universe: userRunUniverse };
+    if (userRunUniverse === "own_account" && data.activeAccount) {
+      base.subject_id = data.activeAccount.subject_id;
+      base.account_id = data.activeAccount.account_id;
+    }
     runtimeRequest<{ status: string; reason: string | null; artifact: unknown }>(
-      "strategy_simulation.run_custom", { strategy: entry.spec })
+      "strategy_simulation.run_custom", base)
       .then((result) => {
         if (result.status !== "available" || !result.artifact) {
           setUserRunError((state) => ({ ...state, [entry.id]: result.reason ?? "运行失败" }));
@@ -328,13 +336,29 @@ export function StrategySimulationPage() {
         ))}
       </ul>
       {isTauriRuntime() ? (
-        userRunState[selectedUserStrategy.id] === "ready" && userArtifacts[selectedUserStrategy.id] ? null
-          : userRunState[selectedUserStrategy.id] === "loading"
-            ? <p className="strategy-compare__note">{t("Running on history…")}</p>
-            : <div>
-                <button type="button" className="workshop-save" onClick={() => runUserStrategy(selectedUserStrategy)}>{t("Run on history")}</button>
-                {userRunError[selectedUserStrategy.id] ? <p className="strategy-compare__note">{t("Run failed")}: {userRunError[selectedUserStrategy.id]}</p> : null}
-              </div>
+        userRunState[selectedUserStrategy.id] === "ready" && userArtifacts[selectedUserStrategy.id] ? (
+          <>
+            {userArtifacts[selectedUserStrategy.id].limitations ? (
+              <ul className="strategy-comparison-limits">
+                {userArtifacts[selectedUserStrategy.id].limitations!.map((limitation, index) => <li key={index}>{limitation}</li>)}
+              </ul>
+            ) : null}
+          </>
+        ) : userRunState[selectedUserStrategy.id] === "loading" ? (
+          <p className="strategy-compare__note">{t("Running on history…")}</p>
+        ) : (
+          <div>
+            <label className="workshop-inline-num">
+              {t("Run on")}
+              <select aria-label={t("Run on")} value={userRunUniverse} onChange={(event) => setUserRunUniverse(event.target.value as "synthetic" | "own_account")}>
+                <option value="own_account">{t("My own traded instruments (real market, hfq)")}</option>
+                <option value="synthetic">{t("Synthetic demo universe")}</option>
+              </select>
+            </label>
+            <button type="button" className="workshop-save" onClick={() => runUserStrategy(selectedUserStrategy)}>{t("Run on history")}</button>
+            {userRunError[selectedUserStrategy.id] ? <p className="strategy-compare__note">{t("Run failed")}: {userRunError[selectedUserStrategy.id]}</p> : null}
+          </div>
+        )
       ) : <p className="strategy-compare__note">{t("Running custom strategies needs the desktop app (browser preview cannot execute them).")}</p>}
     </section> : null}
 {simulationReady ? <>

@@ -24,8 +24,9 @@ class AkshareUnavailable(RuntimeError):
     """The public market source could not answer; message is user-facing."""
 
 
-def _cache_path(instrument: str, start: str, end: str) -> Path:
-    return _CACHE_ROOT / f"{instrument}_{start}_{end}.json"
+def _cache_path(instrument: str, start: str, end: str, adjust: str) -> Path:
+    suffix = adjust or "raw"
+    return _CACHE_ROOT / f"{instrument}_{start}_{end}_{suffix}.json"
 
 
 def normalize_instrument(instrument: str) -> str:
@@ -41,8 +42,8 @@ def normalize_instrument(instrument: str) -> str:
     raise AkshareUnavailable("unsupported_instrument_suffix")
 
 
-def cached_bars(instrument: str, start: str, end: str) -> list[dict[str, Any]] | None:
-    path = _cache_path(normalize_instrument(instrument), start, end)
+def cached_bars(instrument: str, start: str, end: str, adjust: str = "") -> list[dict[str, Any]] | None:
+    path = _cache_path(normalize_instrument(instrument), start, end, adjust)
     if not path.exists():
         return None
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -50,15 +51,19 @@ def cached_bars(instrument: str, start: str, end: str) -> list[dict[str, Any]] |
 
 
 def fetch_ohlc(instrument: str, start: str, end: str, *, force_refresh: bool = False,
-               fetcher: Any = None) -> list[dict[str, Any]]:
-    """Unadjusted daily OHLC for an A-share instrument, cache-first.
+               fetcher: Any = None, adjust: str = "") -> list[dict[str, Any]]:
+    """Daily OHLC for an A-share instrument, cache-first.
 
-    ``start``/``end`` are ISO dates.  ``fetcher`` injects the akshare call in
-    tests; production passes None to use the lazily imported real client.
+    ``adjust``: "" for unadjusted (real traded prices) or "hfq" for the
+    backward-adjusted continuous series backtests need.  ``start``/``end``
+    are ISO dates.  ``fetcher`` injects the akshare call in tests;
+    production passes None to use the lazily imported real client.
     """
+    if adjust not in {"", "hfq", "qfq"}:
+        raise AkshareUnavailable("unsupported_adjust")
     normalized = normalize_instrument(instrument)
     if not force_refresh:
-        cached = cached_bars(instrument, start, end)
+        cached = cached_bars(instrument, start, end, adjust)
         if cached is not None:
             return cached
     if fetcher is None:
@@ -78,7 +83,7 @@ def fetch_ohlc(instrument: str, start: str, end: str, *, force_refresh: bool = F
         raise AkshareUnavailable("invalid_market_window") from exc
     try:
         frame = fetcher(symbol=normalized, period="daily", start_date=start.replace("-", ""),
-                        end_date=end.replace("-", ""), adjust="")  # adjust="": unadjusted bars.
+                        end_date=end.replace("-", ""), adjust=adjust)
     except AkshareUnavailable:
         raise
     except Exception as exc:
@@ -92,12 +97,14 @@ def fetch_ohlc(instrument: str, start: str, end: str, *, force_refresh: bool = F
             "date": str(row["日期"])[:10],
             "open": float(row["开盘"]), "close": float(row["收盘"]),
             "high": float(row["最高"]), "low": float(row["最低"]),
-            "source_id": SOURCE_ID, "source_version": SOURCE_VERSION, "is_synthetic": False,
+            "source_id": SOURCE_ID, "source_version": SOURCE_VERSION,
+            "adjust": adjust, "is_synthetic": False,
         })
     bars.sort(key=lambda item: item["date"])
     if not bars:
         raise AkshareUnavailable("akshare_empty_response")
     _CACHE_ROOT.mkdir(parents=True, exist_ok=True)
-    _cache_path(normalized, start, end).write_text(
-        json.dumps({"source": SOURCE_ID, "bars": bars}, ensure_ascii=False), encoding="utf-8")
+    _cache_path(normalized, start, end, adjust).write_text(
+        json.dumps({"source": SOURCE_ID, "adjust": adjust, "bars": bars}, ensure_ascii=False),
+        encoding="utf-8")
     return bars
