@@ -613,7 +613,7 @@
 }
 
 .workshop section {
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, .08);
   border-radius: 14px;
   padding: 14px 16px;
   background: rgba(255, 255, 255, .02);
@@ -635,10 +635,10 @@
 }
 
 .workshop-name input {
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, .12);
   border-radius: 10px;
-  background: var(--card);
-  color: var(--foreground);
+  background: rgba(13, 24, 38, .8);
+  color: #e6f1f7;
   padding: 8px 12px;
   font-size: 13px;
   width: 100%;
@@ -646,20 +646,22 @@
 }
 
 .workshop-condition {
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, .08);
   border-radius: 12px;
   padding: 10px 12px;
-  background: var(--card);
+  background: rgba(255, 255, 255, .02);
+  display: grid;
   grid-template-columns: minmax(180px, 1.2fr) auto auto auto auto;
+  gap: 8px;
   align-items: center;
 }
 
 .workshop-condition select,
 .workshop-condition input[type="number"] {
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, .12);
   border-radius: 8px;
-  background: var(--card);
-  color: var(--foreground);
+  background: rgba(13, 24, 38, .8);
+  color: #e6f1f7;
   padding: 6px 10px;
   font-size: 12.5px;
 }
