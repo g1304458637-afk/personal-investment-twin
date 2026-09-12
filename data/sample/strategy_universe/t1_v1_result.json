@@ -104,673 +104,673 @@
     "instrument": "SYN_POOL_A06",
     "closed_on": "2022-09-05",
     "pnl": -13498.207999999984,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2022-09-14",
     "pnl": -6536.9776999999885,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A16",
     "closed_on": "2022-10-06",
     "pnl": -1753.334099999949,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2022-10-24",
     "pnl": -3561.5308000000077,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A16",
     "closed_on": "2022-11-15",
     "pnl": -2133.548999999999,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2022-11-23",
     "pnl": -11476.229700000025,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2022-12-01",
     "pnl": -6291.084200000012,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A16",
     "closed_on": "2022-12-23",
     "pnl": -2125.636200000008,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2023-01-10",
     "pnl": -3295.820400000026,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2023-01-13",
     "pnl": -4339.488000000012,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A16",
     "closed_on": "2023-02-01",
     "pnl": -4457.637799999997,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2023-02-17",
     "pnl": -3151.9224000000104,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2023-02-23",
     "pnl": -3709.6020000000135,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A16",
     "closed_on": "2023-03-13",
     "pnl": -6861.862000000023,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2023-03-21",
     "pnl": -9066.81600000002,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2023-03-30",
     "pnl": -4742.84149999998,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2023-04-04",
     "pnl": -3527.830800000025,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2023-04-17",
     "pnl": -3438.3160000000207,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2023-05-01",
     "pnl": -6541.553899999999,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A15",
     "closed_on": "2023-05-01",
     "pnl": 92771.77249999999,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A10",
     "closed_on": "2023-05-04",
     "pnl": -3470.407200000016,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2023-05-09",
     "pnl": -10282.941100000055,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2023-05-12",
     "pnl": -4976.1152,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2023-05-26",
     "pnl": -6266.462200000009,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A15",
     "closed_on": "2023-06-08",
     "pnl": 1702.3500000000058,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2023-06-16",
     "pnl": -4640.721400000009,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2023-06-21",
     "pnl": -3260.139600000024,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2023-07-13",
     "pnl": 6727.83520000003,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A15",
     "closed_on": "2023-07-18",
     "pnl": 1534.5439999999944,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A10",
     "closed_on": "2023-07-21",
     "pnl": -10215.986999999965,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2023-07-26",
     "pnl": -7843.101000000024,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2023-08-01",
     "pnl": -3758.1424000000115,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2023-08-09",
     "pnl": -11207.064799999993,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2023-08-22",
     "pnl": -99.90579999997863,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2023-08-25",
     "pnl": -4942.3597999999765,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A15",
     "closed_on": "2023-08-28",
     "pnl": -2920.8549999999814,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A10",
     "closed_on": "2023-08-31",
     "pnl": -6439.980800000019,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2023-09-04",
     "pnl": -4979.654999999984,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2023-09-13",
     "pnl": 307871.46880000003,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2023-09-13",
     "pnl": -9915.882899999968,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2023-09-18",
     "pnl": -4876.138200000001,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2023-09-29",
     "pnl": -6169.214999999967,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2023-10-04",
     "pnl": -9369.321499999991,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A15",
     "closed_on": "2023-10-05",
     "pnl": -354.2257000000682,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2023-10-09",
     "pnl": 163169.69199999998,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A10",
     "closed_on": "2023-10-10",
     "pnl": -5065.04389999999,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A14",
     "closed_on": "2023-10-13",
     "pnl": -4436.080199999968,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2023-10-18",
     "pnl": -9752.744400000025,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2023-10-23",
     "pnl": -11205.668999999994,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2023-10-26",
     "pnl": -16427.426399999997,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2023-11-08",
     "pnl": 2185.6926000000094,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2023-11-09",
     "pnl": -5955.141500000027,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2023-11-14",
     "pnl": -11231.38559999998,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2023-11-17",
     "pnl": 2902.716000000015,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A10",
     "closed_on": "2023-11-17",
     "pnl": -9948.175199999998,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2023-11-22",
     "pnl": -7618.925999999978,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2023-11-27",
     "pnl": -8193.814200000023,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2023-11-30",
     "pnl": -11737.69379999995,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2023-12-05",
     "pnl": -11984.55800000002,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2023-12-11",
     "pnl": -8048.950000000012,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2023-12-19",
     "pnl": -244.71999999997206,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2023-12-27",
     "pnl": 143.70000000001164,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A10",
     "closed_on": "2023-12-27",
     "pnl": -9192.601599999995,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2024-01-04",
     "pnl": -7101.416000000056,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2024-01-10",
     "pnl": -11377.447200000053,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2024-01-15",
     "pnl": -11609.043999999994,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2024-01-26",
     "pnl": -505.79490000000806,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2024-02-05",
     "pnl": -840.3954000000376,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A10",
     "closed_on": "2024-02-05",
     "pnl": -6720.649600000004,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2024-02-08",
     "pnl": -3734.793399999995,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A16",
     "closed_on": "2024-02-12",
     "pnl": 116894.95999999996,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2024-02-14",
     "pnl": -11628.277200000011,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2024-02-19",
     "pnl": -16633.484999999986,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2024-02-22",
     "pnl": -5605.760000000009,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2024-02-27",
     "pnl": -8481.030599999998,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2024-03-06",
     "pnl": -3894.5999999999767,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A15",
     "closed_on": "2024-03-12",
     "pnl": -12290.370399999898,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2024-03-14",
     "pnl": 1651.4820000000182,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A10",
     "closed_on": "2024-03-15",
     "pnl": -7892.610599999956,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2024-03-20",
     "pnl": -5961.9156000000075,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2024-03-25",
     "pnl": -11956.671000000031,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2024-03-28",
     "pnl": -12379.272400000016,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2024-04-02",
     "pnl": -7174.9499999999825,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2024-04-04",
     "pnl": 360421.3698,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2024-04-05",
     "pnl": -8345.84759999998,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A07",
     "closed_on": "2024-04-10",
     "pnl": -4784.533899999922,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2024-04-16",
     "pnl": -4520.005000000005,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A15",
     "closed_on": "2024-04-19",
     "pnl": -14494.90559999994,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2024-04-24",
     "pnl": -274.23360000000685,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A10",
     "closed_on": "2024-04-24",
     "pnl": -12172.761999999988,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2024-05-02",
     "pnl": -10771.081200000015,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2024-05-07",
     "pnl": -15487.42259999999,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2024-05-07",
     "pnl": -13488.899600000004,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2024-05-10",
     "pnl": -18809.478900000046,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2024-05-16",
     "pnl": -8422.995799999975,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2024-05-24",
     "pnl": -4970.920400000003,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A15",
     "closed_on": "2024-05-29",
     "pnl": -11245.298999999999,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2024-06-03",
     "pnl": -737.6555999999982,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A10",
     "closed_on": "2024-06-03",
     "pnl": -11624.732599999988,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2024-06-14",
     "pnl": -15129.676800000016,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2024-06-14",
     "pnl": -4602.979499999958,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2024-06-19",
     "pnl": -10439.73450000002,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A07",
     "closed_on": "2024-06-28",
     "pnl": -4082.0768999999855,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2024-07-03",
     "pnl": -5019.123199999973,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2024-07-11",
     "pnl": -880.8013999999966,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A10",
     "closed_on": "2024-07-11",
     "pnl": -11156.075999999943,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2024-07-16",
     "pnl": 38637.14400000003,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2024-07-24",
     "pnl": -14812.068800000008,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2024-07-25",
     "pnl": 2467.4122000000207,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2024-07-30",
     "pnl": -9398.074499999988,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2024-08-12",
     "pnl": -5023.3133999999845,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2024-08-23",
     "pnl": 2876.1840000000084,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A09",
@@ -782,451 +782,451 @@
     "instrument": "SYN_POOL_A04",
     "closed_on": "2024-09-03",
     "pnl": -20003.619799999986,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2024-09-03",
     "pnl": -880.1121000000276,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2024-09-06",
     "pnl": -12746.295299999998,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A07",
     "closed_on": "2024-09-16",
     "pnl": -6206.9361999999965,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2024-09-19",
     "pnl": -6176.041799999948,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2024-09-27",
     "pnl": -8324.248599999992,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2024-10-03",
     "pnl": 4124.8532000000705,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2024-10-11",
     "pnl": -20461.070099999954,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2024-10-11",
     "pnl": -1466.8687999999966,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2024-10-16",
     "pnl": -10841.295900000026,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2024-10-21",
     "pnl": -10738.48860000004,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2024-10-30",
     "pnl": -5745.209999999963,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2024-11-07",
     "pnl": -1785.518299999996,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2024-11-12",
     "pnl": 32.38580000004731,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2024-11-20",
     "pnl": -19866.849199999997,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2024-11-20",
     "pnl": -2965.013399999996,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2024-11-25",
     "pnl": -12260.107399999979,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2024-11-29",
     "pnl": -10267.712,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2024-12-09",
     "pnl": -9017.726499999932,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2024-12-09",
     "pnl": -5109.254400000034,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2024-12-17",
     "pnl": -10308.069199999969,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2024-12-20",
     "pnl": -1477.8095999999787,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2024-12-30",
     "pnl": -19126.610999999975,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2024-12-31",
     "pnl": -2088.6822000000393,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2025-01-03",
     "pnl": -9894.525199999975,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A16",
     "closed_on": "2025-01-07",
     "pnl": 134801.29600000003,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2025-01-16",
     "pnl": -5984.580799999996,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2025-01-16",
     "pnl": -5939.83600000001,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2025-01-24",
     "pnl": -2724.191999999981,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A10",
     "closed_on": "2025-01-24",
     "pnl": -12206.39559999993,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2025-01-29",
     "pnl": -2447.9161000000313,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2025-02-06",
     "pnl": -16439.63200000004,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2025-02-07",
     "pnl": -2229.4590000000317,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2025-02-12",
     "pnl": -11109.00900000002,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2025-02-17",
     "pnl": -9390.040000000037,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A07",
     "closed_on": "2025-02-20",
     "pnl": -5710.1329999999725,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2025-02-25",
     "pnl": -2978.3545999999624,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2025-02-25",
     "pnl": -6850.101600000053,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2025-03-05",
     "pnl": -2810.478000000003,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A10",
     "closed_on": "2025-03-05",
     "pnl": -11709.243000000017,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2025-03-10",
     "pnl": -3356.584499999997,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A14",
     "closed_on": "2025-03-11",
     "pnl": -2870.021000000008,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2025-03-19",
     "pnl": -15306.59169999999,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2025-03-19",
     "pnl": -2487.6688999999315,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2025-03-24",
     "pnl": -13307.51800000004,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A07",
     "closed_on": "2025-04-01",
     "pnl": -5413.446799999976,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2025-04-04",
     "pnl": -2920.454399999988,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2025-04-04",
     "pnl": -5568.699999999953,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2025-04-14",
     "pnl": -2972.117499999993,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A10",
     "closed_on": "2025-04-15",
     "pnl": -10504.13539999997,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2025-04-18",
     "pnl": -5087.446800000034,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2025-04-28",
     "pnl": -14604.475599999947,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2025-04-28",
     "pnl": -2435.794200000004,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2025-05-01",
     "pnl": -10757.468800000031,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2025-05-06",
     "pnl": -8662.59050000005,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2025-05-14",
     "pnl": -4023.9204000000027,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2025-05-15",
     "pnl": -4793.018400000001,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2025-05-20",
     "pnl": -15673.230299999996,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2025-05-23",
     "pnl": -2102.6759999999776,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A10",
     "closed_on": "2025-05-23",
     "pnl": -6885.659500000009,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2025-05-28",
     "pnl": -7252.191999999981,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2025-06-05",
     "pnl": -14303.21159999998,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2025-06-05",
     "pnl": -3756.5298000000766,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2025-06-10",
     "pnl": -9636.256600000022,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2025-06-16",
     "pnl": -7968.227199999965,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A07",
     "closed_on": "2025-06-19",
     "pnl": -4556.740899999975,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2025-06-24",
     "pnl": -2910.6275000000023,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2025-06-24",
     "pnl": -5753.466599999985,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2025-07-02",
     "pnl": -4821.379200000025,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A10",
     "closed_on": "2025-07-02",
     "pnl": -9717.75900000002,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2025-07-07",
     "pnl": -5388.191599999962,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2025-07-15",
     "pnl": -13590.740800000029,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2025-07-16",
     "pnl": -2768.6771999999764,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2025-07-21",
     "pnl": -8505.377099999983,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2025-07-24",
     "pnl": -7571.160499999998,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_breakout_trend"
    }
   ]
  },
@@ -54778,7 +54778,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 16000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.77低于此前10个有效收盘低点15.13，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -54804,7 +54804,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 18700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.25低于此前10个有效收盘低点12.32，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -54830,7 +54830,7 @@
    "instrument": "SYN_POOL_A16",
    "side": "SELL",
    "intended_quantity": 10700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘21.35低于此前10个有效收盘低点21.58，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -54856,7 +54856,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 17800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.60低于此前10个有效收盘低点12.68，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -54882,7 +54882,7 @@
    "instrument": "SYN_POOL_A16",
    "side": "SELL",
    "intended_quantity": 9900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘22.39低于此前10个有效收盘低点22.66，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -54908,7 +54908,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 14100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.94低于此前10个有效收盘低点15.31，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -54934,7 +54934,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 15700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.95低于此前10个有效收盘低点13.04，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -54960,7 +54960,7 @@
    "instrument": "SYN_POOL_A16",
    "side": "SELL",
    "intended_quantity": 8600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘23.44低于此前10个有效收盘低点23.73，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -54986,7 +54986,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 14900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.30低于此前10个有效收盘低点13.39，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55012,7 +55012,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 19200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.03低于此前10个有效收盘低点10.17，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55038,7 +55038,7 @@
    "instrument": "SYN_POOL_A16",
    "side": "SELL",
    "intended_quantity": 7700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘24.48低于此前10个有效收盘低点24.80，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55064,7 +55064,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 13600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.65低于此前10个有效收盘低点13.75，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55090,7 +55090,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 18000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.07低于此前10个有效收盘低点10.22，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55116,7 +55116,7 @@
    "instrument": "SYN_POOL_A16",
    "side": "SELL",
    "intended_quantity": 7000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘25.27低于此前10个有效收盘低点25.88，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55142,7 +55142,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 11000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.16低于此前10个有效收盘低点15.53，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55168,7 +55168,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 11500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.02低于此前10个有效收盘低点14.13，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55194,7 +55194,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 15600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.11低于此前10个有效收盘低点10.25，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55220,7 +55220,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 13300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘11.59低于此前10个有效收盘低点11.70，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55246,7 +55246,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 9700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.26低于此前10个有效收盘低点15.63，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55259,7 +55259,7 @@
    "instrument": "SYN_POOL_A15",
    "side": "SELL",
    "intended_quantity": 23500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.75低于此前10个有效收盘低点14.77，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55298,7 +55298,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 10400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.83低于此前10个有效收盘低点15.02，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55324,7 +55324,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 22700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.37低于此前10个有效收盘低点14.49，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55337,7 +55337,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 14800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.14低于此前10个有效收盘低点10.29，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55376,7 +55376,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 27400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘11.71低于此前10个有效收盘低点11.81，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55402,7 +55402,7 @@
    "instrument": "SYN_POOL_A15",
    "side": "SELL",
    "intended_quantity": 9700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.46低于此前10个有效收盘低点15.48，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55428,7 +55428,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 9800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.72低于此前10个有效收盘低点14.85，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55454,7 +55454,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 13800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.17低于此前10个有效收盘低点10.32，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55480,7 +55480,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 30200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.89低于此前10个有效收盘低点10.90，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55506,7 +55506,7 @@
    "instrument": "SYN_POOL_A15",
    "side": "SELL",
    "intended_quantity": 8800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘16.16低于此前10个有效收盘低点16.20，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55532,7 +55532,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 21100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.11低于此前10个有效收盘低点15.30，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55558,7 +55558,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 21000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.70低于此前10个有效收盘低点15.00，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55584,7 +55584,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 13600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.22低于此前10个有效收盘低点10.36，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55610,7 +55610,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 29800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.07低于此前10个有效收盘低点10.25，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55636,7 +55636,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 12200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘11.45低于此前10个有效收盘低点11.47，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55662,7 +55662,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 8600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.48低于此前10个有效收盘低点15.86，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55675,7 +55675,7 @@
    "instrument": "SYN_POOL_A15",
    "side": "SELL",
    "intended_quantity": 17500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘16.90低于此前10个有效收盘低点16.96，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55714,7 +55714,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 18700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.27低于此前10个有效收盘低点15.46，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55740,7 +55740,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 9000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.56低于此前10个有效收盘低点14.86，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55766,7 +55766,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 22400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘25.13低于此前10个有效收盘低点25.98，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55779,7 +55779,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 23100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.05低于此前10个有效收盘低点12.26，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55818,7 +55818,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 12300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.30低于此前10个有效收盘低点10.49，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55844,7 +55844,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 22100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.01低于此前10个有效收盘低点12.04，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55870,7 +55870,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 16300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.55低于此前10个有效收盘低点15.93，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55883,7 +55883,7 @@
    "instrument": "SYN_POOL_A15",
    "side": "SELL",
    "intended_quantity": 19700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘17.61低于此前10个有效收盘低点17.67，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55922,7 +55922,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 23600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘17.68低于此前10个有效收盘低点17.70，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55935,7 +55935,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 16100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.41低于此前10个有效收盘低点15.60，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -55974,7 +55974,7 @@
    "instrument": "SYN_POOL_A14",
    "side": "SELL",
    "intended_quantity": 35400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘9.56低于此前10个有效收盘低点9.63，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56000,7 +56000,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 32900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.28低于此前10个有效收盘低点10.43，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56026,7 +56026,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 25500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.16低于此前10个有效收盘低点12.38，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56052,7 +56052,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 30600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.53低于此前10个有效收盘低点10.72，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56078,7 +56078,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 27300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.57低于此前10个有效收盘低点12.62，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56091,7 +56091,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 13300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘11.81低于此前10个有效收盘低点11.91，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56130,7 +56130,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 19200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.65低于此前10个有效收盘低点16.03，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56156,7 +56156,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 17000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘18.42低于此前10个有效收盘低点18.46，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56169,7 +56169,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 21400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.55低于此前10个有效收盘低点15.74，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56208,7 +56208,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 21000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.28低于此前10个有效收盘低点14.57，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56234,7 +56234,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 28600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.32低于此前10个有效收盘低点10.47，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56260,7 +56260,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 26700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.28低于此前10个有效收盘低点12.49，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56286,7 +56286,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 26800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.76低于此前10个有效收盘低点10.96，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56312,7 +56312,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 26000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.24低于此前10个有效收盘低点12.35，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56338,7 +56338,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 22400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.17低于此前10个有效收盘低点13.22，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56364,7 +56364,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 15000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘19.13低于此前10个有效收盘低点19.17，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56377,7 +56377,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 18200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.68低于此前10个有效收盘低点15.88，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56416,7 +56416,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 21100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.35低于此前10个有效收盘低点10.50，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56442,7 +56442,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 27100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.41低于此前10个有效收盘低点12.63，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56468,7 +56468,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 29200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘11.02低于此前10个有效收盘低点11.22，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56494,7 +56494,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 15900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.73低于此前10个有效收盘低点13.79，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56520,7 +56520,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 16300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘19.83低于此前10个有效收盘低点19.88，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56533,7 +56533,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 13300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.82低于此前10个有效收盘低点16.02，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56572,7 +56572,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 10600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.99低于此前10个有效收盘低点14.28，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56598,7 +56598,7 @@
    "instrument": "SYN_POOL_A16",
    "side": "SELL",
    "intended_quantity": 17500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘26.37低于此前10个有效收盘低点26.40，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56624,7 +56624,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 35600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.39低于此前10个有效收盘低点10.54，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56650,7 +56650,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 29700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.53低于此前10个有效收盘低点12.75，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56676,7 +56676,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 12800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘11.25低于此前10个有效收盘低点11.46，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56702,7 +56702,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 30300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.45低于此前10个有效收盘低点12.57，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56728,7 +56728,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 7500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.29低于此前10个有效收盘低点12.39，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56754,7 +56754,7 @@
    "instrument": "SYN_POOL_A15",
    "side": "SELL",
    "intended_quantity": 20900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘17.54低于此前10个有效收盘低点17.88，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56780,7 +56780,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 18900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘20.53低于此前10个有效收盘低点20.60，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56793,7 +56793,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 22200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.98低于此前10个有效收盘低点16.18，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56832,7 +56832,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 12900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.85低于此前10个有效收盘低点14.14，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56858,7 +56858,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 36600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.43低于此前10个有效收盘低点10.58，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56884,7 +56884,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 26900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.64低于此前10个有效收盘低点12.86，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56910,7 +56910,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 15000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘11.48低于此前10个有效收盘低点11.69，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56936,7 +56936,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 18600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘36.26低于此前10个有效收盘低点36.52，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56949,7 +56949,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 29800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.55低于此前10个有效收盘低点12.68，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -56988,7 +56988,7 @@
    "instrument": "SYN_POOL_A07",
    "side": "SELL",
    "intended_quantity": 37900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.16低于此前10个有效收盘低点10.24，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57014,7 +57014,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 13300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.48低于此前10个有效收盘低点12.57，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57040,7 +57040,7 @@
    "instrument": "SYN_POOL_A15",
    "side": "SELL",
    "intended_quantity": 21700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘17.48低于此前10个有效收盘低点17.82，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57066,7 +57066,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 8100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘21.28低于此前10个有效收盘低点21.36，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57079,7 +57079,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 23600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘16.12低于此前10个有效收盘低点16.32，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57118,7 +57118,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 36300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.46低于此前10个有效收盘低点10.61，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57144,7 +57144,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 39300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘8.80低于此前10个有效收盘低点9.03，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57157,7 +57157,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 29300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.75低于此前10个有效收盘低点12.98，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57196,7 +57196,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 30900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘11.71低于此前10个有效收盘低点11.93，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57222,7 +57222,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 26300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.67低于此前10个有效收盘低点12.80，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57248,7 +57248,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 29200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.68低于此前10个有效收盘低点12.78，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57274,7 +57274,7 @@
    "instrument": "SYN_POOL_A15",
    "side": "SELL",
    "intended_quantity": 18500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘17.41低于此前10个有效收盘低点17.76，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57300,7 +57300,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 16400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘21.98低于此前10个有效收盘低点22.07，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57313,7 +57313,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 22100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘16.26低于此前10个有效收盘低点16.46，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57352,7 +57352,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 38400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘8.76低于此前10个有效收盘低点8.98，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57365,7 +57365,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 24100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.19低于此前10个有效收盘低点13.24，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57404,7 +57404,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 29900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.03低于此前10个有效收盘低点12.21，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57430,7 +57430,7 @@
    "instrument": "SYN_POOL_A07",
    "side": "SELL",
    "intended_quantity": 27900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.20低于此前10个有效收盘低点10.27，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57456,7 +57456,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 27800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.87低于此前10个有效收盘低点12.97，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57482,7 +57482,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 15700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘22.69低于此前10个有效收盘低点22.78，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57495,7 +57495,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 21200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘16.40低于此前10个有效收盘低点16.60，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57534,7 +57534,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 27300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.82低于此前10个有效收盘低点15.84，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57560,7 +57560,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 37600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘8.72低于此前10个有效收盘低点8.94，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57573,7 +57573,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 20900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.84低于此前10个有效收盘低点13.91，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57612,7 +57612,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 28500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.40低于此前10个有效收盘低点12.60，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57638,7 +57638,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 29400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.07低于此前10个有效收盘低点13.17，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57664,7 +57664,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 21500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘16.53低于此前10个有效收盘低点16.55，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57703,7 +57703,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 46100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘8.69低于此前10个有效收盘低点8.91，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57716,7 +57716,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 26700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.46低于此前10个有效收盘低点14.53，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57755,7 +57755,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 27100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.75低于此前10个有效收盘低点12.96，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57781,7 +57781,7 @@
    "instrument": "SYN_POOL_A07",
    "side": "SELL",
    "intended_quantity": 39700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.22低于此前10个有效收盘低点10.30，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57807,7 +57807,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 30700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.26低于此前10个有效收盘低点13.37，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57833,7 +57833,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 16700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘24.09低于此前10个有效收盘低点24.21，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57859,7 +57859,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 23900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘17.27低于此前10个有效收盘低点17.31，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57885,7 +57885,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 46100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘8.65低于此前10个有效收盘低点8.87，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57898,7 +57898,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 27200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.07低于此前10个有效收盘低点15.16，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57937,7 +57937,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 30900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.10低于此前10个有效收盘低点13.31，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57963,7 +57963,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 30600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.09低于此前10个有效收盘低点13.22，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -57989,7 +57989,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 30000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.47低于此前10个有效收盘低点13.58，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58015,7 +58015,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 16300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘24.84低于此前10个有效收盘低点24.97，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58041,7 +58041,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 22600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘17.97低于此前10个有效收盘低点18.02，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58067,7 +58067,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 45800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘8.61低于此前10个有效收盘低点8.82，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58080,7 +58080,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 25800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.68低于此前10个有效收盘低点15.78，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58119,7 +58119,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 29800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.44低于此前10个有效收盘低点13.67，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58145,7 +58145,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 30100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.20低于此前10个有效收盘低点13.33，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58171,7 +58171,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 36500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.69低于此前10个有效收盘低点10.77，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58184,7 +58184,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 28100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.67低于此前10个有效收盘低点13.78，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58223,7 +58223,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 14300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘25.54低于此前10个有效收盘低点25.69，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58249,7 +58249,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 21200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘18.68低于此前10个有效收盘低点18.74，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58275,7 +58275,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 44100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘8.56低于此前10个有效收盘低点8.78，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58288,7 +58288,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 24300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘16.33低于此前10个有效收盘低点16.45，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58327,7 +58327,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 25900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.82低于此前10个有效收盘低点14.06，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58353,7 +58353,7 @@
    "instrument": "SYN_POOL_A16",
    "side": "SELL",
    "intended_quantity": 16600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘25.87低于此前10个有效收盘低点25.90，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58379,7 +58379,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 33700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘11.04低于此前10个有效收盘低点11.13，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58392,7 +58392,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 28000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.86低于此前10个有效收盘低点13.97，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58431,7 +58431,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 13500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘26.24低于此前10个有效收盘低点26.40，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58444,7 +58444,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 22300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘17.11低于此前10个有效收盘低点17.32，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58483,7 +58483,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 20300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘19.22低于此前10个有效收盘低点19.36，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58509,7 +58509,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 44000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘8.52低于此前10个有效收盘低点8.74，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58522,7 +58522,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 23000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘16.95低于此前10个有效收盘低点17.08，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58561,7 +58561,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 25100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.17低于此前10个有效收盘低点14.41，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58587,7 +58587,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 27500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.41低于此前10个有效收盘低点13.55，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58613,7 +58613,7 @@
    "instrument": "SYN_POOL_A07",
    "side": "SELL",
    "intended_quantity": 36500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.28低于此前10个有效收盘低点10.36，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58639,7 +58639,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 33800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘11.39低于此前10个有效收盘低点11.49，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58652,7 +58652,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 26100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.06低于此前10个有效收盘低点14.17，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58691,7 +58691,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 13200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘26.95低于此前10个有效收盘低点27.11，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58704,7 +58704,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 21000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘17.24低于此前10个有效收盘低点17.46，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58743,7 +58743,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 18500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘19.75低于此前10个有效收盘低点19.89，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58756,7 +58756,7 @@
    "instrument": "SYN_POOL_A14",
    "side": "SELL",
    "intended_quantity": 38500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘9.10低于此前10个有效收盘低点9.16，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58795,7 +58795,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 42100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘8.49低于此前10个有效收盘低点8.71，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58808,7 +58808,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 21100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘17.56低于此前10个有效收盘低点17.70，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58847,7 +58847,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 24500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.52低于此前10个有效收盘低点14.77，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58873,7 +58873,7 @@
    "instrument": "SYN_POOL_A07",
    "side": "SELL",
    "intended_quantity": 34600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.29低于此前10个有效收盘低点10.37，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58899,7 +58899,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 29600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘11.74低于此前10个有效收盘低点11.84，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58912,7 +58912,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 25000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.25低于此前10个有效收盘低点14.37，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58951,7 +58951,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 12700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘27.65低于此前10个有效收盘低点27.83，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -58964,7 +58964,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 19900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘17.40低于此前10个有效收盘低点17.62，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59003,7 +59003,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 17400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘20.31低于此前10个有效收盘低点20.46，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59029,7 +59029,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 39100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘8.45低于此前10个有效收盘低点8.66，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59042,7 +59042,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 18900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘18.17低于此前10个有效收盘低点18.33，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59081,7 +59081,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 23200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.86低于此前10个有效收盘低点15.12，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59107,7 +59107,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 23300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.62低于此前10个有效收盘低点13.75，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59133,7 +59133,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 28900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.09低于此前10个有效收盘低点12.20，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59146,7 +59146,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 23600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.47低于此前10个有效收盘低点14.58，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59185,7 +59185,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 24900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.15低于此前10个有效收盘低点12.55，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59211,7 +59211,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 12000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘28.40低于此前10个有效收盘低点28.59，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59224,7 +59224,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 17300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘17.54低于此前10个有效收盘低点17.76，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59263,7 +59263,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 16000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘20.84低于此前10个有效收盘低点21.00，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59289,7 +59289,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 38300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘8.41低于此前10个有效收盘低点8.62，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59302,7 +59302,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 17900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘18.78低于此前10个有效收盘低点18.95，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59341,7 +59341,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 19900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.21低于此前10个有效收盘低点15.48，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59367,7 +59367,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 23300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.74低于此前10个有效收盘低点13.88，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59393,7 +59393,7 @@
    "instrument": "SYN_POOL_A07",
    "side": "SELL",
    "intended_quantity": 31100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘10.33低于此前10个有效收盘低点10.40，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59419,7 +59419,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 26500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘12.46低于此前10个有效收盘低点12.58，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59432,7 +59432,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 20300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘14.66低于此前10个有效收盘低点14.78，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59471,7 +59471,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 10800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘29.10低于此前10个有效收盘低点29.30，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59484,7 +59484,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 17100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘17.68低于此前10个有效收盘低点17.90，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59523,7 +59523,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 14800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘21.36低于此前10个有效收盘低点21.53，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59549,7 +59549,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 36400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘8.37低于此前10个有效收盘低点8.58，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59562,7 +59562,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 16200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘19.44低于此前10个有效收盘低点19.62，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59601,7 +59601,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 18700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘15.59低于此前10个有效收盘低点15.87，按规则退出。",
    "rank": null,
    "status": "filled",
@@ -59627,7 +59627,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 21500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_breakout_trend",
    "reason_text": "收盘13.84低于此前10个有效收盘低点13.99，按规则退出。",
    "rank": null,
    "status": "filled",

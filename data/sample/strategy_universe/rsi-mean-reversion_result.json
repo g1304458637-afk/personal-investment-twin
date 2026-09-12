@@ -109,43 +109,43 @@
     "instrument": "SYN_POOL_A02",
     "closed_on": "2023-05-18",
     "pnl": -28395.082199999975,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_rsi_mr"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2023-09-05",
     "pnl": -119920.5454,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_rsi_mr"
    },
    {
     "instrument": "SYN_POOL_A16",
     "closed_on": "2023-09-12",
     "pnl": -31169.375300000014,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_rsi_mr"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2024-04-10",
     "pnl": -2090.549799999979,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_rsi_mr"
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2024-07-22",
     "pnl": -110462.68649999998,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_rsi_mr"
    },
    {
     "instrument": "SYN_POOL_A16",
     "closed_on": "2024-08-05",
     "pnl": -25261.371799999994,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_rsi_mr"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2024-11-26",
     "pnl": -5234.550300000003,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_rsi_mr"
    }
   ]
  },
@@ -41470,7 +41470,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 21400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_rsi_mr",
    "reason_text": "RSI(14)=71.6 高于 70（超买），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -41496,7 +41496,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 10600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_rsi_mr",
    "reason_text": "RSI(14)=71.2 高于 70（超买），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -41522,7 +41522,7 @@
    "instrument": "SYN_POOL_A16",
    "side": "SELL",
    "intended_quantity": 8900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_rsi_mr",
    "reason_text": "RSI(14)=71.5 高于 70（超买），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -41548,7 +41548,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 10300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_rsi_mr",
    "reason_text": "RSI(14)=71.7 高于 70（超买），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -41574,7 +41574,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 6900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_rsi_mr",
    "reason_text": "RSI(14)=70.8 高于 70（超买），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -41600,7 +41600,7 @@
    "instrument": "SYN_POOL_A16",
    "side": "SELL",
    "intended_quantity": 6700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_rsi_mr",
    "reason_text": "RSI(14)=71.5 高于 70（超买），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -41626,7 +41626,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 5300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_rsi_mr",
    "reason_text": "RSI(14)=70.1 高于 70（超买），按规则退出。",
    "rank": null,
    "status": "filled",

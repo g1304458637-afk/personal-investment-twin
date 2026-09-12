@@ -6,6 +6,7 @@ import { InvestmentChartWorkspace } from "@/components/charts/InvestmentChartWor
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { isTauriRuntime, runtimeRequest } from "@/data/runtimeService";
 import { adaptStrategySimulation, type StrategySimulationView } from "@/data/strategySimulation";
+import { StrategyWorkshop, type WorkshopDraft } from "@/components/strategy/StrategyWorkshop";
 import { rawComparisonReportFor, strategyComparison } from "@/data/strategyComparisonDemo";
 import { strategySimulation } from "@/data/strategySimulationDemo";
 import { useLocale } from "@/locales/LocaleProvider";
@@ -49,6 +50,13 @@ export function StrategySimulationPage() {
   const { theme } = useTheme();
   const dark = theme === "dark";
   const [search, setSearch] = useSearchParams();
+  const [userStrategies, setUserStrategies] = useState<{ id: string; name: string; savedAt: string; spec: Record<string, unknown> }[]>(() => {
+    try { return JSON.parse(localStorage.getItem("toujing.userStrategies") ?? "[]"); } catch { return []; }
+  });
+  const [workshopOpen, setWorkshopOpen] = useState(false);
+  const [userArtifacts, setUserArtifacts] = useState<Record<string, StrategySimulationView>>({});
+  const [userRunState, setUserRunState] = useState<Record<string, "loading" | "ready">>({});
+  const [userRunError, setUserRunError] = useState<Record<string, string>>({});
   const defaultStrategyId = (() => {
     const fromUrl = search.get("strategy");
     if (fromUrl && fromUrl in STRATEGY_FILES) return fromUrl;
@@ -67,6 +75,11 @@ export function StrategySimulationPage() {
   const [simulation, setSimulation] = useState<StrategySimulationView>(strategySimulation);
   const [loadingStrategy, setLoadingStrategy] = useState(false);
   useEffect(() => {
+    if (strategyId.startsWith("user_")) {
+      const artifact = userArtifacts[strategyId];
+      if (artifact) setSimulation(artifact);
+      return;
+    }
     if (strategyId === "toujing_t1_breakout_trend") { setSimulation(strategySimulation); return; }
     const entry = STRATEGY_FILES[strategyId];
     if (!entry) return;
@@ -76,8 +89,44 @@ export function StrategySimulationPage() {
       if (!cancelled) setSimulation(adaptStrategySimulation(module.default));
     }).finally(() => { if (!cancelled) setLoadingStrategy(false); });
     return () => { cancelled = true; };
-  }, [strategyId]);
+  }, [strategyId, userArtifacts]);
   const isT1 = simulation.strategy.strategyId === "toujing_t1_breakout_trend";
+  const isUserStrategy = strategyId.startsWith("user_");
+  const saveWorkshopStrategy = (draft: WorkshopDraft, spec: Record<string, unknown>) => {
+    const id = `user_${JSON.stringify(spec).length}_${Math.abs(draft.name.length)}_${Date.now().toString(36)}`;
+    const entry = { id, name: draft.name.trim(), savedAt: new Date().toISOString().slice(0, 10), spec };
+    const next = [...userStrategies, entry];
+    setUserStrategies(next);
+    localStorage.setItem("toujing.userStrategies", JSON.stringify(next));
+    setWorkshopOpen(false);
+    setStrategyId(id);
+  };
+  const runUserStrategy = (entry: { id: string; spec: Record<string, unknown> }) => {
+    setUserRunState((state) => ({ ...state, [entry.id]: "loading" }));
+    setUserRunError((state) => ({ ...state, [entry.id]: "" }));
+    runtimeRequest<{ status: string; reason: string | null; artifact: unknown }>(
+      "strategy_simulation.run_custom", { strategy: entry.spec })
+      .then((result) => {
+        if (result.status !== "available" || !result.artifact) {
+          setUserRunError((state) => ({ ...state, [entry.id]: result.reason ?? "运行失败" }));
+          return;
+        }
+        setUserArtifacts((state) => ({ ...state, [entry.id]: adaptStrategySimulation(result.artifact) }));
+        setUserRunState((state) => ({ ...state, [entry.id]: "ready" }));
+      })
+      .catch((value) => {
+        setUserRunError((state) => ({ ...state, [entry.id]: value instanceof Error ? value.message : String(value) }));
+        setUserRunState((state) => ({ ...state, [entry.id]: "loading" }));
+      });
+  };
+  const deleteUserStrategy = (id: string) => {
+    const next = userStrategies.filter((item) => item.id !== id);
+    setUserStrategies(next);
+    localStorage.setItem("toujing.userStrategies", JSON.stringify(next));
+    if (strategyId === id) setStrategyId("toujing_t1_breakout_trend");
+  };
+  const selectedUserStrategy = isUserStrategy
+    ? userStrategies.find((item) => item.id === strategyId) ?? null : null;
   const currency = typeof simulation.strategy.params.currency === "string" ? simulation.strategy.params.currency : "CNY";
   const money = (value: number) => formatCurrencyValue(value, locale, currency);
   const [instrument, setInstrument] = useState<string>("all");
@@ -202,6 +251,14 @@ export function StrategySimulationPage() {
               className={strategyId === id ? "is-active" : ""}
               onClick={() => setStrategyId(id)}>{meta.title}</button>
           ))}
+          {userStrategies.map((item) => (
+            <button key={item.id} type="button" role="tab" aria-selected={strategyId === item.id}
+              className={strategyId === item.id ? "is-active" : ""}
+              onClick={() => setStrategyId(item.id)}>{t("Custom")} · {item.name}</button>
+          ))}
+          <button type="button" role="tab" aria-selected={workshopOpen}
+            className={workshopOpen ? "is-active" : ""}
+            onClick={() => { setWorkshopOpen(true); }}>＋ {t("Build your own")}</button>
           {loadingStrategy ? <span className="iw-subtle">{t("Loading…")}</span> : null}
         </div>
         <h1 className="strategy-hero__title">{simulation.strategy.title}</h1>
@@ -213,6 +270,29 @@ export function StrategySimulationPage() {
         <p>{t("The strategy account has its own cash, holdings and fees. It never reads or changes your records.")}</p>
       </div>
     </header>
+    {workshopOpen ? <section className="iw-inset strategy-panel">
+      <div className="strategy-panel__head">
+        <p className="iw-kicker">{t("Strategy workshop")}</p>
+        <button type="button" onClick={() => setWorkshopOpen(false)}>{t("Close")}</button>
+      </div>
+      <StrategyWorkshop onCancel={() => setWorkshopOpen(false)} onSave={saveWorkshopStrategy} />
+    </section> : null}
+    {isUserStrategy && selectedUserStrategy ? <section className="iw-inset strategy-panel">
+      <div className="strategy-panel__head">
+        <p className="iw-kicker">{t("Custom strategy")}</p>
+        <button type="button" onClick={() => deleteUserStrategy(selectedUserStrategy.id)}>{t("Delete")}</button>
+      </div>
+      <p className="strategy-comparison-note">{t("Custom strategies are data specs, run by the deterministic interpreter on the bundled synthetic universe. They are never advice and never touch real accounts.")}</p>
+      {isTauriRuntime() ? (
+        userRunState[selectedUserStrategy.id] === "ready" && userArtifacts[selectedUserStrategy.id] ? null
+          : userRunState[selectedUserStrategy.id] === "loading"
+            ? <p className="strategy-compare__note">{t("Running on history…")}</p>
+            : <div>
+                <button type="button" className="workshop-save" onClick={() => runUserStrategy(selectedUserStrategy)}>{t("Run on history")}</button>
+                {userRunError[selectedUserStrategy.id] ? <p className="strategy-compare__note">{t("Run failed")}: {userRunError[selectedUserStrategy.id]}</p> : null}
+              </div>
+      ) : <p className="strategy-compare__note">{t("Running custom strategies needs the desktop app (browser preview cannot execute them).")}</p>}
+    </section> : null}
     <section className="iw-inset strategy-purpose" aria-label={t("What this page answers")}>
       <p className="strategy-purpose__question">{t("What this page answers")}</p>
       <h2>{t("If one fixed, fully public set of rules ran independently in the same market, where would it have gone?")}</h2>

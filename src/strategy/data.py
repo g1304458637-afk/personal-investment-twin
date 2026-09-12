@@ -252,3 +252,30 @@ def load_simulation_data(directory: Path) -> SimulationData:
     digest = hashlib.sha256(json.dumps(fingerprint_payload, sort_keys=True).encode()).hexdigest()
     return SimulationData(dates=tuple(sorted(all_dates)), series=series, members=members,
                           actions=tuple(actions), fingerprint=digest)
+
+
+def truncate_simulation_data(data: SimulationData, cutoff: date) -> SimulationData:
+    """A view of the dataset with all observations strictly before ``cutoff``.
+
+    Used by the future-function self-check: a strategy run on the truncated
+    history must reproduce an identical prefix of the full run.
+    """
+    series: dict[str, InstrumentSeries] = {}
+    for instrument, item in data.series.items():
+        pairs = [(day, bar, adj, factor) for day, bar, adj, factor
+                 in zip(item.dates, item.bars, item.adjusted_close, item.split_factors)
+                 if day < cutoff]
+        if not pairs:
+            continue
+        series[instrument] = InstrumentSeries(
+            instrument=instrument,
+            dates=tuple(p[0] for p in pairs),
+            bars=tuple(p[1] for p in pairs),
+            adjusted_close=tuple(p[2] for p in pairs),
+            split_factors=tuple(p[3] for p in pairs),
+        )
+    return SimulationData(
+        dates=tuple(day for day in data.dates if day < cutoff),
+        series=series, members=data.members, actions=data.actions,
+        fingerprint=data.fingerprint + f":truncated:{cutoff.isoformat()}",
+    )

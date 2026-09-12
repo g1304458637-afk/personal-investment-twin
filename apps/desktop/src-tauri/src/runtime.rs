@@ -36,6 +36,7 @@ const PRODUCT_METHODS: &[&str] = &[
     "investments.list",
     "episode.get",
     "strategy_comparison.get",
+    "strategy_simulation.run_custom",
     "data.delete_account",
     "review.context",
     "review.start",

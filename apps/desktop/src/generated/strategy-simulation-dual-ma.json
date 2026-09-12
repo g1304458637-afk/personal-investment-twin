@@ -109,505 +109,505 @@
     "instrument": "SYN_POOL_A14",
     "closed_on": "2022-09-15",
     "pnl": -2647.0750000000116,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2022-09-21",
     "pnl": -4130.536499999987,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A03",
     "closed_on": "2022-09-30",
     "pnl": -9873.98999999999,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2022-10-04",
     "pnl": -1755.2516000000178,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A16",
     "closed_on": "2022-10-11",
     "pnl": 7751.376000000018,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2022-10-18",
     "pnl": -5277.451000000001,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A14",
     "closed_on": "2022-10-24",
     "pnl": -2529.074100000056,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2022-10-28",
     "pnl": -4081.5581999999704,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2022-11-14",
     "pnl": -1492.8100000000268,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A07",
     "closed_on": "2022-11-17",
     "pnl": -1861.2649999999267,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2022-11-23",
     "pnl": 427.8660000000091,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2022-11-25",
     "pnl": -6502.886599999998,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2022-12-08",
     "pnl": -3532.9821999999695,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2022-12-22",
     "pnl": -1669.9275999999954,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A16",
     "closed_on": "2022-12-28",
     "pnl": 5487.299999999959,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2023-01-02",
     "pnl": 414.65220000001136,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2023-01-04",
     "pnl": -6383.484399999987,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2023-01-17",
     "pnl": -3935.266500000027,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2023-01-31",
     "pnl": -1642.0739999999932,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A16",
     "closed_on": "2023-02-06",
     "pnl": 4068.098100000032,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2023-02-09",
     "pnl": 405.22930000000633,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2023-02-13",
     "pnl": -6109.21649999998,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2023-02-24",
     "pnl": -3433.044500000018,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2023-03-10",
     "pnl": -1828.989899999986,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A16",
     "closed_on": "2023-03-15",
     "pnl": -1520.1900000000314,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2023-03-21",
     "pnl": 278.98199999995995,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2023-03-23",
     "pnl": -6144.72159999999,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2023-04-06",
     "pnl": -3871.8308999999717,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2023-04-19",
     "pnl": -1586.3060000000114,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2023-05-01",
     "pnl": 693.3385999999882,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2023-05-03",
     "pnl": -5616.13499999998,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A15",
     "closed_on": "2023-05-05",
     "pnl": 10336.17749999999,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2023-05-16",
     "pnl": -3577.392200000002,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2023-05-30",
     "pnl": -1374.3800000000047,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A07",
     "closed_on": "2023-06-01",
     "pnl": -2248.0848000000115,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2023-06-09",
     "pnl": -6622.96060000002,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A15",
     "closed_on": "2023-06-14",
     "pnl": 9817.445500000002,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A14",
     "closed_on": "2023-06-19",
     "pnl": -2520.661300000007,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2023-07-07",
     "pnl": -1759.9230000000098,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2023-07-18",
     "pnl": 244.91339999999036,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2023-07-20",
     "pnl": -5619.494999999995,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A15",
     "closed_on": "2023-07-24",
     "pnl": 9300.5055,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2023-08-03",
     "pnl": -3081.283999999985,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2023-08-16",
     "pnl": -1709.6640000000189,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2023-08-28",
     "pnl": 10586.03879999998,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2023-08-28",
     "pnl": -6715.241799999989,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A15",
     "closed_on": "2023-09-01",
     "pnl": 8908.828499999974,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2023-09-05",
     "pnl": -6476.306400000001,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A07",
     "closed_on": "2023-09-27",
     "pnl": -2191.900800000003,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2023-10-05",
     "pnl": 10166.483600000007,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A15",
     "closed_on": "2023-10-11",
     "pnl": 7753.626599999989,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2023-10-20",
     "pnl": -3662.1419999999925,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2023-11-14",
     "pnl": 9198.080000000016,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2023-11-14",
     "pnl": 439.0464000000211,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2023-11-15",
     "pnl": -6034.772800000006,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2023-11-30",
     "pnl": -10630.109599999996,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2023-12-13",
     "pnl": -1426.123499999987,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2023-12-25",
     "pnl": 9779.53760000001,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2024-01-02",
     "pnl": -7138.204899999982,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2024-01-22",
     "pnl": -1666.3570000000182,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2024-01-30",
     "pnl": -687.7700000000477,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2024-02-09",
     "pnl": -7242.948000000004,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A16",
     "closed_on": "2024-02-12",
     "pnl": 99187.64770000003,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2024-02-29",
     "pnl": -1937.982400000008,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2024-03-08",
     "pnl": -800.6875999999756,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2024-03-20",
     "pnl": 8507.580000000016,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2024-03-21",
     "pnl": -7490.571200000006,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2024-04-08",
     "pnl": 256689.16650000002,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2024-04-09",
     "pnl": -2157.469999999943,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2024-04-19",
     "pnl": 496.6943999999785,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A14",
     "closed_on": "2024-04-29",
     "pnl": -3278.051999999967,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2024-04-30",
     "pnl": 8007.831000000006,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2024-05-06",
     "pnl": -5443.468799999973,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2024-05-20",
     "pnl": -2054.60480000003,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2024-05-29",
     "pnl": 504.9343999999692,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A15",
     "closed_on": "2024-05-30",
     "pnl": -8286.922100000025,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2024-06-07",
     "pnl": 7421.059799999988,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2024-06-12",
     "pnl": -5696.515500000038,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2024-06-27",
     "pnl": -2510.5999999999767,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A07",
     "closed_on": "2024-07-01",
     "pnl": -2658.3172000000486,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2024-07-17",
     "pnl": 7109.4383999999845,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2024-07-22",
     "pnl": 13265.773400000005,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2024-08-02",
     "pnl": 2036.419600000023,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A07",
     "closed_on": "2024-08-09",
     "pnl": -2754.2778999999864,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A09",
@@ -619,265 +619,265 @@
     "instrument": "SYN_POOL_A05",
     "closed_on": "2024-08-29",
     "pnl": 12970.9424,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2024-09-09",
     "pnl": 9965.357100000023,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2024-09-11",
     "pnl": 761.1055000000051,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A07",
     "closed_on": "2024-09-17",
     "pnl": -4083.724799999909,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A14",
     "closed_on": "2024-10-03",
     "pnl": -4453.107500000042,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2024-10-09",
     "pnl": 15936.306599999953,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2024-10-17",
     "pnl": 11682.06640000001,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2024-10-18",
     "pnl": -316.98629999998957,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2024-11-12",
     "pnl": 6725.27999999997,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A14",
     "closed_on": "2024-11-12",
     "pnl": -4073.3040000000037,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2024-11-18",
     "pnl": 13024.910399999993,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2024-11-25",
     "pnl": 10048.160700000008,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A07",
     "closed_on": "2024-12-05",
     "pnl": -3788.2055999999866,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2024-12-12",
     "pnl": 230.2771000000066,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2024-12-13",
     "pnl": -17350.52640000003,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2024-12-20",
     "pnl": 5782.9911999999895,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2025-01-07",
     "pnl": -942.2994000000181,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2025-01-10",
     "pnl": -3338.25,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2025-01-21",
     "pnl": 6364.503599999996,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2025-01-21",
     "pnl": 516.7800000000279,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A14",
     "closed_on": "2025-01-30",
     "pnl": -4163.10400000005,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2025-02-12",
     "pnl": 7815.075399999972,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2025-02-19",
     "pnl": -3332.3849000000046,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A07",
     "closed_on": "2025-02-21",
     "pnl": -3741.871999999974,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2025-02-28",
     "pnl": 5614.945799999987,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A14",
     "closed_on": "2025-03-11",
     "pnl": -4610.875500000024,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2025-03-20",
     "pnl": -12124.63400000002,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2025-03-24",
     "pnl": 7533.887400000123,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2025-03-31",
     "pnl": -3247.880099999951,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A07",
     "closed_on": "2025-04-02",
     "pnl": -4098.671499999997,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A14",
     "closed_on": "2025-04-18",
     "pnl": -4566.256700000085,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2025-04-23",
     "pnl": 4777.521999999997,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2025-05-01",
     "pnl": 6712.188499999989,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2025-05-05",
     "pnl": -2511.615600000019,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2025-05-28",
     "pnl": 4785.151799999992,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A14",
     "closed_on": "2025-05-28",
     "pnl": -4174.248000000021,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2025-06-02",
     "pnl": 3697.8283999999985,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2025-06-10",
     "pnl": 5160.0214999999735,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A07",
     "closed_on": "2025-06-23",
     "pnl": -3348.2079000000376,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A11",
     "closed_on": "2025-06-26",
     "pnl": -1189.9820000000182,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A06",
     "closed_on": "2025-06-30",
     "pnl": -17249.6054,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A01",
     "closed_on": "2025-07-07",
     "pnl": 3583.396000000008,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A08",
     "closed_on": "2025-07-23",
     "pnl": -1660.825599999982,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    },
    {
     "instrument": "SYN_POOL_A12",
     "closed_on": "2025-07-28",
     "pnl": -3195.961500000034,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "signal_entry_dual_ma"
    }
   ]
  },
@@ -102328,7 +102328,7 @@
    "instrument": "SYN_POOL_A14",
    "side": "SELL",
    "intended_quantity": 25000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线9.97下穿长均线9.98（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102354,7 +102354,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 24900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.03下穿长均线10.06（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102380,7 +102380,7 @@
    "instrument": "SYN_POOL_A03",
    "side": "SELL",
    "intended_quantity": 8400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线29.05下穿长均线29.16（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102393,7 +102393,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 22600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线11.14下穿长均线11.15（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102432,7 +102432,7 @@
    "instrument": "SYN_POOL_A16",
    "side": "SELL",
    "intended_quantity": 12000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线21.62下穿长均线21.65（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102445,7 +102445,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 16300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线15.11下穿长均线15.20（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102471,7 +102471,7 @@
    "instrument": "SYN_POOL_A14",
    "side": "SELL",
    "intended_quantity": 23900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线9.95下穿长均线9.95（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102510,7 +102510,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 24600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.09下穿长均线10.10（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102536,7 +102536,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 22000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线11.26下穿长均线11.27（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102562,7 +102562,7 @@
    "instrument": "SYN_POOL_A07",
    "side": "SELL",
    "intended_quantity": 24500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.03下穿长均线10.05（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102575,7 +102575,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 11600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.41下穿长均线10.43（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102588,7 +102588,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 16100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线15.19下穿长均线15.28（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102640,7 +102640,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 24200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.10下穿长均线10.13（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102666,7 +102666,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 21400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线11.37下穿长均线11.38（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102692,7 +102692,7 @@
    "instrument": "SYN_POOL_A16",
    "side": "SELL",
    "intended_quantity": 10500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线23.72下穿长均线23.79（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102705,7 +102705,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 11400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.57下穿长均线10.60（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102718,7 +102718,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 15800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线15.26下穿长均线15.35（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102770,7 +102770,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 23700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.13下穿长均线10.16（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102796,7 +102796,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 21000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线11.47下穿长均线11.49（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102822,7 +102822,7 @@
    "instrument": "SYN_POOL_A16",
    "side": "SELL",
    "intended_quantity": 9900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线24.78下穿长均线24.86（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102835,7 +102835,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 11300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.73下穿长均线10.76（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102848,7 +102848,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 15500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线15.33下穿长均线15.43（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102900,7 +102900,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 23500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.21下穿长均线10.21（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102926,7 +102926,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 20700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线11.58下穿长均线11.59（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102939,7 +102939,7 @@
    "instrument": "SYN_POOL_A16",
    "side": "SELL",
    "intended_quantity": 9500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线25.73下穿长均线25.84（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102965,7 +102965,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 11000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.89下穿长均线10.92（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -102978,7 +102978,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 15200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线15.41下穿长均线15.50（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103030,7 +103030,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 23300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.21下穿长均线10.24（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103056,7 +103056,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 20200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线11.68下穿长均线11.70（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103082,7 +103082,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 10700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线11.06下穿长均线11.09（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103095,7 +103095,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 15000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线15.51下穿长均线15.60（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103121,7 +103121,7 @@
    "instrument": "SYN_POOL_A15",
    "side": "SELL",
    "intended_quantity": 16500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线14.84下穿长均线14.85（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103160,7 +103160,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 22900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.24下穿长均线10.28（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103186,7 +103186,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 20000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线11.80下穿长均线11.81（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103212,7 +103212,7 @@
    "instrument": "SYN_POOL_A07",
    "side": "SELL",
    "intended_quantity": 23400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.12下穿长均线10.12（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103225,7 +103225,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 14900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线15.68下穿长均线15.68（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103251,7 +103251,7 @@
    "instrument": "SYN_POOL_A15",
    "side": "SELL",
    "intended_quantity": 15700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线15.54下穿长均线15.56（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103277,7 +103277,7 @@
    "instrument": "SYN_POOL_A14",
    "side": "SELL",
    "intended_quantity": 23900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线9.72下穿长均线9.73（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103316,7 +103316,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 19800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线11.90下穿长均线11.92（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103342,7 +103342,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 10300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线11.38下穿长均线11.42（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103355,7 +103355,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 15000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线15.66下穿长均线15.75（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103394,7 +103394,7 @@
    "instrument": "SYN_POOL_A15",
    "side": "SELL",
    "intended_quantity": 14900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线16.24下穿长均线16.27（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103420,7 +103420,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 22600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.32下穿长均线10.35（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103446,7 +103446,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 19200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线12.01下穿长均线12.03（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103472,7 +103472,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 21100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线11.52下穿长均线11.53（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103485,7 +103485,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 15100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线15.83下穿长均线15.83（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103524,7 +103524,7 @@
    "instrument": "SYN_POOL_A15",
    "side": "SELL",
    "intended_quantity": 14300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线16.99下穿长均线17.03（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103550,7 +103550,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 15300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线14.78下穿长均线14.83（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103589,7 +103589,7 @@
    "instrument": "SYN_POOL_A07",
    "side": "SELL",
    "intended_quantity": 22800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.16下穿长均线10.16（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103615,7 +103615,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 20300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线12.08下穿长均线12.10（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103641,7 +103641,7 @@
    "instrument": "SYN_POOL_A15",
    "side": "SELL",
    "intended_quantity": 13800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线17.69下穿长均线17.74（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103667,7 +103667,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 22000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.38下穿长均线10.42（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103693,7 +103693,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 20000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线12.64下穿长均线12.67（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103706,7 +103706,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 10400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线11.88下穿长均线11.91（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103719,7 +103719,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 14200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线16.01下穿长均线16.01（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103771,7 +103771,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 8800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线24.40下穿长均线24.49（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103797,7 +103797,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 20500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线12.34下穿长均线12.35（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103823,7 +103823,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 19600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线13.24下穿长均线13.28（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103849,7 +103849,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 17300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线14.35下穿长均线14.40（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103875,7 +103875,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 20900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线12.44下穿长均线12.46（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103901,7 +103901,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 10000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线12.23下穿长均线12.23（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103927,7 +103927,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 18000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线14.20下穿长均线14.25（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103940,7 +103940,7 @@
    "instrument": "SYN_POOL_A16",
    "side": "SELL",
    "intended_quantity": 12700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线26.46下穿长均线26.49（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -103979,7 +103979,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 19400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线12.55下穿长均线12.57（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104005,7 +104005,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 10100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线12.39下穿长均线12.39（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104031,7 +104031,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 15000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线20.62下穿长均线20.67（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104044,7 +104044,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 19600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线14.06下穿长均线14.12（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104083,7 +104083,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 12900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线36.26下穿长均线36.35（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104096,7 +104096,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 19600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线12.65下穿长均线12.67（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104135,7 +104135,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 12400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线12.55下穿长均线12.58（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104161,7 +104161,7 @@
    "instrument": "SYN_POOL_A14",
    "side": "SELL",
    "intended_quantity": 34500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线9.44下穿长均线9.44（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104174,7 +104174,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 13000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线21.37下穿长均线21.43（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104213,7 +104213,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 30800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.56下穿长均线10.60（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104239,7 +104239,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 25600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线12.77下穿长均线12.79（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104265,7 +104265,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 25600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线12.75下穿长均线12.78（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104278,7 +104278,7 @@
    "instrument": "SYN_POOL_A15",
    "side": "SELL",
    "intended_quantity": 18100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线17.69下穿长均线17.73（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104304,7 +104304,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 14700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线22.07下穿长均线22.14（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104330,7 +104330,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 30500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.64下穿长均线10.64（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104369,7 +104369,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 25000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线12.88下穿长均线12.90（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104395,7 +104395,7 @@
    "instrument": "SYN_POOL_A07",
    "side": "SELL",
    "intended_quantity": 30800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.26下穿长均线10.27（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104421,7 +104421,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 14400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线22.78下穿长均线22.85（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104447,7 +104447,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 20900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线15.90下穿长均线15.91（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104473,7 +104473,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 25400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线12.53下穿长均线12.61（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104499,7 +104499,7 @@
    "instrument": "SYN_POOL_A07",
    "side": "SELL",
    "intended_quantity": 31900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.26下穿长均线10.28（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104538,7 +104538,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 20800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线16.61下穿长均线16.63（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104564,7 +104564,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 22300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线14.53下穿长均线14.59（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104577,7 +104577,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 25700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线12.88下穿长均线12.96（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104603,7 +104603,7 @@
    "instrument": "SYN_POOL_A07",
    "side": "SELL",
    "intended_quantity": 38400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.29下穿长均线10.29（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104642,7 +104642,7 @@
    "instrument": "SYN_POOL_A14",
    "side": "SELL",
    "intended_quantity": 42500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线9.30下穿长均线9.30（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104655,7 +104655,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 23700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线17.35下穿长均线17.38（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104694,7 +104694,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 26800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线15.15下穿长均线15.22（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104707,7 +104707,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 29100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线13.31下穿长均线13.31（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104746,7 +104746,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 16000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线25.01下穿长均线25.02（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104759,7 +104759,7 @@
    "instrument": "SYN_POOL_A14",
    "side": "SELL",
    "intended_quantity": 43000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线9.26下穿长均线9.26（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104798,7 +104798,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 22800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线18.06下穿长均线18.09（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104824,7 +104824,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 26100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线15.82下穿长均线15.82（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104850,7 +104850,7 @@
    "instrument": "SYN_POOL_A07",
    "side": "SELL",
    "intended_quantity": 39300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.32下穿长均线10.32（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104876,7 +104876,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 28300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线13.74下穿长均线13.78（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104889,7 +104889,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 30400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线13.27下穿长均线13.34（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104928,7 +104928,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 16100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线25.71下穿长均线25.73（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104954,7 +104954,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 29400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线14.05下穿长均线14.05（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -104967,7 +104967,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 30000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线13.42下穿长均线13.44（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105006,7 +105006,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 34900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线11.13下穿长均线11.15（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105019,7 +105019,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 29000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线13.94下穿长均线13.98（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105058,7 +105058,7 @@
    "instrument": "SYN_POOL_A14",
    "side": "SELL",
    "intended_quantity": 44000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线9.19下穿长均线9.19（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105084,7 +105084,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 24200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线17.10下穿长均线17.11（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105097,7 +105097,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 29900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线13.52下穿长均线13.54（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105123,7 +105123,7 @@
    "instrument": "SYN_POOL_A07",
    "side": "SELL",
    "intended_quantity": 38800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.35下穿长均线10.35（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105162,7 +105162,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 34700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线11.48下穿长均线11.50（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105188,7 +105188,7 @@
    "instrument": "SYN_POOL_A14",
    "side": "SELL",
    "intended_quantity": 44100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线9.15下穿长均线9.15（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105214,7 +105214,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 46000.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线8.67下穿长均线8.69（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105240,7 +105240,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 23400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线17.71下穿长均线17.74（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105253,7 +105253,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 29100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线13.63下穿长均线13.65（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105279,7 +105279,7 @@
    "instrument": "SYN_POOL_A07",
    "side": "SELL",
    "intended_quantity": 38500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.36下穿长均线10.36（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105318,7 +105318,7 @@
    "instrument": "SYN_POOL_A14",
    "side": "SELL",
    "intended_quantity": 43700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线9.12下穿长均线9.12（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105331,7 +105331,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 19300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线20.46下穿长均线20.49（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105357,7 +105357,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 22300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线18.33下穿长均线18.36（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105383,7 +105383,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 26800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线15.10下穿长均线15.12（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105422,7 +105422,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 14300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线28.59下穿长均线28.63（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105435,7 +105435,7 @@
    "instrument": "SYN_POOL_A14",
    "side": "SELL",
    "intended_quantity": 44200.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线9.08下穿长均线9.08（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105474,7 +105474,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 18800.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线20.99下穿长均线21.02（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105500,7 +105500,7 @@
    "instrument": "SYN_POOL_A13",
    "side": "SELL",
    "intended_quantity": 21500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线18.95下穿长均线18.98（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105526,7 +105526,7 @@
    "instrument": "SYN_POOL_A07",
    "side": "SELL",
    "intended_quantity": 38700.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线10.38下穿长均线10.40（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105552,7 +105552,7 @@
    "instrument": "SYN_POOL_A11",
    "side": "SELL",
    "intended_quantity": 27400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线14.78下穿长均线14.78（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105565,7 +105565,7 @@
    "instrument": "SYN_POOL_A06",
    "side": "SELL",
    "intended_quantity": 32600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线12.23下穿长均线12.31（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105591,7 +105591,7 @@
    "instrument": "SYN_POOL_A01",
    "side": "SELL",
    "intended_quantity": 13600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线29.29下穿长均线29.34（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105630,7 +105630,7 @@
    "instrument": "SYN_POOL_A08",
    "side": "SELL",
    "intended_quantity": 25600.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线15.84下穿长均线15.86（死叉），按规则退出。",
    "rank": null,
    "status": "filled",
@@ -105643,7 +105643,7 @@
    "instrument": "SYN_POOL_A12",
    "side": "SELL",
    "intended_quantity": 28500.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "signal_entry_dual_ma",
    "reason_text": "短均线13.96下穿长均线13.98（死叉），按规则退出。",
    "rank": null,
    "status": "filled",

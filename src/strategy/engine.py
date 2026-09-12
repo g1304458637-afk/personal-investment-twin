@@ -346,7 +346,8 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
             for signal in exits:
                 order = create_order(day, signal.instrument, "SELL",
                                      account.positions[signal.instrument].quantity,
-                                     "signal_exit_close_below_10d_low", signal.reason_text, None)
+                                     getattr(signal, "reason_code", "signal_exit"),
+                                     signal.reason_text, None)
                 pending.append(order)
                 day_record.orders_created.append(order.order_id)
                 day_record.signals.append({"instrument": signal.instrument, "kind": "exit",

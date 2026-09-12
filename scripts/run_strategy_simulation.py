@@ -17,41 +17,11 @@ sys.path.insert(0, str(ROOT))
 
 from src.strategy.data import load_simulation_data  # noqa: E402
 from src.strategy.engine import run_simulation  # noqa: E402
-from src.strategy.report import result_to_dict  # noqa: E402
+from src.strategy.report import desktop_payload, result_to_dict  # noqa: E402
 from src.strategy.strategies.dual_ma import build_dual_ma_spec  # noqa: E402
 from src.strategy.strategies.rsi_mr import build_rsi_mr_spec  # noqa: E402
 from src.strategy.strategies.turtle import build_turtle_spec  # noqa: E402
 from src.strategy.strategies.t1 import build_t1_spec  # noqa: E402
-
-
-def _desktop_payload(payload: dict, data) -> dict:
-    """Trimmed artifact for the desktop demo: no per-day event journal.
-
-    The full journal (selection reasons, signals, daily events, holdings)
-    stays in the data-directory result file; the desktop artifact keeps the
-    spec, summary, daily ledger, and the complete order/fill path.
-    """
-    bars = [
-        {"instrument": instrument, "date": day.isoformat(),
-         "open": bar.open, "high": bar.high, "low": bar.low, "close": bar.close}
-        for instrument in sorted(data.series)
-        for day, bar in zip(data.series[instrument].dates, data.series[instrument].bars)
-    ]
-    return {
-        "schema_version": payload["schema_version"],
-        "strategy": payload["strategy"],
-        "data_fingerprint": payload["data_fingerprint"],
-        "summary": payload["summary"],
-        "bars": bars,
-        "equity": [
-            {"date": day["date"], "cash": day["cash"], "equity": day["equity"],
-             "invested_fraction": day["invested_fraction"],
-             "drawdown_from_peak": day["drawdown_from_peak"]}
-            for day in payload["days"]
-        ],
-        "orders": payload["orders"],
-        "fills": payload["fills"],
-    }
 
 
 def main() -> int:
@@ -81,13 +51,13 @@ def main() -> int:
             (args.data_dir / f"{slug}_result.json").write_text(
                 json.dumps(payload, ensure_ascii=False, indent=1, allow_nan=False) + "\n", encoding="utf-8")
             desktop_path = args.desktop_output.parent / f"strategy-simulation-{slug}.json"
-            desktop_path.write_text(json.dumps(_desktop_payload(payload, data), ensure_ascii=False,
+            desktop_path.write_text(json.dumps(desktop_payload(payload, data), ensure_ascii=False,
                                                indent=1, allow_nan=False) + "\n", encoding="utf-8")
     result = run_simulation(strategies[0], data)
     payload = payloads[strategies[0].strategy_id]
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=1, sort_keys=False,
                                  allow_nan=False) + "\n", encoding="utf-8")
-    desktop = _desktop_payload(payload, data)
+    desktop = desktop_payload(payload, data)
     args.desktop_output.parent.mkdir(parents=True, exist_ok=True)
     args.desktop_output.write_text(json.dumps(desktop, ensure_ascii=False, indent=1,
                                               sort_keys=False, allow_nan=False) + "\n",

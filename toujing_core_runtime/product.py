@@ -95,6 +95,11 @@ def _trade_config(params: Mapping[str, object], subject: str, account: str) -> G
         confirmed_instruments=confirmed)
 
 
+def _bundled_universe_dir():
+    """Synthetic strategy-universe fixtures, packaged or in-repo."""
+    return Path(__file__).resolve().parents[1] / "data" / "sample" / "strategy_universe"
+
+
 def bundle_from_repository(repo: LocalRepository, subject_id: str, account_id: str) -> CanonicalImportBundle:
     items = repo.executions(subject_id, account_id)
     requirements = tuple(
@@ -391,6 +396,48 @@ class ProductRuntime:
             display_name=next(x.instrument.display_name or x.instrument.display_symbol or x.instrument.local_symbol
                               for x in bundle.accepted_canonical_executions if x.instrument.instrument_id == next(e.instrument_id for e in lifecycle.episodes if e.episode_id == episode_id)))
         return {"status": "available", "reason": None, "entry": entry}
+
+    def strategy_simulation_run_custom(self, params: Mapping[str, object]) -> dict[str, object]:
+        """Run a user-composed strategy spec on the bundled synthetic universe.
+
+        Deterministic, isolated from user accounts, and self-checked: the run
+        on full history must reproduce an identical prefix on truncated
+        history (no future functions), or the strategy is refused.
+        """
+        from src.strategy.composite import (
+            UserStrategyError,
+            build_user_strategy_spec,
+            make_provider,
+        )
+        from src.strategy.data import load_simulation_data, truncate_simulation_data
+        from src.strategy.report import desktop_payload, result_to_dict
+        from src.strategy.engine import run_simulation
+
+        raw = params.get("strategy") if isinstance(params, Mapping) else None
+        if not isinstance(raw, Mapping):
+            return {"status": "unavailable", "reason": "invalid_strategy_spec", "artifact": None}
+        try:
+            spec, normalized = build_user_strategy_spec(raw)
+        except UserStrategyError as exc:
+            return {"status": "unavailable", "reason": f"invalid_strategy_spec: {exc}", "artifact": None}
+        data = load_simulation_data(_bundled_universe_dir())
+        try:
+            result = run_simulation(spec, data, signal_provider=make_provider(normalized))
+            cutoff = data.dates[len(data.dates) // 2]
+            prefix = run_simulation(spec, truncate_simulation_data(data, cutoff),
+                                    signal_provider=make_provider(normalized))
+        except (ValueError, KeyError) as exc:
+            return {"status": "unavailable", "reason": f"strategy_run_failed: {exc}", "artifact": None}
+        base = result_to_dict(result)
+        prefix_dict = result_to_dict(prefix)
+        # The truncated run's final day legitimately creates no new orders
+        # (there is no next open), and the full run's first post-cutoff day is
+        # out of scope: compare the strict common prefix of both.
+        common = [day for day in base["days"] if day["date"] < cutoff.isoformat()]
+        if common[:-1] != prefix_dict["days"][:-1]:
+            return {"status": "unavailable", "reason": "future_function_self_check_failed", "artifact": None}
+        return {"status": "available", "reason": None,
+                "artifact": desktop_payload(base, data)}
 
     def strategy_comparison(self, params: Mapping[str, object]) -> dict[str, object]:
         """Same-instrument T1 replay comparison for one real-account episode.

@@ -119,6 +119,10 @@ def build(mode: str) -> Path:
     from src.agents.desktop_demo_source import SOURCES
     for filename in sorted({name for source in SOURCES for name in (source.executions, source.prices)}):
         command[-1:-1] = ["--add-data", f"{ROOT / 'data' / 'sample' / filename}:data/sample"]
+    # Strategy-universe fixtures for user-built strategy runs (explicit allowlist).
+    universe_dir = ROOT / "data" / "sample" / "strategy_universe"
+    for filename in ("universe.csv", "prices.csv", "corporate_actions.csv"):
+        command[-1:-1] = ["--add-data", f"{universe_dir / filename}:data/sample/strategy_universe"]
     subprocess.run(command, check=True, cwd=ROOT)
 
     built = dist_root / BINARY_NAME

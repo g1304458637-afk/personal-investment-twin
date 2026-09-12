@@ -114,31 +114,31 @@
     "instrument": "SYN_POOL_A10",
     "closed_on": "2023-05-04",
     "pnl": 6340.744099999982,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "turtle_exit_s2"
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2023-07-26",
     "pnl": 32342.341400000005,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "turtle_exit_s2"
    },
    {
     "instrument": "SYN_POOL_A09",
     "closed_on": "2023-08-01",
     "pnl": -45.01599999999996,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "turtle_exit_s2"
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2023-09-13",
     "pnl": 217765.36520000006,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "turtle_exit_s2"
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2024-02-27",
     "pnl": 245.6110000000001,
-    "reason": "signal_exit_close_below_10d_low"
+    "reason": "turtle_exit_s2"
    }
   ]
  },
@@ -96010,7 +96010,7 @@
    "instrument": "SYN_POOL_A10",
    "side": "SELL",
    "intended_quantity": 17300.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "turtle_exit_s2",
    "reason_text": "收盘14.83跌破此前20个有效收盘低点14.84，全部退出。",
    "rank": null,
    "status": "filled",
@@ -98987,7 +98987,7 @@
    "instrument": "SYN_POOL_A05",
    "side": "SELL",
    "intended_quantity": 19400.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "turtle_exit_s2",
    "reason_text": "收盘14.70跌破此前20个有效收盘低点14.92，全部退出。",
    "rank": null,
    "status": "filled",
@@ -99156,7 +99156,7 @@
    "instrument": "SYN_POOL_A09",
    "side": "SELL",
    "intended_quantity": 100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "turtle_exit_s2",
    "reason_text": "收盘10.22跌破此前20个有效收盘低点10.26，全部退出。",
    "rank": null,
    "status": "filled",
@@ -100716,7 +100716,7 @@
    "instrument": "SYN_POOL_A04",
    "side": "SELL",
    "intended_quantity": 18900.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "turtle_exit_s2",
    "reason_text": "收盘25.13跌破此前20个有效收盘低点25.65，全部退出。",
    "rank": null,
    "status": "filled",
@@ -104759,7 +104759,7 @@
    "instrument": "SYN_POOL_A02",
    "side": "SELL",
    "intended_quantity": 100.0,
-   "reason_code": "signal_exit_close_below_10d_low",
+   "reason_code": "turtle_exit_s2",
    "reason_text": "收盘13.79跌破此前20个有效收盘低点13.80，全部退出。",
    "rank": null,
    "status": "filled",

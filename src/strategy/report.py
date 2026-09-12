@@ -5,6 +5,7 @@ import math
 from datetime import date
 from typing import Any
 
+from src.strategy.data import SimulationData
 from src.strategy.engine import SimulationResult
 
 SCHEMA_VERSION = "strategy_simulation.v1"
@@ -66,3 +67,32 @@ def result_to_dict(result: SimulationResult) -> dict[str, object]:
             for fill in result.fills
         ],
     })
+
+
+def desktop_payload(payload: dict, data: SimulationData) -> dict:
+    """Trimmed artifact for desktop consumers (no per-day event journal).
+
+    Carries every instrument's OHLC so the page can draw per-instrument
+    charts; the full journal stays in the data-directory result file.
+    """
+    bars = [
+        {"instrument": instrument, "date": day.isoformat(),
+         "open": bar.open, "high": bar.high, "low": bar.low, "close": bar.close}
+        for instrument in sorted(data.series)
+        for day, bar in zip(data.series[instrument].dates, data.series[instrument].bars)
+    ]
+    return {
+        "schema_version": payload["schema_version"],
+        "strategy": payload["strategy"],
+        "data_fingerprint": payload["data_fingerprint"],
+        "summary": payload["summary"],
+        "bars": bars,
+        "equity": [
+            {"date": day["date"], "cash": day["cash"], "equity": day["equity"],
+             "invested_fraction": day["invested_fraction"],
+             "drawdown_from_peak": day["drawdown_from_peak"]}
+            for day in payload["days"]
+        ],
+        "orders": payload["orders"],
+        "fills": payload["fills"],
+    }
