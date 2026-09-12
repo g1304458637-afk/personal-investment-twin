@@ -177,6 +177,37 @@ export function StrategySimulationPage() {
         <li>{t("Open any showcase episode and switch on the rule overlay: your decisions and the rule's fills on the same chart.")}</li>
       </ol>
     </section>
+    <section className="iw-inset strategy-panel">
+      <div className="strategy-panel__head">
+        <p className="iw-kicker">{t("Read the rules first")}</p>
+        <span className="iw-subtle">{simulation.strategy.ruleTable.length} · {t("Parameters")} {Object.keys(simulation.strategy.params).length}</span>
+      </div>
+      <div className="strategy-rules">
+        {[{ label: t("Lifted from the recorded Decision Lens rules"), rules: lensRules, tone: "lens" as const },
+          { label: t("Adaptation added for full execution"), rules: adaptations, tone: "adapt" as const }].map((group) => (
+          <div className="strategy-rule-group" key={group.tone}>
+            <p className={cn("strategy-rule-group__label", `is-${group.tone}`)}>{group.label}</p>
+            <ul>
+              {group.rules.map((rule) => (
+                <li key={rule.ruleId}>
+                  <code>{rule.ruleId}</code>
+                  <span>{rule.statement}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <details className="strategy-params">
+        <summary>{t("Parameters")}</summary>
+        <dl>
+          {Object.entries(simulation.strategy.params).map(([key, value]) => (
+            <div key={key}><dt>{key}</dt><dd>{String(value)}</dd></div>
+          ))}
+        </dl>
+      </details>
+    </section>
+
 
     <section className="strategy-stats" aria-label={t("Final equity")}>
       <StatCard label={t("Final equity")} value={money(summary.finalEquity)}
@@ -228,37 +259,6 @@ export function StrategySimulationPage() {
           />
         : null}
       <p className="strategy-compare__note">{t("Each marker is one strategy fill on this instrument; reasons live in the trades list below.")}</p>
-    </section>
-
-    <section className="iw-inset strategy-panel">
-      <div className="strategy-panel__head">
-        <p className="iw-kicker">{t("Rule table")}</p>
-        <span className="iw-subtle">{simulation.strategy.ruleTable.length} · {t("Parameters")} {Object.keys(simulation.strategy.params).length}</span>
-      </div>
-      <div className="strategy-rules">
-        {[{ label: t("Lifted from the recorded Decision Lens rules"), rules: lensRules, tone: "lens" as const },
-          { label: t("Adaptation added for full execution"), rules: adaptations, tone: "adapt" as const }].map((group) => (
-          <div className="strategy-rule-group" key={group.tone}>
-            <p className={cn("strategy-rule-group__label", `is-${group.tone}`)}>{group.label}</p>
-            <ul>
-              {group.rules.map((rule) => (
-                <li key={rule.ruleId}>
-                  <code>{rule.ruleId}</code>
-                  <span>{rule.statement}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-      <details className="strategy-params">
-        <summary>{t("Parameters")}</summary>
-        <dl>
-          {Object.entries(simulation.strategy.params).map(([key, value]) => (
-            <div key={key}><dt>{key}</dt><dd>{String(value)}</dd></div>
-          ))}
-        </dl>
-      </details>
     </section>
 
     <section className="iw-inset strategy-panel">

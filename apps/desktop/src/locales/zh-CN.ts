@@ -1607,6 +1607,7 @@ export const zhCN = {
   "Recorded result": "记录结果",
   "Rule trades in window": "窗口内规则成交",
   "Net cash flow": "净现金流",
+  "Read the rules first": "先读规则：这套策略的具体内容",
   "Per-instrument operations": "个股操作",
   "Each marker is one strategy fill on this instrument; reasons live in the trades list below.": "每个标记是策略在该标的上的一笔成交；触发理由见下方成交记录。",
   "What this page answers": "这一页回答什么",
