@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { EChart } from "@/components/charts/EChart";
 import { InvestmentChartWorkspace } from "@/components/charts/InvestmentChartWorkspace";
@@ -46,7 +47,22 @@ export function StrategySimulationPage() {
   const { t, locale } = useLocale();
   const { theme } = useTheme();
   const dark = theme === "dark";
-  const [strategyId, setStrategyId] = useState<string>("toujing_t1_breakout_trend");
+  const [search, setSearch] = useSearchParams();
+  const defaultStrategyId = (() => {
+    const fromUrl = search.get("strategy");
+    if (fromUrl && fromUrl in STRATEGY_FILES) return fromUrl;
+    const stored = localStorage.getItem("toujing.strategy");
+    if (stored && stored in STRATEGY_FILES) return stored;
+    return "toujing_t1_breakout_trend";
+  })();
+  const [strategyId, setStrategyIdState] = useState<string>(defaultStrategyId);
+  const setStrategyId = (id: string) => {
+    setStrategyIdState(id);
+    localStorage.setItem("toujing.strategy", id);
+    const next = new URLSearchParams(search);
+    next.set("strategy", id);
+    setSearch(next, { replace: true });
+  };
   const [simulation, setSimulation] = useState<StrategySimulationView>(strategySimulation);
   const [loadingStrategy, setLoadingStrategy] = useState(false);
   useEffect(() => {
