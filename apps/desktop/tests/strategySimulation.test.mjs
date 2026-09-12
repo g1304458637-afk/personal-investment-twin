@@ -85,3 +85,14 @@ test('max drawdown summary matches the daily series', async () => {
   const min = Math.min(...view.equity.map((point) => point.drawdownFromPeak));
   assert.ok(Math.abs(min - view.summary.maxDrawdown) < 1e-9);
 });
+
+test('classic-template artifacts pass the same adapter (public_rule provenance)', async () => {
+  for (const name of ['strategy-simulation-dual-ma', 'strategy-simulation-rsi-mean-reversion', 'strategy-simulation-turtle']) {
+    const raw = JSON.parse(await readFile(new URL(`../src/generated/${name}.json`, import.meta.url), 'utf8'));
+    const view = adaptStrategySimulation(raw);
+    assert.match(view.strategy.strategyId, /^toujing_/);
+    assert.ok(view.strategy.ruleTable.some((rule) => rule.source.startsWith('public_rule')), name);
+    assert.ok(view.strategy.ruleTable.some((rule) => rule.source === 'adaptation'), name);
+    assert.ok(view.equity.length > 700);
+  }
+});

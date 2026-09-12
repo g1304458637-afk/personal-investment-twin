@@ -112,10 +112,11 @@ function spec(raw: unknown): StrategySpecView {
     const rule = object(item);
     return { ruleId: text(rule.rule_id), source: text(rule.source), statement: text(rule.statement) };
   });
-  // Provenance completeness: the artifact must keep distinguishing lifted
-  // lens rules from declared adaptations, and rule ids must be unique.
+  // Provenance completeness: rules must cite a recognised source class —
+  // lens_rule (lifted from recorded checks) or public_rule (classic public
+  // template) — plus declared adaptations; rule ids must be unique.
   if (ruleTable.length < 2) fail();
-  if (!ruleTable.some((rule) => rule.source.startsWith("lens_rule"))) fail();
+  if (!ruleTable.some((rule) => rule.source.startsWith("lens_rule") || rule.source.startsWith("public_rule"))) fail();
   if (!ruleTable.some((rule) => rule.source === "adaptation")) fail();
   if (new Set(ruleTable.map((rule) => rule.ruleId)).size !== ruleTable.length) fail();
   return {
