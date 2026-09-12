@@ -439,6 +439,53 @@ class ProductRuntime:
         return {"status": "available", "reason": None,
                 "artifact": desktop_payload(base, data)}
 
+    def strategy_sensitivity_run(self, params: Mapping[str, object]) -> dict[str, object]:
+        """Parameter sensitivity: one strategy, one parameter, several values.
+
+        Accepts {"strategy_id"} for a built-in strategy or {"strategy": spec}
+        for a user-composed one, plus {"parameter", "values"}.  Runs each
+        variant on the bundled synthetic universe.  Rows keep the caller's
+        order; the report never ranks or marks a best value.
+        """
+        from src.strategy.composite import UserStrategyError, build_user_strategy_spec, make_provider
+        from src.strategy.data import load_simulation_data
+        from src.strategy.sensitivity import SensitivityError, sensitivity_report
+        from src.strategy.strategies.dual_ma import build_dual_ma_spec
+        from src.strategy.strategies.rsi_mr import build_rsi_mr_spec
+        from src.strategy.strategies.turtle import build_turtle_spec
+        from src.strategy.strategies.t1 import build_t1_spec
+
+        if not isinstance(params, Mapping):
+            return {"status": "unavailable", "reason": "invalid_params", "report": None}
+        builders = {
+            "toujing_t1_breakout_trend": build_t1_spec,
+            "toujing_dual_ma": build_dual_ma_spec,
+            "toujing_rsi_mean_reversion": build_rsi_mr_spec,
+            "toujing_turtle_s2_long": build_turtle_spec,
+        }
+        provider = None
+        raw_strategy = params.get("strategy")
+        if isinstance(raw_strategy, Mapping):
+            try:
+                spec, normalized = build_user_strategy_spec(raw_strategy)
+            except UserStrategyError as exc:
+                return {"status": "unavailable", "reason": f"invalid_strategy_spec: {exc}", "report": None}
+            provider = make_provider(normalized)
+        else:
+            strategy_id = params.get("strategy_id")
+            builder = builders.get(strategy_id) if isinstance(strategy_id, str) else None
+            if builder is None:
+                return {"status": "unavailable", "reason": "unknown_strategy", "report": None}
+            spec = builder()
+        try:
+            report = sensitivity_report(
+                spec, load_simulation_data(_bundled_universe_dir()),
+                parameter=params.get("parameter"), values=params.get("values"),
+                signal_provider=provider)
+        except SensitivityError as exc:
+            return {"status": "unavailable", "reason": str(exc), "report": None}
+        return {"status": "available", "reason": None, "report": report}
+
     def strategy_comparison(self, params: Mapping[str, object]) -> dict[str, object]:
         """Same-instrument T1 replay comparison for one real-account episode.
 

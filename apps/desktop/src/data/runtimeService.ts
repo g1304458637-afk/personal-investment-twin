@@ -39,6 +39,7 @@ export const realUserApi = {
   deleteAccount: (subjectId: string, accountId: string) => runtimeRequest<{ deleted: boolean }>("data.delete_account", { subject_id: subjectId, account_id: accountId }),
   strategyComparison: (subjectId: string, accountId: string, episodeId: string) => runtimeRequest<{ status: string; reason: string | null; report: unknown | null }>("strategy_comparison.get", { subject_id: subjectId, account_id: accountId, episode_id: episodeId }),
   strategyTeaching: (report: Record<string, unknown>, focus: string | null) => runtimeRequest<{ status: string; reason: string | null; texts: string[]; dropped: unknown[]; note: string | null }>("strategy_teaching.explain", { report, focus }),
+  strategySensitivity: (request: { strategy_id?: string; strategy?: Record<string, unknown>; parameter: string; values: number[] }) => runtimeRequest<{ status: string; reason: string | null; report: SensitivityReportView | null }>("strategy_sensitivity.run", request),
 };
 
 export interface RuntimeAccount { subject_id: string; account_id: string; display_name: string; initial_cash: number; created_at: string; updated_at: string }
@@ -47,3 +48,26 @@ export interface TradePreview { preview_fingerprint: string; filename: string; b
 export interface MarketPreview { preview_fingerprint: string; filename: string; batch_id: string; file_sha256: string; summary: Record<string, number>; rows: Array<{ row_number: number; status: string; candidate: null | { date: string; symbol: string; close: number; price_type: string }; issues: Array<{ code: string }> }>; missing_required_dates: [string, string[]][] }
 export interface RuntimeInvestments { subject_id: string; account_id: string; as_of: string; data_tier: "authorized_beta"; portfolio_state_status: string; portfolio_state_reason: string | null; summary: { open_episode_count: number; closed_episode_count: number; current_position_count: number }; episodes: Array<{ outcome_summary: ArchiveOutcome; episode_id: string; instrument_id: string; display_name: string; currency: string | null; status: "open" | "closed"; opened_at: string; closed_at: string | null; duration_days: number; duration_kind: "final" | "so_far"; quantity: number | null; average_cost: number | null; valuation_at: string | null; valuation_price: number | null; market_value: number | null }> }
 export interface RuntimeEpisodeResult { status: string; reason: string | null; entry: unknown | null }
+
+
+export interface SensitivityRow {
+  value: number;
+  finalEquity: number;
+  totalReturn: number;
+  maxDrawdown: number;
+  fillCount: number;
+  roundTripCount: number;
+  winRate: number | null;
+  totalFees: number;
+  triggerCounts: Record<string, number>;
+}
+
+export interface SensitivityReportView {
+  schema_version: "strategy_sensitivity.v1";
+  strategyId: string;
+  parameter: string;
+  rows: SensitivityRow[];
+  allVariantsIdentical: boolean;
+  note: string;
+  limitations: string[];
+}

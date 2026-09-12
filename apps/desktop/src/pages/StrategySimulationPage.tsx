@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { EChart } from "@/components/charts/EChart";
 import { InvestmentChartWorkspace } from "@/components/charts/InvestmentChartWorkspace";
 import { useTheme } from "@/components/layout/ThemeProvider";
-import { isTauriRuntime, runtimeRequest } from "@/data/runtimeService";
+import { isTauriRuntime, runtimeRequest, type SensitivityReportView } from "@/data/runtimeService";
 import { adaptStrategySimulation, type StrategySimulationView } from "@/data/strategySimulation";
 import { StrategyWorkshop, type WorkshopDraft } from "@/components/strategy/StrategyWorkshop";
 import { rawComparisonReportFor, strategyComparison } from "@/data/strategyComparisonDemo";
@@ -131,6 +131,39 @@ export function StrategySimulationPage() {
   const money = (value: number) => formatCurrencyValue(value, locale, currency);
   const [instrument, setInstrument] = useState<string>("all");
   const [chartInstrument, setChartInstrument] = useState<string | null>(null);
+  const SENSITIVITY_PARAMS = [
+    { id: "stop_loss_pct", label: "止损比例" },
+    { id: "position_fraction", label: "每仓占比" },
+    { id: "max_positions", label: "最多持仓数" },
+    { id: "commission_rate", label: "佣金率" },
+    { id: "slippage_rate", label: "滑点" },
+  ] as const;
+  const [sensitivityParam, setSensitivityParam] = useState<string>("stop_loss_pct");
+  const [sensitivityValues, setSensitivityValues] = useState("0.05, 0.1, 0.2, 0.3");
+  const [sensitivityResult, setSensitivityResult] = useState<SensitivityReportView | null>(null);
+  const [sensitivityBusy, setSensitivityBusy] = useState(false);
+  const [sensitivityError, setSensitivityError] = useState<string | null>(null);
+  const runSensitivity = () => {
+    if (!isTauriRuntime()) {
+      setSensitivityError("需要桌面应用环境（浏览器预览不运行变体）。");
+      return;
+    }
+    const values = sensitivityValues.split(",").map((text) => Number(text.trim())).filter((value) => Number.isFinite(value));
+    if (values.length < 2) { setSensitivityError("请至少输入两个取值，用逗号分隔。"); return; }
+    setSensitivityBusy(true);
+    setSensitivityError(null);
+    const request = strategyId.startsWith("user_")
+      ? { strategy: selectedUserStrategy?.spec, parameter: sensitivityParam, values }
+      : { strategy_id: strategyId, parameter: sensitivityParam, values };
+    runtimeRequest<{ status: string; reason: string | null; report: SensitivityReportView | null }>(
+      "strategy_sensitivity.run", request)
+      .then((result) => {
+        if (result.status === "available" && result.report) setSensitivityResult(result.report);
+        else setSensitivityError(result.reason ?? "运行失败");
+      })
+      .catch((value) => setSensitivityError(value instanceof Error ? value.message : String(value)))
+      .finally(() => setSensitivityBusy(false));
+  };
   const [teaching, setTeaching] = useState<Record<string, { status: string; texts: string[]; reason: string | null } | "loading">>({});
   const explain = async (episodeId: string) => {
     if (!isTauriRuntime()) {
@@ -494,6 +527,49 @@ export function StrategySimulationPage() {
             </div>
           ))}
         </div>}
+    </section>
+
+    <section className="iw-inset strategy-panel">
+      <div className="strategy-panel__head">
+        <p className="iw-kicker">{t("Parameter sensitivity")}</p>
+        <span className="iw-subtle">{t("Facts only: the rows keep your order, nothing is ranked")}</span>
+      </div>
+      <p className="strategy-comparison-note">{t("See how fragile a conclusion is: change one parameter, rerun the same history, compare. High sensitivity means the historical result leans on that assumption.")}</p>
+      <div className="strategy-sensitivity-controls">
+        <select aria-label={t("Parameter")} value={sensitivityParam} onChange={(event) => setSensitivityParam(event.target.value)}>
+          {SENSITIVITY_PARAMS.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+        </select>
+        <input aria-label={t("Values")} value={sensitivityValues}
+          onChange={(event) => setSensitivityValues(event.target.value)}
+          placeholder="0.05, 0.1, 0.2" />
+        <button type="button" className="workshop-save" disabled={sensitivityBusy}
+          onClick={() => { setSensitivityResult(null); runSensitivity(); }}>
+          {sensitivityBusy ? t("Running on history…") : t("Run variants")}
+        </button>
+      </div>
+      {sensitivityError ? <p className="strategy-comparison-note">{sensitivityError}</p> : null}
+      {sensitivityResult ? <div className="strategy-sensitivity">
+        {sensitivityResult.allVariantsIdentical ? <p className="strategy-comparison-note">{sensitivityResult.limitations[0]}</p> : null}
+        <table className="sensitivity-table">
+          <thead><tr>
+            <th>{t("Parameter")}</th><th>{t("Final equity")}</th><th>{t("Total return")}</th>
+            <th>{t("Max drawdown")}</th><th>{t("Fills")}</th><th>{t("Win rate")}</th>
+          </tr></thead>
+          <tbody>
+            {sensitivityResult.rows.map((row) => (
+              <tr key={row.value}>
+                <td className="sensitivity-value">{row.value}</td>
+                <td>{money(row.finalEquity)}</td>
+                <td className={row.totalReturn > 0 ? "is-positive" : row.totalReturn < 0 ? "is-negative" : ""}>{percentLabel(row.totalReturn)}</td>
+                <td>{percentLabel(row.maxDrawdown)}</td>
+                <td>{row.fillCount}</td>
+                <td>{row.winRate === null ? "—" : percentLabel(row.winRate)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <ul className="strategy-comparison-limits">{sensitivityResult.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul>
+      </div> : null}
     </section>
 
     <footer className="iw-inset strategy-provenance">

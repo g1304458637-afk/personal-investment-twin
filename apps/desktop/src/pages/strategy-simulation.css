@@ -556,3 +556,50 @@
 .workshop-actions button:not(.workshop-save) { background: transparent; border: 1px solid var(--border);
   border-radius: 8px; color: var(--muted); padding: 6px 16px; cursor: pointer; }
 .workshop-error { color: #ff8f9c; }
+
+.strategy-sensitivity-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.strategy-sensitivity-controls select,
+.strategy-sensitivity-controls input {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 12.5px;
+  padding: 5px 10px;
+}
+
+.strategy-sensitivity-controls input { width: 220px; }
+
+.sensitivity-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  font-family: ui-monospace, monospace;
+}
+
+.sensitivity-table th {
+  text-align: left;
+  font-family: system-ui;
+  font-weight: 500;
+  font-size: 11px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding: 6px 10px;
+}
+
+.sensitivity-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+.sensitivity-table .sensitivity-value { color: #8cdaf2; }
+.sensitivity-table td.is-positive { color: #69d5bb; }
+.sensitivity-table td.is-negative { color: #ff8f9c; }
