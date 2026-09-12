@@ -33,8 +33,15 @@ export interface ComparisonReportView {
   limitations: string[];
 }
 
+export interface ComparisonRuleView {
+  ruleId: string;
+  source: string;
+  statement: string;
+}
+
 export interface StrategyComparisonView {
   strategyId: string;
+  ruleTable: ComparisonRuleView[];
   reports: ComparisonReportView[];
   portfolio: {
     user: { scope: string; realizedEpisodeCount: number; realizedPnlTotal: number; note: string };
@@ -140,8 +147,15 @@ export function adaptStrategyComparison(raw: unknown): StrategyComparisonView {
       limitations: array(portfolioRaw.limitations).map(text),
     };
   }
+  const ruleTable = "rule_table" in value && Array.isArray(value.rule_table)
+    ? array(value.rule_table).map((item) => {
+        const rule = object(item);
+        return { ruleId: text(rule.rule_id), source: text(rule.source), statement: text(rule.statement) };
+      })
+    : [];
   const view: StrategyComparisonView = {
     strategyId,
+    ruleTable,
     reports: array(value.reports).map(report),
     portfolio,
     limitations: array(value.limitations).map(text),

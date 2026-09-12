@@ -2,6 +2,78 @@
  "schema_version": "strategy_comparison.v1",
  "generated_from": "showcase-demo.json + t1_v1_result.json",
  "strategy_id": "toujing_turtle_s2_long",
+ "rule_table": [
+  {
+   "rule_id": "T1_entry_s2_breakout",
+   "source": "public_rule:turtle_system2",
+   "statement": "收盘价突破此前 55 个有效收盘高点（System 2 入场）时买入 1 个单元。"
+  },
+  {
+   "rule_id": "T2_unit_sizing",
+   "source": "public_rule:turtle",
+   "statement": "N = ATR(20)；单元股数 = (1% × 账户净值) ÷ N，按 100 股整手向下取整。"
+  },
+  {
+   "rule_id": "T2_adapt_notional_cap",
+   "source": "adaptation",
+   "statement": "适配：单元名义敞口上限为净值×25%（与其他策略等权一致）——原版靠大资金跨多市场分散，单池小额账户下 1%风险/N 会超过全部净值，故加名义上限。"
+  },
+  {
+   "rule_id": "T3_pyramid_adds",
+   "source": "public_rule:turtle",
+   "statement": "收盘价达到上次成交价 + 0.5N 时追加 1 个单元，同一标的最多 4 个单元。"
+  },
+  {
+   "rule_id": "T4_trailing_stop",
+   "source": "public_rule:turtle",
+   "statement": "每次成交后，该标的止损设为最近成交价 − 2N（2N 移动止损）。"
+  },
+  {
+   "rule_id": "T5_exit_s2",
+   "source": "public_rule:turtle_system2",
+   "statement": "收盘价跌破此前 20 个有效收盘低点时全部退出。"
+  },
+  {
+   "rule_id": "T_adapt_long_only",
+   "source": "adaptation",
+   "statement": "适配：仅实现多头；原版为多空双向。"
+  },
+  {
+   "rule_id": "T_adapt_single_pool",
+   "source": "adaptation",
+   "statement": "适配：原版跨多市场组合并限制相关单元数；本版为单一股票池，不做相关性限制。"
+  },
+  {
+   "rule_id": "T_adapt_exit_window",
+   "source": "adaptation",
+   "statement": "适配：原版 System 2 退出为 20 日突破的反向；本版按 20 个有效收盘低点执行。"
+  },
+  {
+   "rule_id": "B1_universe",
+   "source": "adaptation",
+   "statement": "股票池为点时上市且有效收盘≥56个的全部成员。"
+  },
+  {
+   "rule_id": "B6_conflict_priority",
+   "source": "adaptation",
+   "statement": "同日先卖出后加仓/买入，卖出资金当日可用。"
+  },
+  {
+   "rule_id": "B7_order_model",
+   "source": "adaptation",
+   "statement": "市价单、当日有效、次日开盘成交；未成交必须记录原因。"
+  },
+  {
+   "rule_id": "B8_fees",
+   "source": "adaptation",
+   "statement": "佣金0.03%（最低5元）双边，印花税0.1%仅卖出（合成参数，非券商报价）。"
+  },
+  {
+   "rule_id": "B9_slippage",
+   "source": "adaptation",
+   "statement": "滑点固定为0，参数保留。"
+  }
+ ],
  "reports": [
   {
    "episode_id": "pe_a92f86148e2030927e41ea94270250cd219dfbb1b84b937fe2cfe9b0078ecae2",
@@ -259,7 +331,7 @@
      "instrument": "SYN_VALUE",
      "side": "SELL",
      "intended_quantity": 45600.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "turtle_exit_s2",
      "reason_text": "收盘25.20跌破此前20个有效收盘低点25.28，全部退出。",
      "rank": null,
      "status": "filled",
@@ -340,7 +412,7 @@
       "instrument": "SYN_VALUE",
       "closed_on": "2025-07-03",
       "pnl": 143495.37936500006,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "turtle_exit_s2"
      }
     ]
    },
@@ -921,7 +993,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 19500.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "turtle_exit_s2",
      "reason_text": "收盘11.59跌破此前20个有效收盘低点11.90，全部退出。",
      "rank": null,
      "status": "filled",
@@ -960,7 +1032,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 45100.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "turtle_exit_s2",
      "reason_text": "收盘10.52跌破此前20个有效收盘低点10.53，全部退出。",
      "rank": null,
      "status": "filled",
@@ -1025,7 +1097,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 81700.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "turtle_exit_s2",
      "reason_text": "收盘13.32跌破此前20个有效收盘低点13.41，全部退出。",
      "rank": null,
      "status": "filled",
@@ -1080,19 +1152,19 @@
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-03-28",
       "pnl": -29810.874989999953,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "turtle_exit_s2"
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-07-24",
       "pnl": -13799.672412000014,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "turtle_exit_s2"
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-10-23",
       "pnl": 132126.04114699992,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "turtle_exit_s2"
      }
     ]
    },
@@ -1435,7 +1507,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 19500.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "turtle_exit_s2",
      "reason_text": "收盘11.59跌破此前20个有效收盘低点11.90，全部退出。",
      "rank": null,
      "status": "filled",
@@ -1474,7 +1546,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 45100.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "turtle_exit_s2",
      "reason_text": "收盘10.52跌破此前20个有效收盘低点10.53，全部退出。",
      "rank": null,
      "status": "filled",
@@ -1539,7 +1611,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 81700.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "turtle_exit_s2",
      "reason_text": "收盘13.32跌破此前20个有效收盘低点13.41，全部退出。",
      "rank": null,
      "status": "filled",
@@ -1594,19 +1666,19 @@
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-03-28",
       "pnl": -29810.874989999953,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "turtle_exit_s2"
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-07-24",
       "pnl": -13799.672412000014,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "turtle_exit_s2"
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-10-23",
       "pnl": 132126.04114699992,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "turtle_exit_s2"
      }
     ]
    },
@@ -1905,7 +1977,7 @@
      "instrument": "SYN_VALUE",
      "side": "SELL",
      "intended_quantity": 45600.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "turtle_exit_s2",
      "reason_text": "收盘25.20跌破此前20个有效收盘低点25.28，全部退出。",
      "rank": null,
      "status": "filled",
@@ -1986,7 +2058,7 @@
       "instrument": "SYN_VALUE",
       "closed_on": "2025-07-03",
       "pnl": 143495.37936500006,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "turtle_exit_s2"
      }
     ]
    },

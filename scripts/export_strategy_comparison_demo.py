@@ -159,6 +159,7 @@ def main() -> int:
             "schema_version": SCHEMA_VERSION,
             "generated_from": "showcase-demo.json + t1_v1_result.json",
             "strategy_id": spec.strategy_id,
+            "rule_table": [dict(rule) for rule in spec.rule_table],
             "reports": reports,
             "limitations": [
                 "示例数据为合成行情与合成成交，仅用于教学演示，不代表真实市场业绩。",

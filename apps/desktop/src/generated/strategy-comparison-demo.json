@@ -2,6 +2,68 @@
  "schema_version": "strategy_comparison.v1",
  "generated_from": "showcase-demo.json + t1_v1_result.json",
  "strategy_id": "toujing_t1_breakout_trend",
+ "rule_table": [
+  {
+   "rule_id": "A1_entry_trend_filter",
+   "source": "lens_rule:trend_ma20",
+   "statement": "收盘价高于最近20个有效收盘均值（SMA20）才允许入场。"
+  },
+  {
+   "rule_id": "A2_entry_breakout",
+   "source": "lens_rule:closing_breakout20",
+   "statement": "收盘价严格高于此前20个有效收盘高点才允许入场。"
+  },
+  {
+   "rule_id": "A3_signal_exit",
+   "source": "lens_rule:closing_breakout20",
+   "statement": "收盘价低于此前10个有效收盘低点时退出。"
+  },
+  {
+   "rule_id": "B1_universe",
+   "source": "adaptation",
+   "statement": "股票池为点时上市且有效收盘≥21个的全部成员；上市前/退市后不可选。"
+  },
+  {
+   "rule_id": "B2_ranking",
+   "source": "adaptation",
+   "statement": "候选超过剩余仓位时按突破强度降序，平局按instrument_id升序。"
+  },
+  {
+   "rule_id": "B3_sizing",
+   "source": "adaptation",
+   "statement": "等权仓位：每仓目标=当日总净值×25%，最多4仓，按100股整手向下取整。"
+  },
+  {
+   "rule_id": "B4_no_add",
+   "source": "adaptation",
+   "statement": "不加仓：同一标的同时至多一个仓位，退出后可再次入场。"
+  },
+  {
+   "rule_id": "B5_stop_loss",
+   "source": "adaptation",
+   "statement": "入场价×(1−8%)硬止损，逐日盘中检查；跳空低开按开盘价成交。"
+  },
+  {
+   "rule_id": "B6_conflict_priority",
+   "source": "adaptation",
+   "statement": "同日先卖出后买入，卖出资金当日可用；退出优先于入场。"
+  },
+  {
+   "rule_id": "B7_order_model",
+   "source": "adaptation",
+   "statement": "市价单、当日有效、次日开盘成交；未成交必须记录原因。"
+  },
+  {
+   "rule_id": "B8_fees",
+   "source": "adaptation",
+   "statement": "佣金0.03%（最低5元）双边，印花税0.1%仅卖出（合成参数，非券商报价）。"
+  },
+  {
+   "rule_id": "B9_slippage",
+   "source": "adaptation",
+   "statement": "V1滑点固定为0，参数保留。"
+  }
+ ],
  "reports": [
   {
    "episode_id": "pe_a92f86148e2030927e41ea94270250cd219dfbb1b84b937fe2cfe9b0078ecae2",
@@ -118,7 +180,7 @@
      "instrument": "SYN_VALUE",
      "side": "SELL",
      "intended_quantity": 12600.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_breakout_trend",
      "reason_text": "收盘25.50低于此前10个有效收盘低点25.60，按规则退出。",
      "rank": null,
      "status": "filled",
@@ -160,7 +222,7 @@
       "instrument": "SYN_VALUE",
       "closed_on": "2025-06-24",
       "pnl": 71420.72830199997,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_breakout_trend"
      }
     ]
    },
@@ -566,7 +628,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 23100.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_breakout_trend",
      "reason_text": "收盘12.19低于此前10个有效收盘低点12.38，按规则退出。",
      "rank": null,
      "status": "filled",
@@ -592,7 +654,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 24200.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_breakout_trend",
      "reason_text": "收盘10.60低于此前10个有效收盘低点10.66，按规则退出。",
      "rank": null,
      "status": "filled",
@@ -618,7 +680,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 23800.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_breakout_trend",
      "reason_text": "收盘13.60低于此前10个有效收盘低点13.71，按规则退出。",
      "rank": null,
      "status": "filled",
@@ -660,19 +722,19 @@
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-03-26",
       "pnl": 22680.715134,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_breakout_trend"
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-07-21",
       "pnl": 5043.751657999994,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_breakout_trend"
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-10-14",
       "pnl": 65928.11082200002,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_breakout_trend"
      }
     ]
    },
@@ -930,7 +992,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 23100.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_breakout_trend",
      "reason_text": "收盘12.19低于此前10个有效收盘低点12.38，按规则退出。",
      "rank": null,
      "status": "filled",
@@ -956,7 +1018,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 24200.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_breakout_trend",
      "reason_text": "收盘10.60低于此前10个有效收盘低点10.66，按规则退出。",
      "rank": null,
      "status": "filled",
@@ -982,7 +1044,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 23800.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_breakout_trend",
      "reason_text": "收盘13.60低于此前10个有效收盘低点13.71，按规则退出。",
      "rank": null,
      "status": "filled",
@@ -1024,19 +1086,19 @@
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-03-26",
       "pnl": 22680.715134,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_breakout_trend"
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-07-21",
       "pnl": 5043.751657999994,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_breakout_trend"
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-10-14",
       "pnl": 65928.11082200002,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_breakout_trend"
      }
     ]
    },
@@ -1193,7 +1255,7 @@
      "instrument": "SYN_VALUE",
      "side": "SELL",
      "intended_quantity": 12600.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_breakout_trend",
      "reason_text": "收盘25.50低于此前10个有效收盘低点25.60，按规则退出。",
      "rank": null,
      "status": "filled",
@@ -1235,7 +1297,7 @@
       "instrument": "SYN_VALUE",
       "closed_on": "2025-06-24",
       "pnl": 71420.72830199997,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_breakout_trend"
      }
     ]
    },

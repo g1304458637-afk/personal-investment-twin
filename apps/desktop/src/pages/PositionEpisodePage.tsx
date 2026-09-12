@@ -446,12 +446,10 @@ export function PositionEpisodePage() {
     </section> : null}
     {realCompare?.state === "error" ? <p className="iw-subtle">{t("Comparison unavailable")}: {realCompare.reason}</p> : null}
     {lensMode && (lensProjection.report && lensState ? <>
-      <LensMethodSelector report={lensProjection.report} methodId={lensState.method.id} onSelect={selectLensMethod} />
-      <LensDecisionTimeline entry={entry} method={lensState.method} decisionId={lensState.check?.decision_id ?? ""} onSelect={selectLensDecision} />
       <section className="iw-inset strategy-panel strategy-decision-verdicts">
         <div className="strategy-panel__head">
           <p className="iw-kicker">{t("Check against your strategy")}</p>
-          <span className="iw-subtle">{comparisonRuleFills ? compareStrategyLabel(compareStrategyId) : ""}</span>
+          <span className="iw-subtle">{compareStrategyLabel(compareStrategyId)}</span>
         </div>
         {currentVerdicts.length === 0
           ? <p className="strategy-compare__note">{t("This strategy makes no entry or exit signal for these decisions on their prior sessions.")}</p>
@@ -465,7 +463,17 @@ export function PositionEpisodePage() {
               <p className="strategy-trade__reason">{verdict.reasonText}</p>
             </div>
           ))}
+        {comparisonView.ruleTable.length ? <>
+          <p className="iw-kicker" style={{ marginTop: 10 }}>{t("This strategy checks your decisions with these rules")}</p>
+          <ul className="strategy-rule-group">
+            {comparisonView.ruleTable.map((rule) => (
+              <li key={rule.ruleId}><code>{rule.ruleId}</code><span>{rule.statement}</span></li>
+            ))}
+          </ul>
+        </> : null}
       </section>
+      <LensMethodSelector report={lensProjection.report} methodId={lensState.method.id} onSelect={selectLensMethod} />
+      <LensDecisionTimeline entry={entry} method={lensState.method} decisionId={lensState.check?.decision_id ?? ""} onSelect={selectLensDecision} />
     </> : <StateNotice state="insufficient" title={locale === "zh-CN" ? "这轮策略复盘暂不可用" : "Decision Lens is unavailable"} detail={locale === "zh-CN" ? (lensProjection.error ? "方法资料与当前投资记录未能核对一致。下方仍可查看原始投资过程。" : "当前运行环境尚未提供这轮的方法资料。原始行情和操作仍可查看。") : "The method projection is missing or could not be matched to this ledger. Recorded history remains available."} />)}
     <div className="iw-episode-main" hidden={sample && sampleSection !== "process" && !lensMode}>
       {episodeGuideActive ? <ChartGuide guideId="episode-process" onExit={exitGuide} /> : null}

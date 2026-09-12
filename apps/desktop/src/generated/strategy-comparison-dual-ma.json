@@ -2,6 +2,73 @@
  "schema_version": "strategy_comparison.v1",
  "generated_from": "showcase-demo.json + t1_v1_result.json",
  "strategy_id": "toujing_dual_ma",
+ "rule_table": [
+  {
+   "rule_id": "D1_entry_golden_cross",
+   "source": "public_rule:ma_crossover",
+   "statement": "短期均线（5）自下而上穿越长期均线（20）（金叉）时产生入场信号。"
+  },
+  {
+   "rule_id": "D2_exit_death_cross",
+   "source": "public_rule:ma_crossover",
+   "statement": "短期均线自上而下穿越长期均线（死叉）时退出。"
+  },
+  {
+   "rule_id": "D3_no_stop",
+   "source": "public_rule:ma_crossover",
+   "statement": "原模板不含价格止损——死叉本身就是退出机制。"
+  },
+  {
+   "rule_id": "MA_adapt_params",
+   "source": "adaptation",
+   "statement": "适配：经典模板存在 5/20、50/200 等多种参数；本版固定采用 5/20（日频）。"
+  },
+  {
+   "rule_id": "MA_adapt_long_only",
+   "source": "adaptation",
+   "statement": "适配：仅实现多头一侧，不做做空与反向持仓。"
+  },
+  {
+   "rule_id": "B1_universe",
+   "source": "adaptation",
+   "statement": "股票池为点时上市且有效收盘≥21个的全部成员。"
+  },
+  {
+   "rule_id": "B2_ranking",
+   "source": "adaptation",
+   "statement": "候选超过剩余仓位时按均线离散度（短均线/长均线−1）降序，平局按 instrument_id 升序。"
+  },
+  {
+   "rule_id": "B3_sizing",
+   "source": "adaptation",
+   "statement": "等权仓位：每仓目标=当日总净值×25%，最多4仓，按100股整手向下取整。"
+  },
+  {
+   "rule_id": "B4_no_add",
+   "source": "adaptation",
+   "statement": "不加仓：同一标的同时至多一个仓位，退出后可再次入场。"
+  },
+  {
+   "rule_id": "B6_conflict_priority",
+   "source": "adaptation",
+   "statement": "同日先卖出后买入，卖出资金当日可用。"
+  },
+  {
+   "rule_id": "B7_order_model",
+   "source": "adaptation",
+   "statement": "市价单、当日有效、次日开盘成交；未成交必须记录原因。"
+  },
+  {
+   "rule_id": "B8_fees",
+   "source": "adaptation",
+   "statement": "佣金0.03%（最低5元）双边，印花税0.1%仅卖出（合成参数，非券商报价）。"
+  },
+  {
+   "rule_id": "B9_slippage",
+   "source": "adaptation",
+   "statement": "滑点固定为0，参数保留。"
+  }
+ ],
  "reports": [
   {
    "episode_id": "pe_a92f86148e2030927e41ea94270250cd219dfbb1b84b937fe2cfe9b0078ecae2",
@@ -118,7 +185,7 @@
      "instrument": "SYN_VALUE",
      "side": "SELL",
      "intended_quantity": 12600.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_dual_ma",
      "reason_text": "短均线25.56下穿长均线25.58（死叉），按规则退出。",
      "rank": null,
      "status": "filled",
@@ -160,7 +227,7 @@
       "instrument": "SYN_VALUE",
       "closed_on": "2025-06-27",
       "pnl": 67453.11291600001,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_dual_ma"
      }
     ]
    },
@@ -566,7 +633,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 23600.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_dual_ma",
      "reason_text": "短均线10.55下穿长均线10.55（死叉），按规则退出。",
      "rank": null,
      "status": "filled",
@@ -592,7 +659,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 23700.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_dual_ma",
      "reason_text": "短均线10.66下穿长均线10.67（死叉），按规则退出。",
      "rank": null,
      "status": "filled",
@@ -618,7 +685,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 23000.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_dual_ma",
      "reason_text": "短均线13.68下穿长均线13.68（死叉），按规则退出。",
      "rank": null,
      "status": "filled",
@@ -660,19 +727,19 @@
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-05-02",
       "pnl": -5668.342635999958,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_dual_ma"
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-07-23",
       "pnl": -728.8188449999725,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_dual_ma"
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-10-15",
       "pnl": 64676.784069999994,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_dual_ma"
      }
     ]
    },
@@ -930,7 +997,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 23600.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_dual_ma",
      "reason_text": "短均线10.55下穿长均线10.55（死叉），按规则退出。",
      "rank": null,
      "status": "filled",
@@ -956,7 +1023,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 23700.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_dual_ma",
      "reason_text": "短均线10.66下穿长均线10.67（死叉），按规则退出。",
      "rank": null,
      "status": "filled",
@@ -982,7 +1049,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 23000.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_dual_ma",
      "reason_text": "短均线13.68下穿长均线13.68（死叉），按规则退出。",
      "rank": null,
      "status": "filled",
@@ -1024,19 +1091,19 @@
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-05-02",
       "pnl": -5668.342635999958,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_dual_ma"
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-07-23",
       "pnl": -728.8188449999725,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_dual_ma"
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-10-15",
       "pnl": 64676.784069999994,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_dual_ma"
      }
     ]
    },
@@ -1193,7 +1260,7 @@
      "instrument": "SYN_VALUE",
      "side": "SELL",
      "intended_quantity": 12600.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_dual_ma",
      "reason_text": "短均线25.56下穿长均线25.58（死叉），按规则退出。",
      "rank": null,
      "status": "filled",
@@ -1235,7 +1302,7 @@
       "instrument": "SYN_VALUE",
       "closed_on": "2025-06-27",
       "pnl": 67453.11291600001,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_dual_ma"
      }
     ]
    },

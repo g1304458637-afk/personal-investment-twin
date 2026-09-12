@@ -2,6 +2,73 @@
  "schema_version": "strategy_comparison.v1",
  "generated_from": "showcase-demo.json + t1_v1_result.json",
  "strategy_id": "toujing_rsi_mean_reversion",
+ "rule_table": [
+  {
+   "rule_id": "R1_entry_oversold",
+   "source": "public_rule:wilder_rsi",
+   "statement": "RSI(14) 低于 30（超卖）时产生入场信号——在弱势中买入。"
+  },
+  {
+   "rule_id": "R2_exit_overbought",
+   "source": "public_rule:wilder_rsi",
+   "statement": "RSI(14) 高于 70（超买）时退出——在强势中卖出。"
+  },
+  {
+   "rule_id": "R3_no_stop",
+   "source": "adaptation",
+   "statement": "本模板不含价格止损——退出依赖 RSI 回升到超买区。"
+  },
+  {
+   "rule_id": "MR_adapt_thresholds",
+   "source": "adaptation",
+   "statement": "适配：30/70 为最常见教学阈值；Wilder 原文未强制该数值。"
+  },
+  {
+   "rule_id": "MR_adapt_long_only",
+   "source": "adaptation",
+   "statement": "适配：仅实现多头（超卖买入），不做做空一侧。"
+  },
+  {
+   "rule_id": "B1_universe",
+   "source": "adaptation",
+   "statement": "股票池为点时上市且有效收盘≥30个的全部成员（RSI 平滑需要更长预热）。"
+  },
+  {
+   "rule_id": "B2_ranking",
+   "source": "adaptation",
+   "statement": "候选超过剩余仓位时按超卖深度（30−RSI）降序，平局按 instrument_id 升序。"
+  },
+  {
+   "rule_id": "B3_sizing",
+   "source": "adaptation",
+   "statement": "等权仓位：每仓目标=当日总净值×25%，最多4仓，按100股整手向下取整。"
+  },
+  {
+   "rule_id": "B4_no_add",
+   "source": "adaptation",
+   "statement": "不加仓：同一标的同时至多一个仓位。"
+  },
+  {
+   "rule_id": "B6_conflict_priority",
+   "source": "adaptation",
+   "statement": "同日先卖出后买入，卖出资金当日可用。"
+  },
+  {
+   "rule_id": "B7_order_model",
+   "source": "adaptation",
+   "statement": "市价单、当日有效、次日开盘成交（信号收盘确认、次开盘执行）。"
+  },
+  {
+   "rule_id": "B8_fees",
+   "source": "adaptation",
+   "statement": "佣金0.03%（最低5元）双边，印花税0.1%仅卖出（合成参数，非券商报价）。"
+  },
+  {
+   "rule_id": "B9_slippage",
+   "source": "adaptation",
+   "statement": "滑点固定为0，参数保留。"
+  }
+ ],
  "reports": [
   {
    "episode_id": "pe_a92f86148e2030927e41ea94270250cd219dfbb1b84b937fe2cfe9b0078ecae2",
@@ -382,7 +449,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 22200.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_rsi_mr",
      "reason_text": "RSI(14)=74.8 高于 70（超买），按规则退出。",
      "rank": null,
      "status": "filled",
@@ -408,7 +475,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 19500.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_rsi_mr",
      "reason_text": "RSI(14)=70.9 高于 70（超买），按规则退出。",
      "rank": null,
      "status": "filled",
@@ -437,13 +504,13 @@
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-08-21",
       "pnl": 829.9336799999583,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_rsi_mr"
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-12-08",
       "pnl": 10894.985400000034,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_rsi_mr"
      }
     ]
    },
@@ -650,7 +717,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 22200.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_rsi_mr",
      "reason_text": "RSI(14)=74.8 高于 70（超买），按规则退出。",
      "rank": null,
      "status": "filled",
@@ -676,7 +743,7 @@
      "instrument": "SYN_GROWTH",
      "side": "SELL",
      "intended_quantity": 19500.0,
-     "reason_code": "signal_exit_close_below_10d_low",
+     "reason_code": "signal_entry_rsi_mr",
      "reason_text": "RSI(14)=70.9 高于 70（超买），按规则退出。",
      "rank": null,
      "status": "filled",
@@ -705,13 +772,13 @@
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-08-21",
       "pnl": 829.9336799999583,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_rsi_mr"
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-12-08",
       "pnl": 10894.985400000034,
-      "reason": "signal_exit_close_below_10d_low"
+      "reason": "signal_entry_rsi_mr"
      }
     ]
    },
