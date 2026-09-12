@@ -9,3 +9,13 @@
 .my-strategy-item__main strong { color: var(--foreground); font-size: 13px; }
 .my-strategy-item__main span { font-size: 11px; font-family: ui-monospace, monospace; color: var(--muted); }
 .my-strategy-library { display: grid; gap: 8px; }
+
+/* Prominent build button */
+.my-strategies .workshop-save,
+.my-strategies .strategy-panel__head .workshop-save {
+  font-size: 14.5px;
+  padding: 10px 26px;
+  border-width: 1.5px;
+  border-radius: 12px;
+  font-weight: 600;
+}

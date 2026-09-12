@@ -405,8 +405,11 @@ class ProductRuntime:
         history (no future functions), or the strategy is refused.
         """
         from src.strategy.composite import (
+            FORMULA_SCHEMA,
             UserStrategyError,
+            build_formula_strategy_spec,
             build_user_strategy_spec,
+            make_formula_provider,
             make_provider,
         )
         from src.strategy.compare import multi_simulation_data
@@ -418,7 +421,12 @@ class ProductRuntime:
         if not isinstance(raw, Mapping):
             return {"status": "unavailable", "reason": "invalid_strategy_spec", "artifact": None}
         try:
-            spec, normalized = build_user_strategy_spec(raw)
+            if raw.get("schema_version") == FORMULA_SCHEMA:
+                spec, normalized = build_formula_strategy_spec(raw)
+                provider = make_formula_provider(normalized)
+            else:
+                spec, normalized = build_user_strategy_spec(raw)
+                provider = make_provider(normalized)
         except UserStrategyError as exc:
             return {"status": "unavailable", "reason": f"invalid_strategy_spec: {exc}", "artifact": None}
         universe = params.get("universe", "synthetic")
@@ -465,10 +473,10 @@ class ProductRuntime:
             limitations_extra = []
         data = data_full
         try:
-            result = run_simulation(spec, data, signal_provider=make_provider(normalized))
+            result = run_simulation(spec, data, signal_provider=provider)
             cutoff = data.dates[len(data.dates) // 2]
             prefix = run_simulation(spec, truncate_simulation_data(data, cutoff),
-                                    signal_provider=make_provider(normalized))
+                                    signal_provider=provider)
         except (ValueError, KeyError) as exc:
             return {"status": "unavailable", "reason": f"strategy_run_failed: {exc}", "artifact": None}
         base = result_to_dict(result)
