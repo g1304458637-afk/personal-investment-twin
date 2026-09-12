@@ -285,8 +285,12 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
             order.status = ORDER_STATUS_FILLED
             order.resolution_date = day
             order.resolution_reason = fill.fill_id
+            existing = account.positions.get(order.instrument)
             account.apply_buy(order.instrument, quantity, price, fee, day=day,
                               stop_price=price * (1.0 - stop_loss_pct) if stop_loss_pct > 0 else None)
+            if existing is not None:
+                existing.entry_count += 1
+                existing.entry_price = price  # last entry price (adds refresh it)
             events.append({"kind": "fill", "fill_id": fill.fill_id, "order_id": order.order_id,
                            "trigger": fill.trigger, "instrument": order.instrument, "side": "BUY",
                            "quantity": fill.quantity, "price": fill.price, "fee": fill.fee,
@@ -317,7 +321,28 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
         if day != last_day:
             held = set(account.positions)
             pending_buys = {item.instrument for item in pending if item.side == "BUY"}
-            exits, entries = signal_provider(params, data, day, held, pending_buys)
+            position_view = {
+                instrument: {"quantity": position.quantity,
+                             "available_quantity": position.available_quantity,
+                             "last_entry_price": position.entry_price,
+                             "entry_count": position.entry_count,
+                             "stop_price": position.stop_price}
+                for instrument, position in account.positions.items()
+            }
+            exits, candidates = signal_provider(params, data, day, held, pending_buys,
+                                                account_view={"equity": equity, "cash": account.cash,
+                                                              "positions": position_view})
+            adds = [item for item in candidates if item.kind == "add_candidate"]
+            entries = [item for item in candidates if item.kind == "add_candidate" or item.kind == "entry_candidate"]
+            entries = [item for item in candidates if item.kind == "entry_candidate"]
+            entries = list(entries)
+            stop_updates = [item for item in candidates if item.kind == "stop_update"]
+            for update in stop_updates:
+                new_stop = update.conditions[0]["threshold"] if update.conditions else None
+                if new_stop is not None and update.instrument in account.positions:
+                    account.positions[update.instrument].stop_price = float(new_stop)
+                    events.append({"kind": "stop_updated", "instrument": update.instrument,
+                                   "stop_price": float(new_stop)})
             for signal in exits:
                 order = create_order(day, signal.instrument, "SELL",
                                      account.positions[signal.instrument].quantity,
@@ -327,21 +352,43 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
                 day_record.signals.append({"instrument": signal.instrument, "kind": "exit",
                                            "reason": signal.reason_text,
                                            "conditions": [dict(item) for item in signal.conditions]})
+            add_rank_base = 0
+            for signal in adds:
+                if signal.instrument in pending_buys:
+                    continue
+                close_raw = data.series[signal.instrument].raw_close_on_or_before(day)
+                assert close_raw is not None
+                intended = getattr(signal, "intended_quantity", None)
+                if intended is None:
+                    intended_notional = min(equity * position_fraction, account.cash)
+                    intended = float(int(intended_notional / close_raw / execution.lot_size) * execution.lot_size)
+                if intended < execution.lot_size:
+                    continue
+                add_rank_base += 1
+                order = create_order(day, signal.instrument, "BUY", float(intended),
+                                     getattr(signal, "reason_code", "strategy_add"), signal.reason_text,
+                                     add_rank_base)
+                pending.append(order)
+                day_record.orders_created.append(order.order_id)
+                day_record.signals.append({"instrument": signal.instrument, "kind": "add",
+                                           "reason": signal.reason_text, "rank": add_rank_base})
             slots = max_positions - len(account.positions) - len(pending_buys)
             for rank, signal in enumerate(entries[: slots] if slots > 0 else [], start=1):
                 close_raw = data.series[signal.instrument].raw_close_on_or_before(day)
                 assert close_raw is not None
-                intended_notional = min(equity * position_fraction, account.cash)
-                intended_quantity = float(int(intended_notional / close_raw / execution.lot_size)
-                                          * execution.lot_size)
-                if intended_quantity < execution.lot_size:
+                intended = getattr(signal, "intended_quantity", None)
+                if intended is None:
+                    intended_notional = min(equity * position_fraction, account.cash)
+                    intended = float(int(intended_notional / close_raw / execution.lot_size) * execution.lot_size)
+                if intended < execution.lot_size:
                     day_record.signals.append({
                         "instrument": signal.instrument, "kind": "entry_skipped",
                         "reason": "lot_size_unaffordable",
-                        "detail": {"intended_notional": intended_notional, "close": close_raw}})
+                        "detail": {"intended_notional": equity * position_fraction, "close": close_raw}})
                     continue
-                order = create_order(day, signal.instrument, "BUY", intended_quantity,
-                                     "signal_entry_breakout_trend", signal.reason_text, rank)
+                order = create_order(day, signal.instrument, "BUY", float(intended),
+                                     getattr(signal, "reason_code", "strategy_entry"),
+                                     signal.reason_text, rank)
                 pending.append(order)
                 day_record.orders_created.append(order.order_id)
                 day_record.signals.append({"instrument": signal.instrument, "kind": "entry",

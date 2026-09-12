@@ -80,6 +80,8 @@ class CloseSignal:
     strength: float | None  # breakout strength, entry ranking key
     reason_text: str
     conditions: tuple[dict[str, object], ...]
+    reason_code: str = "signal_entry_breakout_trend"
+    intended_quantity: float | None = None
 
 
 def t1_entry_state(closes: tuple[float, ...]) -> tuple[bool, dict[str, object]]:
@@ -111,7 +113,8 @@ def t1_exit_state(closes: tuple[float, ...]) -> tuple[bool, dict[str, object]]:
 
 
 def evaluate_close_signals(spec_params: dict[str, float | int | str], data: SimulationData,
-                           day: date, held: set[str], pending_buy_instruments: set[str]) \
+                           day: date, held: set[str], pending_buy_instruments: set[str],
+                           account_view: dict | None = None) \
         -> tuple[list[CloseSignal], list[CloseSignal]]:
     """Compute exit signals and ranked entry candidates from closes through ``day``.
 

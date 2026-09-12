@@ -20,6 +20,7 @@ from src.strategy.engine import run_simulation  # noqa: E402
 from src.strategy.report import result_to_dict  # noqa: E402
 from src.strategy.strategies.dual_ma import build_dual_ma_spec  # noqa: E402
 from src.strategy.strategies.rsi_mr import build_rsi_mr_spec  # noqa: E402
+from src.strategy.strategies.turtle import build_turtle_spec  # noqa: E402
 from src.strategy.strategies.t1 import build_t1_spec  # noqa: E402
 
 
@@ -65,7 +66,7 @@ def main() -> int:
     data = load_simulation_data(args.data_dir)
     # One full run per registered strategy: the canonical artifact (T1) plus
     # lazily-loaded desktop files for the other strategies.
-    strategies = [build_t1_spec(), build_dual_ma_spec(), build_rsi_mr_spec()]
+    strategies = [build_t1_spec(), build_dual_ma_spec(), build_rsi_mr_spec(), build_turtle_spec()]
     payloads: dict[str, dict] = {}
     for spec in strategies:
         result = run_simulation(spec, data)
@@ -75,7 +76,8 @@ def main() -> int:
         payload = result_to_dict(result)
         payloads[spec.strategy_id] = payload
         if spec.strategy_id != "toujing_t1_breakout_trend":
-            slug = spec.strategy_id.split("_", 1)[1].replace("_", "-")
+            slug = {"toujing_dual_ma": "dual-ma", "toujing_rsi_mean_reversion": "rsi-mean-reversion",
+                    "toujing_turtle_s2_long": "turtle"}.get(spec.strategy_id, spec.strategy_id)
             (args.data_dir / f"{slug}_result.json").write_text(
                 json.dumps(payload, ensure_ascii=False, indent=1, allow_nan=False) + "\n", encoding="utf-8")
             desktop_path = args.desktop_output.parent / f"strategy-simulation-{slug}.json"

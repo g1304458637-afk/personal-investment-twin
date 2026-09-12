@@ -91,10 +91,13 @@ class CloseSignal:
     strength: float | None
     reason_text: str
     conditions: tuple[dict[str, object], ...]
+    reason_code: str = "signal_entry_rsi_mr"
+    intended_quantity: float | None = None
 
 
 def evaluate_close_signals(spec_params: dict[str, float | int | str], data: SimulationData,
-                           day: date, held: set[str], pending_buy_instruments: set[str]) \
+                           day: date, held: set[str], pending_buy_instruments: set[str],
+                           account_view: dict | None = None) \
         -> tuple[list[CloseSignal], list[CloseSignal]]:
     exits: list[CloseSignal] = []
     entries: list[CloseSignal] = []

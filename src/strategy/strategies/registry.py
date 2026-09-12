@@ -13,6 +13,7 @@ _PROVIDERS: dict[str, str] = {
     "toujing_t1_breakout_trend": "t1",
     "toujing_dual_ma": "dual_ma",
     "toujing_rsi_mean_reversion": "rsi_mr",
+    "toujing_turtle_s2_long": "turtle",
 }
 
 

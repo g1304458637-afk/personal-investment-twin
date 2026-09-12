@@ -41,6 +41,7 @@ const STRATEGY_FILES: Record<string, { title: string; load: () => Promise<{ defa
   toujing_t1_breakout_trend: { title: "T1 · 突破趋势", load: () => import("@/generated/strategy-simulation-demo.json") },
   toujing_dual_ma: { title: "双均线交叉 5/20", load: () => import("@/generated/strategy-simulation-dual-ma.json") },
   toujing_rsi_mean_reversion: { title: "RSI 均值回归 14", load: () => import("@/generated/strategy-simulation-rsi-mean-reversion.json") },
+  toujing_turtle_s2_long: { title: "海龟 S2（55日/ATR 加仓）", load: () => import("@/generated/strategy-simulation-turtle.json") },
 };
 
 export function StrategySimulationPage() {

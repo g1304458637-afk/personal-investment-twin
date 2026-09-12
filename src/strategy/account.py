@@ -18,7 +18,8 @@ class Position:
     average_cost: float        # Per-share cost including buy fees.
     entry_price: float         # Raw fill price of the opening buy.
     entry_date: date
-    stop_price: float | None  # None = the strategy declares no price stop.
+    entry_count: int = 1
+    stop_price: float | None = None  # None = the strategy declares no price stop.
 
 
 @dataclass(slots=True)

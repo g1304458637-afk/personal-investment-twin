@@ -70,6 +70,8 @@ class CloseSignal:
     strength: float | None
     reason_text: str
     conditions: tuple[dict[str, object], ...]
+    reason_code: str = "signal_entry_dual_ma"
+    intended_quantity: float | None = None
 
 
 def _moving_averages(closes: tuple[float, ...]) -> tuple[float | None, float | None, float | None, float | None]:
@@ -81,7 +83,8 @@ def _moving_averages(closes: tuple[float, ...]) -> tuple[float | None, float | N
 
 
 def evaluate_close_signals(spec_params: dict[str, float | int | str], data: SimulationData,
-                           day: date, held: set[str], pending_buy_instruments: set[str]) \
+                           day: date, held: set[str], pending_buy_instruments: set[str],
+                           account_view: dict | None = None) \
         -> tuple[list[CloseSignal], list[CloseSignal]]:
     exits: list[CloseSignal] = []
     entries: list[CloseSignal] = []
