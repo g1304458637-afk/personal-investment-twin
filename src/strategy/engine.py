@@ -342,6 +342,7 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
                 if new_stop is not None and update.instrument in account.positions:
                     account.positions[update.instrument].stop_price = float(new_stop)
                     events.append({"kind": "stop_updated", "instrument": update.instrument,
+                                   "day": day.isoformat(), "reason_code": update.reason_code,
                                    "stop_price": float(new_stop)})
             for signal in exits:
                 order = create_order(day, signal.instrument, "SELL",

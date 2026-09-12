@@ -48,6 +48,7 @@ class Bar:
     high: float
     low: float
     close: float
+    volume: float | None = None  # Real market rows may carry volume; synthetic bars have none.
 
 
 @dataclass(frozen=True, slots=True)

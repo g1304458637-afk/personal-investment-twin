@@ -114,6 +114,56 @@ def _p(name: str, default: float, minimum: float, maximum: float) -> dict[str, f
     return {"name": name, "default": default, "min": minimum, "max": maximum}
 
 
+
+
+def _compute_volume_ratio(series: InstrumentSeries, index: int, params: dict[str, float]) -> float | None:
+    window = int(params["window"])
+    start = index - window
+    if start < 0:
+        return None
+    vols = [series.bars[i].volume for i in range(start, index + 1)]
+    if any(v is None or v <= 0 for v in vols):
+        return None
+    base = vols[:-1]
+    avg = sum(base) / len(base) if base else 0.0
+    if avg <= 0:
+        return None
+    return vols[-1] / avg
+
+
+def _compute_range_position(series: InstrumentSeries, index: int, params: dict[str, float]) -> float | None:
+    window = int(params["window"])
+    start = index - window + 1
+    if start < 0:
+        return None
+    closes = series.adjusted_close[start: index + 1]
+    hi, lo = max(closes), min(closes)
+    if hi <= lo:
+        return 0.5
+    return (closes[-1] - lo) / (hi - lo)
+
+
+def _compute_streak_down(series: InstrumentSeries, index: int, params: dict[str, float]) -> float | None:
+    count = 0
+    i = index
+    while i > 0 and series.adjusted_close[i] < series.adjusted_close[i - 1]:
+        count += 1
+        i -= 1
+    return float(count)
+
+
+def _compute_ema_gap(series: InstrumentSeries, index: int, params: dict[str, float]) -> float | None:
+    window = int(params["window"])
+    closes = series.adjusted_close[: index + 1]
+    if len(closes) < window:
+        return None
+    alpha = 2.0 / (window + 1)
+    ema = closes[0]
+    for close in closes[1:]:
+        ema = alpha * close + (1 - alpha) * ema
+    return closes[-1] / ema - 1.0 if ema > 0 else None
+
+
 FACTOR_LIBRARY: Final[dict[str, dict]] = {
     "rsi": {
         "label": "RSI 相对强弱", "category": "momentum",
@@ -178,6 +228,38 @@ FACTOR_LIBRARY: Final[dict[str, dict]] = {
         "statement": "{short} 日均线下穿 {long} 日均线。",
         "misread": "死叉确认时价格通常已经低于交叉点，把它当卖点会系统性卖低。",
         "compute": _make_cross(up=False),
+    },
+    "volume_ratio": {
+        "label": "量比（成交量 / 均量）", "category": "volume",
+        "params": [_p("window", 20, 2, 60)],
+        "output": "当日成交量相对前 {window} 日均量的倍数；2.0 表示放量一倍",
+        "statement": "当日成交量除以前 {window} 日平均成交量。",
+        "misread": "合成示例股票池没有量数据——该因子只在真实行情运行时有效。",
+        "compute": _compute_volume_ratio,
+    },
+    "range_position": {
+        "label": "N 日区间位置", "category": "range",
+        "params": [_p("window", 20, 2, 250)],
+        "output": "0~1：1 表示收在区间最高，0 表示收在区间最低",
+        "statement": "收盘价在最近 {window} 个交易日高低区间中的相对位置。",
+        "misread": "区间位置只描述“在哪里”，不预测方向——高位可以更高，低位可以更低。",
+        "compute": _compute_range_position,
+    },
+    "streak_down": {
+        "label": "连续下跌天数", "category": "momentum",
+        "params": [],
+        "output": "截至当日连续收跌的天数",
+        "statement": "截至当日连续收跌的交易日数。",
+        "misread": "连跌不意味着见底——跌势中连跌十几天并不罕见。",
+        "compute": _compute_streak_down,
+    },
+    "ema_gap": {
+        "label": "价格相对 EMA（偏离%）", "category": "trend",
+        "params": [_p("window", 20, 2, 250)],
+        "output": "偏离度：0.05 表示高于 EMA 5%",
+        "statement": "收盘价相对 {window} 日指数均线（EMA）的偏离比例。",
+        "misread": "EMA 比 SMA 更贴价，偏离信号更频繁，噪声也更多。",
+        "compute": _compute_ema_gap,
     },
 }
 

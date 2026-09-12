@@ -79,7 +79,9 @@ def simulation_data_from_bars(instrument: str, bars: Sequence[Mapping[str, Any]]
         open_, high, low, close = values
         if high < max(open_, close) or low > min(open_, close):
             raise ComparisonError(f"inconsistent OHLC on {day} for {instrument}")
-        parsed.append((day, Bar(open=open_, high=high, low=low, close=close)))
+        volume = row.get("volume")
+        volume_f = float(volume) if volume not in (None, "") else None
+        parsed.append((day, Bar(open=open_, high=high, low=low, close=close, volume=volume_f)))
     if not parsed:
         raise ComparisonError(f"no bars for {instrument}")
     parsed.sort(key=lambda item: item[0])

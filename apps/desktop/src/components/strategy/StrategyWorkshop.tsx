@@ -18,7 +18,7 @@ interface FactorOption {
   misread: string;
 }
 
-const FACTORS: FactorOption[] = [
+export const FACTORS: FactorOption[] = [
   { id: "rsi", label: "RSI 相对强弱", opType: "numeric", paramLabel: "窗口", paramDefault: 14,
     misread: "趋势市里 RSI 可以连续数周低于 30——超卖不等于会反弹。" },
   { id: "sma_gap", label: "价格相对均线（偏离%）", opType: "numeric", paramLabel: "均线窗口", paramDefault: 20,
@@ -35,6 +35,14 @@ const FACTORS: FactorOption[] = [
     misread: "震荡市里金叉会反复出现和消失（骗线）。" },
   { id: "ma_cross_down", label: "均线死叉", opType: "bool", paramLabel: null, paramDefault: 0,
     misread: "死叉确认时价格通常已低于交叉点。" },
+  { id: "volume_ratio", label: "量比（成交量/均量）", opType: "numeric", paramLabel: "均量窗口", paramDefault: 20,
+    misread: "合成示例股票池没有量数据——该因子只在真实行情运行时有效。" },
+  { id: "range_position", label: "N 日区间位置", opType: "numeric", paramLabel: "回看窗口", paramDefault: 20,
+    misread: "区间位置只描述在哪里，不预测方向。" },
+  { id: "streak_down", label: "连续下跌天数", opType: "numeric", paramLabel: null, paramDefault: 0,
+    misread: "连跌不意味着见底——跌势中连跌十几天并不罕见。" },
+  { id: "ema_gap", label: "价格相对 EMA（偏离%）", opType: "numeric", paramLabel: "EMA 窗口", paramDefault: 20,
+    misread: "EMA 比 SMA 更贴价，信号更频繁，噪声也更多。" },
 ];
 
 export interface ConditionDraft {
@@ -42,6 +50,7 @@ export interface ConditionDraft {
   op: "gt" | "lt" | "true";
   threshold: number;
   window: number;
+  anyGroup?: boolean;
 }
 
 export interface WorkshopDraft {
@@ -49,6 +58,8 @@ export interface WorkshopDraft {
   entry: ConditionDraft[];
   exitFactor: ConditionDraft | null;
   stopPct: number | null;
+  atrMult: number | null;
+  addsUnits: number | null;
   fraction: number;
   maxPositions: number;
 }
@@ -83,23 +94,27 @@ export function conditionStatement(draft: ConditionDraft | Record<string, unknow
 
 function conditionToSpec(draft: ConditionDraft): Record<string, unknown> {
   const params: Record<string, number> = {};
-  const option = factorOption(draft.factor);
+  const option = FACTORS.find((item) => item.id === draft.factor);
   if (option?.paramLabel) params.window = draft.window;
-  if (draft.factor === "rsi") params.window = draft.window;
-  return draft.op === "true"
-    ? { factor: draft.factor, params, op: "true" }
-    : { factor: draft.factor, params, op: draft.op, threshold: draft.threshold };
+  if (draft.op === "true")
+    return { factor: draft.factor, params, op: "true" };
+  return { factor: draft.factor, params, op: draft.op, threshold: draft.threshold };
 }
 
 export function draftToSpec(draft: WorkshopDraft): Record<string, unknown> {
   return {
-    schema_version: "user_strategy.v1",
+    schema_version: "user_strategy.v2",
     name: draft.name.trim(),
-    entry: { all_of: draft.entry.map(conditionToSpec) },
+    entry: {
+      all_of: draft.entry.filter((c) => !c.anyGroup).map(conditionToSpec),
+      any_of: draft.entry.filter((c) => c.anyGroup).map(conditionToSpec),
+    },
     exit: {
       any_of: draft.exitFactor ? [conditionToSpec(draft.exitFactor)] : [],
       stop_loss_pct: draft.stopPct === null ? null : draft.stopPct / 100,
+      atr_trailing_mult: draft.atrMult ?? null,
     },
+    adds: draft.addsUnits === null ? null : { max_units: draft.addsUnits },
     sizing: { mode: "equal_weight", fraction: draft.fraction / 100 },
     constraints: { max_positions: draft.maxPositions },
   };
@@ -150,6 +165,8 @@ export function StrategyWorkshop({ onSave, onCancel }: {
   const [entry, setEntry] = useState<ConditionDraft[]>([newCondition()]);
   const [exitFactor, setExitFactor] = useState<ConditionDraft | null>(null);
   const [stopPct, setStopPct] = useState<number | null>(10);
+  const [atrMult, setAtrMult] = useState<number | null>(null);
+  const [addsUnits, setAddsUnits] = useState<number | null>(null);
   const [fraction, setFraction] = useState(25);
   const [maxPositions, setMaxPositions] = useState(4);
   const [error, setError] = useState<string | null>(null);
@@ -158,7 +175,7 @@ export function StrategyWorkshop({ onSave, onCancel }: {
     if (!name.trim()) { setError("请给策略起个名字"); return; }
     if (entry.length === 0) { setError("至少需要一个入场条件"); return; }
     if (exitFactor === null && stopPct === null) { setError("至少需要一种退出机制"); return; }
-    const draft: WorkshopDraft = { name, entry, exitFactor, stopPct, fraction, maxPositions };
+    const draft: WorkshopDraft = { name, entry, exitFactor, stopPct, atrMult, addsUnits, fraction, maxPositions };
     try {
       const spec = draftToSpec(draft);
       JSON.stringify(spec);
@@ -196,6 +213,25 @@ export function StrategyWorkshop({ onSave, onCancel }: {
       </label>
       {stopPct !== null ? <span className="workshop-inline-num"><input type="number" min={1} max={50} value={stopPct}
         onChange={(event) => setStopPct(Number(event.target.value) || 1)} /> %</span> : null}
+      <label className="workshop-check">
+        <input type="checkbox" checked={atrMult !== null} onChange={(event) => setAtrMult(event.target.checked ? 2 : null)} />
+        ATR 跟踪止损：止损每日上移至 前收 −
+      </label>
+      {atrMult !== null ? <span className="workshop-inline-num">
+        <input type="number" min={10} max={50} step={5} value={atrMult * 10}
+          onChange={(event) => setAtrMult((Number(event.target.value) || 20) / 10)} /> × ATR
+      </span> : null}
+    </section>
+    <section>
+      <p className="workshop-title">③b 加仓规则（可选）</p>
+      <label className="workshop-check">
+        <input type="checkbox" checked={addsUnits !== null} onChange={(event) => setAddsUnits(event.target.checked ? 2 : null)} />
+        入场条件再次满足时追加 1 单元，最多
+      </label>
+      {addsUnits !== null ? <span className="workshop-inline-num">
+        <input type="number" min={2} max={4} value={addsUnits}
+          onChange={(event) => setAddsUnits(Math.min(4, Math.max(2, Number(event.target.value) || 2)))} /> 单元
+      </span> : null}
     </section>
     <section>
       <p className="workshop-title">④ 每笔买多少</p>

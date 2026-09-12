@@ -43,9 +43,11 @@ def test_fetch_maps_columns_labels_source_and_writes_cache(isolated_cache):
     assert calls == [("600000", "daily", "20250101", "20250131", "")]
     assert bars == [
         {"date": "2025-01-02", "open": 10.0, "close": 10.5, "high": 10.8, "low": 9.9,
-         "source_id": "akshare_public", "source_version": "1", "adjust": "", "is_synthetic": False},
+         "volume": None, "source_id": "akshare_public", "source_version": "1",
+         "adjust": "", "is_synthetic": False},
         {"date": "2025-01-03", "open": 10.5, "close": 11.0, "high": 11.2, "low": 10.4,
-         "source_id": "akshare_public", "source_version": "1", "adjust": "", "is_synthetic": False},
+         "volume": None, "source_id": "akshare_public", "source_version": "1",
+         "adjust": "", "is_synthetic": False},
     ]
     # Second call is served from the cache without touching the network.
     def exploding_fetcher(**kwargs):

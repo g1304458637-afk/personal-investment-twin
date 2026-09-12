@@ -93,10 +93,12 @@ def fetch_ohlc(instrument: str, start: str, end: str, *, force_refresh: bool = F
         raise AkshareUnavailable("akshare_columns_unrecognized")
     bars: list[dict[str, Any]] = []
     for _, row in frame.iterrows():
+        volume_raw = row.get("成交量")
         bars.append({
             "date": str(row["日期"])[:10],
             "open": float(row["开盘"]), "close": float(row["收盘"]),
             "high": float(row["最高"]), "low": float(row["最低"]),
+            "volume": float(volume_raw) if volume_raw not in (None, "", 0) else None,
             "source_id": SOURCE_ID, "source_version": SOURCE_VERSION,
             "adjust": adjust, "is_synthetic": False,
         })

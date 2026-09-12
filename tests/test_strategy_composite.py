@@ -12,9 +12,9 @@ from src.strategy.composite import (
     strategy_id_for,
     validate_user_strategy,
 )
-from src.strategy.data import load_simulation_data
+from src.strategy.data import InstrumentSeries, load_simulation_data
 from src.strategy.engine import run_simulation
-from tests.strategy_fixtures import bar, dataset_writer, flat_bar
+from tests.strategy_fixtures import bar, dataset_writer, day, flat_bar
 
 
 def bdays(start: str, count: int) -> list[str]:
@@ -167,3 +167,110 @@ def test_risk_unit_sizing_golden(dataset_writer):
     atr_ratio = factors_mod._atr_ratio(series, idx, 14)
     raw = min(0.01 * 1_000_000 / (atr_ratio * price), 0.25 * 1_000_000 / price)
     assert entry.intended_quantity == float(int(raw / 100) * 100)
+
+
+def _v2(base_changes: dict) -> dict:
+    import copy
+    spec = copy.deepcopy(BASE_SPEC)
+    spec["schema_version"] = "user_strategy.v2"
+    spec.update(base_changes)
+    return spec
+
+
+def test_v2_accepts_any_of_and_v1_still_validates():
+    v2 = _v2({"entry": {"all_of": [], "any_of": [
+        {"factor": "rsi", "params": {"window": 14}, "op": "lt", "threshold": 30},
+        {"factor": "breakout_high", "params": {"window": 20}, "op": "true"},
+    ]}})
+    normalized = validate_user_strategy(v2)
+    assert len(normalized["entry"]["any_of"]) == 2 and normalized["entry"]["all_of"] == []
+    # v1 spec still passes unchanged.
+    assert validate_user_strategy(dict(BASE_SPEC))["entry"]["any_of"] == []
+
+
+def test_any_of_semantics_either_condition_enters(dataset_writer):
+    days = bdays("2025-01-02", 60)
+    # Flat, deep slide (RSI collapses), strong recovery (breakout fires).
+    bars = [flat_bar(text, "SYN_POOL_B01", 10.0) for text in days[:30]]
+    bars += [flat_bar(text, "SYN_POOL_B01", 10.0 - 0.25 * (i + 1)) for i, text in enumerate(days[30:45])]
+    bars += [flat_bar(text, "SYN_POOL_B01", 6.25 + 0.35 * (i + 1)) for i, text in enumerate(days[45:60])]
+    universe = [{"instrument": "SYN_POOL_B01", "display_name": "B01",
+                 "list_date": days[0], "delist_date": ""}]
+    v2 = {"schema_version": "user_strategy.v2", "name": "或逻辑",
+          "entry": {"all_of": [], "any_of": [
+              {"factor": "rsi", "params": {"window": 14}, "op": "lt", "threshold": 25},
+              {"factor": "breakout_high", "params": {"window": 20}, "op": "true"},
+          ]},
+          "exit": {"any_of": [], "stop_loss_pct": 0.2},
+          "sizing": {"mode": "equal_weight", "fraction": 0.25},
+          "constraints": {"max_positions": 4}}
+    data = load_simulation_data(dataset_writer(universe, bars))
+    spec, normalized = build_user_strategy_spec(v2)
+    result = run_simulation(spec, data, signal_provider=make_provider(normalized))
+    buys = [f for f in result.fills if f.side == "BUY"]
+    assert buys, "oversold dip or recovery breakout must trigger at least one entry"
+
+
+def test_adds_pyramid_when_conditions_refire(dataset_writer):
+    days = bdays("2025-01-02", 80)
+    bars = [flat_bar(text, "SYN_POOL_B01", 10.0) for text in days[:30]]
+    bars += [flat_bar(text, "SYN_POOL_B01", 10.0 + 0.3 * (i + 1)) for i, text in enumerate(days[30:])]
+    universe = [{"instrument": "SYN_POOL_B01", "display_name": "B01",
+                 "list_date": days[0], "delist_date": ""}]
+    v2 = {"schema_version": "user_strategy.v2", "name": "加仓",
+          "entry": {"all_of": [{"factor": "breakout_high", "params": {"window": 20}, "op": "true"}]},
+          "exit": {"any_of": [{"factor": "breakdown_low", "params": {"window": 20}, "op": "true"}],
+                   "stop_loss_pct": None},
+          "adds": {"max_units": 3},
+          "sizing": {"mode": "risk_unit", "risk_fraction": 0.01, "notional_cap": 0.25},
+          "constraints": {"max_positions": 4}}
+    data = load_simulation_data(dataset_writer(universe, bars))
+    spec, normalized = build_user_strategy_spec(v2)
+    result = run_simulation(spec, data, signal_provider=make_provider(normalized))
+    buys = [f for f in result.fills if f.side == "BUY"]
+    assert len(buys) >= 2, "a steady climb must pyramid at least two units"
+    adds = [o for o in result.orders if o.reason_code == "user_add" and o.status == "filled"]
+    assert adds, "pyramid adds must fill as explicit add orders"
+
+
+def test_atr_trailing_stop_ratchets(dataset_writer):
+    days = bdays("2025-01-02", 80)
+    bars = [flat_bar(text, "SYN_POOL_B01", 10.0) for text in days[:30]]
+    bars += [flat_bar(text, "SYN_POOL_B01", 10.0 + 0.3 * (i + 1)) for i, text in enumerate(days[30:60])]
+    bars += [flat_bar(text, "SYN_POOL_B01", 19.0 - 0.4 * (i + 1)) for i, text in enumerate(days[60:])]
+    universe = [{"instrument": "SYN_POOL_B01", "display_name": "B01",
+                 "list_date": days[0], "delist_date": ""}]
+    v2 = {"schema_version": "user_strategy.v2", "name": "跟踪止损",
+          "entry": {"all_of": [{"factor": "breakout_high", "params": {"window": 20}, "op": "true"}]},
+          "exit": {"any_of": [], "stop_loss_pct": None, "atr_trailing_mult": 2.0},
+          "adds": {"max_units": 2},
+          "sizing": {"mode": "risk_unit", "risk_fraction": 0.01, "notional_cap": 0.25},
+          "constraints": {"max_positions": 4}}
+    data = load_simulation_data(dataset_writer(universe, bars))
+    spec, normalized = build_user_strategy_spec(v2)
+    result = run_simulation(spec, data, signal_provider=make_provider(normalized))
+    trailing_updates = [e for d in result.days for e in d.events if e.get("kind") == "stop_updated"]
+    assert trailing_updates, "a climb then slide must ratchet the trailing stop"
+    # Within each holding period the stop may only ratchet upward; a new
+    # entry legitimately restarts it lower.
+    buy_days = {f.day.isoformat() for f in result.fills if f.side == "BUY"}
+    segments: list[list[float]] = [[]]
+    for event in trailing_updates:
+        if event["day"] in buy_days and segments[-1]:
+            segments.append([])
+        segments[-1].append(event["stop_price"])
+    for segment in segments:
+        assert segment == sorted(segment), "trailing stop must ratchet only upward within a trade"
+    exits = [f for f in result.fills if f.side == "SELL"]
+    assert exits and exits[-1].trigger in {"stop_loss", "signal_order"}
+
+
+def test_volume_factor_requires_volume_data(dataset_writer):
+    from src.strategy.factors import FACTOR_LIBRARY, evaluate_factor
+    from src.strategy.data import InstrumentSeries, Bar
+    days = bdays("2025-01-02", 30)
+    bars = tuple(Bar(10.0, 10.0, 10.0, 10.0) for _ in days)  # no volume
+    series = InstrumentSeries("SYN_POOL_B01", tuple(day(d) for d in days), bars,
+                              tuple(10.0 for _ in days), tuple(1.0 for _ in days))
+    params = {p["name"]: p["default"] for p in FACTOR_LIBRARY["volume_ratio"]["params"]}
+    assert evaluate_factor("volume_ratio", params, series, 25) is None
