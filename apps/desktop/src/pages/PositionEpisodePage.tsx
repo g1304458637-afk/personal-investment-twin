@@ -242,6 +242,16 @@ export function PositionEpisodePage() {
     const report = comparisonView.reports.find((item) => item.episodeId === entry.episode.episodeId);
     return report ? report.ruleFills.map((fill) => ({ day: fill.day, side: fill.side, price: fill.price, trigger: fill.trigger })) : null;
   }, [data.mode, entry, comparisonView]);
+  const currentVerdicts = useMemo(() => {
+    if (data.mode !== "demo" || !entry) return [];
+    return comparisonView.reports.find((item) => item.episodeId === entry.episode.episodeId)?.decisionVerdicts ?? [];
+  }, [data.mode, entry, comparisonView]);
+  const compareStrategyLabel = (id: string) => ({
+    "toujing_t1_breakout_trend": "T1 · 突破趋势",
+    "toujing_dual_ma": "双均线交叉 5/20",
+    "toujing_rsi_mean_reversion": "RSI 均值回归 14",
+    "toujing_turtle_s2_long": "海龟 S2",
+  }[id] ?? id);
   const lensMode = sample && sampleSection === "lens";
   const lensProjection = useMemo(() => {
     if (!entry) return {report: null, error: false};
@@ -360,21 +370,39 @@ export function PositionEpisodePage() {
     <div ref={sampleTop} className="iw-episode-toolbar"><Button asChild variant="quiet" size="sm" className="-ml-3"><Link to="/investments"><ArrowLeft />{t("My Investments")}</Link></Button><div className="episode-sample-switch"><span className="iw-subtle">{data.mode === "demo" ? exampleAccountLabel(data.exampleAccount, locale) : data.activeAccount?.display_name}</span></div></div>
     <header className="iw-episode-hero iw-inset"><div><p className="iw-kicker">{sample ? c.label : t("Investment episode")}</p><h1 className="iw-episode-title">{instrumentName}</h1><p className="iw-episode-period">{date(episode.openedAt)} → {episode.closedAt ? date(episode.closedAt) : t("Present")} · {t(episode.status === "open" ? "Holding" : "Closed")}</p>{story ? <p data-review-story className="iw-story">{story}{review?.abbreviated ? t("Further executions are listed below.") : t("Story full stop")}</p> : null}</div><div data-episode-result className="iw-outcome"><div><p className="iw-kicker">{t(result.resultKind === "marked" ? "Current marked result" : "Final realized result")}</p><p className={cn("iw-outcome-value", resultTone(result.resultSign))}>{formatCurrency(result.pnl)}</p>{result.returnValue !== null ? <p className="iw-subtle mt-2">{t("Position return")}: {formatPercent(result.returnValue, 2)}</p> : null}</div><p className="iw-outcome-foot">{result.resultKind === "marked" ? <>{t("This is a current mark, not a realized exit.")}<br />{t("Marked at {date}", {date: result.valuationAt ? date(result.valuationAt) : "—"})} · {t("Valuation price")}: {result.valuationPrice === null ? "—" : formatCurrency(result.valuationPrice)}</> : t("Final date: {date}", {date: episode.closedAt ? date(episode.closedAt) : "—"})}</p></div></header>
     {sample && <nav className="episode-sample-nav" aria-label={c.label}>{episodeSections.map((section) => <button key={section} aria-pressed={sampleSection === section} onClick={() => setSampleSection(section)}>{c[section]}</button>)}</nav>}
+    {data.mode === "demo" ? <div className="episode-compare-strategy">
+      <span>{t("Rule replay strategy")}</span>
+      <select aria-label={t("Rule replay strategy")} value={compareStrategyId} onChange={(event) => setCompareStrategyId(event.target.value)}>
+        <option value="toujing_t1_breakout_trend">T1 · 突破趋势</option>
+        <option value="toujing_dual_ma">双均线交叉 5/20</option>
+        <option value="toujing_rsi_mean_reversion">RSI 均值回归 14</option>
+        <option value="toujing_turtle_s2_long">海龟 S2</option>
+      </select>
+    </div> : null}
     {lensMode && (lensProjection.report && lensState ? <>
       <LensMethodSelector report={lensProjection.report} methodId={lensState.method.id} onSelect={selectLensMethod} />
       <LensDecisionTimeline entry={entry} method={lensState.method} decisionId={lensState.check?.decision_id ?? ""} onSelect={selectLensDecision} />
+      <section className="iw-inset strategy-panel strategy-decision-verdicts">
+        <div className="strategy-panel__head">
+          <p className="iw-kicker">{t("Check against your strategy")}</p>
+          <span className="iw-subtle">{comparisonRuleFills ? compareStrategyLabel(compareStrategyId) : ""}</span>
+        </div>
+        {currentVerdicts.length === 0
+          ? <p className="strategy-compare__note">{t("This strategy makes no entry or exit signal for these decisions on their prior sessions.")}</p>
+          : currentVerdicts.map((verdict) => (
+            <div key={verdict.executionId} className="strategy-decision-verdict">
+              <span>{verdict.day}</span>
+              <strong className={verdict.side === "BUY" ? "is-buy" : "is-sell"}>{verdict.side === "BUY" ? t("Buy") : t("Sell")}</strong>
+              <em className={verdict.verdict === "aligned" ? "is-aligned" : verdict.verdict === "different" ? "is-different" : "is-insufficient"}>
+                {verdict.verdict === "aligned" ? t("Rules match") : verdict.verdict === "different" ? t("Rules differ") : t("Insufficient data")}
+              </em>
+              <p className="strategy-trade__reason">{verdict.reasonText}</p>
+            </div>
+          ))}
+      </section>
     </> : <StateNotice state="insufficient" title={locale === "zh-CN" ? "这轮策略复盘暂不可用" : "Decision Lens is unavailable"} detail={locale === "zh-CN" ? (lensProjection.error ? "方法资料与当前投资记录未能核对一致。下方仍可查看原始投资过程。" : "当前运行环境尚未提供这轮的方法资料。原始行情和操作仍可查看。") : "The method projection is missing or could not be matched to this ledger. Recorded history remains available."} />)}
     <div className="iw-episode-main" hidden={sample && sampleSection !== "process" && !lensMode}>
       {episodeGuideActive ? <ChartGuide guideId="episode-process" onExit={exitGuide} /> : null}
-      {data.mode === "demo" ? <div className="episode-compare-strategy">
-        <span>{t("Rule replay strategy")}</span>
-        <select aria-label={t("Rule replay strategy")} value={compareStrategyId} onChange={(event) => setCompareStrategyId(event.target.value)}>
-          <option value="toujing_t1_breakout_trend">T1 · 突破趋势</option>
-          <option value="toujing_dual_ma">双均线交叉 5/20</option>
-          <option value="toujing_rsi_mean_reversion">RSI 均值回归 14</option>
-          <option value="toujing_turtle_s2_long">海龟 S2</option>
-        </select>
-      </div> : null}
       <section ref={chartRef} data-price-path data-guide="episode-chart" className={cn(showcaseChart ? "iw-chart-panel iw-inset" : "iw-chart-panel--series")}>
         {showcaseChart ? <InvestmentChartWorkspace entry={entry} market={showcaseChart.market} ruleFills={comparisonRuleFills} focus={lensMode && lensDecision ? { id: lensDecision.decisionId, startAt: lensDecision.occurredAt, endAt: lensDecision.occurredAt } : guidedDecision ? { id: guidedDecision.decisionId, startAt: guidedDecision.occurredAt, endAt: guidedDecision.occurredAt } : selectedFact ? { id: selectedFact.itemId, startAt: selectedFact.startAt, endAt: selectedFact.endAt } : null} onSelectDecision={lensMode ? selectLensDecision : setSelectedDecisionId} /> : <EpisodeChartWorkspace
           entry={chartEntry}

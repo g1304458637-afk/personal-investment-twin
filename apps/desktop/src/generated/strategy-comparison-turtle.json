@@ -362,7 +362,41 @@
     "result_kind": "realized",
     "result_sign": "profit",
     "source_kind": "vectorbt_position"
-   }
+   },
+   "decision_verdicts": [
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:01",
+     "day": "2025-01-02",
+     "side": "BUY",
+     "verdict": "insufficient",
+     "reason_text": "决策日前没有可用的收盘观测，无法按该策略核对。",
+     "conditions": []
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:07",
+     "day": "2025-03-14",
+     "side": "BUY",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-03-13 收盘没有为 SYN_VALUE 产生入场信号。",
+     "conditions": []
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:10",
+     "day": "2025-05-16",
+     "side": "SELL",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-05-15 收盘没有为 SYN_VALUE 产生退出信号，按其规则应继续持有。",
+     "conditions": []
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:12",
+     "day": "2025-06-13",
+     "side": "SELL",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-06-12 收盘没有为 SYN_VALUE 产生退出信号，按其规则应继续持有。",
+     "conditions": []
+    }
+   ]
   },
   {
    "episode_id": "pe_3fe7915355a867569c23ad49fcacb9c1c55b50de3cb0b039955754b1d1fdfaa5",
@@ -567,7 +601,41 @@
     "result_kind": "marked",
     "result_sign": "profit",
     "source_kind": "vectorbt_position"
-   }
+   },
+   "decision_verdicts": [
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:02",
+     "day": "2025-01-02",
+     "side": "BUY",
+     "verdict": "insufficient",
+     "reason_text": "决策日前没有可用的收盘观测，无法按该策略核对。",
+     "conditions": []
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:05",
+     "day": "2025-03-03",
+     "side": "BUY",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-02-28 收盘没有为 SYN_FUND 产生入场信号。",
+     "conditions": []
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:16",
+     "day": "2025-09-12",
+     "side": "SELL",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-09-11 收盘没有为 SYN_FUND 产生退出信号，按其规则应继续持有。",
+     "conditions": []
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:19",
+     "day": "2025-11-07",
+     "side": "BUY",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-11-06 收盘没有为 SYN_FUND 产生入场信号。",
+     "conditions": []
+    }
+   ]
   },
   {
    "episode_id": "pe_6bcbc3de0f2a744a9e4b553187bb4dc1736f92c641e18dfee9dc0bfec309a964",
@@ -1047,7 +1115,57 @@
     "result_kind": "realized",
     "result_sign": "loss",
     "source_kind": "vectorbt_position"
-   }
+   },
+   "decision_verdicts": [
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:03",
+     "day": "2025-01-13",
+     "side": "BUY",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-01-10 收盘没有为 SYN_GROWTH 产生入场信号。",
+     "conditions": []
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:04",
+     "day": "2025-02-07",
+     "side": "BUY",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-02-06 收盘没有为 SYN_GROWTH 产生入场信号。",
+     "conditions": []
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:06",
+     "day": "2025-03-07",
+     "side": "BUY",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-03-06 收盘没有为 SYN_GROWTH 产生入场信号。",
+     "conditions": []
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:08",
+     "day": "2025-04-10",
+     "side": "SELL",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-04-09 收盘没有为 SYN_GROWTH 产生退出信号，按其规则应继续持有。",
+     "conditions": []
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:09",
+     "day": "2025-05-08",
+     "side": "SELL",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-05-07 收盘没有为 SYN_GROWTH 产生退出信号，按其规则应继续持有。",
+     "conditions": []
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:11",
+     "day": "2025-06-06",
+     "side": "SELL",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-06-05 收盘没有为 SYN_GROWTH 产生退出信号，按其规则应继续持有。",
+     "conditions": []
+    }
+   ]
   },
   {
    "episode_id": "pe_b50024ffc458fa2d3fbc48fd88059e3fdf7e798f7b6566921faadaef055406b0",
@@ -1511,7 +1629,41 @@
     "result_kind": "marked",
     "result_sign": "profit",
     "source_kind": "vectorbt_position"
-   }
+   },
+   "decision_verdicts": [
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:13",
+     "day": "2025-07-11",
+     "side": "BUY",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-07-10 收盘没有为 SYN_GROWTH 产生入场信号。",
+     "conditions": []
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:15",
+     "day": "2025-08-08",
+     "side": "BUY",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-08-07 收盘没有为 SYN_GROWTH 产生入场信号。",
+     "conditions": []
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:17",
+     "day": "2025-09-19",
+     "side": "SELL",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-09-18 收盘没有为 SYN_GROWTH 产生退出信号，按其规则应继续持有。",
+     "conditions": []
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:20",
+     "day": "2025-11-14",
+     "side": "BUY",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-11-13 收盘没有为 SYN_GROWTH 产生入场信号。",
+     "conditions": []
+    }
+   ]
   },
   {
    "episode_id": "pe_bd08cece56c4864ae21d513ca1b6373f20e675f351f4050bd237d4f544790e64",
@@ -1857,7 +2009,25 @@
     "result_kind": "marked",
     "result_sign": "profit",
     "source_kind": "vectorbt_position"
-   }
+   },
+   "decision_verdicts": [
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:14",
+     "day": "2025-08-01",
+     "side": "BUY",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-07-31 收盘没有为 SYN_VALUE 产生入场信号。",
+     "conditions": []
+    },
+    {
+     "execution_id": "SYN_STUDY_SHOWCASE:execution:18",
+     "day": "2025-10-10",
+     "side": "SELL",
+     "verdict": "different",
+     "reason_text": "该策略在 2025-10-09 收盘没有为 SYN_VALUE 产生退出信号，按其规则应继续持有。",
+     "conditions": []
+    }
+   ]
   }
  ],
  "limitations": [

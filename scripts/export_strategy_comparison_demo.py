@@ -20,7 +20,13 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.strategy.compare import SCHEMA_VERSION, NO_VERDICT_NOTE, compare_episode, compare_portfolio  # noqa: E402
+from src.strategy.compare import (  # noqa: E402
+    NO_VERDICT_NOTE,
+    SCHEMA_VERSION,
+    compare_episode,
+    compare_portfolio,
+    decision_verdicts,
+)
 from src.strategy.strategies.dual_ma import build_dual_ma_spec  # noqa: E402
 from src.strategy.strategies.rsi_mr import build_rsi_mr_spec  # noqa: E402
 from src.strategy.strategies.turtle import build_turtle_spec  # noqa: E402
@@ -118,6 +124,8 @@ def _episode_reports(spec, demo, charts):
         report["limitations"] = [*report["limitations"],
 
                                  "演示导出缺少规范交易所市场日期，以记录时间日期代替；生产运行时必须使用规范成交的交易所日历日期。"]
+        report["decision_verdicts"] = decision_verdicts(
+            spec, bars, instrument=instrument, is_synthetic=True, executions=executions)
 
         reports.append(report)
 

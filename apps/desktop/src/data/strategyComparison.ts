@@ -29,6 +29,7 @@ export interface ComparisonReportView {
   windowRuleNetCashFlow: number;
   windowDifferenceNote: string;
   recordedEpisodeResult: { pnl: number | null; resultKind: string | null; resultSign: string | null };
+  decisionVerdicts: { executionId: string; day: string; side: "BUY" | "SELL"; verdict: "aligned" | "different" | "insufficient"; reasonText: string }[];
   limitations: string[];
 }
 
@@ -79,6 +80,18 @@ function report(raw: unknown): ComparisonReportView {
   // An honest report always carries its boundary statements.
   const limitations = array(value.limitations).map(text);
   if (!limitations.length) fail();
+  const verdicts = "decision_verdicts" in value && value.decision_verdicts !== null
+    ? array(value.decision_verdicts).map((item) => {
+        const verdict = object(item);
+        const v = text(verdict.verdict);
+        if (!["aligned", "different", "insufficient"].includes(v)) fail();
+        const verdictSide = side(verdict.side);
+        return {
+          executionId: text(verdict.execution_id), day: day(verdict.day), side: verdictSide,
+          verdict: v as "aligned" | "different" | "insufficient", reasonText: text(verdict.reason_text),
+        };
+      })
+    : [];
   return {
     episodeId: text(value.episode_id),
     instrument,
@@ -99,6 +112,7 @@ function report(raw: unknown): ComparisonReportView {
       pnl: nullableFinite(recorded.pnl), resultKind: nullableText(recorded.result_kind),
       resultSign: nullableText(recorded.result_sign),
     },
+    decisionVerdicts: verdicts,
     limitations,
   };
 }
