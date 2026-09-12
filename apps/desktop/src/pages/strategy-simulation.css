@@ -435,3 +435,43 @@
   line-height: 1.65;
   color: var(--foreground);
 }
+
+.strategy-purpose {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px 22px;
+  background: var(--card);
+}
+
+.strategy-purpose__question {
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.strategy-purpose h2 {
+  margin-top: 8px;
+  font-size: 18px;
+  font-weight: 650;
+  color: var(--foreground);
+}
+
+.strategy-purpose__answer {
+  margin-top: 8px;
+  max-width: 78ch;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.strategy-purpose__steps {
+  margin-top: 12px;
+  display: grid;
+  gap: 6px;
+  list-style: decimal;
+  padding-left: 20px;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--foreground);
+}

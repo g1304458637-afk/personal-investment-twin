@@ -152,6 +152,16 @@ export function StrategySimulationPage() {
         <p>{t("The strategy account has its own cash, holdings and fees. It never reads or changes your records.")}</p>
       </div>
     </header>
+    <section className="iw-inset strategy-purpose" aria-label={t("What this page answers")}>
+      <p className="strategy-purpose__question">{t("What this page answers")}</p>
+      <h2>{t("If one fixed, fully public set of rules ran independently in the same market, where would it have gone?")}</h2>
+      <p className="strategy-purpose__answer">{t("This path is the reference group for your own history: same synthetic market, fixed rules, every fill explained. The performance numbers above are on synthetic prices — read the rule behavior (when it enters, exits, or stands aside), not the profit.")}</p>
+      <ol className="strategy-purpose__steps">
+        <li>{t("Read the rule table: A-rules come from your existing Decision Lens checks; B-rules are declared adaptations that make them executable.")}</li>
+        <li>{t("Scroll to the showcase comparison: your recorded episodes side by side with the same rules replayed on each instrument's own history.")}</li>
+        <li>{t("Open any showcase episode and switch on the rule overlay: your decisions and the rule's fills on the same chart.")}</li>
+      </ol>
+    </section>
 
     <section className="strategy-stats" aria-label={t("Final equity")}>
       <StatCard label={t("Final equity")} value={money(summary.finalEquity)}
