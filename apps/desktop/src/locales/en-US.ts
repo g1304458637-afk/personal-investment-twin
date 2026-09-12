@@ -1606,6 +1606,8 @@ export const enUS = {
   "Recorded result": "Recorded result",
   "Rule trades in window": "Rule trades in window",
   "Net cash flow": "Net cash flow",
+  "Review card": "Review card",
+  "A desensitized summary you can share: no instrument names, no absolute amounts.": "A desensitized summary you can share: no instrument names, no absolute amounts.",
   "Open the desktop app → Strategy Simulation → select this strategy → Run on history.": "Open the desktop app → Strategy Simulation → select this strategy → Run on history.",
   "Run on": "Run on",
   "My own traded instruments (real market, hfq)": "My own traded instruments (real market, hfq)",

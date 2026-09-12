@@ -12,6 +12,7 @@ import { isOpticalReview } from "@/experiments/optical-review/experiment";
 import { EpisodeChartWorkspace } from "@/components/charts/EpisodeChartWorkspace";
 import { InvestmentChartWorkspace } from "@/components/charts/InvestmentChartWorkspace";
 import { adaptSingleComparisonReport, type ComparisonReportView } from "@/data/strategyComparison";
+import { buildReviewCard } from "@/lib/reviewCard";
 import { adaptStrategyComparison, type StrategyComparisonView } from "@/data/strategyComparison";
 import { strategyComparison } from "@/data/strategyComparisonDemo";
 import { showcaseChartForEpisode, showcaseInstrumentName } from "@/data/showcaseDemo";
@@ -387,6 +388,31 @@ export function PositionEpisodePage() {
     <div ref={sampleTop} className="iw-episode-toolbar"><Button asChild variant="quiet" size="sm" className="-ml-3"><Link to="/investments"><ArrowLeft />{t("My Investments")}</Link></Button><div className="episode-sample-switch"><span className="iw-subtle">{data.mode === "demo" ? exampleAccountLabel(data.exampleAccount, locale) : data.activeAccount?.display_name}</span></div></div>
     <header className="iw-episode-hero iw-inset"><div><p className="iw-kicker">{sample ? c.label : t("Investment episode")}</p><h1 className="iw-episode-title">{instrumentName}</h1><p className="iw-episode-period">{date(episode.openedAt)} → {episode.closedAt ? date(episode.closedAt) : t("Present")} · {t(episode.status === "open" ? "Holding" : "Closed")}</p>{story ? <p data-review-story className="iw-story">{story}{review?.abbreviated ? t("Further executions are listed below.") : t("Story full stop")}</p> : null}</div><div data-episode-result className="iw-outcome"><div><p className="iw-kicker">{t(result.resultKind === "marked" ? "Current marked result" : "Final realized result")}</p><p className={cn("iw-outcome-value", resultTone(result.resultSign))}>{formatCurrency(result.pnl)}</p>{result.returnValue !== null ? <p className="iw-subtle mt-2">{t("Position return")}: {formatPercent(result.returnValue, 2)}</p> : null}</div><p className="iw-outcome-foot">{result.resultKind === "marked" ? <>{t("This is a current mark, not a realized exit.")}<br />{t("Marked at {date}", {date: result.valuationAt ? date(result.valuationAt) : "—"})} · {t("Valuation price")}: {result.valuationPrice === null ? "—" : formatCurrency(result.valuationPrice)}</> : t("Final date: {date}", {date: episode.closedAt ? date(episode.closedAt) : "—"})}</p></div></header>
     {sample && <nav className="episode-sample-nav" aria-label={c.label}>{episodeSections.map((section) => <button key={section} aria-pressed={sampleSection === section} onClick={() => setSampleSection(section)}>{c[section]}</button>)}</nav>}
+    <div className="episode-compare-strategy">
+      <button type="button" className="workshop-save" onClick={() => {
+        if (!entry) return;
+        const card = buildReviewCard({
+          episodeId: entry.episode.episodeId,
+          openedAt: entry.episode.openedAt,
+          closedAt: entry.episode.closedAt,
+          status: entry.episode.status,
+          durationDays: entry.episode.durationDays,
+          decisions: entry.decisions.map((decision) => ({
+            occurredAt: decision.occurredAt, decisionType: decision.decisionType,
+          })),
+          pricePoints: entry.pricePoints,
+          result: entry.outcomeStory.episodeOutcome.actualResult,
+        });
+        const blob = new Blob([card.svg], { type: card.mimetype });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = card.filename;
+        anchor.click();
+        URL.revokeObjectURL(url);
+      }}>{t("Review card")}</button>
+      <span className="iw-subtle">{t("A desensitized summary you can share: no instrument names, no absolute amounts.")}</span>
+    </div>
     {data.mode === "demo" ? <div className="episode-compare-strategy">
       <span>{t("Rule replay strategy")}</span>
       <select aria-label={t("Rule replay strategy")} value={compareStrategyId} onChange={(event) => setCompareStrategyId(event.target.value)}>

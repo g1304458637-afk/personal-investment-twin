@@ -1607,6 +1607,8 @@ export const zhCN = {
   "Recorded result": "记录结果",
   "Rule trades in window": "窗口内规则成交",
   "Net cash flow": "净现金流",
+  "Review card": "复盘卡片",
+  "A desensitized summary you can share: no instrument names, no absolute amounts.": "可分享的脱敏摘要：不含标的真名与绝对金额。",
   "Open the desktop app → Strategy Simulation → select this strategy → Run on history.": "打开桌面应用 → 策略历史模拟 → 选中这条策略 → 点「在历史中运行」。",
   "Run on": "运行范围",
   "My own traded instruments (real market, hfq)": "我交易过的标的（真实行情 · 后复权）",
