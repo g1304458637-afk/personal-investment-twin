@@ -51,8 +51,8 @@ export function LensMethodSelector({ report, methodId, onSelect }: LensMethodSel
   return <section className="decision-lens-methods" aria-labelledby="decision-lens-title">
     <div className="decision-lens-heading">
       <p className="decision-lens-kicker">DECISION LENS / 策略复盘</p>
-      <h2 id="decision-lens-title">同一段历史，换一种方法看。</h2>
-      <p>行情、成交与持仓保持原样。切换方法，看看每次操作符合哪些条件，又从哪里开始不同。</p>
+      <h2 id="decision-lens-title">同一段历史，三把核对尺——不是三个策略。</h2>
+      <p>行情、成交与持仓保持原样。每张卡独立核对你已发生的操作；其中两把尺的条件后来被组合成完整策略 T1（见“策略历史模拟”页）。</p>
     </div>
     <details className="decision-lens-provenance"><summary>这三套方法怎样核对历史？</summary>
       <p>这是三套参数固定的教学规则，不是完整的名家策略，彼此也不是三个独立策略——它们是核对已发生操作的三个视角。日线信号只取操作日前的收盘观察；成本规则核对实际成交与操作前成本。</p>
@@ -63,8 +63,11 @@ export function LensMethodSelector({ report, methodId, onSelect }: LensMethodSel
       {report.methods.map((method) => {
         const selected = method.id === methodId;
         return <button key={method.id} type="button" className="decision-lens-method" aria-pressed={selected} onClick={() => onSelect(method.id)}>
-          <span className="decision-lens-method__state">{selected ? "当前方法" : "查看方法"}</span>
+          <span className="decision-lens-method__state">{selected ? "当前核对尺" : "查看核对尺"}</span>
           <strong>{method.title}</strong>
+          {method.id === "cost_addition"
+            ? <em className="decision-lens-method__tag">纪律核对 · 未进入 T1</em>
+            : <em className="decision-lens-method__tag">T1 规则来源</em>}
           <span>{method.description}</span>
           <code>{method.rule}</code>
           <small>规则版本 {method.version}</small>
