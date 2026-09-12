@@ -6,7 +6,7 @@ import { InvestmentChartWorkspace } from "@/components/charts/InvestmentChartWor
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { isTauriRuntime, runtimeRequest, type SensitivityReportView } from "@/data/runtimeService";
 import { adaptStrategySimulation, type StrategySimulationView } from "@/data/strategySimulation";
-import { StrategyWorkshop, type WorkshopDraft } from "@/components/strategy/StrategyWorkshop";
+import { StrategyWorkshop, conditionStatement, type ConditionDraft, type WorkshopDraft } from "@/components/strategy/StrategyWorkshop";
 import { rawComparisonReportFor, strategyComparison } from "@/data/strategyComparisonDemo";
 import { strategySimulation } from "@/data/strategySimulationDemo";
 import { useLocale } from "@/locales/LocaleProvider";
@@ -92,6 +92,9 @@ export function StrategySimulationPage() {
   }, [strategyId, userArtifacts]);
   const isT1 = simulation.strategy.strategyId === "toujing_t1_breakout_trend";
   const isUserStrategy = strategyId.startsWith("user_");
+  // A user strategy that has not been run yet must NOT show another
+  // strategy's stale numbers: gate every data section on readiness.
+  const simulationReady = !isUserStrategy || !!userArtifacts[strategyId];
   const saveWorkshopStrategy = (draft: WorkshopDraft, spec: Record<string, unknown>) => {
     const id = `user_${JSON.stringify(spec).length}_${Math.abs(draft.name.length)}_${Date.now().toString(36)}`;
     const entry = { id, name: draft.name.trim(), savedAt: new Date().toISOString().slice(0, 10), spec };
@@ -316,6 +319,14 @@ export function StrategySimulationPage() {
         <button type="button" onClick={() => deleteUserStrategy(selectedUserStrategy.id)}>{t("Delete")}</button>
       </div>
       <p className="strategy-comparison-note">{t("Custom strategies are data specs, run by the deterministic interpreter on the bundled synthetic universe. They are never advice and never touch real accounts.")}</p>
+      <ul className="strategy-rule-group">
+        {((selectedUserStrategy.spec.entry as { all_of: Record<string, unknown>[] }).all_of).map((condition, index) => (
+          <li key={index}><code>{t("Entry")} {index + 1}</code><span>{conditionStatement(condition as unknown as ConditionDraft)}</span></li>
+        ))}
+        {((selectedUserStrategy.spec.exit as { any_of: Record<string, unknown>[] }).any_of).map((condition, index) => (
+          <li key={`exit-${index}`}><code>{t("Exit")} {index + 1}</code><span>{conditionStatement(condition as unknown as ConditionDraft)}</span></li>
+        ))}
+      </ul>
       {isTauriRuntime() ? (
         userRunState[selectedUserStrategy.id] === "ready" && userArtifacts[selectedUserStrategy.id] ? null
           : userRunState[selectedUserStrategy.id] === "loading"
@@ -326,257 +337,511 @@ export function StrategySimulationPage() {
               </div>
       ) : <p className="strategy-compare__note">{t("Running custom strategies needs the desktop app (browser preview cannot execute them).")}</p>}
     </section> : null}
-    <section className="iw-inset strategy-purpose" aria-label={t("What this page answers")}>
-      <p className="strategy-purpose__question">{t("What this page answers")}</p>
-      <h2>{t("If one fixed, fully public set of rules ran independently in the same market, where would it have gone?")}</h2>
-      <p className="strategy-purpose__answer">{t("This path is the reference group for your own history: same synthetic market, fixed rules, every fill explained. The performance numbers above are on synthetic prices — read the rule behavior (when it enters, exits, or stands aside), not the profit.")}</p>
-      <ol className="strategy-purpose__steps">
-        <li>{t("Read the rule table: A-rules come from your existing Decision Lens checks; B-rules are declared adaptations that make them executable.")}</li>
-        <li>{t("Scroll to the showcase comparison: your recorded episodes side by side with the same rules replayed on each instrument's own history.")}</li>
-        <li>{t("Open any showcase episode and switch on the rule overlay: your decisions and the rule's fills on the same chart.")}</li>
-      </ol>
-    </section>
-    <section className="iw-inset strategy-panel">
-      <div className="strategy-panel__head">
-        <p className="iw-kicker">{t("Read the rules first")}</p>
-        <span className="iw-subtle">{simulation.strategy.ruleTable.length} · {t("Parameters")} {Object.keys(simulation.strategy.params).length}</span>
-      </div>
-      <div className="strategy-rules">
-        {[{ label: t("Lifted from the recorded Decision Lens rules"), rules: lensRules, tone: "lens" as const },
-          { label: t("Adaptation added for full execution"), rules: adaptations, tone: "adapt" as const }].map((group) => (
-          <div className="strategy-rule-group" key={group.tone}>
-            <p className={cn("strategy-rule-group__label", `is-${group.tone}`)}>{group.label}</p>
-            <ul>
-              {group.rules.map((rule) => (
-                <li key={rule.ruleId}>
-                  <code>{rule.ruleId}</code>
-                  <span>{rule.statement}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-      <details className="strategy-params">
-        <summary>{t("Parameters")}</summary>
-        <dl>
-          {Object.entries(simulation.strategy.params).map(([key, value]) => (
-            <div key={key}><dt>{key}</dt><dd>{String(value)}</dd></div>
-          ))}
-        </dl>
-      </details>
-    </section>
+{simulationReady ? <>
+      <section className="iw-inset strategy-purpose" aria-label={t("What this page answers")}>
 
+        <p className="strategy-purpose__question">{t("What this page answers")}</p>
 
-    <section className="strategy-stats" aria-label={t("Final equity")}>
-      <StatCard label={t("Final equity")} value={money(summary.finalEquity)}
-        detail={`${t("Total return")} ${percentLabel(summary.totalReturn)}`} tone={returnTone} />
-      <StatCard label={t("Max drawdown")} value={percentLabel(summary.maxDrawdown)}
-        detail={`${summary.maxDrawdownPeakDate} → ${summary.maxDrawdownTroughDate}`} tone="negative" />
-      <StatCard label={t("Total fees")} value={money(summary.totalFees)}
-        detail={`${t("Round trips")} ${summary.roundTripCount}`} />
-      <StatCard label={t("Win rate")} value={summary.winRate === null ? "—" : percentLabel(summary.winRate)}
-        detail={`${t("Round trips")} ${summary.roundTripCount}`} />
-      <StatCard label={t("Orders")} value={String(summary.orderCount)}
-        detail={`${t("Fills")} ${summary.fillCount}`} />
-      <StatCard label={t("Rejected / cancelled")} value={String(summary.rejectedOrderCount + summary.cancelledOrderCount)}
-        detail={`${summary.rejectedOrderCount} / ${summary.cancelledOrderCount}`} />
-      <StatCard label={t("Avg exposure")} value={percentLabel(summary.averageInvestedFraction)}
-        detail={`${summary.tradingDays} · CNY`} />
-    </section>
+        <h2>{t("If one fixed, fully public set of rules ran independently in the same market, where would it have gone?")}</h2>
 
-    <section className="iw-inset strategy-panel">
-      <div className="strategy-panel__head">
-        <p className="iw-kicker">{t("Equity curve")}</p>
-        <span className="iw-subtle">{t("Initial cash")} {money(summary.initialCash)}</span>
-      </div>
-      <EChart option={equityOption} label={t("Equity curve")} className="strategy-equity-chart" />
-    </section>
+        <p className="strategy-purpose__answer">{t("This path is the reference group for your own history: same synthetic market, fixed rules, every fill explained. The performance numbers above are on synthetic prices — read the rule behavior (when it enters, exits, or stands aside), not the profit.")}</p>
 
-    <section className="iw-inset strategy-panel">
-      <div className="strategy-panel__head">
-        <p className="iw-kicker">{t("Per-instrument operations")}</p>
-        <label className="strategy-filter">
-          <span className="iw-subtle">{chartInstrument ?? t("All instruments")}</span>
-          <select aria-label={t("Per-instrument operations")} value={effectiveChartInstrument ?? ""} onChange={(event) => setChartInstrument(event.target.value)}>
-            {chartInstruments.map((name) => <option key={name} value={name}>{name}</option>)}
-          </select>
-        </label>
-      </div>
-      {effectiveChartInstrument && barsByInstrument[effectiveChartInstrument]
-        ? <InvestmentChartWorkspace
-            market={{
-              instrumentId: effectiveChartInstrument, replayInstrumentId: effectiveChartInstrument,
-              displayName: effectiveChartInstrument, currency: "CNY",
-              priceBasis: "synthetic_unadjusted", sourceUrl: "", sourceSha256: "",
-              bars: barsByInstrument[effectiveChartInstrument].map((bar) => ({
-                date: bar.date, open: bar.open, high: bar.high, low: bar.low, close: bar.close,
-                volume: null, amount: null,
-              })),
-            }}
-            ruleFills={(fillsByInstrument[effectiveChartInstrument] ?? []).map((fill) => ({ ...fill, trigger: "signal_order" }))}
-          />
-        : null}
-      <p className="strategy-compare__note">{t("Each marker is one strategy fill on this instrument; reasons live in the trades list below.")}</p>
-    </section>
+        <ol className="strategy-purpose__steps">
 
-    {isT1 ? <section className="iw-inset strategy-panel">
-      <div className="strategy-panel__head">
-        <p className="iw-kicker">{t("Showcase episode comparison")}</p>
-        <span className="iw-subtle">{strategyComparison.reports.length}</span>
-      </div>
-      <p className="strategy-comparison-note">{strategyComparison.portfolio?.note}</p>
-      <div className="strategy-compare-parallel">
-        <div>
-          <span>{t("Recorded side")}</span>
-          <strong>{money(strategyComparison.portfolio?.user.realizedPnlTotal ?? 0)}</strong>
-          <small>{t("Realized PnL total")} · {strategyComparison.portfolio?.user.realizedEpisodeCount ?? 0}</small>
+          <li>{t("Read the rule table: A-rules come from your existing Decision Lens checks; B-rules are declared adaptations that make them executable.")}</li>
+
+          <li>{t("Scroll to the showcase comparison: your recorded episodes side by side with the same rules replayed on each instrument's own history.")}</li>
+
+          <li>{t("Open any showcase episode and switch on the rule overlay: your decisions and the rule's fills on the same chart.")}</li>
+
+        </ol>
+
+      </section>
+
+      <section className="iw-inset strategy-panel">
+
+        <div className="strategy-panel__head">
+
+          <p className="iw-kicker">{t("Read the rules first")}</p>
+
+          <span className="iw-subtle">{simulation.strategy.ruleTable.length} · {t("Parameters")} {Object.keys(simulation.strategy.params).length}</span>
+
         </div>
-        <div>
-          <span>{t("Rule side")}</span>
-          <strong>{money(strategyComparison.portfolio?.strategy.finalEquity ?? 0)}</strong>
-          <small>{t("Total return")} {percentLabel(strategyComparison.portfolio?.strategy.totalReturn ?? 0)}</small>
-        </div>
-      </div>
-      <div className="strategy-comparisons">
-        {strategyComparison.reports.map((item) => (
-          <details key={item.episodeId} className="strategy-compare">
-            <summary>
-              <strong>{item.instrument}</strong>
-              <button type="button" className="strategy-why" onClick={(event) => { event.preventDefault(); void explain(item.episodeId); }}>{t("Why?")}</button>
-              <span>{item.windowStart ?? "—"} → {item.windowEnd ?? t("Window open-ended")}</span>
-              <span>{t("Recorded result")} {item.recordedEpisodeResult.pnl === null ? "—" : money(item.recordedEpisodeResult.pnl)}</span>
-              <span>{t("Rule trades in window")} {item.ruleFills.length}</span>
-            </summary>
-            <div className="strategy-compare__body">
-              {(() => {
-                const state = teaching[item.episodeId];
-                if (!state) return null;
-                if (state === "loading") return <p className="strategy-compare__note">{t("Preparing explanation…")}</p>;
-                if (state.status === "available") return <div className="strategy-teaching">{state.texts.map((line, index) => <p key={index}>{line}</p>)}<p className="strategy-compare__note">{strategyComparison.limitations[1] ?? ""}</p></div>;
-                return <p className="strategy-compare__note">{t("Explanation unavailable")}: {state.reason}</p>;
-              })()}
-              <div className="strategy-compare__flows">
-                <div><span>{t("Recorded side")}</span><strong>{money(item.windowUserNetCashFlow)}</strong></div>
-                <div><span>{t("Rule side")}</span><strong>{money(item.windowRuleNetCashFlow)}</strong></div>
-              </div>
-              <p className="strategy-compare__note">{item.windowDifferenceNote}</p>
-              <ul className="strategy-compare__fills">
-                {item.ruleFills.map((ruleFill) => (
-                  <li key={ruleFill.fillId}>
-                    <span>{ruleFill.day}</span>
-                    <strong className={ruleFill.side === "BUY" ? "is-buy" : "is-sell"}>{ruleFill.side === "BUY" ? t("Buy") : t("Sell")}</strong>
-                    <span>{ruleFill.quantity.toLocaleString(locale)} × {money(ruleFill.price)}</span>
-                    <em>{t(triggerKey[ruleFill.trigger as keyof typeof triggerKey] ?? "Signal order")}</em>
+
+        <div className="strategy-rules">
+
+          {[{ label: t("Lifted from the recorded Decision Lens rules"), rules: lensRules, tone: "lens" as const },
+
+            { label: t("Adaptation added for full execution"), rules: adaptations, tone: "adapt" as const }].map((group) => (
+
+            <div className="strategy-rule-group" key={group.tone}>
+
+              <p className={cn("strategy-rule-group__label", `is-${group.tone}`)}>{group.label}</p>
+
+              <ul>
+
+                {group.rules.map((rule) => (
+
+                  <li key={rule.ruleId}>
+
+                    <code>{rule.ruleId}</code>
+
+                    <span>{rule.statement}</span>
+
                   </li>
+
                 ))}
+
               </ul>
-              <details className="strategy-compare__limits">
-                <summary>{t("Method and provenance")}</summary>
-                <ul>{item.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul>
-                <p>{t("Data fingerprint")}: {item.barsCovered} · {item.barCount}</p>
-              </details>
-            </div>
-          </details>
-        ))}
-      </div>
-      <ul className="strategy-comparison-limits">{strategyComparison.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul>
-    </section> : null}
 
-    <section className="iw-inset strategy-panel">
-      <div className="strategy-panel__head">
-        <p className="iw-kicker">{t("Trades")}</p>
-        <label className="strategy-filter">
-          <span className="iw-subtle">{instrument === "all" ? t("All instruments") : instrument}</span>
-          <select aria-label={t("All instruments")} value={instrument} onChange={(event) => setInstrument(event.target.value)}>
-            <option value="all">{t("All instruments")}</option>
-            {instruments.map((name) => <option key={name} value={name}>{name}</option>)}
-          </select>
-        </label>
-      </div>
-      <div className="strategy-trades">
-        {visibleFills.map((fill) => {
-          const order = fill.orderId ? reasonByOrderId.get(fill.orderId) : undefined;
-          return <div key={fill.fillId} className="strategy-trade">
-            <span className="strategy-trade__day">{fill.day}</span>
-            <strong className={fill.side === "BUY" ? "is-buy" : "is-sell"}>{fill.side === "BUY" ? t("Buy") : t("Sell")}</strong>
-            <span className="strategy-trade__instrument">{fill.instrument}</span>
-            <span className="strategy-trade__qty">{fill.quantity.toLocaleString(locale)} × {money(fill.price)}</span>
-            <span className="strategy-trade__fee">{t("Fee")} {money(fill.fee)}</span>
-            <em>{t(triggerKey[fill.trigger])}{fill.note ? ` · ${fill.note.replaceAll("_", " ")}` : ""}</em>
-            {order ? <p className="strategy-trade__reason">{order.reasonText}</p> : null}
-          </div>;
-        })}
-      </div>
-    </section>
-
-    <section className="iw-inset strategy-panel">
-      <div className="strategy-panel__head">
-        <p className="iw-kicker">{t("Unfilled orders")}</p>
-        <span className="iw-subtle">{unfilledOrders.length}</span>
-      </div>
-      {unfilledOrders.length === 0 ? <p className="iw-subtle">—</p> :
-        <div className="strategy-trades">
-          {unfilledOrders.map((order) => (
-            <div key={order.orderId} className="strategy-trade">
-              <span className="strategy-trade__day">{order.signalDate}</span>
-              <strong className={order.side === "BUY" ? "is-buy" : "is-sell"}>{order.side}</strong>
-              <span className="strategy-trade__instrument">{order.instrument}</span>
-              <em className="strategy-trade__status">{order.status} · {order.resolutionReason}</em>
-              <p className="strategy-trade__reason">{order.reasonText}</p>
             </div>
+
           ))}
-        </div>}
-    </section>
 
-    <section className="iw-inset strategy-panel">
-      <div className="strategy-panel__head">
-        <p className="iw-kicker">{t("Parameter sensitivity")}</p>
-        <span className="iw-subtle">{t("Facts only: the rows keep your order, nothing is ranked")}</span>
-      </div>
-      <p className="strategy-comparison-note">{t("See how fragile a conclusion is: change one parameter, rerun the same history, compare. High sensitivity means the historical result leans on that assumption.")}</p>
-      <div className="strategy-sensitivity-controls">
-        <select aria-label={t("Parameter")} value={sensitivityParam} onChange={(event) => setSensitivityParam(event.target.value)}>
-          {SENSITIVITY_PARAMS.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
-        </select>
-        <input aria-label={t("Values")} value={sensitivityValues}
-          onChange={(event) => setSensitivityValues(event.target.value)}
-          placeholder="0.05, 0.1, 0.2" />
-        <button type="button" className="workshop-save" disabled={sensitivityBusy}
-          onClick={() => { setSensitivityResult(null); runSensitivity(); }}>
-          {sensitivityBusy ? t("Running on history…") : t("Run variants")}
-        </button>
-      </div>
-      {sensitivityError ? <p className="strategy-comparison-note">{sensitivityError}</p> : null}
-      {sensitivityResult ? <div className="strategy-sensitivity">
-        {sensitivityResult.allVariantsIdentical ? <p className="strategy-comparison-note">{sensitivityResult.limitations[0]}</p> : null}
-        <table className="sensitivity-table">
-          <thead><tr>
-            <th>{t("Parameter")}</th><th>{t("Final equity")}</th><th>{t("Total return")}</th>
-            <th>{t("Max drawdown")}</th><th>{t("Fills")}</th><th>{t("Win rate")}</th>
-          </tr></thead>
-          <tbody>
-            {sensitivityResult.rows.map((row) => (
-              <tr key={row.value}>
-                <td className="sensitivity-value">{row.value}</td>
-                <td>{money(row.finalEquity)}</td>
-                <td className={row.totalReturn > 0 ? "is-positive" : row.totalReturn < 0 ? "is-negative" : ""}>{percentLabel(row.totalReturn)}</td>
-                <td>{percentLabel(row.maxDrawdown)}</td>
-                <td>{row.fillCount}</td>
-                <td>{row.winRate === null ? "—" : percentLabel(row.winRate)}</td>
-              </tr>
+        </div>
+
+        <details className="strategy-params">
+
+          <summary>{t("Parameters")}</summary>
+
+          <dl>
+
+            {Object.entries(simulation.strategy.params).map(([key, value]) => (
+
+              <div key={key}><dt>{key}</dt><dd>{String(value)}</dd></div>
+
             ))}
-          </tbody>
-        </table>
-        <ul className="strategy-comparison-limits">{sensitivityResult.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul>
-      </div> : null}
-    </section>
 
-    <footer className="iw-inset strategy-provenance">
-      <p className="iw-kicker">{t("Method and provenance")}</p>
-      <p>{simulation.strategy.strategyId}@{simulation.strategy.version} · schema strategy_simulation.v1</p>
-      <p>{t("Data fingerprint")}: {simulation.dataFingerprint}</p>
-      <p>{t("Regenerate via scripts/run_strategy_simulation.py")}</p>
-    </footer>
+          </dl>
+
+        </details>
+
+      </section>
+
+
+
+
+
+      <section className="strategy-stats" aria-label={t("Final equity")}>
+
+        <StatCard label={t("Final equity")} value={money(summary.finalEquity)}
+
+          detail={`${t("Total return")} ${percentLabel(summary.totalReturn)}`} tone={returnTone} />
+
+        <StatCard label={t("Max drawdown")} value={percentLabel(summary.maxDrawdown)}
+
+          detail={`${summary.maxDrawdownPeakDate} → ${summary.maxDrawdownTroughDate}`} tone="negative" />
+
+        <StatCard label={t("Total fees")} value={money(summary.totalFees)}
+
+          detail={`${t("Round trips")} ${summary.roundTripCount}`} />
+
+        <StatCard label={t("Win rate")} value={summary.winRate === null ? "—" : percentLabel(summary.winRate)}
+
+          detail={`${t("Round trips")} ${summary.roundTripCount}`} />
+
+        <StatCard label={t("Orders")} value={String(summary.orderCount)}
+
+          detail={`${t("Fills")} ${summary.fillCount}`} />
+
+        <StatCard label={t("Rejected / cancelled")} value={String(summary.rejectedOrderCount + summary.cancelledOrderCount)}
+
+          detail={`${summary.rejectedOrderCount} / ${summary.cancelledOrderCount}`} />
+
+        <StatCard label={t("Avg exposure")} value={percentLabel(summary.averageInvestedFraction)}
+
+          detail={`${summary.tradingDays} · CNY`} />
+
+      </section>
+
+
+
+      <section className="iw-inset strategy-panel">
+
+        <div className="strategy-panel__head">
+
+          <p className="iw-kicker">{t("Equity curve")}</p>
+
+          <span className="iw-subtle">{t("Initial cash")} {money(summary.initialCash)}</span>
+
+        </div>
+
+        <EChart option={equityOption} label={t("Equity curve")} className="strategy-equity-chart" />
+
+      </section>
+
+
+
+      <section className="iw-inset strategy-panel">
+
+        <div className="strategy-panel__head">
+
+          <p className="iw-kicker">{t("Per-instrument operations")}</p>
+
+          <label className="strategy-filter">
+
+            <span className="iw-subtle">{chartInstrument ?? t("All instruments")}</span>
+
+            <select aria-label={t("Per-instrument operations")} value={effectiveChartInstrument ?? ""} onChange={(event) => setChartInstrument(event.target.value)}>
+
+              {chartInstruments.map((name) => <option key={name} value={name}>{name}</option>)}
+
+            </select>
+
+          </label>
+
+        </div>
+
+        {effectiveChartInstrument && barsByInstrument[effectiveChartInstrument]
+
+          ? <InvestmentChartWorkspace
+
+              market={{
+
+                instrumentId: effectiveChartInstrument, replayInstrumentId: effectiveChartInstrument,
+
+                displayName: effectiveChartInstrument, currency: "CNY",
+
+                priceBasis: "synthetic_unadjusted", sourceUrl: "", sourceSha256: "",
+
+                bars: barsByInstrument[effectiveChartInstrument].map((bar) => ({
+
+                  date: bar.date, open: bar.open, high: bar.high, low: bar.low, close: bar.close,
+
+                  volume: null, amount: null,
+
+                })),
+
+              }}
+
+              ruleFills={(fillsByInstrument[effectiveChartInstrument] ?? []).map((fill) => ({ ...fill, trigger: "signal_order" }))}
+
+            />
+
+          : null}
+
+        <p className="strategy-compare__note">{t("Each marker is one strategy fill on this instrument; reasons live in the trades list below.")}</p>
+
+      </section>
+
+
+
+      {isT1 ? <section className="iw-inset strategy-panel">
+
+        <div className="strategy-panel__head">
+
+          <p className="iw-kicker">{t("Showcase episode comparison")}</p>
+
+          <span className="iw-subtle">{strategyComparison.reports.length}</span>
+
+        </div>
+
+        <p className="strategy-comparison-note">{strategyComparison.portfolio?.note}</p>
+
+        <div className="strategy-compare-parallel">
+
+          <div>
+
+            <span>{t("Recorded side")}</span>
+
+            <strong>{money(strategyComparison.portfolio?.user.realizedPnlTotal ?? 0)}</strong>
+
+            <small>{t("Realized PnL total")} · {strategyComparison.portfolio?.user.realizedEpisodeCount ?? 0}</small>
+
+          </div>
+
+          <div>
+
+            <span>{t("Rule side")}</span>
+
+            <strong>{money(strategyComparison.portfolio?.strategy.finalEquity ?? 0)}</strong>
+
+            <small>{t("Total return")} {percentLabel(strategyComparison.portfolio?.strategy.totalReturn ?? 0)}</small>
+
+          </div>
+
+        </div>
+
+        <div className="strategy-comparisons">
+
+          {strategyComparison.reports.map((item) => (
+
+            <details key={item.episodeId} className="strategy-compare">
+
+              <summary>
+
+                <strong>{item.instrument}</strong>
+
+                <button type="button" className="strategy-why" onClick={(event) => { event.preventDefault(); void explain(item.episodeId); }}>{t("Why?")}</button>
+
+                <span>{item.windowStart ?? "—"} → {item.windowEnd ?? t("Window open-ended")}</span>
+
+                <span>{t("Recorded result")} {item.recordedEpisodeResult.pnl === null ? "—" : money(item.recordedEpisodeResult.pnl)}</span>
+
+                <span>{t("Rule trades in window")} {item.ruleFills.length}</span>
+
+              </summary>
+
+              <div className="strategy-compare__body">
+
+                {(() => {
+
+                  const state = teaching[item.episodeId];
+
+                  if (!state) return null;
+
+                  if (state === "loading") return <p className="strategy-compare__note">{t("Preparing explanation…")}</p>;
+
+                  if (state.status === "available") return <div className="strategy-teaching">{state.texts.map((line, index) => <p key={index}>{line}</p>)}<p className="strategy-compare__note">{strategyComparison.limitations[1] ?? ""}</p></div>;
+
+                  return <p className="strategy-compare__note">{t("Explanation unavailable")}: {state.reason}</p>;
+
+                })()}
+
+                <div className="strategy-compare__flows">
+
+                  <div><span>{t("Recorded side")}</span><strong>{money(item.windowUserNetCashFlow)}</strong></div>
+
+                  <div><span>{t("Rule side")}</span><strong>{money(item.windowRuleNetCashFlow)}</strong></div>
+
+                </div>
+
+                <p className="strategy-compare__note">{item.windowDifferenceNote}</p>
+
+                <ul className="strategy-compare__fills">
+
+                  {item.ruleFills.map((ruleFill) => (
+
+                    <li key={ruleFill.fillId}>
+
+                      <span>{ruleFill.day}</span>
+
+                      <strong className={ruleFill.side === "BUY" ? "is-buy" : "is-sell"}>{ruleFill.side === "BUY" ? t("Buy") : t("Sell")}</strong>
+
+                      <span>{ruleFill.quantity.toLocaleString(locale)} × {money(ruleFill.price)}</span>
+
+                      <em>{t(triggerKey[ruleFill.trigger as keyof typeof triggerKey] ?? "Signal order")}</em>
+
+                    </li>
+
+                  ))}
+
+                </ul>
+
+                <details className="strategy-compare__limits">
+
+                  <summary>{t("Method and provenance")}</summary>
+
+                  <ul>{item.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul>
+
+                  <p>{t("Data fingerprint")}: {item.barsCovered} · {item.barCount}</p>
+
+                </details>
+
+              </div>
+
+            </details>
+
+          ))}
+
+        </div>
+
+        <ul className="strategy-comparison-limits">{strategyComparison.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul>
+
+      </section> : null}
+
+
+
+      <section className="iw-inset strategy-panel">
+
+        <div className="strategy-panel__head">
+
+          <p className="iw-kicker">{t("Trades")}</p>
+
+          <label className="strategy-filter">
+
+            <span className="iw-subtle">{instrument === "all" ? t("All instruments") : instrument}</span>
+
+            <select aria-label={t("All instruments")} value={instrument} onChange={(event) => setInstrument(event.target.value)}>
+
+              <option value="all">{t("All instruments")}</option>
+
+              {instruments.map((name) => <option key={name} value={name}>{name}</option>)}
+
+            </select>
+
+          </label>
+
+        </div>
+
+        <div className="strategy-trades">
+
+          {visibleFills.map((fill) => {
+
+            const order = fill.orderId ? reasonByOrderId.get(fill.orderId) : undefined;
+
+            return <div key={fill.fillId} className="strategy-trade">
+
+              <span className="strategy-trade__day">{fill.day}</span>
+
+              <strong className={fill.side === "BUY" ? "is-buy" : "is-sell"}>{fill.side === "BUY" ? t("Buy") : t("Sell")}</strong>
+
+              <span className="strategy-trade__instrument">{fill.instrument}</span>
+
+              <span className="strategy-trade__qty">{fill.quantity.toLocaleString(locale)} × {money(fill.price)}</span>
+
+              <span className="strategy-trade__fee">{t("Fee")} {money(fill.fee)}</span>
+
+              <em>{t(triggerKey[fill.trigger])}{fill.note ? ` · ${fill.note.replaceAll("_", " ")}` : ""}</em>
+
+              {order ? <p className="strategy-trade__reason">{order.reasonText}</p> : null}
+
+            </div>;
+
+          })}
+
+        </div>
+
+      </section>
+
+
+
+      <section className="iw-inset strategy-panel">
+
+        <div className="strategy-panel__head">
+
+          <p className="iw-kicker">{t("Unfilled orders")}</p>
+
+          <span className="iw-subtle">{unfilledOrders.length}</span>
+
+        </div>
+
+        {unfilledOrders.length === 0 ? <p className="iw-subtle">—</p> :
+
+          <div className="strategy-trades">
+
+            {unfilledOrders.map((order) => (
+
+              <div key={order.orderId} className="strategy-trade">
+
+                <span className="strategy-trade__day">{order.signalDate}</span>
+
+                <strong className={order.side === "BUY" ? "is-buy" : "is-sell"}>{order.side}</strong>
+
+                <span className="strategy-trade__instrument">{order.instrument}</span>
+
+                <em className="strategy-trade__status">{order.status} · {order.resolutionReason}</em>
+
+                <p className="strategy-trade__reason">{order.reasonText}</p>
+
+              </div>
+
+            ))}
+
+          </div>}
+
+      </section>
+
+
+
+      <section className="iw-inset strategy-panel">
+
+        <div className="strategy-panel__head">
+
+          <p className="iw-kicker">{t("Parameter sensitivity")}</p>
+
+          <span className="iw-subtle">{t("Facts only: the rows keep your order, nothing is ranked")}</span>
+
+        </div>
+
+        <p className="strategy-comparison-note">{t("See how fragile a conclusion is: change one parameter, rerun the same history, compare. High sensitivity means the historical result leans on that assumption.")}</p>
+
+        <div className="strategy-sensitivity-controls">
+
+          <select aria-label={t("Parameter")} value={sensitivityParam} onChange={(event) => setSensitivityParam(event.target.value)}>
+
+            {SENSITIVITY_PARAMS.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+
+          </select>
+
+          <input aria-label={t("Values")} value={sensitivityValues}
+
+            onChange={(event) => setSensitivityValues(event.target.value)}
+
+            placeholder="0.05, 0.1, 0.2" />
+
+          <button type="button" className="workshop-save" disabled={sensitivityBusy}
+
+            onClick={() => { setSensitivityResult(null); runSensitivity(); }}>
+
+            {sensitivityBusy ? t("Running on history…") : t("Run variants")}
+
+          </button>
+
+        </div>
+
+        {sensitivityError ? <p className="strategy-comparison-note">{sensitivityError}</p> : null}
+
+        {sensitivityResult ? <div className="strategy-sensitivity">
+
+          {sensitivityResult.allVariantsIdentical ? <p className="strategy-comparison-note">{sensitivityResult.limitations[0]}</p> : null}
+
+          <table className="sensitivity-table">
+
+            <thead><tr>
+
+              <th>{t("Parameter")}</th><th>{t("Final equity")}</th><th>{t("Total return")}</th>
+
+              <th>{t("Max drawdown")}</th><th>{t("Fills")}</th><th>{t("Win rate")}</th>
+
+            </tr></thead>
+
+            <tbody>
+
+              {sensitivityResult.rows.map((row) => (
+
+                <tr key={row.value}>
+
+                  <td className="sensitivity-value">{row.value}</td>
+
+                  <td>{money(row.finalEquity)}</td>
+
+                  <td className={row.totalReturn > 0 ? "is-positive" : row.totalReturn < 0 ? "is-negative" : ""}>{percentLabel(row.totalReturn)}</td>
+
+                  <td>{percentLabel(row.maxDrawdown)}</td>
+
+                  <td>{row.fillCount}</td>
+
+                  <td>{row.winRate === null ? "—" : percentLabel(row.winRate)}</td>
+
+                </tr>
+
+              ))}
+
+            </tbody>
+
+          </table>
+
+          <ul className="strategy-comparison-limits">{sensitivityResult.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul>
+
+        </div> : null}
+
+      </section>
+
+
+
+      <footer className="iw-inset strategy-provenance">
+
+        <p className="iw-kicker">{t("Method and provenance")}</p>
+
+        <p>{simulation.strategy.strategyId}@{simulation.strategy.version} · schema strategy_simulation.v1</p>
+
+        <p>{t("Data fingerprint")}: {simulation.dataFingerprint}</p>
+
+        <p>{t("Regenerate via scripts/run_strategy_simulation.py")}</p>
+
+      </footer>
+</> : null}
+
   </div>;
 }
