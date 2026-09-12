@@ -55,7 +55,8 @@ export function LensMethodSelector({ report, methodId, onSelect }: LensMethodSel
       <p>行情、成交与持仓保持原样。切换方法，看看每次操作符合哪些条件，又从哪里开始不同。</p>
     </div>
     <details className="decision-lens-provenance"><summary>这三套方法怎样核对历史？</summary>
-      <p>这是三套参数固定的教学规则，不是完整的名家策略。日线信号只取操作日前的收盘观察；成本规则核对实际成交与操作前成本。</p>
+      <p>这是三套参数固定的教学规则，不是完整的名家策略，彼此也不是三个独立策略——它们是核对已发生操作的三个视角。日线信号只取操作日前的收盘观察；成本规则核对实际成交与操作前成本。</p>
+      <p>其中「20日均线趋势」与「20日收盘突破」的条件已被组合为唯一一个完整策略 T1（突破趋势，见“策略历史模拟”页）；「成本加仓」是独立的成本纪律核对，未进入 T1——T1 明确声明不加仓。</p>
       {report.limitations.map((limitation, index) => <p key={index}>{limitation}</p>)}
     </details>
     <div className="decision-lens-method-grid" role="group" aria-label="选择复盘方法">
