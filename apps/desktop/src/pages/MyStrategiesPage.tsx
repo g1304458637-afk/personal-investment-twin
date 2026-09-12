@@ -12,6 +12,7 @@ import { formatCurrencyValue } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import "./my-strategies.css";
+import "./strategy-simulation.css";
 
 const TEMPLATE_PREFILL: Record<string, Partial<WorkshopDraft>> = {
   toujing_t1_breakout_trend: {
