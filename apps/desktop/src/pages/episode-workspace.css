@@ -136,3 +136,21 @@
 }
 @media (max-width: 800px) { .workspace-shell:not(.intelligence-workspace) .iw-account-deck, .workspace-shell:not(.intelligence-workspace) .iw-episode-hero, .workspace-shell:not(.intelligence-workspace) .iw-episode-main, .workspace-shell:not(.intelligence-workspace) .iw-detail-grid { grid-template-columns: 1fr; }.workspace-shell:not(.intelligence-workspace) .iw-account-deck > div { border-right: 0; border-top: 1px solid hsl(var(--border)); }.workspace-shell:not(.intelligence-workspace) .iw-account-deck > div:first-child { border-top: 0; }.workspace-shell:not(.intelligence-workspace) .iw-outcome { padding: 15px 0 0; border-left: 0; border-top: 1px solid hsl(var(--border)); text-align: left; }.workspace-shell:not(.intelligence-workspace) .iw-onboarding-actions { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .intelligence-workspace .iw-investment-row, .intelligence-workspace .iw-filter button { transition: none; } }
+
+.episode-compare-strategy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.episode-compare-strategy select {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 12px;
+  padding: 4px 8px;
+}

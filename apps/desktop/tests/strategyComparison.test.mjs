@@ -57,7 +57,10 @@ test('episode chart overlays rule replay fills with its own toggle and boundary 
   const page = await readFile(new URL('../src/pages/PositionEpisodePage.tsx', import.meta.url), 'utf8');
   const chart = await readFile(new URL('../src/components/charts/InvestmentChartWorkspace.tsx', import.meta.url), 'utf8');
   assert.match(page, /ruleFills=\{comparisonRuleFills\}/);
-  assert.match(page, /strategyComparison\.reports\.find/);
+  // The comparison view follows the user's persisted strategy choice.
+  assert.match(page, /comparisonView\.reports\.find/);
+  assert.match(page, /localStorage\.getItem\("toujing\.strategy"\)/);
+  assert.match(page, /Rule replay strategy/);
   // The recorded-trade markers and the rule markers are separate overlay layers.
   assert.match(chart, /ToujingTradeMarker/);
   assert.match(chart, /ToujingRuleMarker/);

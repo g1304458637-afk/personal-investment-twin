@@ -33,13 +33,14 @@ export interface ComparisonReportView {
 }
 
 export interface StrategyComparisonView {
+  strategyId: string;
   reports: ComparisonReportView[];
   portfolio: {
     user: { scope: string; realizedEpisodeCount: number; realizedPnlTotal: number; note: string };
     strategy: { strategyId: string; version: string; finalEquity: number; totalReturn: number; maxDrawdown: number; tradingDays: number };
     note: string;
     limitations: string[];
-  };
+  } | null;
   limitations: string[];
 }
 
@@ -105,12 +106,13 @@ function report(raw: unknown): ComparisonReportView {
 export function adaptStrategyComparison(raw: unknown): StrategyComparisonView {
   const value = object(raw);
   if (value.schema_version !== "strategy_comparison.v1") fail();
-  const portfolio = object(value.portfolio);
-  const user = object(portfolio.user);
-  const strategy = object(portfolio.strategy);
-  const view: StrategyComparisonView = {
-    reports: array(value.reports).map(report),
-    portfolio: {
+  const strategyId = "strategy_id" in value ? text(value.strategy_id) : "toujing_t1_breakout_trend";
+  let portfolio: StrategyComparisonView["portfolio"] | null = null;
+  if ("portfolio" in value && value.portfolio !== null) {
+    const portfolioRaw = object(value.portfolio);
+    const user = object(portfolioRaw.user);
+    const strategy = object(portfolioRaw.strategy);
+    portfolio = {
       user: {
         scope: text(user.scope), realizedEpisodeCount: finite(user.realized_episode_count),
         realizedPnlTotal: finite(user.realized_pnl_total), note: text(user.note),
@@ -120,9 +122,14 @@ export function adaptStrategyComparison(raw: unknown): StrategyComparisonView {
         finalEquity: finite(strategy.final_equity), totalReturn: finite(strategy.total_return),
         maxDrawdown: finite(strategy.max_drawdown), tradingDays: finite(strategy.trading_days),
       },
-      note: text(portfolio.note),
-      limitations: array(portfolio.limitations).map(text),
-    },
+      note: text(portfolioRaw.note),
+      limitations: array(portfolioRaw.limitations).map(text),
+    };
+  }
+  const view: StrategyComparisonView = {
+    strategyId,
+    reports: array(value.reports).map(report),
+    portfolio,
     limitations: array(value.limitations).map(text),
   };
   // Every rule fill side must form a plausible ledger: buys and sells exist per report.

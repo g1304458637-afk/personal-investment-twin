@@ -312,17 +312,17 @@ export function StrategySimulationPage() {
         <p className="iw-kicker">{t("Showcase episode comparison")}</p>
         <span className="iw-subtle">{strategyComparison.reports.length}</span>
       </div>
-      <p className="strategy-comparison-note">{strategyComparison.portfolio.note}</p>
+      <p className="strategy-comparison-note">{strategyComparison.portfolio?.note}</p>
       <div className="strategy-compare-parallel">
         <div>
           <span>{t("Recorded side")}</span>
-          <strong>{money(strategyComparison.portfolio.user.realizedPnlTotal)}</strong>
-          <small>{t("Realized PnL total")} · {strategyComparison.portfolio.user.realizedEpisodeCount}</small>
+          <strong>{money(strategyComparison.portfolio?.user.realizedPnlTotal ?? 0)}</strong>
+          <small>{t("Realized PnL total")} · {strategyComparison.portfolio?.user.realizedEpisodeCount ?? 0}</small>
         </div>
         <div>
           <span>{t("Rule side")}</span>
-          <strong>{money(strategyComparison.portfolio.strategy.finalEquity)}</strong>
-          <small>{t("Total return")} {percentLabel(strategyComparison.portfolio.strategy.totalReturn)}</small>
+          <strong>{money(strategyComparison.portfolio?.strategy.finalEquity ?? 0)}</strong>
+          <small>{t("Total return")} {percentLabel(strategyComparison.portfolio?.strategy.totalReturn ?? 0)}</small>
         </div>
       </div>
       <div className="strategy-comparisons">

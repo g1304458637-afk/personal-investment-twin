@@ -1607,6 +1607,7 @@ export const zhCN = {
   "Recorded result": "记录结果",
   "Rule trades in window": "窗口内规则成交",
   "Net cash flow": "净现金流",
+  "Rule replay strategy": "规则对照策略",
   "Choose a strategy": "选择策略",
   "Read the rules first": "先读规则：这套策略的具体内容",
   "Per-instrument operations": "个股操作",
