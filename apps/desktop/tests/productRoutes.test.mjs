@@ -51,7 +51,7 @@ test("primary sidebar derives only ready routes from metadata", () => {
       ? [entry.route.id]
       : [entry.route.id, ...entry.children.map((child) => child.id)],
   );
-  assert.deepEqual(ids, ["investments", "strategy_simulation", "data_accounts", "settings"]);
+  assert.deepEqual(ids, ["investments", "strategy_simulation", "my_strategies", "data_accounts", "settings"]);
   assert.equal(ids.includes("advanced_evidence"), false);
   assert.equal(ids.includes("investments"), true);
   assert.equal(ids.includes("data_accounts"), true);

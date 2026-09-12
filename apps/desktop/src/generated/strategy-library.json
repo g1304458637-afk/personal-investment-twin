@@ -1,0 +1,353 @@
+{
+ "schema_version": "strategy_library.v1",
+ "strategies": [
+  {
+   "strategy_id": "toujing_t1_breakout_trend",
+   "version": "1",
+   "title": "投镜教学策略 T1：突破趋势",
+   "description": "由 Decision Lens 三条核对规则升格而来的完整教学策略；B 类规则为完整执行所需的新增适配，不冒充经典名家策略。",
+   "params": {
+    "min_history": 21,
+    "max_positions": 4,
+    "position_fraction": 0.25,
+    "lot_size": 100,
+    "stop_loss_pct": 0.08,
+    "commission_rate": 0.0003,
+    "min_commission": 5.0,
+    "stamp_duty_rate": 0.001,
+    "slippage_rate": 0.0,
+    "price_limit_pct": 0.1,
+    "initial_cash": 1000000.0,
+    "currency": "CNY"
+   },
+   "rule_table": [
+    {
+     "rule_id": "A1_entry_trend_filter",
+     "source": "lens_rule:trend_ma20",
+     "statement": "收盘价高于最近20个有效收盘均值（SMA20）才允许入场。"
+    },
+    {
+     "rule_id": "A2_entry_breakout",
+     "source": "lens_rule:closing_breakout20",
+     "statement": "收盘价严格高于此前20个有效收盘高点才允许入场。"
+    },
+    {
+     "rule_id": "A3_signal_exit",
+     "source": "lens_rule:closing_breakout20",
+     "statement": "收盘价低于此前10个有效收盘低点时退出。"
+    },
+    {
+     "rule_id": "B1_universe",
+     "source": "adaptation",
+     "statement": "股票池为点时上市且有效收盘≥21个的全部成员；上市前/退市后不可选。"
+    },
+    {
+     "rule_id": "B2_ranking",
+     "source": "adaptation",
+     "statement": "候选超过剩余仓位时按突破强度降序，平局按instrument_id升序。"
+    },
+    {
+     "rule_id": "B3_sizing",
+     "source": "adaptation",
+     "statement": "等权仓位：每仓目标=当日总净值×25%，最多4仓，按100股整手向下取整。"
+    },
+    {
+     "rule_id": "B4_no_add",
+     "source": "adaptation",
+     "statement": "不加仓：同一标的同时至多一个仓位，退出后可再次入场。"
+    },
+    {
+     "rule_id": "B5_stop_loss",
+     "source": "adaptation",
+     "statement": "入场价×(1−8%)硬止损，逐日盘中检查；跳空低开按开盘价成交。"
+    },
+    {
+     "rule_id": "B6_conflict_priority",
+     "source": "adaptation",
+     "statement": "同日先卖出后买入，卖出资金当日可用；退出优先于入场。"
+    },
+    {
+     "rule_id": "B7_order_model",
+     "source": "adaptation",
+     "statement": "市价单、当日有效、次日开盘成交；未成交必须记录原因。"
+    },
+    {
+     "rule_id": "B8_fees",
+     "source": "adaptation",
+     "statement": "佣金0.03%（最低5元）双边，印花税0.1%仅卖出（合成参数，非券商报价）。"
+    },
+    {
+     "rule_id": "B9_slippage",
+     "source": "adaptation",
+     "statement": "V1滑点固定为0，参数保留。"
+    }
+   ]
+  },
+  {
+   "strategy_id": "toujing_dual_ma",
+   "version": "1",
+   "title": "双均线交叉（5/20，多头）",
+   "description": "公开广为人知的均线交叉模板：金叉入场、死叉退出；参数与全部执行细节为显式声明的适配，不冒充任何单一文献版本。",
+   "params": {
+    "min_history": 21,
+    "max_positions": 4,
+    "position_fraction": 0.25,
+    "lot_size": 100,
+    "stop_loss_pct": 0.0,
+    "commission_rate": 0.0003,
+    "min_commission": 5.0,
+    "stamp_duty_rate": 0.001,
+    "slippage_rate": 0.0,
+    "price_limit_pct": 0.1,
+    "initial_cash": 1000000.0,
+    "currency": "CNY"
+   },
+   "rule_table": [
+    {
+     "rule_id": "D1_entry_golden_cross",
+     "source": "public_rule:ma_crossover",
+     "statement": "短期均线（5）自下而上穿越长期均线（20）（金叉）时产生入场信号。"
+    },
+    {
+     "rule_id": "D2_exit_death_cross",
+     "source": "public_rule:ma_crossover",
+     "statement": "短期均线自上而下穿越长期均线（死叉）时退出。"
+    },
+    {
+     "rule_id": "D3_no_stop",
+     "source": "public_rule:ma_crossover",
+     "statement": "原模板不含价格止损——死叉本身就是退出机制。"
+    },
+    {
+     "rule_id": "MA_adapt_params",
+     "source": "adaptation",
+     "statement": "适配：经典模板存在 5/20、50/200 等多种参数；本版固定采用 5/20（日频）。"
+    },
+    {
+     "rule_id": "MA_adapt_long_only",
+     "source": "adaptation",
+     "statement": "适配：仅实现多头一侧，不做做空与反向持仓。"
+    },
+    {
+     "rule_id": "B1_universe",
+     "source": "adaptation",
+     "statement": "股票池为点时上市且有效收盘≥21个的全部成员。"
+    },
+    {
+     "rule_id": "B2_ranking",
+     "source": "adaptation",
+     "statement": "候选超过剩余仓位时按均线离散度（短均线/长均线−1）降序，平局按 instrument_id 升序。"
+    },
+    {
+     "rule_id": "B3_sizing",
+     "source": "adaptation",
+     "statement": "等权仓位：每仓目标=当日总净值×25%，最多4仓，按100股整手向下取整。"
+    },
+    {
+     "rule_id": "B4_no_add",
+     "source": "adaptation",
+     "statement": "不加仓：同一标的同时至多一个仓位，退出后可再次入场。"
+    },
+    {
+     "rule_id": "B6_conflict_priority",
+     "source": "adaptation",
+     "statement": "同日先卖出后买入，卖出资金当日可用。"
+    },
+    {
+     "rule_id": "B7_order_model",
+     "source": "adaptation",
+     "statement": "市价单、当日有效、次日开盘成交；未成交必须记录原因。"
+    },
+    {
+     "rule_id": "B8_fees",
+     "source": "adaptation",
+     "statement": "佣金0.03%（最低5元）双边，印花税0.1%仅卖出（合成参数，非券商报价）。"
+    },
+    {
+     "rule_id": "B9_slippage",
+     "source": "adaptation",
+     "statement": "滑点固定为0，参数保留。"
+    }
+   ]
+  },
+  {
+   "strategy_id": "toujing_rsi_mean_reversion",
+   "version": "1",
+   "title": "RSI 均值回归（14，30/70，多头）",
+   "description": "基于 Wilder RSI(14) 的经典反转模板：超卖买入、超买卖出；阈值与全部执行细节为显式声明的适配，与顺势策略（T1、双均线）构成相反的行为参照。",
+   "params": {
+    "min_history": 30,
+    "max_positions": 4,
+    "position_fraction": 0.25,
+    "lot_size": 100,
+    "stop_loss_pct": 0.0,
+    "commission_rate": 0.0003,
+    "min_commission": 5.0,
+    "stamp_duty_rate": 0.001,
+    "slippage_rate": 0.0,
+    "price_limit_pct": 0.1,
+    "initial_cash": 1000000.0,
+    "currency": "CNY"
+   },
+   "rule_table": [
+    {
+     "rule_id": "R1_entry_oversold",
+     "source": "public_rule:wilder_rsi",
+     "statement": "RSI(14) 低于 30（超卖）时产生入场信号——在弱势中买入。"
+    },
+    {
+     "rule_id": "R2_exit_overbought",
+     "source": "public_rule:wilder_rsi",
+     "statement": "RSI(14) 高于 70（超买）时退出——在强势中卖出。"
+    },
+    {
+     "rule_id": "R3_no_stop",
+     "source": "adaptation",
+     "statement": "本模板不含价格止损——退出依赖 RSI 回升到超买区。"
+    },
+    {
+     "rule_id": "MR_adapt_thresholds",
+     "source": "adaptation",
+     "statement": "适配：30/70 为最常见教学阈值；Wilder 原文未强制该数值。"
+    },
+    {
+     "rule_id": "MR_adapt_long_only",
+     "source": "adaptation",
+     "statement": "适配：仅实现多头（超卖买入），不做做空一侧。"
+    },
+    {
+     "rule_id": "B1_universe",
+     "source": "adaptation",
+     "statement": "股票池为点时上市且有效收盘≥30个的全部成员（RSI 平滑需要更长预热）。"
+    },
+    {
+     "rule_id": "B2_ranking",
+     "source": "adaptation",
+     "statement": "候选超过剩余仓位时按超卖深度（30−RSI）降序，平局按 instrument_id 升序。"
+    },
+    {
+     "rule_id": "B3_sizing",
+     "source": "adaptation",
+     "statement": "等权仓位：每仓目标=当日总净值×25%，最多4仓，按100股整手向下取整。"
+    },
+    {
+     "rule_id": "B4_no_add",
+     "source": "adaptation",
+     "statement": "不加仓：同一标的同时至多一个仓位。"
+    },
+    {
+     "rule_id": "B6_conflict_priority",
+     "source": "adaptation",
+     "statement": "同日先卖出后买入，卖出资金当日可用。"
+    },
+    {
+     "rule_id": "B7_order_model",
+     "source": "adaptation",
+     "statement": "市价单、当日有效、次日开盘成交（信号收盘确认、次开盘执行）。"
+    },
+    {
+     "rule_id": "B8_fees",
+     "source": "adaptation",
+     "statement": "佣金0.03%（最低5元）双边，印花税0.1%仅卖出（合成参数，非券商报价）。"
+    },
+    {
+     "rule_id": "B9_slippage",
+     "source": "adaptation",
+     "statement": "滑点固定为0，参数保留。"
+    }
+   ]
+  },
+  {
+   "strategy_id": "toujing_turtle_s2_long",
+   "version": "1",
+   "title": "海龟 System 2（55日突破，ATR 单元加仓，多头）",
+   "description": "公开广为人知的海龟系统要点之多头适配版：55日突破入场、ATR(20) 定单元、0.5N 逐级加仓至多 4 单元、2N 移动止损、20日低点退出；仅多头、单股票池为显式适配，不冒充完整原版。",
+   "params": {
+    "min_history": 56,
+    "max_positions": 4,
+    "position_fraction": 0.25,
+    "lot_size": 100,
+    "stop_loss_pct": 0.0,
+    "commission_rate": 0.0003,
+    "min_commission": 5.0,
+    "stamp_duty_rate": 0.001,
+    "slippage_rate": 0.0,
+    "price_limit_pct": 0.1,
+    "initial_cash": 1000000.0,
+    "currency": "CNY"
+   },
+   "rule_table": [
+    {
+     "rule_id": "T1_entry_s2_breakout",
+     "source": "public_rule:turtle_system2",
+     "statement": "收盘价突破此前 55 个有效收盘高点（System 2 入场）时买入 1 个单元。"
+    },
+    {
+     "rule_id": "T2_unit_sizing",
+     "source": "public_rule:turtle",
+     "statement": "N = ATR(20)；单元股数 = (1% × 账户净值) ÷ N，按 100 股整手向下取整。"
+    },
+    {
+     "rule_id": "T2_adapt_notional_cap",
+     "source": "adaptation",
+     "statement": "适配：单元名义敞口上限为净值×25%（与其他策略等权一致）——原版靠大资金跨多市场分散，单池小额账户下 1%风险/N 会超过全部净值，故加名义上限。"
+    },
+    {
+     "rule_id": "T3_pyramid_adds",
+     "source": "public_rule:turtle",
+     "statement": "收盘价达到上次成交价 + 0.5N 时追加 1 个单元，同一标的最多 4 个单元。"
+    },
+    {
+     "rule_id": "T4_trailing_stop",
+     "source": "public_rule:turtle",
+     "statement": "每次成交后，该标的止损设为最近成交价 − 2N（2N 移动止损）。"
+    },
+    {
+     "rule_id": "T5_exit_s2",
+     "source": "public_rule:turtle_system2",
+     "statement": "收盘价跌破此前 20 个有效收盘低点时全部退出。"
+    },
+    {
+     "rule_id": "T_adapt_long_only",
+     "source": "adaptation",
+     "statement": "适配：仅实现多头；原版为多空双向。"
+    },
+    {
+     "rule_id": "T_adapt_single_pool",
+     "source": "adaptation",
+     "statement": "适配：原版跨多市场组合并限制相关单元数；本版为单一股票池，不做相关性限制。"
+    },
+    {
+     "rule_id": "T_adapt_exit_window",
+     "source": "adaptation",
+     "statement": "适配：原版 System 2 退出为 20 日突破的反向；本版按 20 个有效收盘低点执行。"
+    },
+    {
+     "rule_id": "B1_universe",
+     "source": "adaptation",
+     "statement": "股票池为点时上市且有效收盘≥56个的全部成员。"
+    },
+    {
+     "rule_id": "B6_conflict_priority",
+     "source": "adaptation",
+     "statement": "同日先卖出后加仓/买入，卖出资金当日可用。"
+    },
+    {
+     "rule_id": "B7_order_model",
+     "source": "adaptation",
+     "statement": "市价单、当日有效、次日开盘成交；未成交必须记录原因。"
+    },
+    {
+     "rule_id": "B8_fees",
+     "source": "adaptation",
+     "statement": "佣金0.03%（最低5元）双边，印花税0.1%仅卖出（合成参数，非券商报价）。"
+    },
+    {
+     "rule_id": "B9_slippage",
+     "source": "adaptation",
+     "statement": "滑点固定为0，参数保留。"
+    }
+   ]
+  }
+ ]
+}

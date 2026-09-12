@@ -157,16 +157,17 @@ function ConditionRow({ draft, onChange, onRemove, removable }: {
   </div>;
 }
 
-export function StrategyWorkshop({ onSave, onCancel }: {
+export function StrategyWorkshop({ onSave, onCancel, initialDraft }: {
   onSave: (draft: WorkshopDraft, spec: Record<string, unknown>) => void;
   onCancel: () => void;
+  initialDraft?: WorkshopDraft | null;
 }) {
-  const [name, setName] = useState("");
-  const [entry, setEntry] = useState<ConditionDraft[]>([newCondition()]);
-  const [exitFactor, setExitFactor] = useState<ConditionDraft | null>(null);
-  const [stopPct, setStopPct] = useState<number | null>(10);
-  const [atrMult, setAtrMult] = useState<number | null>(null);
-  const [addsUnits, setAddsUnits] = useState<number | null>(null);
+  const [name, setName] = useState(initialDraft?.name ?? "");
+  const [entry, setEntry] = useState<ConditionDraft[]>(initialDraft?.entry ?? [newCondition()]);
+  const [exitFactor, setExitFactor] = useState<ConditionDraft | null>(initialDraft?.exitFactor ?? null);
+  const [stopPct, setStopPct] = useState<number | null>(initialDraft?.stopPct ?? 10);
+  const [atrMult, setAtrMult] = useState<number | null>(initialDraft?.atrMult ?? null);
+  const [addsUnits, setAddsUnits] = useState<number | null>(initialDraft?.addsUnits ?? null);
   const [fraction, setFraction] = useState(25);
   const [maxPositions, setMaxPositions] = useState(4);
   const [error, setError] = useState<string | null>(null);

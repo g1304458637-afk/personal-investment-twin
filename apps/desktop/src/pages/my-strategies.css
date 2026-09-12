@@ -1,0 +1,11 @@
+.my-strategies { max-width: 1180px; }
+.my-strategies-hero { border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px; background: var(--card); }
+.my-strategies-hero .strategy-hero__title { font-size: 22px; font-weight: 650; color: var(--foreground); }
+.my-strategies-hero .strategy-hero__desc { margin-top: 6px; max-width: 70ch; font-size: 13px; line-height: 1.6; color: var(--muted); }
+.my-strategy-list { display: grid; gap: 8px; }
+.my-strategy-item { display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; background: rgba(255,255,255,.02); }
+.my-strategy-item.is-active { border-color: rgba(140,218,242,.6); }
+.my-strategy-item__main { flex: 1; display: grid; gap: 2px; text-align: left; background: transparent; border: 0; cursor: pointer; padding: 0; }
+.my-strategy-item__main strong { color: var(--foreground); font-size: 13px; }
+.my-strategy-item__main span { font-size: 11px; font-family: ui-monospace, monospace; color: var(--muted); }
+.my-strategy-library { display: grid; gap: 8px; }
