@@ -5,7 +5,7 @@ import { analysisLinks, liquidNavigation, liquidSection } from "../src/workspace
 const source = (path) => readFile(new URL(`../src/${path}`, import.meta.url), "utf8");
 
 test("liquid primary navigation consolidates existing tasks without orphaning deep views", () => {
-  assert.deepEqual(liquidNavigation.filter(x => x.group === "work").map(x => x.path), ["/investments", "/strategy-simulation", "/analysis", "/pretrade", "/ask"]);
+  assert.deepEqual(liquidNavigation.filter(x => x.group === "work").map(x => x.path), ["/investments", "/strategy-simulation", "/my-strategies", "/analysis", "/pretrade", "/ask"]);
   for (const path of ["/analysis", "/review", "/review/decisions", "/history", "/comparison/history", "/investments/compare-example", "/advanced/evidence"]) assert.equal(liquidSection(path), "/analysis");
   assert.equal(liquidSection("/ask"), "/ask");
   assert.equal(liquidSection("/investments/episodes/owned"), "/investments");
