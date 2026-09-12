@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { EChart } from "@/components/charts/EChart";
 import { InvestmentChartWorkspace } from "@/components/charts/InvestmentChartWorkspace";
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { isTauriRuntime, runtimeRequest } from "@/data/runtimeService";
+import { adaptStrategySimulation, type StrategySimulationView } from "@/data/strategySimulation";
 import { rawComparisonReportFor, strategyComparison } from "@/data/strategyComparisonDemo";
 import { strategySimulation } from "@/data/strategySimulationDemo";
 import { useLocale } from "@/locales/LocaleProvider";
@@ -35,11 +36,31 @@ function StatCard({ label, value, detail, tone }: {
   </div>;
 }
 
+const STRATEGY_FILES: Record<string, { title: string; load: () => Promise<{ default: unknown }> }> = {
+  toujing_t1_breakout_trend: { title: "T1 · 突破趋势", load: () => import("@/generated/strategy-simulation-demo.json") },
+  toujing_dual_ma: { title: "双均线交叉 5/20", load: () => import("@/generated/strategy-simulation-dual-ma.json") },
+  toujing_rsi_mean_reversion: { title: "RSI 均值回归 14", load: () => import("@/generated/strategy-simulation-rsi-mean-reversion.json") },
+};
+
 export function StrategySimulationPage() {
   const { t, locale } = useLocale();
   const { theme } = useTheme();
   const dark = theme === "dark";
-  const simulation = strategySimulation;
+  const [strategyId, setStrategyId] = useState<string>("toujing_t1_breakout_trend");
+  const [simulation, setSimulation] = useState<StrategySimulationView>(strategySimulation);
+  const [loadingStrategy, setLoadingStrategy] = useState(false);
+  useEffect(() => {
+    if (strategyId === "toujing_t1_breakout_trend") { setSimulation(strategySimulation); return; }
+    const entry = STRATEGY_FILES[strategyId];
+    if (!entry) return;
+    let cancelled = false;
+    setLoadingStrategy(true);
+    entry.load().then((module) => {
+      if (!cancelled) setSimulation(adaptStrategySimulation(module.default));
+    }).finally(() => { if (!cancelled) setLoadingStrategy(false); });
+    return () => { cancelled = true; };
+  }, [strategyId]);
+  const isT1 = simulation.strategy.strategyId === "toujing_t1_breakout_trend";
   const currency = typeof simulation.strategy.params.currency === "string" ? simulation.strategy.params.currency : "CNY";
   const money = (value: number) => formatCurrencyValue(value, locale, currency);
   const [instrument, setInstrument] = useState<string>("all");
@@ -158,6 +179,14 @@ export function StrategySimulationPage() {
     <header className="iw-inset strategy-hero">
       <div>
         <p className="iw-kicker">{t("Strategy history simulation")}</p>
+        <div className="strategy-selector" role="tablist" aria-label={t("Choose a strategy")}>
+          {Object.entries(STRATEGY_FILES).map(([id, meta]) => (
+            <button key={id} type="button" role="tab" aria-selected={strategyId === id}
+              className={strategyId === id ? "is-active" : ""}
+              onClick={() => setStrategyId(id)}>{meta.title}</button>
+          ))}
+          {loadingStrategy ? <span className="iw-subtle">{t("Loading…")}</span> : null}
+        </div>
         <h1 className="strategy-hero__title">{simulation.strategy.title}</h1>
         <p className="strategy-hero__desc">{simulation.strategy.description}</p>
         <p className="strategy-hero__meta">{simulation.strategy.strategyId}@{simulation.strategy.version} · {t("Data fingerprint")} {simulation.dataFingerprint.slice(0, 12)}…</p>
@@ -261,7 +290,7 @@ export function StrategySimulationPage() {
       <p className="strategy-compare__note">{t("Each marker is one strategy fill on this instrument; reasons live in the trades list below.")}</p>
     </section>
 
-    <section className="iw-inset strategy-panel">
+    {isT1 ? <section className="iw-inset strategy-panel">
       <div className="strategy-panel__head">
         <p className="iw-kicker">{t("Showcase episode comparison")}</p>
         <span className="iw-subtle">{strategyComparison.reports.length}</span>
@@ -322,7 +351,7 @@ export function StrategySimulationPage() {
         ))}
       </div>
       <ul className="strategy-comparison-limits">{strategyComparison.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul>
-    </section>
+    </section> : null}
 
     <section className="iw-inset strategy-panel">
       <div className="strategy-panel__head">

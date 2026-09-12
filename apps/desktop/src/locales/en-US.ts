@@ -1606,6 +1606,7 @@ export const enUS = {
   "Recorded result": "Recorded result",
   "Rule trades in window": "Rule trades in window",
   "Net cash flow": "Net cash flow",
+  "Choose a strategy": "Choose a strategy",
   "Read the rules first": "Read the rules first",
   "Per-instrument operations": "Per-instrument operations",
   "Each marker is one strategy fill on this instrument; reasons live in the trades list below.": "Each marker is one strategy fill on this instrument; reasons live in the trades list below.",
