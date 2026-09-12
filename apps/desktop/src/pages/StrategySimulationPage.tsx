@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 
 import { EChart } from "@/components/charts/EChart";
-import { StrategyInstrumentChart } from "@/components/charts/StrategyInstrumentChart";
+import { InvestmentChartWorkspace } from "@/components/charts/InvestmentChartWorkspace";
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { isTauriRuntime, runtimeRequest } from "@/data/runtimeService";
 import { rawComparisonReportFor, strategyComparison } from "@/data/strategyComparisonDemo";
@@ -214,7 +214,18 @@ export function StrategySimulationPage() {
         </label>
       </div>
       {effectiveChartInstrument && barsByInstrument[effectiveChartInstrument]
-        ? <StrategyInstrumentChart bars={barsByInstrument[effectiveChartInstrument]} fills={fillsByInstrument[effectiveChartInstrument] ?? []} />
+        ? <InvestmentChartWorkspace
+            market={{
+              instrumentId: effectiveChartInstrument, replayInstrumentId: effectiveChartInstrument,
+              displayName: effectiveChartInstrument, currency: "CNY",
+              priceBasis: "synthetic_unadjusted", sourceUrl: "", sourceSha256: "",
+              bars: barsByInstrument[effectiveChartInstrument].map((bar) => ({
+                date: bar.date, open: bar.open, high: bar.high, low: bar.low, close: bar.close,
+                volume: null, amount: null,
+              })),
+            }}
+            ruleFills={(fillsByInstrument[effectiveChartInstrument] ?? []).map((fill) => ({ ...fill, trigger: "signal_order" }))}
+          />
         : null}
       <p className="strategy-compare__note">{t("Each marker is one strategy fill on this instrument; reasons live in the trades list below.")}</p>
     </section>

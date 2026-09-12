@@ -177,14 +177,14 @@ function operationGroup(group: ChartDecisionGroup | null, locale: string, curren
 }
 
 export function InvestmentChartWorkspace({
-  entry,
+  entry = null,
   market,
   focus = null,
   onSelectDecision,
   comparison,
   ruleFills = null,
 }: {
-  entry: PositionEpisodeEntryView;
+  entry?: PositionEpisodeEntryView | null;
   market: StandardChartMarket;
   focus?: { id: string; startAt: string; endAt: string } | null;
   onSelectDecision?: (id: string) => void;
@@ -226,10 +226,10 @@ export function InvestmentChartWorkspace({
   }, [fullScreen, comparison]);
 
   const bars = useMemo(() => aggregateStandardBars(market.bars, interval), [interval, market.bars]);
-  const steps = useMemo(() => comparison ? comparisonBarStates(comparison.view.a, market.bars, bars) : positionStepsForChartBars(entry, market.bars, bars, interval), [bars, entry, interval, market.bars, comparison]);
+  const steps = useMemo(() => comparison ? comparisonBarStates(comparison.view.a, market.bars, bars) : entry ? positionStepsForChartBars(entry, market.bars, bars, interval) : [], [bars, entry, interval, market.bars, comparison]);
   const stepsB = useMemo(() => comparison ? comparisonBarStates(comparison.view.b, market.bars, bars) : [], [bars, market.bars, comparison]);
   const comparisonGroups = useMemo(() => comparison ? comparisonBarGroups(comparison.view, market.bars, bars) : [], [comparison, market.bars, bars]);
-  const groups = useMemo(() => groupChartDecisionsForBars(entry, bars, interval), [bars, entry, interval]);
+  const groups = useMemo(() => entry ? groupChartDecisionsForBars(entry, bars, interval) : [], [bars, entry, interval]);
   const visibleTicker = market.instrumentId.replace(/^SYN_/, "").replace(/_HISTORY$/, "") || market.displayName;
   const data = useMemo<ChartData[]>(() => bars.map((bar, index) => ({
     timestamp: barTimestamp(bar.date), open: bar.open, high: bar.high, low: bar.low, close: bar.close,
@@ -241,10 +241,10 @@ export function InvestmentChartWorkspace({
     averageCostB: stepsB[index]?.averageCost ?? null,
     chartIndex: index,
   })), [bars, steps, stepsB]);
-  const focusWindow = useMemo(() => focusForChartBars(market.bars, bars, focus ?? {
+  const focusWindow = useMemo(() => focusForChartBars(market.bars, bars, focus ?? (entry ? {
     startAt: entry.episode.openedAt,
     endAt: entry.episode.closedAt ?? entry.snapshot?.positionState.valuationAt ?? entry.episode.openedAt,
-  }, 7), [market.bars, bars, entry.episode.closedAt, entry.episode.openedAt, entry.snapshot?.positionState.valuationAt, focus]);
+  } : { startAt: market.bars[0]?.date ?? "", endAt: market.bars[market.bars.length - 1]?.date ?? "" }), 7), [market.bars, bars, entry?.episode.closedAt, entry?.episode.openedAt, entry?.snapshot?.positionState.valuationAt, entry, focus]);
   const groupByTimestamp = useMemo(() => new Map(groups.map((group) => [barTimestamp(group.date), group])), [groups]);
 
   useEffect(() => {
@@ -274,7 +274,7 @@ export function InvestmentChartWorkspace({
     setSelectedGroup(null);
     setSelectedComparisonGroups([]);
     setReadout(null);
-  }, [market.instrumentId, entry.episode.episodeId, interval]);
+  }, [market.instrumentId, entry?.episode.episodeId, interval]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -310,7 +310,7 @@ export function InvestmentChartWorkspace({
       for (const key of ["quantity", "quantityB", ...(showCosts ? ["averageCost", "averageCostB"] : [])]) {
         chart.createIndicator({ name: `Compare_${key}`, paneId: key.startsWith("quantity") ? "quantity-pane" : "candle_pane", styles: { tooltip: { showRule: "none" } } }, true);
       }
-    } else {
+    } else if (entry) {
       chart.createIndicator({ name: "BackendQuantity", paneId: "quantity-pane", shortName: chinese ? "持仓数量" : "Held quantity" });
       chart.createIndicator({ name: "BackendAverageCost", paneId: "candle_pane", shortName: chinese ? "平均成本（周期末）" : "Avg cost (period end)" });
     }
@@ -322,7 +322,7 @@ export function InvestmentChartWorkspace({
     chart.setMaxOffsetLeftDistance(0);
     chart.setMaxOffsetRightDistance(0);
 
-    for (const group of comparison ? [] : groups) {
+    for (const group of (comparison || !entry) ? [] : groups) {
       const bar = bars.find((candidate) => candidate.date === group.date);
       if (!bar) continue;
       const point = { timestamp: barTimestamp(group.date), value: bar.high };
@@ -486,7 +486,7 @@ export function InvestmentChartWorkspace({
       <div className="investment-chart-tool-group"><button type="button" className={showMa ? "is-active" : ""} aria-pressed={showMa} onClick={() => setShowMa((value) => !value)}>MA {chinese ? "(价格)" : "(price)"}</button>{ruleFills ? <button type="button" className={showRuleFills ? "is-active" : ""} aria-pressed={showRuleFills} onClick={() => setShowRuleFills((value) => !value)}>{chinese ? "规则对照" : "Rule replay"}</button> : null}{comparison ? <button type="button" className={showCosts ? "is-active" : ""} aria-pressed={showCosts} onClick={() => setShowCosts(value => !value)}>{chinese ? "双方平均成本" : "Both avg costs"}</button> : null}<button type="button" className="is-active" aria-pressed="true">{comparison ? (chinese ? "双方持仓数量" : "Both holdings") : (chinese ? "持仓数量" : "Held qty")}</button><button type="button" className={showVolume ? "is-active" : ""} aria-pressed={showVolume} onClick={() => setShowVolume((value) => !value)}>{chinese ? "成交量" : "Volume"}</button></div>
       <div className="investment-chart-tool-group investment-chart-view-tools"><button type="button" onClick={() => chartRef.current?.zoomAtCoordinate(1.05)} aria-label={chinese ? "放大" : "Zoom in"}>+</button><button type="button" onClick={() => chartRef.current?.zoomAtCoordinate(0.95)} aria-label={chinese ? "缩小" : "Zoom out"}>−</button><button type="button" onClick={() => resetView("episode")}>{chinese ? "重置" : "Reset"}</button><button type="button" onClick={() => resetView("all")}>{chinese ? "全历史" : "All history"}</button><button type="button" aria-pressed={fullScreen} onClick={() => setFullScreen((value) => !value)}>{fullScreen ? (chinese ? "退出全屏" : "Exit focus") : (chinese ? "专注" : "Focus")}</button></div>
     </div>
-    <div className="investment-chart-readout"><span>{readout ? dateLabel(new Date(readout.timestamp).toISOString().slice(0, 10), locale) : (chinese ? "移动光标查看" : "Move cursor to inspect")}</span><span>{comparison && chinese ? "开" : "O"} {fixed(readout?.open)} {comparison && chinese ? "高" : "H"} {fixed(readout?.high)} {comparison && chinese ? "低" : "L"} {fixed(readout?.low)} {comparison && chinese ? "收" : "C"} {price === null ? "—" : money.format(price)}</span><span>{chinese ? "量" : "Vol"} {fixed(readout?.volume ?? null, 0)}</span>{!comparison ? <span>{chinese ? "持仓" : "Held"} {fixed(step?.quantity, 0)} · {chinese ? "平均成本" : "Avg cost"} {step?.averageCost === null || step?.averageCost === undefined ? "—" : money.format(step.averageCost)}</span> : null}</div>
+    <div className="investment-chart-readout"><span>{readout ? dateLabel(new Date(readout.timestamp).toISOString().slice(0, 10), locale) : (chinese ? "移动光标查看" : "Move cursor to inspect")}</span><span>{comparison && chinese ? "开" : "O"} {fixed(readout?.open)} {comparison && chinese ? "高" : "H"} {fixed(readout?.high)} {comparison && chinese ? "低" : "L"} {fixed(readout?.low)} {comparison && chinese ? "收" : "C"} {price === null ? "—" : money.format(price)}</span><span>{chinese ? "量" : "Vol"} {fixed(readout?.volume ?? null, 0)}</span>{!comparison && entry ? <span>{chinese ? "持仓" : "Held"} {fixed(step?.quantity, 0)} · {chinese ? "平均成本" : "Avg cost"} {step?.averageCost === null || step?.averageCost === undefined ? "—" : money.format(step.averageCost)}</span> : null}</div>
     {comparison ? <div className="comparison-chart-readouts" data-guide="same-stock-quantity">
       {(["A", "B"] as const).map(party => <div key={party} className={party === "A" ? "comparison-party-a" : "comparison-party-b"}>
         <strong>{party}</strong><span>{chinese ? "持仓" : "Held"} {fixed(party === "A" ? readout?.quantity : readout?.quantityB, 0)} {chinese ? "股" : "shares"}</span>
