@@ -369,7 +369,10 @@ export function StrategySimulationPage() {
             {userRunError[selectedUserStrategy.id] ? <p className="strategy-compare__note">{t("Run failed")}: {userRunError[selectedUserStrategy.id]}</p> : null}
           </div>
         )
-      ) : <p className="strategy-compare__note">{t("Running custom strategies needs the desktop app (browser preview cannot execute them).")}</p>}
+      ) : <div className="strategy-compare__note">
+        <p>{t("Running custom strategies needs the desktop app (browser preview cannot execute them).")}</p>
+        <p>{t("Open the desktop app → Strategy Simulation → select this strategy → Run on history.")}</p>
+      </div>}
     </section> : null}
 {simulationReady ? <>
       <section className="iw-inset strategy-purpose" aria-label={t("What this page answers")}>

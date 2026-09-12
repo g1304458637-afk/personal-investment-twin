@@ -68,13 +68,17 @@ function newCondition(): ConditionDraft {
   return { factor: "breakout_high", op: "true", threshold: 0, window: 20 };
 }
 
-export function conditionStatement(draft: ConditionDraft): string {
-  const option = factorOption(draft.factor);
+export function conditionStatement(draft: ConditionDraft | Record<string, unknown>): string {
+  // Accepts both the workshop draft shape ({window, threshold}) and the
+  // saved spec shape ({params: {window...}, threshold}).
+  const raw = draft as ConditionDraft & { params?: Record<string, number> };
+  const option = factorOption(raw.factor);
   if (!option) return "";
-  const windowText = option.paramLabel ? `（${option.paramLabel} ${draft.window}）` : "";
-  if (draft.op === "true") return `${option.label}${windowText}成立`;
-  const symbol = draft.op === "gt" ? "≥" : "≤";
-  return `${option.label}${windowText} ${symbol} ${draft.threshold}`;
+  const window = raw.window ?? raw.params?.[option.paramLabel === null ? "" : option.paramLabel] ?? raw.params?.window;
+  const windowText = option.paramLabel ? `（${option.paramLabel} ${window ?? option.paramDefault}）` : "";
+  if (raw.op === "true") return `${option.label}${windowText}成立`;
+  const symbol = raw.op === "gt" ? "≥" : "≤";
+  return `${option.label}${windowText} ${symbol} ${raw.threshold}`;
 }
 
 function conditionToSpec(draft: ConditionDraft): Record<string, unknown> {
