@@ -29,7 +29,7 @@ export interface ComparisonReportView {
   windowRuleNetCashFlow: number;
   windowDifferenceNote: string;
   recordedEpisodeResult: { pnl: number | null; resultKind: string | null; resultSign: string | null };
-  decisionVerdicts: { executionId: string; day: string; side: "BUY" | "SELL"; verdict: "aligned" | "different" | "insufficient"; reasonText: string }[];
+  decisionVerdicts: { executionId: string; day: string; side: "BUY" | "SELL"; verdict: "aligned" | "different" | "insufficient"; reasonText: string; ruleChecks: { rule: string; passed: boolean }[] }[];
   limitations: string[];
 }
 
@@ -93,9 +93,16 @@ function report(raw: unknown): ComparisonReportView {
         const v = text(verdict.verdict);
         if (!["aligned", "different", "insufficient"].includes(v)) fail();
         const verdictSide = side(verdict.side);
+        const ruleChecks = "rule_checks" in verdict && Array.isArray(verdict.rule_checks)
+          ? array(verdict.rule_checks).map((item) => {
+              const check = object(item);
+              return { rule: text(check.rule), passed: check.passed === true };
+            })
+          : [];
         return {
           executionId: text(verdict.execution_id), day: day(verdict.day), side: verdictSide,
           verdict: v as "aligned" | "different" | "insufficient", reasonText: text(verdict.reason_text),
+          ruleChecks,
         };
       })
     : [];

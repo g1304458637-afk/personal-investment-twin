@@ -200,3 +200,8 @@
 
 .strategy-rule-group code { font-size: 10.5px; color: var(--muted); }
 .strategy-rule-group span { font-size: 12px; line-height: 1.55; color: var(--foreground); }
+
+.strategy-rule-chips { display: inline-flex; gap: 6px; }
+.strategy-rule-chips em { font-style: normal; font-size: 11px; }
+.strategy-rule-chips em.is-aligned { color: #69d5bb; }
+.strategy-rule-chips em.is-different { color: #ff8f9c; }

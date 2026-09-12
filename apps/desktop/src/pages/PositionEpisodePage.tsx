@@ -460,6 +460,11 @@ export function PositionEpisodePage() {
               <em className={verdict.verdict === "aligned" ? "is-aligned" : verdict.verdict === "different" ? "is-different" : "is-insufficient"}>
                 {verdict.verdict === "aligned" ? t("Rules match") : verdict.verdict === "different" ? t("Rules differ") : t("Insufficient data")}
               </em>
+              <span className="strategy-rule-chips">
+                {verdict.ruleChecks.map((check) => (
+                  <em key={check.rule} className={check.passed ? "is-aligned" : "is-different"}>{check.rule} {check.passed ? "✓" : "✗"}</em>
+                ))}
+              </span>
               <p className="strategy-trade__reason">{verdict.reasonText}</p>
             </div>
           ))}
@@ -472,8 +477,11 @@ export function PositionEpisodePage() {
           </ul>
         </> : null}
       </section>
-      <LensMethodSelector report={lensProjection.report} methodId={lensState.method.id} onSelect={selectLensMethod} />
-      <LensDecisionTimeline entry={entry} method={lensState.method} decisionId={lensState.check?.decision_id ?? ""} onSelect={selectLensDecision} />
+      <details className="iw-disclosure iw-inset">
+        <summary>{t("Fixed rulers (reference, does not change with strategy)")}</summary>
+        <LensMethodSelector report={lensProjection.report} methodId={lensState.method.id} onSelect={selectLensMethod} />
+        <LensDecisionTimeline entry={entry} method={lensState.method} decisionId={lensState.check?.decision_id ?? ""} onSelect={selectLensDecision} />
+      </details>
     </> : <StateNotice state="insufficient" title={locale === "zh-CN" ? "这轮策略复盘暂不可用" : "Decision Lens is unavailable"} detail={locale === "zh-CN" ? (lensProjection.error ? "方法资料与当前投资记录未能核对一致。下方仍可查看原始投资过程。" : "当前运行环境尚未提供这轮的方法资料。原始行情和操作仍可查看。") : "The method projection is missing or could not be matched to this ledger. Recorded history remains available."} />)}
     <div className="iw-episode-main" hidden={sample && sampleSection !== "process" && !lensMode}>
       {episodeGuideActive ? <ChartGuide guideId="episode-process" onExit={exitGuide} /> : null}

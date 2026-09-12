@@ -252,7 +252,8 @@
      "side": "BUY",
      "verdict": "insufficient",
      "reason_text": "决策日前没有可用的收盘观测，无法按该策略核对。",
-     "conditions": []
+     "conditions": [],
+     "rule_checks": []
     },
     {
      "execution_id": "SYN_STUDY_SHOWCASE:execution:07",
@@ -260,6 +261,12 @@
      "side": "BUY",
      "verdict": "aligned",
      "reason_text": "收盘20.83高于SMA20 19.78，并严格突破此前20个有效收盘高点20.69。",
+     "rule_checks": [
+      {
+       "rule": "入场规则",
+       "passed": true
+      }
+     ],
      "conditions": []
     },
     {
@@ -268,6 +275,12 @@
      "side": "SELL",
      "verdict": "different",
      "reason_text": "该策略在 2025-05-15 收盘没有为 SYN_VALUE 产生退出信号，按其规则应继续持有。",
+     "rule_checks": [
+      {
+       "rule": "退出规则",
+       "passed": false
+      }
+     ],
      "conditions": []
     },
     {
@@ -276,6 +289,12 @@
      "side": "SELL",
      "verdict": "different",
      "reason_text": "该策略在 2025-06-12 收盘没有为 SYN_VALUE 产生退出信号，按其规则应继续持有。",
+     "rule_checks": [
+      {
+       "rule": "退出规则",
+       "passed": false
+      }
+     ],
      "conditions": []
     }
    ]
@@ -401,7 +420,8 @@
      "side": "BUY",
      "verdict": "insufficient",
      "reason_text": "决策日前没有可用的收盘观测，无法按该策略核对。",
-     "conditions": []
+     "conditions": [],
+     "rule_checks": []
     },
     {
      "execution_id": "SYN_STUDY_SHOWCASE:execution:05",
@@ -409,6 +429,12 @@
      "side": "BUY",
      "verdict": "different",
      "reason_text": "该策略在 2025-02-28 收盘没有为 SYN_FUND 产生入场信号。",
+     "rule_checks": [
+      {
+       "rule": "入场规则",
+       "passed": false
+      }
+     ],
      "conditions": []
     },
     {
@@ -417,6 +443,12 @@
      "side": "SELL",
      "verdict": "different",
      "reason_text": "该策略在 2025-09-11 收盘没有为 SYN_FUND 产生退出信号，按其规则应继续持有。",
+     "rule_checks": [
+      {
+       "rule": "退出规则",
+       "passed": false
+      }
+     ],
      "conditions": []
     },
     {
@@ -425,6 +457,12 @@
      "side": "BUY",
      "verdict": "different",
      "reason_text": "该策略在 2025-11-06 收盘没有为 SYN_FUND 产生入场信号。",
+     "rule_checks": [
+      {
+       "rule": "入场规则",
+       "passed": false
+      }
+     ],
      "conditions": []
     }
    ]
@@ -765,6 +803,12 @@
      "side": "BUY",
      "verdict": "different",
      "reason_text": "该策略在 2025-01-10 收盘没有为 SYN_GROWTH 产生入场信号。",
+     "rule_checks": [
+      {
+       "rule": "入场规则",
+       "passed": false
+      }
+     ],
      "conditions": []
     },
     {
@@ -773,6 +817,12 @@
      "side": "BUY",
      "verdict": "aligned",
      "reason_text": "收盘11.10高于SMA20 10.54，并严格突破此前20个有效收盘高点11.06。",
+     "rule_checks": [
+      {
+       "rule": "入场规则",
+       "passed": true
+      }
+     ],
      "conditions": []
     },
     {
@@ -781,6 +831,12 @@
      "side": "BUY",
      "verdict": "aligned",
      "reason_text": "收盘12.19高于SMA20 11.68，并严格突破此前20个有效收盘高点12.14。",
+     "rule_checks": [
+      {
+       "rule": "入场规则",
+       "passed": true
+      }
+     ],
      "conditions": []
     },
     {
@@ -789,6 +845,12 @@
      "side": "SELL",
      "verdict": "different",
      "reason_text": "该策略在 2025-04-09 收盘没有为 SYN_GROWTH 产生退出信号，按其规则应继续持有。",
+     "rule_checks": [
+      {
+       "rule": "退出规则",
+       "passed": false
+      }
+     ],
      "conditions": []
     },
     {
@@ -797,6 +859,12 @@
      "side": "SELL",
      "verdict": "different",
      "reason_text": "该策略在 2025-05-07 收盘没有为 SYN_GROWTH 产生退出信号，按其规则应继续持有。",
+     "rule_checks": [
+      {
+       "rule": "退出规则",
+       "passed": false
+      }
+     ],
      "conditions": []
     },
     {
@@ -805,6 +873,12 @@
      "side": "SELL",
      "verdict": "different",
      "reason_text": "该策略在 2025-06-05 收盘没有为 SYN_GROWTH 产生退出信号，按其规则应继续持有。",
+     "rule_checks": [
+      {
+       "rule": "退出规则",
+       "passed": false
+      }
+     ],
      "conditions": []
     }
    ]
@@ -1128,6 +1202,12 @@
      "side": "BUY",
      "verdict": "aligned",
      "reason_text": "收盘10.82高于SMA20 10.61，并严格突破此前20个有效收盘高点10.73。",
+     "rule_checks": [
+      {
+       "rule": "入场规则",
+       "passed": true
+      }
+     ],
      "conditions": []
     },
     {
@@ -1136,6 +1216,12 @@
      "side": "BUY",
      "verdict": "different",
      "reason_text": "该策略在 2025-08-07 收盘没有为 SYN_GROWTH 产生入场信号。",
+     "rule_checks": [
+      {
+       "rule": "入场规则",
+       "passed": false
+      }
+     ],
      "conditions": []
     },
     {
@@ -1144,6 +1230,12 @@
      "side": "SELL",
      "verdict": "different",
      "reason_text": "该策略在 2025-09-18 收盘没有为 SYN_GROWTH 产生退出信号，按其规则应继续持有。",
+     "rule_checks": [
+      {
+       "rule": "退出规则",
+       "passed": false
+      }
+     ],
      "conditions": []
     },
     {
@@ -1152,6 +1244,12 @@
      "side": "BUY",
      "verdict": "different",
      "reason_text": "该策略在 2025-11-13 收盘没有为 SYN_GROWTH 产生入场信号。",
+     "rule_checks": [
+      {
+       "rule": "入场规则",
+       "passed": false
+      }
+     ],
      "conditions": []
     }
    ]
@@ -1328,6 +1426,12 @@
      "side": "BUY",
      "verdict": "different",
      "reason_text": "该策略在 2025-07-31 收盘没有为 SYN_VALUE 产生入场信号。",
+     "rule_checks": [
+      {
+       "rule": "入场规则",
+       "passed": false
+      }
+     ],
      "conditions": []
     },
     {
@@ -1336,6 +1440,12 @@
      "side": "SELL",
      "verdict": "different",
      "reason_text": "该策略在 2025-10-09 收盘没有为 SYN_VALUE 产生退出信号，按其规则应继续持有。",
+     "rule_checks": [
+      {
+       "rule": "退出规则",
+       "passed": false
+      }
+     ],
      "conditions": []
     }
    ]

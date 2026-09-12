@@ -257,35 +257,40 @@ def decision_verdicts(spec, bars: Sequence[Mapping[str, Any]], *, instrument: st
         if eve is None:
             out.append({"execution_id": fact.execution_id, "day": fact.day.isoformat(),
                         "side": fact.side, "verdict": "insufficient",
-                        "reason_text": "决策日前没有可用的收盘观测，无法按该策略核对。", "conditions": []})
+                        "reason_text": "决策日前没有可用的收盘观测，无法按该策略核对。",
+                        "conditions": [], "rule_checks": []})
             continue
         held = {instrument} if fact.side == "SELL" else set()
         _exits, candidates = provider(spec.params, data, eve, held, set())
         if fact.side == "BUY":
             entry = next((c for c in candidates if c.kind in {"entry_candidate", "add_candidate"}
                           and c.instrument == instrument), None)
+            rule_checks = [{"rule": "入场规则", "passed": entry is not None}]
             if entry is not None:
                 out.append({"execution_id": fact.execution_id, "day": fact.day.isoformat(),
                             "side": "BUY", "verdict": "aligned",
                             "reason_text": entry.reason_text,
+                            "rule_checks": rule_checks,
                             "conditions": [dict(c) for c in entry.conditions]})
             else:
                 out.append({"execution_id": fact.execution_id, "day": fact.day.isoformat(),
                             "side": "BUY", "verdict": "different",
                             "reason_text": f"该策略在 {eve.isoformat()} 收盘没有为 {instrument} 产生入场信号。",
-                            "conditions": []})
+                            "rule_checks": rule_checks, "conditions": []})
         else:
             exit_signal = next((c for c in candidates if c.kind == "exit" and c.instrument == instrument), None)
+            rule_checks = [{"rule": "退出规则", "passed": exit_signal is not None}]
             if exit_signal is not None:
                 out.append({"execution_id": fact.execution_id, "day": fact.day.isoformat(),
                             "side": "SELL", "verdict": "aligned",
                             "reason_text": exit_signal.reason_text,
+                            "rule_checks": rule_checks,
                             "conditions": [dict(c) for c in exit_signal.conditions]})
             else:
                 out.append({"execution_id": fact.execution_id, "day": fact.day.isoformat(),
                             "side": "SELL", "verdict": "different",
                             "reason_text": f"该策略在 {eve.isoformat()} 收盘没有为 {instrument} 产生退出信号，按其规则应继续持有。",
-                            "conditions": []})
+                            "rule_checks": rule_checks, "conditions": []})
     return out
 
 

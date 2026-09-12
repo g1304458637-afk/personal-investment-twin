@@ -1607,6 +1607,7 @@ export const zhCN = {
   "Recorded result": "记录结果",
   "Rule trades in window": "窗口内规则成交",
   "Net cash flow": "净现金流",
+  "Fixed rulers (reference, does not change with strategy)": "固定核对尺（参考 · 不随策略切换）",
   "This strategy checks your decisions with these rules": "该策略用这些规则核对你的操作",
   "Review card": "复盘卡片",
   "A desensitized summary you can share: no instrument names, no absolute amounts.": "可分享的脱敏摘要：不含标的真名与绝对金额。",
