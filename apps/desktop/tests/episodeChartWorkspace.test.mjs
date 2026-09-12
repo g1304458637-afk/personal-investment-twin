@@ -10,7 +10,7 @@ test("showcase Episode routes use their registered OHLC workspace while real rou
   assert.match(page, /entry=\{chartEntry\}/);
   assert.match(page, /showcaseChartForEpisode/);
   assert.match(page, /<InvestmentChartWorkspace entry=\{entry\} market=\{showcaseChart\.market\}/);
-  assert.match(page, /onSelectDecision=\{lensMode \? selectLensDecision : setSelectedDecisionId\}/);
+  assert.doesNotMatch(page, /selectLensDecision/);
 });
 
 test("close-only workspace has one shared navigator while both recorded panes use the same store", async () => {

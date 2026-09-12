@@ -24,7 +24,7 @@ test("episode workspace keeps marked outcomes dated and leaves charts wired to r
   assert.match(page, /<EpisodeChartWorkspace/);
   assert.match(workspace, /<PositionEpisodeTimeline/);
   assert.match(workspace, /<PositionQuantityTimeline/);
-  assert.match(page, /onSelectDecision=\{lensMode \? selectLensDecision : setSelectedDecisionId\}/);
+  assert.match(page, /onSelectDecision=\{setSelectedDecisionId\}/);
   assert.doesNotMatch(page, /calculate(?:Pnl|Return|Portfolio)|Math\./);
 });
 

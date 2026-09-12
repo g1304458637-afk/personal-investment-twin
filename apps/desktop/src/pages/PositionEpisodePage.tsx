@@ -1,8 +1,5 @@
 import { formatCurrencyValue } from "@/lib/format";
 import { DecisionAnalysisWorkspace } from "@/components/review/DecisionAnalysisWorkspace";
-import { LensMethodSelector, LensDecisionInspector, LensDecisionTimeline } from "@/components/review/DecisionLensPanel";
-import { adaptDecisionLensReport, selectLensState } from "@/data/episodeLens";
-import { demoLensForEpisode } from "@/data/episodeLensDemo";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
@@ -271,28 +268,6 @@ export function PositionEpisodePage() {
     "toujing_turtle_s2_long": "海龟 S2",
   }[id] ?? id);
   const lensMode = sample && sampleSection === "lens";
-  const lensProjection = useMemo(() => {
-    if (!entry) return {report: null, error: false};
-    const raw = data.mode === "demo" ? demoLensForEpisode(entry) : entry.lensReview;
-    if (!raw) return {report: null, error: false};
-    try { return {report: adaptDecisionLensReport(raw, entry), error: false}; }
-    catch { return {report: null, error: true}; }
-  }, [entry, data.mode]);
-  const lensState = lensProjection.report ? selectLensState(lensProjection.report, search.get("lens"), search.get("lensDecision")) : null;
-  const lensDecision = entry?.decisions.find(d => d.decisionId === lensState?.check?.decision_id) ?? null;
-  const selectLensMethod = (id: string) => {
-    if (!lensProjection.report?.methods.some(method => method.id === id)) return;
-    const next = new URLSearchParams(search);
-    next.set("lens", id);
-    // Freeze the selected real action while the observation method changes.
-    if (lensState?.check) next.set("lensDecision", lensState.check.decision_id);
-    setSearch(next, {replace: true});
-  };
-  const selectLensDecision = (id: string) => {
-    if (!entry?.decisions.some(decision => decision.decisionId === id)) return;
-    const next = new URLSearchParams(search); next.set("lensDecision", id);
-    setSearch(next, {replace: true});
-  };
   const requestedDecisionId = search.get("decision");
   const episodeGuideActive = search.get("guide") === "episode-process";
   const [selectedDecisionId, setSelectedDecisionId] = useState<string | null>(null);
@@ -351,11 +326,6 @@ export function PositionEpisodePage() {
     // The guide can only focus a decision already owned by this loaded Episode.
     timeNavigation.apply(factFocusDomain(occurredAt, occurredAt, observationTimes), "reset");
   }, [entry, episodeGuideActive, observationTimes, requestedDecisionId, showcaseChart, timeNavigation]);
-  useEffect(() => {
-    if (!lensMode || !lensDecision || showcaseChart) return;
-    const at = Date.parse(lensDecision.occurredAt);
-    timeNavigation.apply(factFocusDomain(at, at, observationTimes), "reset");
-  }, [lensMode, lensDecision?.decisionId, showcaseChart, observationTimes]);
   if (!entry || !chartEntry) return <div className="space-y-5"><Button asChild variant="quiet"><Link to="/investments"><ArrowLeft />{t("Back to My Investments")}</Link></Button><StateNotice state={data.mode === "real_user" && data.activeAccount && !runtimeError ? "loading" : "insufficient"} title={t(runtimeError || !data.activeAccount && data.mode === "real_user" || data.mode === "demo" ? "This investment is not available in the selected account" : "Loading…")} detail={runtimeError ?? t(data.mode === "real_user" && data.activeAccount ? "Rebuilding from local canonical facts." : "Select its account or return to My Investments.")} /></div>;
   const episode = entry.episode;
   const result = entry.outcomeStory.episodeOutcome.actualResult;
@@ -445,7 +415,6 @@ export function PositionEpisodePage() {
       <ul className="strategy-comparison-limits">{realCompare.report.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul>
     </section> : null}
     {realCompare?.state === "error" ? <p className="iw-subtle">{t("Comparison unavailable")}: {realCompare.reason}</p> : null}
-    {lensMode && (lensProjection.report && lensState ? <>
       <section className="iw-inset strategy-panel strategy-decision-verdicts">
         <div className="strategy-panel__head">
           <p className="iw-kicker">{t("Check against your strategy")}</p>
@@ -477,24 +446,19 @@ export function PositionEpisodePage() {
           </ul>
         </> : null}
       </section>
-      <details className="iw-disclosure iw-inset">
-        <summary>{t("Fixed rulers (reference, does not change with strategy)")}</summary>
-        <LensMethodSelector report={lensProjection.report} methodId={lensState.method.id} onSelect={selectLensMethod} />
-        <LensDecisionTimeline entry={entry} method={lensState.method} decisionId={lensState.check?.decision_id ?? ""} onSelect={selectLensDecision} />
-      </details>
-    </> : <StateNotice state="insufficient" title={locale === "zh-CN" ? "这轮策略复盘暂不可用" : "Decision Lens is unavailable"} detail={locale === "zh-CN" ? (lensProjection.error ? "方法资料与当前投资记录未能核对一致。下方仍可查看原始投资过程。" : "当前运行环境尚未提供这轮的方法资料。原始行情和操作仍可查看。") : "The method projection is missing or could not be matched to this ledger. Recorded history remains available."} />)}
+
     <div className="iw-episode-main" hidden={sample && sampleSection !== "process" && !lensMode}>
       {episodeGuideActive ? <ChartGuide guideId="episode-process" onExit={exitGuide} /> : null}
       <section ref={chartRef} data-price-path data-guide="episode-chart" className={cn(showcaseChart ? "iw-chart-panel iw-inset" : "iw-chart-panel--series")}>
-        {showcaseChart ? <InvestmentChartWorkspace entry={entry} market={showcaseChart.market} ruleFills={comparisonRuleFills} focus={lensMode && lensDecision ? { id: lensDecision.decisionId, startAt: lensDecision.occurredAt, endAt: lensDecision.occurredAt } : guidedDecision ? { id: guidedDecision.decisionId, startAt: guidedDecision.occurredAt, endAt: guidedDecision.occurredAt } : selectedFact ? { id: selectedFact.itemId, startAt: selectedFact.startAt, endAt: selectedFact.endAt } : null} onSelectDecision={lensMode ? selectLensDecision : setSelectedDecisionId} /> : <EpisodeChartWorkspace
+        {showcaseChart ? <InvestmentChartWorkspace entry={entry} market={showcaseChart.market} ruleFills={comparisonRuleFills} focus={guidedDecision ? { id: guidedDecision.decisionId, startAt: guidedDecision.occurredAt, endAt: guidedDecision.occurredAt } : selectedFact ? { id: selectedFact.itemId, startAt: selectedFact.startAt, endAt: selectedFact.endAt } : null} onSelectDecision={setSelectedDecisionId} /> : <EpisodeChartWorkspace
           entry={chartEntry}
-          selectedDecisionId={lensMode ? lensDecision?.decisionId ?? null : selectedDecisionId}
-          emphasizedDecisionIds={lensMode && lensDecision ? [lensDecision.decisionId] : selectedFact?.decisionIds}
-          highlightStart={lensMode ? lensDecision?.occurredAt : selectedFact?.startAt}
-          highlightEnd={lensMode ? lensDecision?.occurredAt : selectedFact?.endAt}
+          selectedDecisionId={selectedDecisionId}
+          emphasizedDecisionIds={selectedFact?.decisionIds}
+          highlightStart={selectedFact?.startAt}
+          highlightEnd={selectedFact?.endAt}
           chartGroup={chartGroup}
           timeNavigation={timeNavigation}
-          onSelectDecision={lensMode ? selectLensDecision : setSelectedDecisionId}
+          onSelectDecision={setSelectedDecisionId}
           onReset={selectedFact ? () => setSelectedPathItemId(null) : undefined}
           toolbar={hasBackground ? <button type="button" className="text-xs text-muted hover:text-foreground" aria-pressed={showBackground} onClick={() => setShowBackground((value) => !value)}>{t(showBackground ? "Hide outside-holding market context" : "Show outside-holding market context")}</button> : undefined}
         />}
@@ -502,7 +466,7 @@ export function PositionEpisodePage() {
         {sample && selectedFact && <div className="episode-focus-toolbar"><span>{c.selected}</span><button onClick={() => { setSelectedPathItemId(null); timeNavigation.reset(); }}>{c.clear}</button></div>}
         {selectedFact ? <div data-selected-phase className="mt-3 border-t border-border/60 pt-3"><p className="iw-subtle">{date(selectedFact.startAt)} → {date(selectedFact.endAt)}</p><div className="mt-2 flex flex-wrap gap-2">{selectedFact.decisionIds.map((id) => { const decision = entry.decisions.find((item) => item.decisionId === id)!; return <Button key={id} variant="quiet" size="sm" onClick={() => setSelectedDecisionId(id)}>{date(decision.occurredAt)} · <DecisionName type={decision.decisionType} /></Button>; })}</div>{phaseCounterfactual ? <details className="mt-3"><summary className="cursor-pointer text-xs text-accent">{t("Historical comparison under fixed assumptions")}</summary><div className="mt-3"><CounterfactualBlock item={phaseCounterfactual} scope="phase" /></div></details> : null}</div> : null}
       </section>
-    {lensMode && lensState?.check && lensProjection.report ? <LensDecisionInspector report={lensProjection.report} onSelectMethod={selectLensMethod} method={lensState.method} check={lensState.check} currency={entry.instrument.currency} onViewActual={() => setSelectedDecisionId(lensState.check!.decision_id)} /> : review?.facts.length ? <aside data-review-facts className="iw-facts iw-inset"><div className="iw-facts-title"><p className="iw-kicker">{t("Review queue")}</p><h2 className="mt-1 text-sm font-semibold">{t("Facts worth revisiting")}</h2><p className="iw-subtle mt-1">{sample ? c.factHint : t("Select a fact to focus its recorded interval in the chart.")}</p></div>{review.facts.map((fact) => {
+    {review?.facts.length ? <aside data-review-facts className="iw-facts iw-inset"><div className="iw-facts-title"><p className="iw-kicker">{t("Review queue")}</p><h2 className="mt-1 text-sm font-semibold">{t("Facts worth revisiting")}</h2><p className="iw-subtle mt-1">{sample ? c.factHint : t("Select a fact to focus its recorded interval in the chart.")}</p></div>{review.facts.map((fact) => {
         const item = entry.pathAnalysis.presentationItems.find((item) => item.itemId === fact.itemId)!;
         const copy = pathItemCopy(item, entry.pathAnalysis.phases, entry.pathAnalysis.patterns, t, formatPercent, formatNumber);
         return <button type="button" key={fact.itemId} data-review-fact={fact.itemId} className="iw-fact" aria-pressed={selectedPathItemId === fact.itemId} onClick={() => { setSelectedPathItemId(fact.itemId); timeNavigation.apply(factFocusDomain(Date.parse(fact.startAt), Date.parse(fact.endAt), observationTimes), "reset"); chartRef.current?.scrollIntoView({block: "start", behavior: "smooth"}); }}><strong>{copy.title}</strong><span>{copy.detail}</span>{sample && <span className="episode-fact-action">{c.focus}<ArrowRight size={13} /></span>}</button>;

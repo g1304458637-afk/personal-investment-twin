@@ -86,7 +86,7 @@ test("Episode Story keeps path-first structure and Decision drilldown", async ()
   assert.match(page, /type="button"/);
   assert.match(page, /data-decision-event-id/);
   assert.match(page, /scrollIntoView/);
-  assert.match(page, /selectedDecisionId=\{lensMode \? lensDecision\?\.decisionId \?\? null : selectedDecisionId\}/);
+  assert.match(page, /selectedDecisionId=\{selectedDecisionId\}/);
   assert.match(page, /data-selected-phase/);
   assert.match(page, /entry\.reviewPresentation/);
   assert.match(page, /data-review-facts/);

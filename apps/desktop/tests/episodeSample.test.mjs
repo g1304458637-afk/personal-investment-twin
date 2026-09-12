@@ -36,7 +36,7 @@ test('sample retains authoritative values, chart navigation, ownership and sourc
   assert.match(page,/formatCurrency\(result.pnl\)/);
   assert.match(page,/episode\.evidenceRefs.includes\(reference.evidenceId\)/);
   assert.match(page,/hidden=\{sample && sampleSection !== "process" && !lensMode\}/);
-  assert.match(page,/onSelectDecision=\{lensMode \? selectLensDecision : setSelectedDecisionId\}/);
+  assert.doesNotMatch(page,/selectLensDecision/);
   assert.match(page,/data.mode === "real_user" && episode.accountId/);
   assert.doesNotMatch(page,/setExampleAccount|calculatePnl|calculateReturn/);
   assert.doesNotMatch(page,/c\.leave|episodeSampleSearch/);
