@@ -21,18 +21,25 @@ from src.strategy.report import result_to_dict  # noqa: E402
 from src.strategy.strategies.t1 import build_t1_spec  # noqa: E402
 
 
-def _desktop_payload(payload: dict) -> dict:
+def _desktop_payload(payload: dict, data) -> dict:
     """Trimmed artifact for the desktop demo: no per-day event journal.
 
     The full journal (selection reasons, signals, daily events, holdings)
     stays in the data-directory result file; the desktop artifact keeps the
     spec, summary, daily ledger, and the complete order/fill path.
     """
+    bars = [
+        {"instrument": instrument, "date": day.isoformat(),
+         "open": bar.open, "high": bar.high, "low": bar.low, "close": bar.close}
+        for instrument in sorted(data.series)
+        for day, bar in zip(data.series[instrument].dates, data.series[instrument].bars)
+    ]
     return {
         "schema_version": payload["schema_version"],
         "strategy": payload["strategy"],
         "data_fingerprint": payload["data_fingerprint"],
         "summary": payload["summary"],
+        "bars": bars,
         "equity": [
             {"date": day["date"], "cash": day["cash"], "equity": day["equity"],
              "invested_fraction": day["invested_fraction"],
@@ -62,7 +69,7 @@ def main() -> int:
     payload = result_to_dict(result)
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=1, sort_keys=False,
                                  allow_nan=False) + "\n", encoding="utf-8")
-    desktop = _desktop_payload(payload)
+    desktop = _desktop_payload(payload, data)
     args.desktop_output.parent.mkdir(parents=True, exist_ok=True)
     args.desktop_output.write_text(json.dumps(desktop, ensure_ascii=False, indent=1,
                                               sort_keys=False, allow_nan=False) + "\n",

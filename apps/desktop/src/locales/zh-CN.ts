@@ -1607,6 +1607,8 @@ export const zhCN = {
   "Recorded result": "记录结果",
   "Rule trades in window": "窗口内规则成交",
   "Net cash flow": "净现金流",
+  "Per-instrument operations": "个股操作",
+  "Each marker is one strategy fill on this instrument; reasons live in the trades list below.": "每个标记是策略在该标的上的一笔成交；触发理由见下方成交记录。",
   "What this page answers": "这一页回答什么",
   "If one fixed, fully public set of rules ran independently in the same market, where would it have gone?": "如果一套完全公开、固定不变的规则，在同样的市场里独立执行，它会走出怎样的路径？",
   "This path is the reference group for your own history: same synthetic market, fixed rules, every fill explained. The performance numbers above are on synthetic prices — read the rule behavior (when it enters, exits, or stands aside), not the profit.": "这条路径是你自己投资历史的对照组：同一合成行情、固定规则、每笔成交都有出处。上方的绩效数字发生在合成行情上——请读它的规则行为（何时进场、何时退出、何时空仓等待），而不是利润。",

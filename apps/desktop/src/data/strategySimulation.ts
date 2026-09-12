@@ -77,7 +77,10 @@ export interface StrategyOrderView {
   resolutionReason: string | null;
 }
 
+export interface StrategyBar { date: string; open: number; high: number; low: number; close: number }
+
 export interface StrategySimulationView {
+  barsByInstrument: Record<string, StrategyBar[]>;
   strategy: StrategySpecView;
   dataFingerprint: string;
   summary: StrategySummaryView;
@@ -200,7 +203,21 @@ export function adaptStrategySimulation(raw: unknown): StrategySimulationView {
   if (equity.length === 0 || Math.abs(summaryView.finalEquity - equity[equity.length - 1].equity) > 1e-6) fail();
   if (Math.abs(summaryView.totalFees - fills.reduce((total, fill) => total + fill.fee, 0)) > 1e-6) fail();
   if (summaryView.fillCount !== fills.length || summaryView.orderCount !== orders.length) fail();
+  const barsByInstrument: Record<string, StrategyBar[]> = {};
+  for (const item of array(value.bars ?? [])) {
+    const bar = object(item);
+    const row = { date: day(bar.date), open: finite(bar.open), high: finite(bar.high),
+                  low: finite(bar.low), close: finite(bar.close) };
+    if (row.high < Math.max(row.open, row.close) || row.low > Math.min(row.open, row.close)) fail();
+    (barsByInstrument[text(bar.instrument)] ??= []).push(row);
+  }
+  for (const rows of Object.values(barsByInstrument)) {
+    for (let index = 1; index < rows.length; index += 1) {
+      if (rows[index].date <= rows[index - 1].date) fail();
+    }
+  }
   return {
+    barsByInstrument,
     strategy: spec(value.strategy),
     dataFingerprint: fingerprint,
     summary: summaryView,

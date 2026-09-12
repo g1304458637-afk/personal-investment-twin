@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 
 import { EChart } from "@/components/charts/EChart";
+import { StrategyInstrumentChart } from "@/components/charts/StrategyInstrumentChart";
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { isTauriRuntime, runtimeRequest } from "@/data/runtimeService";
 import { rawComparisonReportFor, strategyComparison } from "@/data/strategyComparisonDemo";
@@ -42,6 +43,7 @@ export function StrategySimulationPage() {
   const currency = typeof simulation.strategy.params.currency === "string" ? simulation.strategy.params.currency : "CNY";
   const money = (value: number) => formatCurrencyValue(value, locale, currency);
   const [instrument, setInstrument] = useState<string>("all");
+  const [chartInstrument, setChartInstrument] = useState<string | null>(null);
   const [teaching, setTeaching] = useState<Record<string, { status: string; texts: string[]; reason: string | null } | "loading">>({});
   const explain = async (episodeId: string) => {
     if (!isTauriRuntime()) {
@@ -68,6 +70,19 @@ export function StrategySimulationPage() {
     () => instrument === "all" ? simulation.fills : simulation.fills.filter((fill) => fill.instrument === instrument),
     [instrument, simulation.fills],
   );
+  const barsByInstrument = simulation.barsByInstrument;
+  const fillsByInstrument = useMemo(() => {
+    const grouped: Record<string, { day: string; side: "BUY" | "SELL"; price: number }[]> = {};
+    for (const fill of simulation.fills) {
+      (grouped[fill.instrument] ??= []).push({ day: fill.day, side: fill.side, price: fill.price });
+    }
+    return grouped;
+  }, [simulation.fills]);
+  const chartInstruments = useMemo(
+    () => Object.keys(barsByInstrument).filter((name) => (fillsByInstrument[name] ?? []).length > 0).sort(),
+    [barsByInstrument, fillsByInstrument],
+  );
+  const effectiveChartInstrument = chartInstrument ?? chartInstruments[0] ?? null;
   const reasonByOrderId = useMemo(
     () => new Map(simulation.orders.map((order) => [order.orderId, order])),
     [simulation.orders],
@@ -186,6 +201,22 @@ export function StrategySimulationPage() {
         <span className="iw-subtle">{t("Initial cash")} {money(summary.initialCash)}</span>
       </div>
       <EChart option={equityOption} label={t("Equity curve")} className="strategy-equity-chart" />
+    </section>
+
+    <section className="iw-inset strategy-panel">
+      <div className="strategy-panel__head">
+        <p className="iw-kicker">{t("Per-instrument operations")}</p>
+        <label className="strategy-filter">
+          <span className="iw-subtle">{chartInstrument ?? t("All instruments")}</span>
+          <select aria-label={t("Per-instrument operations")} value={effectiveChartInstrument ?? ""} onChange={(event) => setChartInstrument(event.target.value)}>
+            {chartInstruments.map((name) => <option key={name} value={name}>{name}</option>)}
+          </select>
+        </label>
+      </div>
+      {effectiveChartInstrument && barsByInstrument[effectiveChartInstrument]
+        ? <StrategyInstrumentChart bars={barsByInstrument[effectiveChartInstrument]} fills={fillsByInstrument[effectiveChartInstrument] ?? []} />
+        : null}
+      <p className="strategy-compare__note">{t("Each marker is one strategy fill on this instrument; reasons live in the trades list below.")}</p>
     </section>
 
     <section className="iw-inset strategy-panel">

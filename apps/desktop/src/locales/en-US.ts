@@ -1606,6 +1606,8 @@ export const enUS = {
   "Recorded result": "Recorded result",
   "Rule trades in window": "Rule trades in window",
   "Net cash flow": "Net cash flow",
+  "Per-instrument operations": "Per-instrument operations",
+  "Each marker is one strategy fill on this instrument; reasons live in the trades list below.": "Each marker is one strategy fill on this instrument; reasons live in the trades list below.",
   "What this page answers": "What this page answers",
   "If one fixed, fully public set of rules ran independently in the same market, where would it have gone?": "If one fixed, fully public set of rules ran independently in the same market, where would it have gone?",
   "This path is the reference group for your own history: same synthetic market, fixed rules, every fill explained. The performance numbers above are on synthetic prices — read the rule behavior (when it enters, exits, or stands aside), not the profit.": "This path is the reference group for your own history: same synthetic market, fixed rules, every fill explained. The performance numbers above are on synthetic prices — read the rule behavior (when it enters, exits, or stands aside), not the profit.",
