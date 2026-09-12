@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "投镜",
+  "productName": "投镜-策略引擎",
   "version": "0.1.0",
-  "identifier": "com.personal-investment-twin.desktop",
+  "identifier": "com.personal-investment-twin.desktop.zhipu",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://127.0.0.1:1420",
