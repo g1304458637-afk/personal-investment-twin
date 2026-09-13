@@ -12,7 +12,7 @@ export const liquidNavigation = [
 
 export function liquidSection(path: string) {
   if (path.startsWith("/investments/compare") || ["/analysis", "/review", "/history", "/comparison", "/twin", "/advanced"].some((root) => path === root || path.startsWith(`${root}/`))) return "/analysis";
-  if (path === "/pretrade") return "/ask";
+  if (path === "/pretrade" || path === "/journal") return "/ask";
   if (path.startsWith("/investments")) return "/investments";
   return path;
 }
