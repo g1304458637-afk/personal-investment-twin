@@ -344,7 +344,7 @@ export function PositionEpisodePage() {
     <div ref={sampleTop} className="iw-episode-toolbar"><Button asChild variant="quiet" size="sm" className="-ml-3"><Link to="/investments"><ArrowLeft />{t("My Investments")}</Link></Button><div className="episode-sample-switch"><span className="iw-subtle">{data.mode === "demo" ? exampleAccountLabel(data.exampleAccount, locale) : data.activeAccount?.display_name}</span></div></div>
     <header className="iw-episode-hero iw-inset"><div><p className="iw-kicker">{sample ? c.label : t("Investment episode")}</p><h1 className="iw-episode-title">{instrumentName}</h1><p className="iw-episode-period">{date(episode.openedAt)} → {episode.closedAt ? date(episode.closedAt) : t("Present")} · {t(episode.status === "open" ? "Holding" : "Closed")}</p>{story ? <p data-review-story className="iw-story">{story}{review?.abbreviated ? t("Further executions are listed below.") : t("Story full stop")}</p> : null}</div><div data-episode-result className="iw-outcome"><div><p className="iw-kicker">{t(result.resultKind === "marked" ? "Current marked result" : "Final realized result")}</p><p className={cn("iw-outcome-value", resultTone(result.resultSign))}>{formatCurrency(result.pnl)}</p>{result.returnValue !== null ? <p className="iw-subtle mt-2">{t("Position return")}: {formatPercent(result.returnValue, 2)}</p> : null}</div><p className="iw-outcome-foot">{result.resultKind === "marked" ? <>{t("This is a current mark, not a realized exit.")}<br />{t("Marked at {date}", {date: result.valuationAt ? date(result.valuationAt) : "—"})} · {t("Valuation price")}: {result.valuationPrice === null ? "—" : formatCurrency(result.valuationPrice)}</> : t("Final date: {date}", {date: episode.closedAt ? date(episode.closedAt) : "—"})}</p></div></header>
     {sample && <nav className="episode-sample-nav" aria-label={c.label}>{episodeSections.map((section) => <button key={section} aria-pressed={sampleSection === section} onClick={() => setSampleSection(section)}>{c[section]}</button>)}</nav>}
-    <div className="episode-compare-strategy">
+    {sampleSection === "process" ? <div className="episode-compare-strategy">
       <button type="button" className="workshop-save" onClick={() => {
         if (!entry) return;
         const card = buildReviewCard({
@@ -368,8 +368,8 @@ export function PositionEpisodePage() {
         URL.revokeObjectURL(url);
       }}>{t("Review card")}</button>
       <span className="iw-subtle">{t("A desensitized summary you can share: no instrument names, no absolute amounts.")}</span>
-    </div>
-    {data.mode === "demo" ? <div className="episode-compare-strategy">
+    </div> : null}
+    {data.mode === "demo" && sampleSection === "process" ? <div className="episode-compare-strategy">
       <span>{t("Rule replay strategy")}</span>
       <select aria-label={t("Rule replay strategy")} value={compareStrategyId} onChange={(event) => setCompareStrategyId(event.target.value)}>
         <option value="toujing_t1_breakout_trend">T1 · 突破趋势</option>
@@ -426,7 +426,7 @@ export function PositionEpisodePage() {
         const copy = pathItemCopy(item, entry.pathAnalysis.phases, entry.pathAnalysis.patterns, t, formatPercent, formatNumber);
         return <button type="button" key={fact.itemId} data-review-fact={fact.itemId} className="iw-fact" aria-pressed={selectedPathItemId === fact.itemId} onClick={() => { setSelectedPathItemId(fact.itemId); timeNavigation.apply(factFocusDomain(Date.parse(fact.startAt), Date.parse(fact.endAt), observationTimes), "reset"); chartRef.current?.scrollIntoView({block: "start", behavior: "smooth"}); }}><strong>{copy.title}</strong><span>{copy.detail}</span>{sample && <span className="episode-fact-action">{c.focus}<ArrowRight size={13} /></span>}</button>;
       })}</aside> : <aside className="iw-facts iw-inset"><div className="iw-facts-title"><p className="iw-kicker">{t("Review queue")}</p><h2 className="mt-1 text-sm font-semibold">{t("No review facts are available")}</h2><p className="iw-subtle mt-2">{t("The recorded investment path remains available below.")}</p></div></aside>}</div>
-    <section className="iw-inset strategy-panel strategy-decision-verdicts">
+    {sampleSection === "process" ? <section className="iw-inset strategy-panel strategy-decision-verdicts">
         <div className="strategy-panel__head">
           <p className="iw-kicker">{t("Check against your strategy")}</p>
           <span className="iw-subtle">{compareStrategyLabel(compareStrategyId)}</span>
@@ -456,7 +456,7 @@ export function PositionEpisodePage() {
             ))}
           </ul>
         </> : null}
-      </section>
+      </section> : null}
 
 
     <div className="iw-detail-grid" hidden={sample && sampleSection !== "executions" && sampleSection !== "evidence"}><section hidden={sample && sampleSection !== "executions"} data-all-executions data-guide="episode-ledger" className="iw-executions iw-inset"><div className="iw-panel-heading"><div><p className="iw-kicker">{t("Recorded ledger")}</p><h2>{t("All executions")}</h2></div><span className="iw-subtle">{t("Select an execution for before-and-after detail")}</span></div>{entry.decisions.map((decision) => <button type="button" key={decision.decisionId} data-decision-event-id={decision.decisionId} className="iw-execution-row" onClick={() => setSelectedDecisionId(decision.decisionId)}><span className="text-xs text-muted">{date(decision.occurredAt)}</span><span className="text-sm text-foreground"><DecisionName type={decision.decisionType} /></span><span className="font-mono text-xs text-muted">{formatNumber(decision.executedQuantity, 0)} @ {formatCurrency(decision.executionPrice)}</span><ArrowRight className="size-4 text-accent" /></button>)}</section>
