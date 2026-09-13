@@ -91,7 +91,10 @@ export function MyStrategiesPage() {
     setSelectedId(id);
   };
 
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
   const remove = (id: string) => {
+    if (pendingDelete !== id) { setPendingDelete(id); return; }
+    setPendingDelete(null);
     persist(saved.filter((item) => item.id !== id));
     if (selectedId === id) setSelectedId(null);
   };
@@ -245,7 +248,9 @@ export function MyStrategiesPage() {
                 <strong>{item.name}</strong>
                 <span>{item.savedAt} · {item.id.slice(0, 14)}…</span>
               </button>
-              <button type="button" className="workshop-remove" onClick={() => remove(item.id)}>{t("Delete")}</button>
+              <button type="button" className="workshop-remove" onClick={() => remove(item.id)}>
+                {pendingDelete === item.id ? t("Click again to confirm") : t("Delete")}
+              </button>
             </div>
           ))}
         </div>

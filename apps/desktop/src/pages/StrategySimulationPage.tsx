@@ -321,6 +321,15 @@ export function StrategySimulationPage() {
             onClick={() => { setWorkshopOpen(true); }}>＋ {t("Build your own")}</button>
           {loadingStrategy ? <span className="iw-subtle">{t("Loading…")}</span> : null}
         </div>
+        <div className="strategy-anchor-nav">
+          {[["#rules", t("Rules")], ["#results", t("Results")], ["#charts", t("Charts")],
+            ["#trades", t("Trades")], ["#comparison", t("Comparison")]].map(([id, label]) => (
+            <a key={id} href={`javascript:void(0)`} className="strategy-anchor-link"
+              onClick={(e) => { e.preventDefault(); document.querySelector(id)?.scrollIntoView({ behavior: "smooth" }); }}>
+              {label}
+            </a>
+          ))}
+        </div>
         <h1 className="strategy-hero__title">{hero.title}</h1>
         <p className="strategy-hero__desc">{hero.description}</p>
         <p className="strategy-hero__meta">{hero.meta}</p>
@@ -465,7 +474,7 @@ export function StrategySimulationPage() {
 
 
 
-      <section className="strategy-stats" aria-label={t("Final equity")}>
+      <section id="results" className="strategy-stats" aria-label={t("Final equity")}>
 
         <StatCard label={t("Final equity")} value={money(summary.finalEquity)}
 

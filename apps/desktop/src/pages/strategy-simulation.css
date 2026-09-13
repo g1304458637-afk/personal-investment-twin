@@ -715,3 +715,7 @@
   color: var(--muted);
   cursor: pointer;
 }
+
+.strategy-anchor-nav { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
+.strategy-anchor-link { color: #8cdaf2; font-size: 12px; text-decoration: none; cursor: pointer; padding: 2px 8px; border-radius: 6px; }
+.strategy-anchor-link:hover { background: rgba(140,218,242,.1); }
