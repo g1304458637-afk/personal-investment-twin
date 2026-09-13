@@ -9,7 +9,7 @@ test("liquid primary navigation consolidates existing tasks without orphaning de
   for (const path of ["/analysis", "/review", "/review/decisions", "/history", "/comparison/history", "/investments/compare-example", "/advanced/evidence"]) assert.equal(liquidSection(path), "/analysis");
   assert.equal(liquidSection("/ask"), "/ask");
   assert.equal(liquidSection("/investments/episodes/owned"), "/investments");
-  assert.equal(liquidSection("/journal"), "/pretrade");
+  assert.equal(liquidSection("/journal"), "/ask");
   assert.equal(new Set(analysisLinks.map(x => x.path)).size, analysisLinks.length);
 });
 
