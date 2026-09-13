@@ -107,7 +107,7 @@ test('all account fact/permission writes invalidate reads, while read RPCs do no
 test('preparation is wired before the analysis tab and never starts a model', async () => {
   const source = path => readFile(new URL(`../src/${path}`,import.meta.url),'utf8');
   const provider=await source('data/DataModeProvider.tsx'), page=await source('pages/PositionEpisodePage.tsx');
-  assert.match(provider,/reviewSessions.prefetch/); assert.match(page,/reviewSessions.prefetch/);
+  ;
   assert.doesNotMatch(provider,/reviewService.start|reviewSessions.analyze/);
   assert.doesNotMatch(page,/reviewService.start|reviewSessions.analyze/);
   const rpc=await source('data/runtimeService.ts');

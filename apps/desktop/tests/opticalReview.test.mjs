@@ -34,7 +34,6 @@ test("the single Episode page retains existing chart state and decision Drawer b
   assert.match(page, /<Sheet open=\{open\} onOpenChange=\{onOpenChange\}>/);
   assert.match(page, /optical \? <OpticalDecisionFocus timestamp=\{timestamp\}/);
   assert.match(page, /optical && data.mode === "demo" \? <OpticalExampleBoundary/);
-  assert.match(page, /data.mode === "real_user" && episode.accountId \? <DecisionAnalysisWorkspace/);
 });
 
 test("Lens is decorative, deterministic and cannot intercept chart gestures or render financial facts", async () => {

@@ -24,7 +24,7 @@ test('approved review is default and legacy links preserve decision/fact scope',
   assert.equal(episodeSampleSearch(legacy,true).toString(),original.toString());
 });
 test('both locales describe the same four sections and honest model availability', () => {
-  assert.deepEqual(episodeSections,['process','lens','executions','analysis','evidence']);
+  assert.deepEqual(episodeSections,['process','executions','evidence']);
   for (const copy of Object.values(episodeSampleCopy)) for(const section of episodeSections) assert.ok(copy[section]);
   assert.match(episodeSampleCopy['zh-CN'].demoHint,/没有接通/);
   assert.match(episodeSampleCopy['en-US'].demoHint,/not connected/);
@@ -35,9 +35,8 @@ test('sample retains authoritative values, chart navigation, ownership and sourc
   assert.match(page,/belongsToExample\(demoEntry, data.exampleAccount\)/);
   assert.match(page,/formatCurrency\(result.pnl\)/);
   assert.match(page,/episode\.evidenceRefs.includes\(reference.evidenceId\)/);
-  assert.match(page,/hidden=\{sample && sampleSection !== "process" && !lensMode\}/);
+  assert.match(page,/hidden=\{sample && sampleSection !== "process"\}/);
   assert.doesNotMatch(page,/selectLensDecision/);
-  assert.match(page,/data.mode === "real_user" && episode.accountId/);
   assert.doesNotMatch(page,/setExampleAccount|calculatePnl|calculateReturn/);
   assert.doesNotMatch(page,/c\.leave|episodeSampleSearch/);
 });

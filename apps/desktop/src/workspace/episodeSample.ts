@@ -1,5 +1,5 @@
 /** Presentation-only routing. Never changes account, evidence or calculation scope. */
-export const episodeSections = ["process", "lens", "executions", "analysis", "evidence"] as const;
+export const episodeSections = ["process", "executions", "evidence"] as const;
 export type EpisodeSection = typeof episodeSections[number];
 export function episodeSection(search: URLSearchParams): EpisodeSection {
   const value = search.get("section");
@@ -21,7 +21,7 @@ export function episodeSampleSearch(search: URLSearchParams, _enabled: boolean) 
 export const episodeSampleCopy = {
   "zh-CN": {
     enter: "投资复盘", leave: "旧版详情", label: "投资复盘",
-    process: "投资过程", lens: "策略复盘", executions: "全部操作", analysis: "进一步理解", evidence: "依据与来源",
+    process: "投资过程", executions: "全部操作", evidence: "依据与来源",
     guide: "先看过程，再回看值得留意的操作。", factHint: "来自已有记录，不是决策评分。点击一项，图表会定位到对应区间。",
     focus: "查看这段操作", clear: "恢复完整投资期间", selected: "正在回看所选区间",
     analyzeTitle: "围绕这一轮，继续理解", analyzeHint: "分析、历史比较和事后备注都使用当前投资范围，不需要重新选择对象。",
@@ -32,7 +32,7 @@ export const episodeSampleCopy = {
   },
   "en-US": {
     enter: "Investment review", leave: "Legacy detail", label: "Investment review",
-    process: "Investment journey", lens: "Decision Lens", executions: "All actions", analysis: "Explore further", evidence: "Evidence & sources",
+    process: "Investment journey", executions: "All actions", evidence: "Evidence & sources",
     guide: "Start with the journey. Revisit the recorded actions.", factHint: "Recorded facts, not a decision score. Select one to focus its interval in the chart.",
     focus: "Explore these actions", clear: "Show full investment period", selected: "Focused on the selected interval",
     analyzeTitle: "Understand this investment further", analyzeHint: "Analysis, historical comparisons and retrospective notes retain this investment’s scope.",
