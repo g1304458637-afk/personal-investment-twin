@@ -17,7 +17,7 @@ sys.path.insert(0, str(ROOT))
 
 from src.strategy.data import load_simulation_data  # noqa: E402
 from src.strategy.engine import run_simulation  # noqa: E402
-from src.strategy.report import desktop_payload, result_to_dict  # noqa: E402
+from src.strategy.report import desktop_payload, enrich_summary, result_to_dict  # noqa: E402
 from src.strategy.strategies.dual_ma import build_dual_ma_spec  # noqa: E402
 from src.strategy.strategies.rsi_mr import build_rsi_mr_spec  # noqa: E402
 from src.strategy.strategies.turtle import build_turtle_spec  # noqa: E402
@@ -43,7 +43,8 @@ def main() -> int:
         second = result_to_dict(run_simulation(spec, data))
         if second != result_to_dict(result):
             raise SystemExit("simulation_is_not_deterministic")
-        payload = result_to_dict(result)
+        enriched = enrich_summary(result_to_dict(result), data)
+        payload = enriched
         payloads[spec.strategy_id] = payload
         if spec.strategy_id != "toujing_t1_breakout_trend":
             slug = {"toujing_dual_ma": "dual-ma", "toujing_rsi_mean_reversion": "rsi-mean-reversion",
