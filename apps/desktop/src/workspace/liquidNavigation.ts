@@ -4,7 +4,7 @@ export const liquidNavigation = [
   { path: "/strategy-simulation", label: "strategy", icon: "review", group: "work" },
   { path: "/my-strategies", label: "myStrategies", icon: "review", group: "work" },
   { path: "/analysis", label: "analysis", icon: "comparison", group: "work" },
-  { path: "/pretrade", label: "prepare", icon: "pretrade", group: "work" },
+
   { path: "/ask", label: "ask", icon: "ask", group: "work" },
   { path: "/data", label: "data", icon: "data", group: "manage" },
   { path: "/settings", label: "settings", icon: "settings", group: "manage" },
@@ -12,7 +12,7 @@ export const liquidNavigation = [
 
 export function liquidSection(path: string) {
   if (path.startsWith("/investments/compare") || ["/analysis", "/review", "/history", "/comparison", "/twin", "/advanced"].some((root) => path === root || path.startsWith(`${root}/`))) return "/analysis";
-  if (path === "/journal" || path === "/pretrade") return "/pretrade";
+  if (path === "/pretrade") return "/ask";
   if (path.startsWith("/investments")) return "/investments";
   return path;
 }
