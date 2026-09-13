@@ -414,7 +414,7 @@ class ProductRuntime:
         )
         from src.strategy.compare import multi_simulation_data
         from src.strategy.data import load_simulation_data, truncate_simulation_data
-        from src.strategy.report import desktop_payload, result_to_dict
+        from src.strategy.report import desktop_payload, enrich_summary, result_to_dict
         from src.strategy.engine import run_simulation
 
         raw = params.get("strategy") if isinstance(params, Mapping) else None
@@ -487,7 +487,8 @@ class ProductRuntime:
         common = [day for day in base["days"] if day["date"] < cutoff.isoformat()]
         if common[:-1] != prefix_dict["days"][:-1]:
             return {"status": "unavailable", "reason": "future_function_self_check_failed", "artifact": None}
-        artifact = desktop_payload(base, data)
+        enriched = enrich_summary(base, data)
+        artifact = desktop_payload(enriched, data)
         if limitations_extra:
             artifact["limitations"] = limitations_extra
         return {"status": "available", "reason": None,

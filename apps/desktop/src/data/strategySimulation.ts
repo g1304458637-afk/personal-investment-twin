@@ -27,6 +27,9 @@ export interface StrategySummaryView {
   initialCash: number;
   finalEquity: number;
   totalReturn: number;
+  annualizedReturn: number | null;
+  sharpeRatio: number | null;
+  benchmarkBuyHold: { date: string; equity: number }[];
   maxDrawdown: number;
   maxDrawdownPeakDate: string;
   maxDrawdownTroughDate: string;
@@ -156,6 +159,13 @@ function summary(raw: unknown): StrategySummaryView {
     roundTripCount: finite(value.round_trip_count),
     winRate: nullableFinite(value.win_rate),
     averageInvestedFraction: finite(value.average_invested_fraction),
+    annualizedReturn: nullableFinite(value.annualized_return),
+    sharpeRatio: nullableFinite(value.sharpe_ratio),
+    benchmarkBuyHold: Array.isArray(value.benchmark_buy_hold)
+      ? value.benchmark_buy_hold.map((item: Record<string, unknown>) => ({
+          date: day(item.date), equity: finite(item.equity),
+        }))
+      : [],
     roundTrips,
   };
 }

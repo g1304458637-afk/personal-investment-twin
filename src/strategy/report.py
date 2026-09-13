@@ -96,3 +96,68 @@ def desktop_payload(payload: dict, data: SimulationData) -> dict:
         "orders": payload["orders"],
         "fills": payload["fills"],
     }
+
+
+def _annualized_return(final_equity: float, initial_cash: float, trading_days: int) -> float | None:
+    if trading_days <= 0 or initial_cash <= 0 or final_equity <= 0:
+        return None
+    return (final_equity / initial_cash) ** (252.0 / trading_days) - 1.0
+
+
+def _sharpe(daily_equity: list[float], initial_cash: float) -> float | None:
+    if len(daily_equity) < 2 or initial_cash <= 0:
+        return None
+    returns = [(daily_equity[i] - daily_equity[i - 1]) / daily_equity[i - 1]
+               for i in range(1, len(daily_equity)) if daily_equity[i - 1] > 0]
+    if len(returns) < 2:
+        return None
+    mean = sum(returns) / len(returns)
+    variance = sum((r - mean) ** 2 for r in returns) / (len(returns) - 1)
+    std = variance ** 0.5
+    if std == 0:
+        return None
+    return (mean / std) * (252 ** 0.5)
+
+
+def buy_and_hold_curve(data: SimulationData, initial_cash: float) -> list[dict]:
+    """Equal-weight buy-and-hold across all instruments, hold to the end."""
+    instruments = sorted(data.series.keys())
+    if not instruments:
+        return []
+    allocation = initial_cash / len(instruments)
+    share_counts: dict[str, float] = {}
+    all_dates = sorted({d for inst in instruments for d in data.series[inst].dates})
+    date_to_idx = {inst: {d: i for i, d in enumerate(data.series[inst].dates)} for inst in instruments}
+    for inst in instruments:
+        first_close = data.series[inst].bars[0].close
+        share_counts[inst] = allocation / first_close if first_close > 0 else 0.0
+    curve = []
+    for day in all_dates:
+        total = 0.0
+        for inst in instruments:
+            idx_map = date_to_idx[inst]
+            if day in idx_map:
+                close = data.series[inst].bars[idx_map[day]].close
+                total += share_counts.get(inst, 0.0) * close
+            else:
+                last = data.series[inst].raw_close_on_or_before(day)
+                if last is not None:
+                    total += share_counts.get(inst, 0.0) * last
+        curve.append({"date": day.isoformat(), "equity": round(total, 2)})
+    return curve
+
+
+def enrich_summary(payload: dict, data: SimulationData) -> dict:
+    """Add annualized return, Sharpe, and buy-and-hold benchmark to the artifact."""
+    summary = payload.get("summary", {})
+    days = payload.get("days", [])
+    initial_cash = float(summary.get("initial_cash", 1_000_000))
+    trading_days = len(days)
+    final_equity = float(summary.get("final_equity", 0))
+    equity_series = [day.get("equity", initial_cash) for day in days]
+    ann = _annualized_return(final_equity, initial_cash, trading_days)
+    sharpe = _sharpe(equity_series, initial_cash)
+    summary["annualized_return"] = ann
+    summary["sharpe_ratio"] = sharpe
+    summary["benchmark_buy_hold"] = buy_and_hold_curve(data, initial_cash)
+    return payload

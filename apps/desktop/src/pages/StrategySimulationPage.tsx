@@ -252,7 +252,7 @@ export function StrategySimulationPage() {
     },
     legend: {
       top: 0, textStyle: { color: dark ? "rgba(205,220,234,.8)" : "rgba(23,33,42,.8)", fontSize: 11 },
-      data: [t("Equity curve"), t("Drawdown from peak")],
+      data: [t("Equity curve"), ...(simulation.summary.benchmarkBuyHold.length ? [t("Buy and hold")] : []), t("Drawdown from peak")],
     },
     dataZoom: [{ type: "slider", height: 22, bottom: 12 }],
     xAxis: {
@@ -283,8 +283,14 @@ export function StrategySimulationPage() {
           data: [{ yAxis: simulation.summary.initialCash }],
         },
       },
-      {
-        name: t("Drawdown from peak"), type: "line", showSymbol: false, yAxisIndex: 1,
+      ...(simulation.summary.benchmarkBuyHold.length ? [{
+        name: t("Buy and hold"), type: "line", showSymbol: false, yAxisIndex: 0,
+        data: simulation.summary.benchmarkBuyHold.map((point: { date: string; equity: number }) =>
+          [Date.parse(`${point.date}T00:00:00Z`), point.equity]),
+        lineStyle: { color: "rgba(250,202,112,.7)", width: 1.5, type: "dashed" as const },
+        itemStyle: { color: "rgba(250,202,112,.7)" },
+      }] : []),
+      { name: t("Drawdown from peak"), type: "line", showSymbol: false, yAxisIndex: 1,
         data: observationTimes.map((time, index) => [time, simulation.equity[index].drawdownFromPeak]),
         lineStyle: { color: "rgba(255,143,156,.8)", width: 1 },
         areaStyle: { color: "rgba(255,143,156,.14)" }, itemStyle: { color: "rgba(255,143,156,.8)" },
@@ -464,6 +470,10 @@ export function StrategySimulationPage() {
         <StatCard label={t("Final equity")} value={money(summary.finalEquity)}
 
           detail={`${t("Total return")} ${percentLabel(summary.totalReturn)}`} tone={returnTone} />
+        <StatCard label={t("Annualized return")} value={summary.annualizedReturn === null ? "—" : percentLabel(summary.annualizedReturn)}
+          detail={`${t("Trading days")} ${summary.tradingDays}`} tone={summary.annualizedReturn !== null && summary.annualizedReturn > 0 ? "positive" : "negative"} />
+        <StatCard label={t("Sharpe ratio")} value={summary.sharpeRatio === null ? "—" : summary.sharpeRatio.toFixed(2)}
+          detail={summary.sharpeRatio !== null && summary.sharpeRatio > 1 ? t("Good risk-adjusted return") : t("Low risk-adjusted return")} />
 
         <StatCard label={t("Max drawdown")} value={percentLabel(summary.maxDrawdown)}
 
