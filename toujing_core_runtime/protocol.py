@@ -26,6 +26,7 @@ PRODUCT_METHODS = (
     "strategy_sensitivity.run",
     "data.delete_account",
     "review.context", "review.start", "review.poll", "review.add_note",
+    "review_pack.get", "episode_tags.set",
     "compare.export_share", "compare.import_share", "compare.list_shares", "compare.revoke_share",
 )
 SUPPORTED_METHODS = (*BASE_METHODS, *PRODUCT_METHODS)
@@ -169,6 +170,8 @@ def _product_methods(db_path: str | None) -> tuple[dict[str, Callable[[object], 
         "review.start": checked(lambda p: product.review_runtime().start(p)),
         "review.poll": checked(lambda p: product.review_runtime().poll(p)),
         "review.add_note": checked(lambda p: product.review_runtime().add_note(p)),
+        "review_pack.get": checked(product.review_pack),
+        "episode_tags.set": checked(lambda p: product.review_runtime().set_episode_tags(p)),
         "compare.export_share": checked(lambda p: product.review_runtime().export_share(p)),
         "compare.import_share": checked(lambda p: product.review_runtime().import_share(p)),
         "compare.list_shares": checked(lambda p: product.review_runtime().list_shares(p)),

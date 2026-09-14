@@ -15,6 +15,7 @@ import { formatCurrencyValue } from "@/lib/format";
 import { useLocale } from "@/locales/LocaleProvider";
 
 import "./episode-workspace.css";
+import { AccountReviewPackPanel } from "@/pages/AccountReviewPack";
 import { useLiquidCopy } from "@/workspace/liquidCopy";
 
 function InvestmentRow({ episode }: { episode: import("@/data/investments").InvestmentEpisodeRowView }) {
@@ -91,5 +92,6 @@ export function InvestmentsPage() {
       detail={t(hasInvestments ? "Change the filter to see other investments." : "Import executions to reconstruct complete investment experiences.")} />
       {hasInvestments ? <Button className="mt-3" variant="quiet" onClick={() => {setFilter("all"); setQuery("");}}>{t("All investments")}</Button> : <Button asChild className="mt-3"><Link to="/data">{t("Import data")}</Link></Button>}
     </div> : null}
+    <AccountReviewPackPanel />
   </div>;
 }

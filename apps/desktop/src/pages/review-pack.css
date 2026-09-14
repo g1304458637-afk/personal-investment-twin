@@ -1,0 +1,109 @@
+/* Review pack presentation (account panel + episode exit-quality/tags).
+   Numbers and state stay in the validated review-pack adapters; this
+   stylesheet only shapes the panels. */
+
+/* ---- Account-level collapsible panel ---- */
+
+.review-pack-panel { padding: 0; overflow: hidden; }
+.review-pack-panel > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 16px 18px; cursor: pointer; list-style: none;
+}
+.review-pack-panel > summary::-webkit-details-marker { display: none; }
+.review-pack-panel > summary h2 { margin-top: 4px; font-size: 15px; font-weight: 600; color: var(--foreground); }
+.review-pack-panel__toggle {
+  flex-shrink: 0; width: 26px; height: 26px; display: grid; place-items: center;
+  border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-size: 14px;
+}
+.review-pack-grid { display: grid; gap: 18px; padding: 0 18px 18px; }
+.review-pack-section { border-top: 1px solid var(--border); padding-top: 14px; display: grid; gap: 10px; }
+.review-pack-section:first-child { border-top: 0; padding-top: 0; }
+.review-pack-section__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+.review-pack-section__head h3 { font-size: 13.5px; font-weight: 600; color: var(--foreground); }
+
+/* ---- Monthly heatmap ---- */
+
+.review-heatmap-year { display: flex; align-items: flex-start; gap: 10px; }
+.review-heatmap-year__label {
+  flex-shrink: 0; width: 38px; margin-top: 6px;
+  font-family: ui-monospace, monospace; font-size: 11px; color: var(--muted);
+}
+.review-heatmap { display: grid; grid-template-columns: repeat(12, minmax(48px, 1fr)); gap: 4px; flex: 1; }
+.review-heatmap-cell {
+  display: grid; gap: 2px; min-width: 0; padding: 6px 4px 5px; text-align: center;
+  border: 1px solid var(--border); border-radius: 7px;
+}
+.review-heatmap-cell.is-empty { background: transparent; border-style: dashed; opacity: .4; min-height: 42px; }
+.review-heatmap-month { font-size: 10px; color: var(--muted); }
+.review-heatmap-value { font-family: ui-monospace, monospace; font-size: 10.5px; color: var(--foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.review-heatmap-value.is-positive { color: #69d5bb; }
+.review-heatmap-value.is-negative { color: #ff8f9c; }
+.review-heatmap-sub { font-size: 9.5px; color: var(--muted); }
+
+/* ---- Tilt / behavior observation ---- */
+
+.review-tilt-item {
+  display: grid; gap: 8px; border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 12px; background: rgba(255, 255, 255, .02);
+}
+.review-tilt-item__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.review-tilt-item__head strong { font-size: 12.5px; color: var(--foreground); font-family: ui-monospace, monospace; }
+.review-tilt-item__trigger {
+  font-family: ui-monospace, monospace; font-size: 10.5px; color: var(--muted);
+  border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px;
+}
+.review-tilt-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px 14px; }
+.review-tilt-facts dt { font-size: 10.5px; color: var(--muted); }
+.review-tilt-facts dd { margin-top: 2px; font-family: ui-monospace, monospace; font-size: 12.5px; color: var(--foreground); }
+.review-tilt-note { margin: 0; font-size: 11.5px; line-height: 1.6; color: var(--muted); }
+.review-tilt-item .strategy-comparison-limits { margin-top: 0; }
+
+/* ---- Playbook table ---- */
+
+.review-playbook-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.review-playbook-table th {
+  text-align: left; font-weight: 500; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--muted); border-bottom: 1px solid var(--border); padding: 5px 8px;
+}
+.review-playbook-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--foreground); }
+.review-playbook-table td.is-positive { color: #69d5bb; }
+.review-playbook-table td.is-negative { color: #ff8f9c; }
+.review-sample-insufficient { color: var(--muted); font-size: 11px; border: 1px dashed var(--border); border-radius: 999px; padding: 1px 8px; }
+
+/* ---- Episode exit-quality card + tag editor ---- */
+
+.review-exit-quality { display: grid; gap: 10px; padding: 16px 18px; }
+.review-exit-quality__facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 8px 14px; }
+.review-exit-quality__facts dt { font-size: 10.5px; color: var(--muted); }
+.review-exit-quality__facts dd { margin-top: 3px; font-family: ui-monospace, monospace; font-size: 13px; color: var(--foreground); }
+.review-exit-quality__boundary { margin: 0; font-size: 11px; line-height: 1.6; color: var(--muted); border-left: 2px solid rgba(250, 202, 112, .5); padding-left: 10px; }
+
+.review-tag-section { display: grid; gap: 8px; padding: 0 18px 16px; }
+.review-tag-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.review-tag-chip {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  border: 1px solid rgba(140, 218, 242, .5); border-radius: 999px;
+  background: rgba(140, 218, 242, .07); padding: 3px 10px; font-size: 12px; color: var(--foreground);
+}
+.review-tag-chip__remove {
+  border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 0; font-size: 12px;
+}
+.review-tag-chip__aggregate { font-size: 10.5px; color: var(--muted); }
+.review-tag-input {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+}
+.review-tag-input input {
+  border: 1px solid var(--border); border-radius: 8px; background: var(--card);
+  color: var(--foreground); font-size: 12.5px; padding: 5px 10px; width: min(240px, 100%);
+}
+.review-tag-input .review-tag-save {
+  border: 1px solid rgba(140, 218, 242, .6); border-radius: 8px; background: rgba(140, 218, 242, .08);
+  color: #8cdaf2; font-size: 12.5px; padding: 5px 14px; cursor: pointer;
+}
+.review-tag-input .review-tag-save:disabled { opacity: .45; cursor: default; }
+.review-tag-error { margin: 0; font-size: 11.5px; color: #ff8f9c; }
+.review-tag-boundary { margin: 0; font-size: 11px; color: var(--muted); }
+
+@media (max-width: 800px) {
+  .review-heatmap { grid-template-columns: repeat(6, minmax(44px, 1fr)); }
+}

@@ -252,6 +252,15 @@ class ReviewRuntime:
         return {"note": self.store.add_note(subject_id=own.episode.subject_id, account_id=own.episode.account_id,
             episode_id=own.episode.episode_id, text=params.get("text"), note_kind=params.get("note_kind"), decision_id=decision)}
 
+    def set_episode_tags(self, params):
+        own, _, _, _ = self._own(params)
+        tags = params.get("tags")
+        if not isinstance(tags, list) or any(not isinstance(item, str) for item in tags):
+            raise ValueError("tags must be a list of strings")
+        stored = self.store.set_tags(subject_id=own.episode.subject_id, account_id=own.episode.account_id,
+            episode_id=own.episode.episode_id, tags=tags)
+        return {"episode_id": own.episode.episode_id, "tags": list(stored)}
+
     def start(self, params):
         if params.get("scope_kind") in {"account", "episode"}:
             return self._account().start(params)

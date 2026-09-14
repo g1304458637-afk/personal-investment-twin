@@ -175,6 +175,15 @@ def test_relative_change_is_not_fabricated_for_zero_denominator():
     assert "reference value is zero" in comparison.evidence_reason
 
 
+def test_relative_change_is_not_infinite_for_tiny_reference():
+    comparison = build_twin_metric_comparison(_series([1e-310, 100.0]))
+
+    assert comparison.evidence_status == "complete"
+    assert comparison.absolute_change == pytest.approx(100.0)
+    assert comparison.relative_change is None
+    assert "not finite" in comparison.evidence_reason
+
+
 def test_no_valid_history_is_insufficient():
     comparison = build_twin_metric_comparison(_series([None]))
 

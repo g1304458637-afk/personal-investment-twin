@@ -47,8 +47,11 @@ class StrategyAccount:
         total_cost = existing.average_cost * existing.quantity + amount + fee
         existing.quantity = total_quantity
         existing.average_cost = total_cost / total_quantity
-        # Adds refresh the stop from the newest fill when the strategy uses one.
-        existing.stop_price = stop_price
+        # A fill carrying a stop (fixed-stop strategy) re-arms the stop from
+        # the newest price. A fill without one must not wipe the trailing stop
+        # a signal provider has already ratcheted onto the position.
+        if stop_price is not None:
+            existing.stop_price = stop_price
 
     def apply_sell(self, instrument: str, quantity: float, price: float, fee: float) -> None:
         position = self.positions.get(instrument)

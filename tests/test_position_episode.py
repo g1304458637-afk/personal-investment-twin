@@ -119,6 +119,55 @@ def test_full_lifecycle_has_one_closed_episode_and_all_four_decisions():
     assert _state(lifecycle, lifecycle.decisions[3].state_after_ref).quantity == 0
 
 
+def test_timezone_aware_as_of_is_aligned_instead_of_type_error():
+    executions, prices = _full_lifecycle()
+
+    naive = _build(executions, prices, as_of="2025-01-05 23:59")
+    aware_utc = _build(executions, prices, as_of="2025-01-05 23:59+00:00")
+    # The same instant expressed in +08:00 is 2025-01-05 15:59 naive UTC.
+    aware_cst = _build(executions, prices, as_of="2025-01-06 07:59+08:00")
+
+    assert aware_utc == naive
+    assert aware_cst == naive
+    # A non-UTC as_of cuts off at its UTC instant: 2025-01-03 23:59+08:00 is
+    # 2025-01-03 15:59 naive, so the 01-04/01-05 executions are excluded.
+    earlier_cst = _build(executions, prices, as_of="2025-01-03 23:59+08:00")
+    assert earlier_cst.as_of == pd.Timestamp("2025-01-03 15:59")
+    assert len(earlier_cst.episodes) == 1
+    assert earlier_cst.episodes[0].status == "open"
+
+
+def test_timezone_aware_source_frames_are_normalized_to_naive_utc():
+    executions, prices = _full_lifecycle()
+    naive = _build(executions, prices, as_of="2025-01-05 23:59")
+
+    aware_executions = executions.copy()
+    aware_executions["event_time"] = aware_executions["event_time"].dt.tz_localize(
+        "Asia/Shanghai"
+    )
+    aware_prices = prices.copy()
+    aware_prices["date"] = pd.to_datetime(aware_prices["date"]).dt.tz_localize(
+        "Asia/Shanghai"
+    )
+
+    # Mixed aware/naive inputs must not raise bare TypeErrors; facts are
+    # aligned to the naive UTC replay axes before filtering and pivoting.
+    from_aware_executions = _build(
+        aware_executions, prices, as_of="2025-01-05 23:59"
+    )
+    from_aware_prices = _build(
+        executions, aware_prices, as_of="2025-01-05 23:59"
+    )
+
+    assert [
+        item.decision_type for item in from_aware_executions.decisions
+    ] == [item.decision_type for item in naive.decisions]
+    assert from_aware_executions.episodes[0].closed_at == pd.Timestamp(
+        "2025-01-05 01:30"
+    )
+    assert from_aware_prices == naive
+
+
 def test_open_episode_is_first_class_and_partial_sell_is_not_final_exit():
     executions = _executions(
         [

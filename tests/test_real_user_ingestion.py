@@ -49,6 +49,27 @@ def _new(preview):
     )
 
 
+def test_row_refs_match_physical_lines_when_blank_rows_are_skipped():
+    content = (
+        "ticker,exchange,asset_type,execution_time,type,qty,unit_price,commission,trade_id\n"
+        "A,X,equity,2025-01-02 09:30:00,buy,10,10,1,T1\n"
+        "\n"
+        "\n"
+        "B,X,equity,2025-01-03 09:30:00,buy,20,20,2,T2\n"
+    )
+    preview = preview_generic_csv(content, config=CONFIG)
+
+    assert preview.summary.total_rows == 2
+    first, second = preview.batch.rows
+    # Row refs and numbers must follow physical file lines (header=1, first
+    # data row=2, blank lines 3-4 skipped), not the accepted-row index.
+    assert first.row_number == 2
+    assert second.row_number == 5
+    assert first.source_row_identity.endswith(":row:2")
+    assert second.source_row_identity.endswith(":row:5")
+    assert [row.row_ref.split(":row:")[-1] for row in preview.rows] == ["2", "5"]
+
+
 def test_generic_csv_happy_path_and_safe_aliases():
     content = (
         "ticker,exchange,asset_type,execution_time,type,qty,unit_price,commission,trade_id\n"

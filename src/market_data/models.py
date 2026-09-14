@@ -140,17 +140,53 @@ def facts_to_market_data_frame(facts: Sequence[HistoricalPriceFact]) -> pd.DataF
 def resolve_market_data_requirements(
     bundle: CanonicalImportBundle,
     facts: Sequence[HistoricalPriceFact],
+    *,
+    as_of: pd.Timestamp | None = None,
 ) -> MarketDataAvailability:
-    """Resolve exact execution-date coverage without filling or interpolation."""
+    """Resolve exact replay-panel coverage without filling or interpolation.
 
+    The Behavior replay pivot builds one daily panel over every traded symbol
+    from the globally earliest execution date onward, so a calendar date that
+    is observed for any traded symbol requires *all* traded symbols to have a
+    price on that date.  The required set therefore includes those cross-symbol
+    panel dates in addition to each instrument's own execution dates; otherwise
+    a "complete" verdict would still fail the later pivot with an unhandled
+    panel-gap error.
+    """
+
+    executions = [
+        execution
+        for execution in bundle.accepted_canonical_executions
+        if execution.instrument.instrument_id is not None
+    ]
     required: dict[str, set[str]] = {}
-    for execution in bundle.accepted_canonical_executions:
-        instrument_id = execution.instrument.instrument_id
-        if instrument_id is None:
-            continue
+    panel_start: date | None = None
+    for execution in executions:
+        instrument_id = str(execution.instrument.instrument_id)
         required.setdefault(instrument_id, set()).add(
             execution.event_time.calendar_date.isoformat()
         )
+        if panel_start is None or execution.event_time.calendar_date < panel_start:
+            panel_start = execution.event_time.calendar_date
+    as_of_date: date | None = None
+    if as_of is not None:
+        as_of_date = pd.Timestamp(as_of).normalize().date()
+    # Dates actually present in the panel: every non-synthetic observation of
+    # a traded symbol at or after the first execution date (and, when the
+    # caller supplies one, at or before ``as_of`` because the replay windows
+    # price observations to that boundary).
+    panel_dates: set[str] = set()
+    for item in facts:
+        instrument_id = str(item.instrument.instrument_id)
+        if item.source_tier == "synthetic_demo" or instrument_id not in required:
+            continue
+        if panel_start is not None and item.date < panel_start:
+            continue
+        if as_of_date is not None and item.date > as_of_date:
+            continue
+        panel_dates.add(item.date.isoformat())
+    for instrument_id in required:
+        required[instrument_id] |= panel_dates
     available = {
         (str(item.instrument.instrument_id), item.date.isoformat())
         for item in facts

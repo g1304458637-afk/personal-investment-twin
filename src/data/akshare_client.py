@@ -8,6 +8,9 @@ here writes to user accounts, and synthetic instrument ids are refused.
 from __future__ import annotations
 
 import json
+import math
+import os
+import tempfile
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -43,11 +46,23 @@ def normalize_instrument(instrument: str) -> str:
 
 
 def cached_bars(instrument: str, start: str, end: str, adjust: str = "") -> list[dict[str, Any]] | None:
+    """Return cached bars, treating an unreadable or corrupt file as a miss.
+
+    A truncated or tampered cache entry must never surface as a raw
+    ``JSONDecodeError``/``OSError``; it is dropped (the file is removed) and
+    the caller falls through to a fresh fetch.
+    """
     path = _cache_path(normalize_instrument(instrument), start, end, adjust)
-    if not path.exists():
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        bars = payload["bars"]
+    except (OSError, ValueError, KeyError, TypeError):
+        try:
+            path.unlink()
+        except OSError:
+            pass
         return None
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    return payload["bars"]
+    return bars if isinstance(bars, list) else None
 
 
 def fetch_ohlc(instrument: str, start: str, end: str, *, force_refresh: bool = False,
@@ -93,11 +108,25 @@ def fetch_ohlc(instrument: str, start: str, end: str, *, force_refresh: bool = F
         raise AkshareUnavailable("akshare_columns_unrecognized")
     bars: list[dict[str, Any]] = []
     for _, row in frame.iterrows():
+        try:
+            observation_date = date.fromisoformat(str(row["日期"])[:10]).isoformat()
+            values = {
+                "open": float(row["开盘"]),
+                "close": float(row["收盘"]),
+                "high": float(row["最高"]),
+                "low": float(row["最低"]),
+            }
+        except (TypeError, ValueError):
+            continue
+        # Only finite, positive OHLC observations are contract-valid; NaN/inf
+        # rows (suspensions, vendor glitches) are skipped, never cached.
+        if any(not math.isfinite(value) or value <= 0 for value in values.values()):
+            continue
         volume_raw = row.get("成交量")
         bars.append({
-            "date": str(row["日期"])[:10],
-            "open": float(row["开盘"]), "close": float(row["收盘"]),
-            "high": float(row["最高"]), "low": float(row["最低"]),
+            "date": observation_date,
+            "open": values["open"], "close": values["close"],
+            "high": values["high"], "low": values["low"],
             "volume": float(volume_raw) if volume_raw not in (None, "", 0) else None,
             "source_id": SOURCE_ID, "source_version": SOURCE_VERSION,
             "adjust": adjust, "is_synthetic": False,
@@ -106,7 +135,22 @@ def fetch_ohlc(instrument: str, start: str, end: str, *, force_refresh: bool = F
     if not bars:
         raise AkshareUnavailable("akshare_empty_response")
     _CACHE_ROOT.mkdir(parents=True, exist_ok=True)
-    _cache_path(normalized, start, end, adjust).write_text(
-        json.dumps({"source": SOURCE_ID, "adjust": adjust, "bars": bars}, ensure_ascii=False),
-        encoding="utf-8")
+    target = _cache_path(normalized, start, end, adjust)
+    # Write-then-rename keeps concurrent readers from ever observing a
+    # half-written cache file under the final name.
+    descriptor, temp_name = tempfile.mkstemp(
+        dir=_CACHE_ROOT, prefix=f"{target.name}.", suffix=".tmp"
+    )
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            handle.write(
+                json.dumps({"source": SOURCE_ID, "adjust": adjust, "bars": bars}, ensure_ascii=False)
+            )
+        os.replace(temp_name, target)
+    except BaseException:
+        try:
+            os.unlink(temp_name)
+        except OSError:
+            pass
+        raise
     return bars

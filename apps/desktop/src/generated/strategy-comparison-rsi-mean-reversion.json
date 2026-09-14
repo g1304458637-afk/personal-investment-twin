@@ -129,6 +129,15 @@
     "total_fees": 0,
     "round_trip_count": 0,
     "win_rate": null,
+    "r_multiple_stats": {
+     "count": 0,
+     "avg_r": null,
+     "median_r": null,
+     "max_r": null,
+     "min_r": null,
+     "skipped_no_stop": 0,
+     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+    },
     "average_invested_fraction": 0.0,
     "round_trips": []
    },
@@ -263,6 +272,15 @@
     "total_fees": 0,
     "round_trip_count": 0,
     "win_rate": null,
+    "r_multiple_stats": {
+     "count": 0,
+     "avg_r": null,
+     "median_r": null,
+     "max_r": null,
+     "min_r": null,
+     "skipped_no_stop": 0,
+     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+    },
     "average_invested_fraction": 0.0,
     "round_trips": []
    },
@@ -526,7 +544,7 @@
     "final_equity": 1011724.9190799999,
     "total_return": 0.011724919079999951,
     "max_drawdown": -0.028709638734000037,
-    "max_drawdown_peak_date": "2025-12-05",
+    "max_drawdown_peak_date": "2025-01-02",
     "max_drawdown_trough_date": "2025-04-04",
     "trading_days": 260,
     "order_count": 4,
@@ -536,19 +554,30 @@
     "total_fees": 810.5209199999999,
     "round_trip_count": 2,
     "win_rate": 1.0,
+    "r_multiple_stats": {
+     "count": 0,
+     "avg_r": null,
+     "median_r": null,
+     "max_r": null,
+     "min_r": null,
+     "skipped_no_stop": 2,
+     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+    },
     "average_invested_fraction": 0.11317299855343224,
     "round_trips": [
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-08-21",
       "pnl": 829.9336799999583,
-      "reason": "signal_entry_rsi_mr"
+      "reason": "signal_entry_rsi_mr",
+      "r_multiple": null
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-12-08",
       "pnl": 10894.985400000034,
-      "reason": "signal_entry_rsi_mr"
+      "reason": "signal_entry_rsi_mr",
+      "r_multiple": null
      }
     ]
    },
@@ -830,7 +859,7 @@
     "final_equity": 1011724.9190799999,
     "total_return": 0.011724919079999951,
     "max_drawdown": -0.028709638734000037,
-    "max_drawdown_peak_date": "2025-12-05",
+    "max_drawdown_peak_date": "2025-01-02",
     "max_drawdown_trough_date": "2025-04-04",
     "trading_days": 260,
     "order_count": 4,
@@ -840,19 +869,30 @@
     "total_fees": 810.5209199999999,
     "round_trip_count": 2,
     "win_rate": 1.0,
+    "r_multiple_stats": {
+     "count": 0,
+     "avg_r": null,
+     "median_r": null,
+     "max_r": null,
+     "min_r": null,
+     "skipped_no_stop": 2,
+     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+    },
     "average_invested_fraction": 0.11317299855343224,
     "round_trips": [
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-08-21",
       "pnl": 829.9336799999583,
-      "reason": "signal_entry_rsi_mr"
+      "reason": "signal_entry_rsi_mr",
+      "r_multiple": null
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-12-08",
       "pnl": 10894.985400000034,
-      "reason": "signal_entry_rsi_mr"
+      "reason": "signal_entry_rsi_mr",
+      "r_multiple": null
      }
     ]
    },
@@ -977,6 +1017,15 @@
     "total_fees": 0,
     "round_trip_count": 0,
     "win_rate": null,
+    "r_multiple_stats": {
+     "count": 0,
+     "avg_r": null,
+     "median_r": null,
+     "max_r": null,
+     "min_r": null,
+     "skipped_no_stop": 0,
+     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+    },
     "average_invested_fraction": 0.0,
     "round_trips": []
    },

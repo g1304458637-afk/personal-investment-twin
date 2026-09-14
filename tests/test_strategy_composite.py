@@ -56,9 +56,13 @@ def test_validation_sandbox_rejects_unknown_fields_factors_and_binds():
     with pytest.raises(UserStrategyError, match="未知参数"):
         validate_user_strategy(spec)
     spec = copy.deepcopy(BASE_SPEC)
-    spec["entry"]["all_of"] = spec["entry"]["all_of"] * 4
-    with pytest.raises(UserStrategyError, match="1~3"):
+    # L3 spec: entry all_of accepts up to 5 conditions (docs/STRATEGY_LADDER.md).
+    spec["entry"]["all_of"] = spec["entry"]["all_of"] * 6
+    with pytest.raises(UserStrategyError, match="1~5"):
         validate_user_strategy(spec)
+    five = copy.deepcopy(BASE_SPEC)
+    five["entry"]["all_of"] = five["entry"]["all_of"] * 5
+    validate_user_strategy(five)
     no_exit = copy.deepcopy(BASE_SPEC)
     no_exit["exit"] = {"any_of": [], "stop_loss_pct": None}
     with pytest.raises(UserStrategyError, match="至少需要一种退出机制"):

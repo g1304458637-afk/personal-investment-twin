@@ -93,6 +93,24 @@ def _simulate(trade, executions, prices, hhi_history, peer_context):
     )
 
 
+def test_midnight_proposed_time_simulates_with_same_day_close(
+    executions, prices, hhi_history, peer_context
+) -> None:
+    """A date-only (midnight) proposed time uses its own calendar-day close."""
+    trade = _trade(proposed_time=pd.Timestamp("2025-01-08 00:00:00"))
+    result = _simulate(trade, executions, prices, hhi_history, peer_context)
+
+    assert result.simulation_status == "complete"
+    assert result.before is not None and result.after is not None
+    # 2025-01-08 close for the target symbol is 13.0; the replay must value the
+    # hypothetical state at that same-day observation instead of failing with a
+    # misleading missing-price reason.
+    assert result.after.valuation_price == pytest.approx(13.0)
+    assert result.after.valuation_observation_date == "2025-01-08"
+    assert result.delta is not None
+    assert result.delta.cash == pytest.approx(-trade.quantity * 13.0 - trade.fees)
+
+
 def test_no_peer_context_skips_peer_benchmark_builders(
     monkeypatch, executions, prices, hhi_history
 ) -> None:

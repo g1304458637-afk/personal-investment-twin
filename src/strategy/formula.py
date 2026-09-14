@@ -25,6 +25,7 @@ import ast
 from typing import Any, Mapping
 
 from src.strategy.signals import prior_extreme, trailing_mean
+from src.strategy.factors import _rsi
 
 FORMULA_SCHEMA_VERSION = "user_strategy_formula.v1"
 
@@ -77,23 +78,12 @@ def _f_lowest(series, index, args) -> float | None:
 
 
 def _f_rsi(series, index, args) -> float | None:
-    closes = _closes(series, index, int(args[0]) + 1, include_current=True)
-    if not closes:
-        return None
-    n = int(args[0])
-    gains = losses = 0.0
-    for i in range(1, n + 1):
-        change = closes[i] - closes[i - 1]
-        gains += max(change, 0.0)
-        losses += max(-change, 0.0)
-    avg_gain, avg_loss = gains / n, losses / n
-    for i in range(n + 1, len(closes)):
-        change = closes[i] - closes[i - 1]
-        avg_gain = (avg_gain * (n - 1) + max(change, 0.0)) / n
-        avg_loss = (avg_loss * (n - 1) + max(-change, 0.0)) / n
-    if avg_loss == 0:
-        return 100.0
-    return 100.0 - 100.0 / (1.0 + avg_gain / avg_loss)
+    # Same Wilder recursion as the v2 factor library (factors._rsi): the same
+    # indicator name must produce the same value in both user modes. The
+    # previous local copy sliced exactly window+1 closes, so its smoothing
+    # loop never ran and formula mode silently computed a simple-average RSI.
+    window = int(args[0])
+    return _rsi(tuple(series.adjusted_close[: index + 1]), window)
 
 
 def _f_roc(series, index, args) -> float | None:
@@ -155,8 +145,13 @@ def _f_streak_down(series, index, args) -> float | None:
 def _f_cross(series, index, args, up: bool) -> float | None:
     short_n, long_n = int(args[0]), int(args[1])
     closes = series.adjusted_close[: index + 1]
+    # Complete trailing windows only (same semantics as the factor library's
+    # trailing_mean): a partial window must yield "unknown", not a partial mean.
+    if len(closes) < max(short_n, long_n) + 1:
+        return None
+    prev = closes[:-1]
     short_now, long_now = _mean(closes[-short_n:]), _mean(closes[-long_n:])
-    short_prev, long_prev = _mean(closes[:-1][-short_n:]), _mean(closes[:-1][-long_n:])
+    short_prev, long_prev = _mean(prev[-short_n:]), _mean(prev[-long_n:])
     if None in (short_now, long_now, short_prev, long_prev):
         return None
     if up and short_prev <= long_prev and short_now > long_now:
@@ -297,22 +292,34 @@ def eval_node(node: ast.AST, series, index: int, context: Mapping[str, Any]) -> 
     if isinstance(node, ast.Compare):
         left = eval_node(node.left, series, index, context)
         right = eval_node(node.comparators[0], series, index, context)
+        # A missing operand (insufficient history / unavailable data) makes the
+        # comparison unknown — never False, otherwise `not` would flip it to a
+        # confirmed entry signal.
         if left is None or right is None:
-            return False
+            return None
         op = node.ops[0]
         return {ast.Gt: lambda: left > right, ast.GtE: lambda: left >= right,
                 ast.Lt: lambda: left < right, ast.LtE: lambda: left <= right,
                 ast.Eq: lambda: left == right, ast.NotEq: lambda: left != right,
                 }[type(op)]()
     if isinstance(node, ast.BoolOp):
+        # Three-state logic: unknown (None) operands propagate instead of being
+        # coerced. AND is False once any operand is known-false; OR is True
+        # once any operand is known-true; otherwise any unknown keeps the
+        # result unknown ("insufficient data" is never counted as satisfied).
         values = [eval_node(v, series, index, context) for v in node.values]
+        known_count = sum(1 for v in values if v is not None)
         if isinstance(node.op, ast.And):
-            return all(values)
-        return any(values)
+            if any(v is not None and not v for v in values):
+                return False
+            return True if known_count == len(values) else None
+        if any(v is not None and v for v in values):
+            return True
+        return False if known_count == len(values) else None
     if isinstance(node, ast.UnaryOp):
         value = eval_node(node.operand, series, index, context)
         if isinstance(node.op, ast.Not):
-            return not value
+            return None if value is None else not value
         return -value if value is not None else None
     if isinstance(node, ast.BinOp):
         left = eval_node(node.left, series, index, context)
@@ -327,5 +334,12 @@ def eval_node(node: ast.AST, series, index: int, context: Mapping[str, Any]) -> 
 
 def eval_formula(tree: ast.Expression, series, index: int,
                  context: Mapping[str, Any] | None = None) -> bool:
+    """Evaluate one entry/exit formula for the given bar.
+
+    Returns True only when the formula is demonstrably satisfied. Unknown
+    sub-results (insufficient history, unavailable data such as volume on a
+    synthetic universe) propagate as None and count as not satisfied — the
+    "never guess" rule also holds under negation.
+    """
     result = eval_node(tree.body, series, index, context or {})
-    return bool(result)
+    return result is not None and bool(result)

@@ -31,7 +31,8 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; media-src 'self' https://d8j0ntlcm91z4.cloudfront.net; img-src 'self' asset: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ipc: http://ipc.localhost ws://127.0.0.1:1421"
+      "csp": "default-src 'self'; media-src 'self' https://d8j0ntlcm91z4.cloudfront.net; img-src 'self' asset: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ipc: http://ipc.localhost",
+      "devCsp": "default-src 'self'; media-src 'self' https://d8j0ntlcm91z4.cloudfront.net; img-src 'self' asset: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ipc: http://ipc.localhost ws://127.0.0.1:1421"
     }
   },
   "bundle": {

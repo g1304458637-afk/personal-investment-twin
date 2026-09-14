@@ -44,6 +44,47 @@ def test_unknown_reference_fails_closed_instead_of_guessing():
                         "path": "reports.0.forecast", "text": None}
 
 
+def test_literal_braces_render_without_format_errors():
+    rendered = render_segment(
+        "对比要点 { 与 }：净现金流 {user} 元。",
+        REPORT,
+        {"user": "reports.0.window_user_net_cash_flow"},
+    )
+    assert rendered["accepted"] is True
+    assert rendered["text"] == "对比要点 { 与 }：净现金流 3980.0 元。"
+
+
+def test_attribute_and_format_spec_placeholders_stay_literal():
+    # {v.upper} must not traverse attributes (repr leak); {v:.2f} must not
+    # reformat report numbers.  Neither is a declared reference form.
+    rendered = render_segment(
+        "文本 {user.upper} 数字 {user:.2f} 未知 {nope}。",
+        REPORT,
+        {"user": "reports.0.window_user_net_cash_flow"},
+    )
+    assert rendered["accepted"] is True
+    assert rendered["text"] == "文本 {user.upper} 数字 {user:.2f} 未知 {nope}。"
+    assert "object at 0x" not in rendered["text"]
+
+
+def test_non_string_template_fails_with_render_reason_not_reference():
+    rendered = render_segment(123, REPORT, {"user": "reports.0.window_user_net_cash_flow"})
+    assert rendered == {"accepted": False, "reason": "teaching_render_failed",
+                        "path": None, "text": None}
+
+
+def test_render_answer_reports_render_failures_with_distinct_reason():
+    import src.agents.strategy_teaching as teaching
+
+    segment = teaching.TeachingSegment.model_construct(
+        kind="entry_teaching", template=123, references={},
+    )
+    answer = teaching.TeachingAnswer.model_construct(segments=[segment])
+    result = teaching.render_answer(answer, REPORT)
+    assert result["accepted"] is False
+    assert result["reason"] == "teaching_render_failed"
+
+
 def test_schema_has_no_free_number_field_and_no_verdict_kind():
     schema = teaching_output_schema()
     segment = schema["properties"]["segments"]["items"]

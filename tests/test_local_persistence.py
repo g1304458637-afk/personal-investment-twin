@@ -99,6 +99,54 @@ def test_import_transaction_rolls_back(tmp_path):
     assert repo.list_accounts() == []
 
 
+def test_mixed_precision_order_is_documented_not_chronological(tmp_path):
+    """Characterization: executions() order is not a cross-precision contract.
+
+    event_order_key stores date-precision facts as "date:YYYY-MM-DD" and timed
+    facts as ISO UTC instants; lexicographic SQL order across the two formats
+    is not chronological.  The format is deliberately kept stable (rewriting
+    stored keys would change persisted payload identity for existing rows);
+    consumers needing chronology re-sort on timestamps, as
+    canonical_executions_to_frame does.
+    """
+    from src.core.canonical_execution import (
+        canonical_execution,
+        execution_time,
+        fee_fact,
+        instrument_ref,
+    )
+
+    instrument = instrument_ref(local_symbol="A", market="X", security_type="equity")
+    date_fact = canonical_execution(
+        subject_id="subject", account_id="ACC-1", execution_id="EXE-DATE",
+        source_execution_id="SRC-DATE", instrument=instrument,
+        event_time=execution_time("2025-01-05", precision="date"),
+        side="BUY", executed_quantity=1, executed_price=10, fee=fee_fact(0),
+        source="test", source_record_ref="row-1",
+    )
+    timed_fact = canonical_execution(
+        subject_id="subject", account_id="ACC-1", execution_id="EXE-TIMED",
+        source_execution_id="SRC-TIMED", instrument=instrument,
+        event_time=execution_time("2025-02-01 10:30+00:00", precision="minute"),
+        side="BUY", executed_quantity=1, executed_price=10, fee=fee_fact(0),
+        source="test", source_record_ref="row-2",
+    )
+    repo = LocalRepository(tmp_path / "db")
+    try:
+        repo.commit_trade_import(subject_id="subject", account_id="ACC-1", display_name="A",
+            initial_cash=100000, batch_id="b-mixed", file_sha256="sha-mixed", filename="mixed.csv",
+            imported_at="2026-09-04T10:00:00Z", summary={}, executions=(date_fact, timed_fact))
+        loaded = repo.executions("subject", "ACC-1")
+    finally:
+        repo.close()
+
+    assert {item.execution_id for item in loaded} == {"EXE-DATE", "EXE-TIMED"}
+    # Lexicographic event_order_key order puts the timed February fact first
+    # even though the date-precision January fact is earlier in time — the
+    # documented, non-chronological ordering behavior.
+    assert [item.execution_id for item in loaded] == ["EXE-TIMED", "EXE-DATE"]
+
+
 def test_future_schema_fails_closed(tmp_path):
     import sqlite3
     path = tmp_path / "future.db"

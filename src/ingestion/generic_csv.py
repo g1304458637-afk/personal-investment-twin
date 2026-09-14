@@ -201,22 +201,46 @@ def _decode(content: bytes | str) -> tuple[bytes, str]:
         raise ValueError("unsupported_csv_encoding") from exc
 
 
-def _parse_rows(text: str) -> tuple[tuple[str, ...], list[dict[str, str]]]:
-    reader = csv.DictReader(io.StringIO(text, newline=""))
-    if reader.fieldnames is None:
+def _parse_rows(text: str) -> tuple[tuple[str, ...], list[tuple[int, dict[str, str]]]]:
+    """Parse CSV rows alongside their physical file line numbers.
+
+    Fully blank rows are skipped, so a row's physical line number cannot be
+    derived from the accepted-row count.  ``csv.reader`` (unlike
+    ``csv.DictReader``) surfaces blank rows itself, which keeps
+    ``reader.line_num`` exact: the line a row starts on is the number of lines
+    consumed before it plus one, even across blank lines or quoted newlines.
+    """
+    reader = csv.reader(io.StringIO(text, newline=""))
+    try:
+        raw_header = next(reader)
+    except StopIteration as exc:
+        raise ValueError("missing_csv_header") from exc
+    if not raw_header:
         raise ValueError("missing_csv_header")
-    headers = tuple(str(value).lstrip("\ufeff") for value in reader.fieldnames)
-    rows: list[dict[str, str]] = []
-    for source in reader:
-        if source.get(None):
+    headers = tuple(str(value).lstrip("\ufeff") for value in raw_header)
+    width = len(headers)
+    rows: list[tuple[int, dict[str, str]]] = []
+    while True:
+        line_before = reader.line_num
+        try:
+            raw = next(reader)
+        except StopIteration:
+            break
+        physical_line = line_before + 1
+        if raw == []:
+            continue
+        if len(raw) > width:
             raise ValueError("csv_row_has_extra_columns")
+        source = {
+            header: (raw[index] if index < len(raw) else None)
+            for index, header in enumerate(headers)
+        }
         normalized = {
             str(key).lstrip("\ufeff"): "" if value is None else str(value).strip()
             for key, value in source.items()
-            if key is not None
         }
         if any(value != "" for value in normalized.values()):
-            rows.append(normalized)
+            rows.append((physical_line, normalized))
     return headers, rows
 
 
@@ -345,19 +369,19 @@ def _result_equal(left: CanonicalExecutionV2, right: CanonicalExecutionV2) -> bo
 def _raw_batch(
     content_bytes: bytes,
     headers: Sequence[str],
-    source_rows: Sequence[Mapping[str, str]],
+    source_rows: Sequence[tuple[int, Mapping[str, str]]],
     config: GenericCsvImportConfig,
 ) -> RawImportBatch:
     file_sha = hashlib.sha256(content_bytes).hexdigest()
     rows = tuple(
         RawImportRow(
             source_file_sha256=file_sha,
-            source_row_identity=f"sha256:{file_sha}:row:{index}",
-            row_number=index,
+            source_row_identity=f"sha256:{file_sha}:row:{line}",
+            row_number=line,
             original_values=tuple((header, row.get(header, "")) for header in headers),
             mapping_version=GENERIC_CSV_V1.mapping_version,
         )
-        for index, row in enumerate(source_rows, start=2)
+        for line, row in source_rows
     )
     payload = {
         "source_type": GENERIC_CSV_V1.source_type,
@@ -556,7 +580,7 @@ def preview_generic_csv(
     occurrence_by_fingerprint: Counter[str] = Counter()
     preview_rows: list[ImportPreviewRow] = []
 
-    for source_row, raw in zip(source_rows, batch.rows):
+    for (_, source_row), raw in zip(source_rows, batch.rows):
         row_ref = raw.source_row_identity
         try:
             candidate, candidate_issues = _candidate(

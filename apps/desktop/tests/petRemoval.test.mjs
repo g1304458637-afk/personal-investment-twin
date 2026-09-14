@@ -15,7 +15,15 @@ test('desktop builds only the main window, with no companion entry or capability
 test('removing the pet preserves the native main-window command guard and runtime', async () => {
   const lib = await read('../src-tauri/src/lib.rs');
   assert.match(lib, /webview_ref\(\)\.label\(\) != "main"/);
-  assert.ok(lib.indexOf('window_command_not_allowed') < lib.indexOf('tauri::generate_handler!'));
+  // The main-window guard wraps the whole IPC dispatch: it must reject before
+  // any command handler (the debug/release ipc_handler() pair) can run.
+  const dispatch = lib.slice(lib.indexOf('.invoke_handler('), lib.indexOf('.build(tauri::generate_context'));
+  assert.ok(dispatch.includes('window_command_not_allowed'), 'guard must sit inside invoke_handler');
+  assert.ok(dispatch.includes('ipc_handler()(invoke)'), 'guard must wrap the handler dispatch');
+  // The pre-trade bridge is a dev-only command: never registered in release.
+  const releaseBlock = lib.slice(lib.lastIndexOf('#[cfg(not(debug_assertions))]'));
+  assert.ok(releaseBlock.includes('tauri::generate_handler!'));
+  assert.doesNotMatch(releaseBlock, /run_pretrade_check/);
   assert.doesNotMatch(lib, /pet::|mod pet|on_window_event/);
   assert.match(lib, /runtime::runtime_product_request/);
   const runtime = await read('../src-tauri/src/runtime.rs');

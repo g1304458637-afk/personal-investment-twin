@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "check": "tsc -b",
     "preview": "vite preview --host 127.0.0.1",
+    "test": "node --test \"tests/*.test.mjs\"",
     "tauri": "tauri",
     "bundle:local": "tauri build --bundles app --config src-tauri/tauri.local-adhoc.conf.json"
   },

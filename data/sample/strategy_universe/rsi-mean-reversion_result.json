@@ -103,49 +103,65 @@
   "total_fees": 1761.8758,
   "round_trip_count": 7,
   "win_rate": 0.0,
+  "r_multiple_stats": {
+   "count": 0,
+   "avg_r": null,
+   "median_r": null,
+   "max_r": null,
+   "min_r": null,
+   "skipped_no_stop": 7,
+   "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+  },
   "average_invested_fraction": 0.9544457295107516,
   "round_trips": [
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2023-05-18",
     "pnl": -28395.082199999975,
-    "reason": "signal_entry_rsi_mr"
+    "reason": "signal_entry_rsi_mr",
+    "r_multiple": null
    },
    {
     "instrument": "SYN_POOL_A13",
     "closed_on": "2023-09-05",
     "pnl": -119920.5454,
-    "reason": "signal_entry_rsi_mr"
+    "reason": "signal_entry_rsi_mr",
+    "r_multiple": null
    },
    {
     "instrument": "SYN_POOL_A16",
     "closed_on": "2023-09-12",
     "pnl": -31169.375300000014,
-    "reason": "signal_entry_rsi_mr"
+    "reason": "signal_entry_rsi_mr",
+    "r_multiple": null
    },
    {
     "instrument": "SYN_POOL_A05",
     "closed_on": "2024-04-10",
     "pnl": -2090.549799999979,
-    "reason": "signal_entry_rsi_mr"
+    "reason": "signal_entry_rsi_mr",
+    "r_multiple": null
    },
    {
     "instrument": "SYN_POOL_A04",
     "closed_on": "2024-07-22",
     "pnl": -110462.68649999998,
-    "reason": "signal_entry_rsi_mr"
+    "reason": "signal_entry_rsi_mr",
+    "r_multiple": null
    },
    {
     "instrument": "SYN_POOL_A16",
     "closed_on": "2024-08-05",
     "pnl": -25261.371799999994,
-    "reason": "signal_entry_rsi_mr"
+    "reason": "signal_entry_rsi_mr",
+    "r_multiple": null
    },
    {
     "instrument": "SYN_POOL_A02",
     "closed_on": "2024-11-26",
     "pnl": -5234.550300000003,
-    "reason": "signal_entry_rsi_mr"
+    "reason": "signal_entry_rsi_mr",
+    "r_multiple": null
    }
   ],
   "annualized_return": -0.23050352003098185,

@@ -20,6 +20,30 @@ def utc_now():
     return datetime.now(timezone.utc).isoformat()
 
 
+# Episode tags are short user-authored review labels on CLOSED analysis units.
+# Normalization is deterministic and lossy by design: whitespace is stripped,
+# blanks are dropped, duplicates collapse to the first occurrence, each tag is
+# capped at 24 characters and at most 8 tags are kept per episode.
+TAG_MAX_LENGTH = 24
+TAG_MAX_COUNT = 8
+_EPISODE_TAGS_TABLE = "review_episode_tags_v1"
+
+
+def normalize_tags(tags) -> tuple[str, ...]:
+    if not isinstance(tags, (list, tuple)):
+        raise ValueError("invalid_tags")
+    normalized: list[str] = []
+    for tag in tags:
+        if not isinstance(tag, str):
+            raise ValueError("invalid_tags")
+        text = tag.strip()[:TAG_MAX_LENGTH]
+        if text and text not in normalized:
+            normalized.append(text)
+        if len(normalized) >= TAG_MAX_COUNT:
+            break
+    return tuple(normalized)
+
+
 class ReviewStore:
     def __init__(self, connection: sqlite3.Connection):
         self.connection = connection
@@ -34,6 +58,10 @@ class ReviewStore:
             connection.execute("""CREATE TABLE IF NOT EXISTS review_shares_v1 (
               share_id TEXT PRIMARY KEY, subject_id TEXT NOT NULL, account_id TEXT NOT NULL,
               payload TEXT NOT NULL, revoked INTEGER NOT NULL DEFAULT 0)""")
+            connection.execute(f"""CREATE TABLE IF NOT EXISTS {_EPISODE_TAGS_TABLE} (
+              subject_id TEXT NOT NULL, account_id TEXT NOT NULL, episode_id TEXT NOT NULL,
+              payload TEXT NOT NULL, updated_at TEXT NOT NULL,
+              PRIMARY KEY(subject_id, account_id, episode_id))""")
 
     def add_note(self, *, subject_id, account_id, episode_id, text, note_kind, decision_id=None):
         if not isinstance(text, str) or not text.strip() or len(text) > 4000 or note_kind not in {"plan", "reason"}:
@@ -100,7 +128,33 @@ class ReviewStore:
             self.connection.execute("UPDATE review_shares_v1 SET revoked=1 WHERE share_id=? AND subject_id=? AND account_id=?",
                                     (share_id, subject_id, account_id))
 
+    def set_tags(self, *, subject_id, account_id, episode_id, tags):
+        """Replace the full tag list of one episode with a normalized snapshot."""
+        for value in (subject_id, account_id, episode_id):
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError("invalid_scope")
+        normalized = list(normalize_tags(tags))
+        now = utc_now()
+        with self.connection:
+            self.connection.execute(
+                f"INSERT OR REPLACE INTO {_EPISODE_TAGS_TABLE} VALUES(?,?,?,?,?)",
+                (subject_id, account_id, episode_id,
+                 json.dumps(normalized, ensure_ascii=False, allow_nan=False), now))
+        return normalized
+
+    def list_tags(self, subject_id, account_id, episode_id=None):
+        """Return tags as ({episode_id, tags}, ...) ordered by episode_id."""
+        if episode_id is None:
+            rows = self.connection.execute(
+                f"SELECT episode_id,payload FROM {_EPISODE_TAGS_TABLE} WHERE subject_id=? AND account_id=? ORDER BY episode_id",
+                (subject_id, account_id))
+            return tuple({"episode_id": row[0], "tags": json.loads(row[1])} for row in rows)
+        row = self.connection.execute(
+            f"SELECT payload FROM {_EPISODE_TAGS_TABLE} WHERE subject_id=? AND account_id=? AND episode_id=?",
+            (subject_id, account_id, episode_id)).fetchone()
+        return () if row is None else ({"episode_id": episode_id, "tags": json.loads(row[0])},)
+
     def delete_account_read_models(self, subject_id, account_id):
         with self.connection:
-            for table in ("review_notes_v1", "review_inferences_v1", "review_shares_v1"):
+            for table in ("review_notes_v1", "review_inferences_v1", "review_shares_v1", _EPISODE_TAGS_TABLE):
                 self.connection.execute(f"DELETE FROM {table} WHERE subject_id=? AND account_id=?", (subject_id, account_id))

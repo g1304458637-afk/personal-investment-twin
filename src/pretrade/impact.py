@@ -211,9 +211,15 @@ def _window_inputs(
         raise ValueError("market_prices.date is required")
     execution_times = pd.to_datetime(executions["event_time"], errors="raise")
     price_times = pd.to_datetime(market_prices["date"], errors="raise")
+    # Price basis: the hypothetical execution is marked at the close of its own
+    # calendar date (the replay maps each execution to its daily panel row), so
+    # the price window must include that date.  Comparing against
+    # ``normalize()`` keeps 23:59-style callers unchanged (daily observations
+    # sit at midnight) while making midnight date-only proposed times work.
+    proposed_date = proposed_trade.proposed_time.normalize()
     return (
         executions.loc[execution_times < proposed_trade.proposed_time].copy(),
-        market_prices.loc[price_times < proposed_trade.proposed_time].copy(),
+        market_prices.loc[price_times <= proposed_date].copy(),
     )
 
 

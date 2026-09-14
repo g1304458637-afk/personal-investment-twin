@@ -23,6 +23,16 @@ export interface StrategySpecView {
   params: Record<string, number | string>;
 }
 
+export interface StrategyRMultipleStatsView {
+  count: number;
+  avgR: number | null;
+  medianR: number | null;
+  maxR: number | null;
+  minR: number | null;
+  skippedNoStop: number;
+  definition: string;
+}
+
 export interface StrategySummaryView {
   initialCash: number;
   finalEquity: number;
@@ -43,6 +53,9 @@ export interface StrategySummaryView {
   winRate: number | null;
   averageInvestedFraction: number;
   roundTrips: { instrument: string; closedOn: string; pnl: number; reason: string }[];
+  // Optional newer field: missing in older artifacts, present-but-invalid
+  // fails closed. Values are transported verbatim, never recomputed.
+  rMultipleStats: StrategyRMultipleStatsView | null;
 }
 
 export interface StrategyEquityPoint {
@@ -108,6 +121,20 @@ const day = (x: unknown): string => {
 const side = (x: unknown): "BUY" | "SELL" => x === "BUY" || x === "SELL" ? x : fail();
 const status = (x: unknown): StrategyOrderStatus => ["pending", "filled", "cancelled", "rejected"].includes(String(x)) ? x as StrategyOrderStatus : fail();
 const trigger = (x: unknown): StrategyFillTrigger => ["signal_order", "stop_loss", "delisting_liquidation"].includes(String(x)) ? x as StrategyFillTrigger : fail();
+const nonNegativeFinite = (x: unknown): number => { const value = finite(x); return value >= 0 ? value : fail(); };
+
+function rMultipleStats(raw: unknown): StrategyRMultipleStatsView {
+  const value = object(raw);
+  return {
+    count: nonNegativeFinite(value.count),
+    avgR: nullableFinite(value.avg_r),
+    medianR: nullableFinite(value.median_r),
+    maxR: nullableFinite(value.max_r),
+    minR: nullableFinite(value.min_r),
+    skippedNoStop: nonNegativeFinite(value.skipped_no_stop),
+    definition: text(value.definition),
+  };
+}
 
 function spec(raw: unknown): StrategySpecView {
   const value = object(raw);
@@ -167,6 +194,8 @@ function summary(raw: unknown): StrategySummaryView {
         }))
       : [],
     roundTrips,
+    // Optional: absent in artifacts generated before r_multiple_stats existed.
+    rMultipleStats: value.r_multiple_stats === undefined ? null : rMultipleStats(value.r_multiple_stats),
   };
 }
 

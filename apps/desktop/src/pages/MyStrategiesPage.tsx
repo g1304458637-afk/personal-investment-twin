@@ -1,11 +1,19 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { StrategyWorkshop, type WorkshopDraft } from "@/components/strategy/StrategyWorkshop";
+import { WorkshopNumberInput } from "@/components/strategy/WorkshopNumberInput";
 import { strategyLibrary } from "@/data/strategyLibrary";
 import { isTauriRuntime, runtimeRequest } from "@/data/runtimeService";
 import { adaptStrategySimulation, type StrategySimulationView } from "@/data/strategySimulation";
 import { useDataMode } from "@/data/DataModeProvider";
 import { useLocale } from "@/locales/LocaleProvider";
+import { readUserStrategies, type SavedUserStrategy } from "@/lib/userStrategyLibrary";
+import {
+  buildSpecExportFile,
+  dedupeStrategyName,
+  parseSpecImport,
+  type SpecImportReason,
+} from "@/lib/strategySpecTransfer";
 import { EChart } from "@/components/charts/EChart";
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { formatCurrencyValue } from "@/lib/format";
@@ -40,9 +48,21 @@ const TEMPLATE_PREFILL: Record<string, Partial<WorkshopDraft>> = {
   },
 };
 
-function loadSaved(): { id: string; name: string; savedAt: string; spec: Record<string, unknown> }[] {
-  try { return JSON.parse(localStorage.getItem("toujing.userStrategies") ?? "[]"); } catch { return []; }
+function loadSaved() {
+  // Shared, shape-checked reader: malformed or corrupted entries are
+  // dropped instead of crashing the page (or poisoning later writes).
+  return readUserStrategies(typeof localStorage === "undefined" ? undefined : localStorage);
 }
+
+/** Import failure reasons surface as one inline, localized line. */
+const IMPORT_REASON_KEYS: Record<SpecImportReason, string> = {
+  not_json: "The file is not valid JSON.",
+  not_object: "The file does not match the strategy spec export format.",
+  unsupported_schema: "Unsupported strategy schema version.",
+  bad_name: "Strategy name is missing or too long.",
+  bad_spec: "The spec payload is malformed.",
+  schema_mismatch: "Schema versions disagree between file header and spec.",
+};
 
 export function MyStrategiesPage() {
   const { t, locale } = useLocale();
@@ -68,7 +88,7 @@ export function MyStrategiesPage() {
   };
 
 
-  const [runStateMap, setRunState] = useState<Record<string, "loading" | "ready">>({});
+  const [runStateMap, setRunState] = useState<Record<string, "loading" | "ready" | "error">>({});
   const [runErrors, setRunErrors] = useState<Record<string, string>>({});
   const [artifacts, setArtifacts] = useState<Record<string, StrategySimulationView>>({});
 
@@ -76,7 +96,7 @@ export function MyStrategiesPage() {
   const money = (value: number) => formatCurrencyValue(value, locale, currency);
   const selected = saved.find((item) => item.id === selectedId) ?? null;
   const artifact = selectedId ? artifacts[selectedId] ?? null : null;
-  const runState: "loading" | "ready" | null = selectedId ? runStateMap[selectedId] ?? null : null;
+  const runState: "loading" | "ready" | "error" | null = selectedId ? runStateMap[selectedId] ?? null : null;
   const runError = selectedId ? runErrors[selectedId] ?? null : null;
 
   const persist = (next: typeof saved) => {
@@ -99,6 +119,35 @@ export function MyStrategiesPage() {
     if (selectedId === id) setSelectedId(null);
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const downloadSpec = (item: SavedUserStrategy) => {
+    const payload = JSON.stringify(buildSpecExportFile(item), null, 2);
+    const blob = new Blob([payload], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `toujing-strategy-${item.name.replace(/[^\w.-]+/g, "_") || item.id}.json`;
+    anchor.click();
+    // Revoking synchronously can abort the download before WebKit's WebView
+    // has started it; release the URL asynchronously instead.
+    window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  };
+  const importSpecFile = async (file: File) => {
+    setImportError(null);
+    const result = parseSpecImport(await file.text());
+    if (!result.ok) {
+      setImportError(`${t("Import failed")}: ${t(IMPORT_REASON_KEYS[result.reason])}`);
+      return;
+    }
+    // Duplicate names get a numeric suffix so an import can never overwrite
+    // or visually collide with an existing saved strategy.
+    const name = dedupeStrategyName(saved.map((item) => item.name), result.name);
+    const id = `user_import_${Date.now().toString(36)}`;
+    persist([...saved, { id, name, savedAt: new Date().toISOString().slice(0, 10), spec: result.spec }]);
+    setSelectedId(id);
+  };
+
   const run = (entry: { id: string; spec: Record<string, unknown> }) => {
     setRunState((state) => ({ ...state, [entry.id]: "loading" }));
     setRunErrors((state) => ({ ...state, [entry.id]: "" }));
@@ -114,13 +163,15 @@ export function MyStrategiesPage() {
           setArtifacts((state) => ({ ...state, [entry.id]: adaptStrategySimulation(result.artifact) }));
           setRunState((state) => ({ ...state, [entry.id]: "ready" }));
         } else {
+          // Failure lands in the "error" run state so the run button and
+          // the reason stay visible and the strategy can be re-run.
           setRunErrors((state) => ({ ...state, [entry.id]: result.reason ?? "运行失败" }));
-          setRunState((state) => ({ ...state, [entry.id]: "loading" }));
+          setRunState((state) => ({ ...state, [entry.id]: "error" }));
         }
       })
       .catch((value) => {
         setRunErrors((state) => ({ ...state, [entry.id]: value instanceof Error ? value.message : String(value) }));
-        setRunState((state) => ({ ...state, [entry.id]: "loading" }));
+        setRunState((state) => ({ ...state, [entry.id]: "error" }));
       });
   };
 
@@ -173,8 +224,7 @@ export function MyStrategiesPage() {
             {t("Fixed stop-loss")}：
           </label>
           {formulaStopPct !== null ? <span className="workshop-inline-num">
-            <input type="number" min={1} max={50} value={formulaStopPct}
-              onChange={(event) => setFormulaStopPct(Number(event.target.value) || 10)} /> %
+            <WorkshopNumberInput value={formulaStopPct} min={1} max={50} onCommit={setFormulaStopPct} /> %
           </span> : null}
           <label className="workshop-check">
             <input type="checkbox" checked={formulaAtrMult !== null}
@@ -182,8 +232,8 @@ export function MyStrategiesPage() {
             ATR 跟踪止损：前收 −
           </label>
           {formulaAtrMult !== null ? <span className="workshop-inline-num">
-            <input type="number" min={10} max={50} step={5} value={formulaAtrMult * 10}
-              onChange={(event) => setFormulaAtrMult((Number(event.target.value) || 20) / 10)} /> × ATR(14)
+            <WorkshopNumberInput value={formulaAtrMult * 10} min={10} max={50} step={5}
+              onCommit={(next) => setFormulaAtrMult(next / 10)} /> × ATR(14)
           </span> : null}
           <p className="workshop-misread">可用函数：sma(n) ema(n) highest(n) lowest(n) rsi(n) roc(n) atr(n) atr_ratio(n) volume_ratio(n) range_pos(n) streak_down() cross_up(s,l) cross_down(s,l)；字段：close entry_price（仅退出公式）</p>
           <div className="formula-presets">
@@ -239,7 +289,17 @@ export function MyStrategiesPage() {
           setFormulaMode(true);
           if (!formulaName) setFormulaName("我的公式策略");
         }}>λ {t("Write a formula")}</button>
+        <button type="button" className="workshop-save" onClick={() => { setImportError(null); fileInputRef.current?.click(); }}>
+          ⤓ {t("Import spec")}
+        </button>
+        <input ref={fileInputRef} type="file" accept="application/json,.json" className="sr-only" aria-hidden="true" tabIndex={-1}
+          onChange={(event) => {
+            const chosen = event.target.files?.[0];
+            event.target.value = "";
+            if (chosen) void importSpecFile(chosen);
+          }} />
       </div>
+      {importError ? <p className="workshop-error" role="alert">{importError}</p> : null}
       {saved.length === 0 ? <p className="strategy-comparison-note">{t("No custom strategies yet — build one, or start from a library template below.")}</p> : (
         <div className="my-strategy-list">
           {saved.map((item) => (
@@ -247,6 +307,9 @@ export function MyStrategiesPage() {
               <button type="button" className="my-strategy-item__main" onClick={() => setSelectedId(item.id)}>
                 <strong>{item.name}</strong>
                 <span>{item.savedAt} · {item.id.slice(0, 14)}…</span>
+              </button>
+              <button type="button" className="workshop-remove" onClick={() => downloadSpec(item)}>
+                {t("Export spec")}
               </button>
               <button type="button" className="workshop-remove" onClick={() => remove(item.id)}>
                 {pendingDelete === item.id ? t("Click again to confirm") : t("Delete")}
@@ -276,7 +339,13 @@ export function MyStrategiesPage() {
               <div className="strategy-stat"><p className="strategy-stat__label">{t("Total return")}</p><p className={cn("strategy-stat__value", artifact.summary.totalReturn > 0 && "is-positive", artifact.summary.totalReturn < 0 && "is-negative")}>{percent(artifact.summary.totalReturn)}</p></div>
               <div className="strategy-stat"><p className="strategy-stat__label">{t("Max drawdown")}</p><p className="strategy-stat__value is-negative">{percent(artifact.summary.maxDrawdown)}</p></div>
               <div className="strategy-stat"><p className="strategy-stat__label">{t("Fills")}</p><p className="strategy-stat__value">{artifact.summary.fillCount}</p></div>
+              {artifact.summary.rMultipleStats ? <div className="strategy-stat">
+                <p className="strategy-stat__label">{t("R multiple")}</p>
+                <p className="strategy-stat__value">{artifact.summary.rMultipleStats.avgR === null ? "—" : `${artifact.summary.rMultipleStats.avgR.toFixed(2)}R`}</p>
+                <p className="strategy-stat__detail">{t("Median")} {artifact.summary.rMultipleStats.medianR === null ? "—" : `${artifact.summary.rMultipleStats.medianR.toFixed(2)}R`} · {t("Min")} {artifact.summary.rMultipleStats.minR === null ? "—" : `${artifact.summary.rMultipleStats.minR.toFixed(2)}R`} · {t("Max")} {artifact.summary.rMultipleStats.maxR === null ? "—" : `${artifact.summary.rMultipleStats.maxR.toFixed(2)}R`} · {t("Skipped (no stop-loss)")} {artifact.summary.rMultipleStats.skippedNoStop}</p>
+              </div> : null}
             </div>
+            {artifact.summary.rMultipleStats ? <p className="strategy-comparison-note">{t("R multiple definition")}: {artifact.summary.rMultipleStats.definition}</p> : null}
             {equityOption ? <EChart option={equityOption} label={t("Equity curve")} className="strategy-equity-chart" /> : null}
             {artifact.limitations ? <ul className="strategy-comparison-limits">{artifact.limitations.map((item, index) => <li key={index}>{item}</li>)}</ul> : null}
           </div>

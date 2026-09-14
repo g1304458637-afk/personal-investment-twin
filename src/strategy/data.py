@@ -226,6 +226,17 @@ def load_simulation_data(directory: Path) -> SimulationData:
         instrument_actions = sorted(
             (item for item in actions if item.instrument == instrument and item.action == "split"),
             key=lambda item: item.ex_date)
+        # A split whose ex-date is not one of the instrument's bar dates (a
+        # suspension day, a calendar gap, or simply bad input) would never be
+        # applied: the simulation would value the position at post-split
+        # prices while share count stays unadjusted. Fail loudly instead of
+        # silently corrupting the equity curve.
+        bar_dates = set(dates)
+        for item in instrument_actions:
+            if item.ex_date not in bar_dates:
+                raise StrategyDataError(
+                    f"{instrument} split ex_date {item.ex_date.isoformat()} has no bar on that "
+                    "date; the simulation cannot apply this split reliably")
         split_factors: list[float] = []
         adjusted: list[float] = []
         for day, bar in rows:

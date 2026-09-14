@@ -12,6 +12,7 @@ from typing import Mapping
 import pandas as pd
 
 from src.core.canonical_execution import instrument_ref, replay_eligibility
+from src.ingestion.broker_csv import convert_to_generic_csv, detect_broker_format
 from src.ingestion.contracts import CanonicalImportBundle, ImportPreviewSummary, MarketDataRequirement, sorted_instruments, stable_id
 from src.ingestion.generic_csv import GenericCsvImportConfig, preview_generic_csv
 from src.market_data.generic_csv import GenericHistoricalPriceCsvAdapter, GenericPriceCsvConfig
@@ -124,6 +125,14 @@ class ProductRuntime:
         self.repo = LocalRepository(db_path)
         self._review_runtime = None
 
+    def review_pack(self, params: Mapping[str, object]) -> dict[str, object]:
+        subject = _required_text(params, "subject_id")
+        account = _required_text(params, "account_id")
+        # Deferred import: the analytics replay stack is heavy and only this
+        # product method needs it.
+        from src.review_pack import build_review_pack
+        return build_review_pack(self.repo, subject, account)
+
     def review_runtime(self):
         if self._review_runtime is None:
             from .review import ReviewRuntime
@@ -136,6 +145,13 @@ class ProductRuntime:
         self.repo.close()
 
     def _trade_preview(self, params, content, subject, account):
+        original = content
+        broker = detect_broker_format(content)
+        if broker is not None:
+            # Known broker export (eastmoney/ths): convert deterministically to
+            # generic_csv_v1 bytes first, so preview and commit parse identical
+            # facts. Unrecognized files keep the original generic_csv path.
+            content = convert_to_generic_csv(content, broker).encode("utf-8")
         config = _trade_config(params, subject, account)
         raw = self.repo.executions(subject, account, resolve_instruments=False)
         raw_by_id = {item.execution_id: item for item in raw}
@@ -147,6 +163,11 @@ class ProductRuntime:
         parsed = preview_generic_csv(content, config=config, **options)
         source = preview_generic_csv(content, config=replace(config, confirmed_instruments=None), **options) if config.confirmed_instruments else parsed
         payload = parsed.as_dict()
+        if broker is not None:
+            # The tamper guard (_confirmed_file) and the hash shown in preview
+            # both refer to the user's original file bytes; the conversion is
+            # an internal parsing step the user never sees.
+            payload["batch"]["file_sha256"] = hashlib.sha256(original).hexdigest()
         reconciled = {}
         for row, original, view in zip(parsed.rows, source.rows, payload["rows"]):
             if row.candidate is None or original.candidate is None:

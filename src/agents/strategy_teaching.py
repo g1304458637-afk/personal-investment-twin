@@ -16,9 +16,20 @@ OpenAI Agents SDK's structured-output capability):
 from __future__ import annotations
 
 import json
+import re
 from typing import Any, Literal, Mapping
 
 TEACHING_NOTE_MODEL = "strategy_teaching.v1"
+
+# Only exact ``{name}`` references declared in a segment's ``references`` map
+# are substituted.  ``str.format`` is deliberately not used: model-controlled
+# templates must never reach format-spec, attribute-access, or indexing
+# machinery (``{v.upper}``, ``{v:.2f}``), and literal braces in prose must not
+# raise KeyError/IndexError that upstream code would misread as a model
+# connection failure.
+_PLACEHOLDER = re.compile(r"\{([A-Za-z_][A-Za-z0-9_]*)\}")
+
+RENDER_FAILED = "teaching_render_failed"
 
 
 class TeachingReferenceError(ValueError):
@@ -58,7 +69,13 @@ def render_segment(template: str, report: Mapping[str, Any],
 
     Placeholders map to dotted report paths; the rendered value is always the
     report's own value (or an explicit absence statement), never model text.
+    Substitution is plain text replacement of declared names only: undeclared
+    or malformed brace sequences stay literal, and no format spec or attribute
+    access is ever evaluated.
     """
+    if not isinstance(template, str):
+        return {"accepted": False, "reason": RENDER_FAILED, "path": None,
+                "text": None}
     resolved: dict[str, str] = {}
     for placeholder, path in references.items():
         try:
@@ -67,8 +84,17 @@ def render_segment(template: str, report: Mapping[str, Any],
             return {"accepted": False, "reason": "unknown_reference", "path": path,
                     "text": None}
         resolved[placeholder] = value if isinstance(value, str) else json_number(value)
-    return {"accepted": True, "reason": None, "path": None,
-            "text": template.format(**resolved)}
+
+    def _replace(match: re.Match[str]) -> str:
+        name = match.group(1)
+        return resolved.get(name, match.group(0))
+
+    try:
+        text = _PLACEHOLDER.sub(_replace, template)
+    except (TypeError, ValueError):  # pragma: no cover - substitution is total
+        return {"accepted": False, "reason": RENDER_FAILED, "path": None,
+                "text": None}
+    return {"accepted": True, "reason": None, "path": None, "text": text}
 
 
 def json_number(value: Any) -> str:
@@ -157,14 +183,23 @@ def render_answer(answer: TeachingAnswer, report: Mapping[str, Any]) -> dict[str
     """Deterministically render model segments; unresolvable references drop."""
     texts: list[str] = []
     dropped: list[dict[str, str]] = []
+    render_failures = 0
     for segment in answer.segments:
         rendered = render_segment(segment.template, report, segment.references)
         if rendered["accepted"]:
             texts.append(f"[{segment.kind}] {rendered['text']}")
         else:
+            if rendered["reason"] == RENDER_FAILED:
+                render_failures += 1
             dropped.append({"kind": segment.kind, "path": rendered["path"] or ""})
+    if texts:
+        reason = None
+    elif render_failures == len(dropped) and render_failures > 0:
+        reason = RENDER_FAILED
+    else:
+        reason = "teaching_reference_failed"
     return {"accepted": bool(texts), "texts": texts, "dropped": dropped,
-            "reason": None if texts else "teaching_reference_failed"}
+            "reason": reason}
 
 
 async def run_teaching(runtime: Any, report: Mapping[str, Any], *, focus: str | None = None,

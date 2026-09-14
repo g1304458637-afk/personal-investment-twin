@@ -211,6 +211,15 @@ class LocalRepository:
         return [dict(row) for row in self.connection.execute("SELECT * FROM accounts ORDER BY created_at, subject_id, account_id")]
 
     def executions(self, subject_id: str, account_id: str, *, resolve_instruments: bool = True) -> tuple[CanonicalExecutionV2, ...]:
+        # Ordering is NOT a cross-precision chronology contract.  The stored
+        # event_order_key is the fact's ExecutionTime.ordering_key string:
+        # date-precision facts use "date:YYYY-MM-DD" while timed facts use ISO
+        # UTC instants, and those two forms do not sort chronologically against
+        # each other (only within one precision).  The format is kept stable
+        # because rewriting stored keys would change persisted payload
+        # identity for existing rows without a data migration.  Callers that
+        # need chronological order must re-sort on timestamps, as
+        # canonical_executions_to_frame does.
         rows = self.connection.execute(
             "SELECT payload_json FROM canonical_executions WHERE subject_id=? AND account_id=? ORDER BY event_order_key, COALESCE(execution_sequence,-1), execution_id",
             (subject_id, account_id),
@@ -270,6 +279,7 @@ class LocalRepository:
             for item in executions:
                 inserted += db.execute(
                     "INSERT OR IGNORE INTO canonical_executions VALUES(?,?,?,?,?,?,?)",
+                    # ordering_key format contract: see executions() below.
                     (item.execution_id, subject_id, account_id, item.event_time.ordering_key, item.execution_sequence,
                      item.instrument.instrument_id, _dump(_execution_payload(item))),
                 ).rowcount

@@ -226,6 +226,11 @@ def _account_frames(
         raise PositionEpisodeError(
             "executions.event_time must contain timestamps"
         ) from exc
+    if times.dt.tz is not None:
+        # The replay axes are timezone-naive UTC instants; align tz-aware
+        # source facts to them so mixed naive/aware comparisons fail closed
+        # here instead of raising bare TypeErrors at filter time.
+        times = times.dt.tz_convert("UTC").dt.tz_localize(None)
     if times.isna().any():
         raise PositionEpisodeError("executions.event_time cannot contain NaT")
     rows["event_time"] = times
@@ -281,6 +286,13 @@ def _window_prices(market_prices: pd.DataFrame, as_of: pd.Timestamp) -> pd.DataF
         dates = pd.to_datetime(market_prices["date"], errors="raise")
     except (TypeError, ValueError) as exc:
         raise PositionEpisodeError("market_prices.date must contain timestamps") from exc
+    timezone_aware = dates.dt.tz is not None
+    if timezone_aware:
+        # The contract's price ``date`` is a calendar date, so a tz-aware
+        # observation keeps its stated wall-clock calendar date (naive) instead
+        # of being shifted by a UTC conversion; this stays comparable with the
+        # naive replay axes.
+        dates = dates.dt.tz_localize(None)
     if dates.isna().any():
         raise PositionEpisodeError("market_prices.date cannot contain NaT")
     # The current Market Data Contract is daily.  Keep only observations whose
@@ -288,6 +300,10 @@ def _window_prices(market_prices: pd.DataFrame, as_of: pd.Timestamp) -> pd.DataF
     selected = market_prices.loc[dates.dt.normalize() <= as_of.normalize()].copy()
     if selected.empty:
         raise PositionEpisodeError("No market prices are available at or before as_of")
+    if timezone_aware:
+        # Hand the replay a naive date column so panel assembly never mixes
+        # tz-aware and tz-naive axes.
+        selected["date"] = dates.loc[selected.index]
     return selected
 
 
@@ -533,6 +549,10 @@ def build_position_episode_lifecycle(
         "calculation_code_version",
     )
     normalized_as_of = _required_timestamp(as_of, "as_of")
+    if normalized_as_of.tzinfo is not None:
+        # The replay axes are timezone-naive UTC instants; keep a tz-aware
+        # as_of comparable with them instead of raising bare TypeErrors.
+        normalized_as_of = normalized_as_of.tz_convert("UTC").tz_localize(None)
     if data_tier not in {"synthetic", "demo", "authorized_beta", "production"}:
         raise PositionEpisodeError("data_tier is unsupported")
     window_prices = _window_prices(market_prices, normalized_as_of)

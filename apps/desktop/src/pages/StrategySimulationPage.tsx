@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { EChart } from "@/components/charts/EChart";
@@ -7,10 +7,11 @@ import { useTheme } from "@/components/layout/ThemeProvider";
 import { isTauriRuntime, runtimeRequest, type SensitivityReportView } from "@/data/runtimeService";
 import { useDataMode } from "@/data/DataModeProvider";
 import { adaptStrategySimulation, type StrategySimulationView } from "@/data/strategySimulation";
-import { StrategyWorkshop, conditionStatement, type ConditionDraft, type WorkshopDraft } from "@/components/strategy/StrategyWorkshop";
+import { StrategyWorkshop, type WorkshopDraft } from "@/components/strategy/StrategyWorkshop";
 import { rawComparisonReportFor, strategyComparison } from "@/data/strategyComparisonDemo";
 import { strategySimulation } from "@/data/strategySimulationDemo";
 import { useLocale } from "@/locales/LocaleProvider";
+import { describeUserStrategySpec, readUserStrategies } from "@/lib/userStrategyLibrary";
 import { formatCurrencyValue } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -52,12 +53,11 @@ export function StrategySimulationPage() {
   const { theme } = useTheme();
   const dark = theme === "dark";
   const [search, setSearch] = useSearchParams();
-  const [userStrategies, setUserStrategies] = useState<{ id: string; name: string; savedAt: string; spec: Record<string, unknown> }[]>(() => {
-    try { return JSON.parse(localStorage.getItem("toujing.userStrategies") ?? "[]"); } catch { return []; }
-  });
+  const [userStrategies, setUserStrategies] = useState(() => readUserStrategies(
+    typeof localStorage === "undefined" ? undefined : localStorage));
   const [workshopOpen, setWorkshopOpen] = useState(false);
   const [userArtifacts, setUserArtifacts] = useState<Record<string, StrategySimulationView>>({});
-  const [userRunState, setUserRunState] = useState<Record<string, "loading" | "ready">>({});
+  const [userRunState, setUserRunState] = useState<Record<string, "loading" | "ready" | "error">>({});
   const [userRunError, setUserRunError] = useState<Record<string, string>>({});
   const defaultStrategyId = (() => {
     const fromUrl = search.get("strategy");
@@ -69,26 +69,37 @@ export function StrategySimulationPage() {
   const [strategyId, setStrategyIdState] = useState<string>(defaultStrategyId);
   const setStrategyId = (id: string) => {
     setStrategyIdState(id);
-    localStorage.setItem("toujing.strategy", id);
+    // Only built-in strategies persist here: PositionEpisodePage reads this
+    // key for its rule replay and only knows built-ins.  Custom strategy
+    // selection is remembered by the URL and by each page's own state.
+    if (!id.startsWith("user_")) localStorage.setItem("toujing.strategy", id);
     const next = new URLSearchParams(search);
     next.set("strategy", id);
     setSearch(next, { replace: true });
   };
   const [simulation, setSimulation] = useState<StrategySimulationView>(strategySimulation);
   const [loadingStrategy, setLoadingStrategy] = useState(false);
+  const [strategyLoadError, setStrategyLoadError] = useState<string | null>(null);
   useEffect(() => {
     if (strategyId.startsWith("user_")) {
       const artifact = userArtifacts[strategyId];
       if (artifact) setSimulation(artifact);
+      setLoadingStrategy(false);
+      setStrategyLoadError(null);
       return;
     }
-    if (strategyId === "toujing_t1_breakout_trend") { setSimulation(strategySimulation); return; }
+    if (strategyId === "toujing_t1_breakout_trend") { setSimulation(strategySimulation); setLoadingStrategy(false); setStrategyLoadError(null); return; }
     const entry = STRATEGY_FILES[strategyId];
-    if (!entry) return;
+    if (!entry) { setLoadingStrategy(false); return; }
     let cancelled = false;
     setLoadingStrategy(true);
+    setStrategyLoadError(null);
     entry.load().then((module) => {
       if (!cancelled) setSimulation(adaptStrategySimulation(module.default));
+    }).catch((value) => {
+      // A failed chunk load must surface as an error, not as an unhandled
+      // rejection with the previous strategy's data left on screen.
+      if (!cancelled) setStrategyLoadError(value instanceof Error ? value.message : String(value));
     }).finally(() => { if (!cancelled) setLoadingStrategy(false); });
     return () => { cancelled = true; };
   }, [strategyId, userArtifacts]);
@@ -96,7 +107,11 @@ export function StrategySimulationPage() {
   const isUserStrategy = strategyId.startsWith("user_");
   // A user strategy that has not been run yet must NOT show another
   // strategy's stale numbers: gate every data section on readiness.
-  const simulationReady = !isUserStrategy || !!userArtifacts[strategyId];
+  // Built-in strategies gate on the artifact matching the selection, so a
+  // slow or failed chunk load can never show the previous strategy's data.
+  const simulationReady = isUserStrategy
+    ? !!userArtifacts[strategyId]
+    : simulation.strategy.strategyId === strategyId;
   const selectedUserStrategy = isUserStrategy
     ? userStrategies.find((item) => item.id === strategyId) ?? null : null;
   // Hero identity must follow the selection even before the first run.
@@ -104,10 +119,14 @@ export function StrategySimulationPage() {
     title: `自建策略：${selectedUserStrategy.name}`,
     description: "你在因子库内自建的规则组合；保存后可在桌面应用中于真实行情或合成历史上运行。",
     meta: `${selectedUserStrategy.id} · 保存于 ${selectedUserStrategy.savedAt}`,
-  } : {
+  } : simulationReady ? {
     title: simulation.strategy.title,
     description: simulation.strategy.description,
     meta: `${simulation.strategy.strategyId}@${simulation.strategy.version} · ${t("Data fingerprint")} ${simulation.dataFingerprint.slice(0, 12)}…`,
+  } : {
+    title: STRATEGY_FILES[strategyId]?.title ?? simulation.strategy.title,
+    description: "",
+    meta: "",
   };
   const saveWorkshopStrategy = (draft: WorkshopDraft, spec: Record<string, unknown>) => {
     const id = `user_${JSON.stringify(spec).length}_${Math.abs(draft.name.length)}_${Date.now().toString(36)}`;
@@ -131,7 +150,10 @@ export function StrategySimulationPage() {
       "strategy_simulation.run_custom", base)
       .then((result) => {
         if (result.status !== "available" || !result.artifact) {
+          // Failure lands in the "error" run state so the run button and
+          // the reason stay visible and the strategy can be re-run.
           setUserRunError((state) => ({ ...state, [entry.id]: result.reason ?? "运行失败" }));
+          setUserRunState((state) => ({ ...state, [entry.id]: "error" }));
           return;
         }
         setUserArtifacts((state) => ({ ...state, [entry.id]: adaptStrategySimulation(result.artifact) }));
@@ -139,7 +161,7 @@ export function StrategySimulationPage() {
       })
       .catch((value) => {
         setUserRunError((state) => ({ ...state, [entry.id]: value instanceof Error ? value.message : String(value) }));
-        setUserRunState((state) => ({ ...state, [entry.id]: "loading" }));
+        setUserRunState((state) => ({ ...state, [entry.id]: "error" }));
       });
   };
   const deleteUserStrategy = (id: string) => {
@@ -164,6 +186,15 @@ export function StrategySimulationPage() {
   const [sensitivityResult, setSensitivityResult] = useState<SensitivityReportView | null>(null);
   const [sensitivityBusy, setSensitivityBusy] = useState(false);
   const [sensitivityError, setSensitivityError] = useState<string | null>(null);
+  const sensitivityGeneration = useRef(0);
+  // Changing the parameter or switching strategy tab invalidates any run in
+  // flight: a late response must never overwrite the new selection's state.
+  useEffect(() => {
+    sensitivityGeneration.current += 1;
+    setSensitivityBusy(false);
+    setSensitivityResult(null);
+    setSensitivityError(null);
+  }, [strategyId, sensitivityParam]);
   const runSensitivity = () => {
     if (!isTauriRuntime()) {
       setSensitivityError("需要桌面应用环境（浏览器预览不运行变体）。");
@@ -171,6 +202,7 @@ export function StrategySimulationPage() {
     }
     const values = sensitivityValues.split(",").map((text) => Number(text.trim())).filter((value) => Number.isFinite(value));
     if (values.length < 2) { setSensitivityError("请至少输入两个取值，用逗号分隔。"); return; }
+    const generation = ++sensitivityGeneration.current;
     setSensitivityBusy(true);
     setSensitivityError(null);
     const request = strategyId.startsWith("user_")
@@ -179,11 +211,17 @@ export function StrategySimulationPage() {
     runtimeRequest<{ status: string; reason: string | null; report: SensitivityReportView | null }>(
       "strategy_sensitivity.run", request)
       .then((result) => {
+        if (generation !== sensitivityGeneration.current) return;
         if (result.status === "available" && result.report) setSensitivityResult(result.report);
         else setSensitivityError(result.reason ?? "运行失败");
       })
-      .catch((value) => setSensitivityError(value instanceof Error ? value.message : String(value)))
-      .finally(() => setSensitivityBusy(false));
+      .catch((value) => {
+        if (generation !== sensitivityGeneration.current) return;
+        setSensitivityError(value instanceof Error ? value.message : String(value));
+      })
+      .finally(() => {
+        if (generation === sensitivityGeneration.current) setSensitivityBusy(false);
+      });
   };
   const [teaching, setTeaching] = useState<Record<string, { status: string; texts: string[]; reason: string | null } | "loading">>({});
   const explain = async (episodeId: string) => {
@@ -258,7 +296,9 @@ export function StrategySimulationPage() {
     xAxis: {
       type: "time", minInterval: MS_PER_DAY,
       axisLabel: { color: dark ? "rgba(205,220,234,.72)" : "rgba(23,33,42,.72)", fontSize: 11,
-        formatter: (value: number) => new Intl.DateTimeFormat(locale, { year: "2-digit", month: "short" }).format(value) },
+        // Day boundaries in the artifact are UTC dates; format in UTC so a
+        // local-timezone offset cannot shift labels to another day.
+        formatter: (value: number) => new Intl.DateTimeFormat(locale, { year: "2-digit", month: "short", timeZone: "UTC" }).format(value) },
       splitLine: { show: false },
       axisLine: { lineStyle: { color: dark ? "rgba(160,184,210,.18)" : "rgba(32,50,63,.18)" } },
     },
@@ -300,6 +340,9 @@ export function StrategySimulationPage() {
 
   const summary = simulation.summary;
   const returnTone = summary.totalReturn > 0 ? "positive" : summary.totalReturn < 0 ? "negative" : undefined;
+  const annualizedReturn = summary.annualizedReturn;
+  const annualizedTone: "positive" | "negative" | undefined =
+    annualizedReturn === null ? undefined : annualizedReturn > 0 ? "positive" : annualizedReturn < 0 ? "negative" : undefined;
 
   return <div className="strategy-simulation space-y-5 pb-8">
     <header className="iw-inset strategy-hero">
@@ -352,14 +395,24 @@ export function StrategySimulationPage() {
         <button type="button" onClick={() => deleteUserStrategy(selectedUserStrategy.id)}>{t("Delete")}</button>
       </div>
       <p className="strategy-comparison-note">{t("Custom strategies are data specs, run by the deterministic interpreter on the bundled synthetic universe. They are never advice and never touch real accounts.")}</p>
-      <ul className="strategy-rule-group">
-        {((selectedUserStrategy.spec.entry as { all_of: Record<string, unknown>[] }).all_of).map((condition, index) => (
-          <li key={index}><code>{t("Entry")} {index + 1}</code><span>{conditionStatement(condition as unknown as ConditionDraft)}</span></li>
-        ))}
-        {((selectedUserStrategy.spec.exit as { any_of: Record<string, unknown>[] }).any_of).map((condition, index) => (
-          <li key={`exit-${index}`}><code>{t("Exit")} {index + 1}</code><span>{conditionStatement(condition as unknown as ConditionDraft)}</span></li>
-        ))}
-      </ul>
+      {(() => {
+        // Two saved spec shapes exist (workshop conditions and formula
+        // mode); render each through the shared, shape-checked helper and
+        // skip malformed entries instead of crashing the whole page.
+        const display = describeUserStrategySpec(selectedUserStrategy.spec);
+        if (display.entry.length === 0 && display.exit.length === 0) return null;
+        const label = (kind: "entry" | "exit", index: number) =>
+          display.kind === "formula" ? t(kind === "entry" ? "Entry formula" : "Exit formula")
+            : `${t(kind === "entry" ? "Entry" : "Exit")} ${index + 1}`;
+        return <ul className="strategy-rule-group">
+          {display.entry.map((line, index) => (
+            <li key={`entry-${index}`}><code>{label("entry", index)}</code><span>{line}</span></li>
+          ))}
+          {display.exit.map((line, index) => (
+            <li key={`exit-${index}`}><code>{label("exit", index)}</code><span>{line}</span></li>
+          ))}
+        </ul>;
+      })()}
       {isTauriRuntime() ? (
         userRunState[selectedUserStrategy.id] === "ready" && userArtifacts[selectedUserStrategy.id] ? (
           <>
@@ -389,6 +442,9 @@ export function StrategySimulationPage() {
         <p>{t("Open the desktop app → Strategy Simulation → select this strategy → Run on history.")}</p>
       </div>}
     </section> : null}
+    {!simulationReady && !isUserStrategy ? strategyLoadError
+      ? <p className="strategy-compare__note" role="alert">{t("Load failed")}: {strategyLoadError}</p>
+      : <p className="strategy-compare__note">{t("Loading…")}</p> : null}
 {simulationReady ? <>
       <section className="iw-inset strategy-purpose" aria-label={t("What this page answers")}>
 
@@ -479,8 +535,8 @@ export function StrategySimulationPage() {
         <StatCard label={t("Final equity")} value={money(summary.finalEquity)}
 
           detail={`${t("Total return")} ${percentLabel(summary.totalReturn)}`} tone={returnTone} />
-        <StatCard label={t("Annualized return")} value={summary.annualizedReturn === null ? "—" : percentLabel(summary.annualizedReturn)}
-          detail={`${t("Trading days")} ${summary.tradingDays}`} tone={summary.annualizedReturn !== null && summary.annualizedReturn > 0 ? "positive" : "negative"} />
+        <StatCard label={t("Annualized return")} value={annualizedReturn === null ? "—" : percentLabel(annualizedReturn)}
+          detail={`${t("Trading days")} ${summary.tradingDays}`} tone={annualizedTone} />
         <StatCard label={t("Sharpe ratio")} value={summary.sharpeRatio === null ? "—" : summary.sharpeRatio.toFixed(2)}
           detail={summary.sharpeRatio !== null && summary.sharpeRatio > 1 ? t("Good risk-adjusted return") : t("Low risk-adjusted return")} />
 
@@ -506,9 +562,15 @@ export function StrategySimulationPage() {
 
         <StatCard label={t("Avg exposure")} value={percentLabel(summary.averageInvestedFraction)}
 
-          detail={`${summary.tradingDays} · CNY`} />
+          detail={`${summary.tradingDays} · ${currency}`} />
+
+        {summary.rMultipleStats ? <StatCard label={t("R multiple")}
+          value={summary.rMultipleStats.avgR === null ? "—" : `${summary.rMultipleStats.avgR.toFixed(2)}R`}
+          detail={`${t("Median")} ${summary.rMultipleStats.medianR === null ? "—" : `${summary.rMultipleStats.medianR.toFixed(2)}R`} · ${t("Min")} ${summary.rMultipleStats.minR === null ? "—" : `${summary.rMultipleStats.minR.toFixed(2)}R`} · ${t("Max")} ${summary.rMultipleStats.maxR === null ? "—" : `${summary.rMultipleStats.maxR.toFixed(2)}R`} · ${t("Skipped (no stop-loss)")} ${summary.rMultipleStats.skippedNoStop}`} /> : null}
 
       </section>
+
+      {summary.rMultipleStats ? <p className="strategy-comparison-note r-multiple-note">{t("R multiple definition")}: {summary.rMultipleStats.definition}</p> : null}
 
 
 

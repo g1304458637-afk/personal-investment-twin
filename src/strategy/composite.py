@@ -35,8 +35,6 @@ LEGACY_VERSIONS = {"user_strategy.v1"}
 MAX_ENTRY_CONDITIONS = 5
 MAX_ANYOF_CONDITIONS = 3
 MAX_EXIT_CONDITIONS = 2
-MAX_ENTRY_CONDITIONS = 3
-MAX_EXIT_CONDITIONS = 2
 MAX_POSITIONS_RANGE = (1, 8)
 USER_OPS = {"gt", "gte", "lt", "lte", "true"}
 
@@ -396,8 +394,12 @@ def make_provider(normalized: Mapping[str, Any]):
                         n = _atr_ratio(series, index, 14)
                         if n and n > 0:
                             close = series.adjusted_close[index]
+                            # _atr_ratio returns ATR/close; the rule text is
+                            # "prior close - mult x ATR(14)" in absolute price
+                            # terms, so convert the ratio back to a price.
+                            absolute_atr = n * close
                             current_stop = float((view.get(instrument) or {}).get("stop_price") or 0.0)
-                            new_stop = close - atr_mult * n
+                            new_stop = close - atr_mult * absolute_atr
                             if new_stop > current_stop:
                                 candidates.append(Signal(
                                     instrument=instrument, kind="stop_update", strength=None,

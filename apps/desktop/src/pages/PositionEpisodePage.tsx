@@ -25,6 +25,18 @@ import { explainabilityForEvidence, getPositionEpisodeById } from "@/data/backen
 import { belongsToExample, exampleAccountLabel } from "@/data/accountContext";
 import { useDataMode } from "@/data/DataModeProvider";
 import { realUserApi } from "@/data/runtimeService";
+import {
+  EPISODE_TAG_MAX_COUNT,
+  EPISODE_TAG_MAX_LENGTH,
+  addEpisodeTag,
+  episodeExitQuality,
+  episodeTagsFor,
+  playbookTagFor,
+  removeEpisodeTag,
+  type ReviewPackExitEpisodeView,
+  type ReviewPackView,
+} from "@/data/reviewPack";
+import { useAccountReviewPack } from "@/pages/AccountReviewPack";
 import { selectPrimaryCounterfactuals, type HistoricalCounterfactualView, type OutcomeResultSign, type OutcomeResultView, type OutcomeTransition } from "@/data/decisionOutcome";
 import { adaptRuntimePositionEpisodeEntry, type DecisionPhaseView, type EpisodePatternObservationView, type PathPresentationItemView, type PositionDecisionType, type PositionDecisionView, type PositionEpisodeEntryView, type PositionEvidenceReferenceView, type PositionStateView } from "@/data/positionEpisode";
 import { CurrencyProvider, useLocale } from "@/locales/LocaleProvider";
@@ -32,6 +44,7 @@ import { cn } from "@/lib/utils";
 
 import "./episode-workspace.css";
 import "./episode-review-sample.css";
+import "./review-pack.css";
 import { episodeSections, episodeSection, episodeSampleCopy, isEpisodeSample, isVisibleReviewPattern, type EpisodeSection } from "@/workspace/episodeSample";
 import { isClassicWorkspace } from "@/workspace/workspaceMode";
 
@@ -39,6 +52,14 @@ function DecisionName({ type }: { type: PositionDecisionType }) {
   const { t } = useLocale();
   return <>{{ open_position: t("Open position"), add_position: t("Add position"), reduce_position: t("Reduce position"), close_position: t("Close position / final sale") }[type]}</>;
 }
+
+/** Built-in strategies the rule replay can load; mirrors the demo artifacts. */
+const RULE_REPLAY_STRATEGY_IDS: readonly string[] = [
+  "toujing_t1_breakout_trend",
+  "toujing_dual_ma",
+  "toujing_rsi_mean_reversion",
+  "toujing_turtle_s2_long",
+];
 
 function numericFact(facts: Record<string, unknown>, key: string): number | null {
   const value = facts[key];
@@ -194,6 +215,149 @@ function DecisionDrawer({ entry, decision, open, onOpenChange, optical = false }
   return <Sheet open={open} onOpenChange={onOpenChange}><SheetContent data-optical-decision={optical ? decision.decisionId : undefined} className={cn("w-[min(96vw,680px)] overflow-y-auto", optical && "optical-review-scope optical-decision-drawer")}>{optical ? <OpticalDecisionFocus timestamp={timestamp} /> : null}<div className="pr-10"><p className="text-[11px] font-medium uppercase tracking-[0.14em] text-accent">{t("Actual execution")}</p><SheetTitle className="mt-2 text-xl font-semibold text-foreground"><DecisionName type={decision.decisionType} /></SheetTitle><SheetDescription className="mt-2 text-sm leading-6 text-muted">{t("Before, action, after, and result are copied from deterministic replay and Outcome records.")}</SheetDescription></div><dl className="mt-6 grid grid-cols-2 gap-x-5 gap-y-4 border-y border-border/70 py-5 text-xs"><div className="col-span-2"><dt className="text-muted">{t("Occurred at")}</dt><dd className="mt-1 text-sm text-foreground">{timestamp}</dd></div><div><dt className="text-muted">{t("Execution price")}</dt><dd className="mt-1 font-mono text-base text-foreground">{formatCurrency(decision.outcome.executionPrice)}</dd></div><div><dt className="text-muted">{t("Execution quantity")}</dt><dd className="mt-1 font-mono text-base text-foreground">{formatNumber(decision.outcome.executedQuantity, 0)}</dd></div><div><dt className="text-muted">{t("Recorded fee")}</dt><dd className="mt-1 font-mono text-sm text-foreground">{formatCurrency(decision.outcome.executionFee)}</dd></div><div><dt className="text-muted">Execution ID</dt><dd className="mt-1 break-all font-mono text-[10px] text-foreground">{decision.executionId}</dd></div></dl><div className="mt-6 grid gap-3 sm:grid-cols-2"><StateFacts state={decision.stateBefore} label={t("Before execution")} /><StateFacts state={decision.stateAfter} label={t("After execution")} /></div>{decision.outcome.immediateResult ? <div className="mt-4 rounded-lg border border-border/70 bg-white/[0.025] p-4"><p className="text-xs text-muted"><ResultLabel result={decision.outcome.immediateResult} scope="sale" /></p><p className={cn("mt-1 font-mono text-xl font-semibold", resultTone(decision.outcome.immediateResult.resultSign))}>{formatCurrency(decision.outcome.immediateResult.pnl)}</p></div> : null}{counterfactuals.length ? <div className="mt-7"><h3 className="text-sm font-semibold text-foreground">{t("Historical alternatives")}</h3><div className="mt-3 space-y-3">{counterfactuals.map((item) => <CounterfactualBlock key={item.counterfactualId} item={item} />)}</div></div> : null}{decision.decisionType === "close_position" ? <div className="mt-7"><ExitFollowup entry={entry} /></div> : null}<div className="mt-7"><h3 className="text-sm font-semibold text-foreground">{t("Linked decision Evidence")}</h3><div className="mt-3"><EvidenceLinks references={references} /></div></div><details className="mt-7 border-t border-border/70 pt-4 text-xs text-muted"><summary className="cursor-pointer font-medium text-foreground">{t("Technical details")}</summary><p className="mt-3 break-all font-mono text-[10px] leading-5">{decision.outcome.outcomeId}<br />{decision.outcome.methodId}@{decision.outcome.methodVersion}<br />{decision.outcome.executionSource.sourceRecordId}</p></details></SheetContent></Sheet>;
 }
 
+/** One exit-quality fact; a null backend value is shown honestly as insufficient. */
+function ExitQualityFact({ label, value, title }: { label: string; value: string; title?: string }) {
+  return <div><dt className="text-muted" title={title}>{label}</dt><dd className="mt-1 break-words font-mono text-sm text-foreground">{value}</dd></div>;
+}
+
+function ExitQualityBlock({ item }: { item: ReviewPackExitEpisodeView }) {
+  const { t, formatCurrency, formatPercent } = useLocale();
+  const insufficient = t("Insufficient data");
+  const amount = (value: number | null) => value === null ? insufficient : formatCurrency(value);
+  const amountWithPct = (value: number | null, pct: number | null) =>
+    value === null ? insufficient : pct === null ? amount(value) : `${formatCurrency(value)} (${formatPercent(pct, 2)})`;
+  const ratio = (value: number | null) => value === null ? insufficient : formatPercent(value, 1);
+  const dayLabel = (value: string | null) => value === null ? insufficient : value;
+  const days = item.facts.holdDays === null ? insufficient : t("{count} days", { count: item.facts.holdDays });
+  return <>
+    <dl className="review-exit-quality__facts">
+      <ExitQualityFact label={t("Max favorable excursion (MFE)")} value={amountWithPct(item.mfeAmount, item.mfePct)} />
+      <ExitQualityFact label={t("Max adverse excursion (MAE)")} value={amountWithPct(item.maeAmount, item.maePct)} />
+      <ExitQualityFact label={t("Exit efficiency")} value={ratio(item.exitEfficiency)} title={t("Share of the maximum floating profit kept at exit")} />
+      <ExitQualityFact label={t("Profit giveback ratio")} value={ratio(item.givebackRatio)} title={t("How much of the maximum floating profit faded before exit")} />
+      <ExitQualityFact label={t("Peak date")} value={dayLabel(item.facts.peakDate)} />
+      <ExitQualityFact label={t("Trough date")} value={dayLabel(item.facts.troughDate)} />
+      <ExitQualityFact label={t("Holding days")} value={days} />
+      <ExitQualityFact label={t("Realized PnL")} value={item.realizedPnl === null ? insufficient : formatCurrency(item.realizedPnl)} />
+    </dl>
+    <p className="review-exit-quality__boundary">{t("Exit efficiency is the share of the maximum floating profit kept at exit. All values are measured on recorded daily price observations; intraday extremes are not visible.")}</p>
+    {item.limitations.length ? <ul className="strategy-comparison-limits">{item.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul> : null}
+  </>;
+}
+
+function TagAggregate({ pack, tag }: { pack: ReviewPackView; tag: string }) {
+  const { t, formatPercent } = useLocale();
+  const aggregate = playbookTagFor(pack, tag);
+  if (!aggregate || aggregate.confidence === "insufficient" || aggregate.winRate === null) return <>{t("Sample insufficient")}</>;
+  return <>{t("Episodes")} {aggregate.episodeCount} · {t("Win rate")} {formatPercent(aggregate.winRate, 0)}</>;
+}
+
+/**
+ * Episode tag editor. Client-side validation mirrors the backend limits
+ * (trim, dedupe, ≤24 chars, ≤8 tags); saving goes through the desktop runtime
+ * and refreshes the review pack. Demo preview is read-only.
+ */
+function EpisodeTagsEditor({ pack, episodeId, subjectId, accountId, readOnly, onSaved }: {
+  pack: ReviewPackView; episodeId: string; subjectId: string; accountId: string; readOnly: boolean; onSaved: () => void;
+}) {
+  const { t } = useLocale();
+  const savedTags = useMemo(() => episodeTagsFor(pack, episodeId), [pack, episodeId]);
+  // Local working list while editing; reset whenever the pack or episode changes
+  // so stale edits can never be saved onto another episode.
+  const [working, setWorking] = useState<string[] | null>(null);
+  const [input, setInput] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  useEffect(() => { setWorking(null); setInput(""); setError(null); setSaveError(null); setSaving(false); }, [pack, episodeId]);
+  const tags = working ?? savedTags;
+  const dirty = working !== null;
+  const reasonText = (reason: string) => reason === "tag_too_long"
+    ? t("A tag is limited to {max} characters", { max: EPISODE_TAG_MAX_LENGTH })
+    : reason === "too_many_tags"
+      ? t("An episode can have at most {max} tags", { max: EPISODE_TAG_MAX_COUNT })
+      : t("This tag was already added");
+  const commitInput = () => {
+    if (input.trim().length === 0) return;
+    const result = addEpisodeTag(tags, input);
+    if (!result.ok) { setError(reasonText(result.reason)); return; }
+    setError(null);
+    setWorking(result.tags);
+    setInput("");
+  };
+  const save = () => {
+    if (saving) return;
+    setSaving(true); setSaveError(null);
+    realUserApi.setEpisodeTags({ subject_id: subjectId, account_id: accountId, episode_id: episodeId, tags })
+      .then(() => { setSaving(false); onSaved(); })
+      .catch((value) => { setSaving(false); setSaveError(value instanceof Error ? value.message : String(value)); });
+  };
+  return <div className="review-tag-section">
+    <p className="iw-kicker">{t("Playbook tags")}</p>
+    {tags.length === 0 && !readOnly ? <p className="iw-subtle">{t("No tags yet. Add up to {max}, e.g. breakout, stop-loss executed.", { max: EPISODE_TAG_MAX_COUNT })}</p> : null}
+    {tags.length === 0 && readOnly ? <p className="iw-subtle">{t("This episode has no tags in the example review pack.")}</p> : null}
+    {tags.length > 0 ? <div className="review-tag-chips">
+      {tags.map((tag) => (
+        <span key={tag} className="review-tag-chip">
+          <strong>{tag}</strong>
+          <span className="review-tag-chip__aggregate"><TagAggregate pack={pack} tag={tag} /></span>
+          {!readOnly ? <button type="button" className="review-tag-chip__remove" aria-label={t("Remove tag")}
+            onClick={() => setWorking(removeEpisodeTag(tags, tag))}>×</button> : null}
+        </span>
+      ))}
+    </div> : null}
+    {readOnly
+      ? <p className="review-tag-boundary">{t("Browser preview is a read-only example; tagging needs the desktop app.")}</p>
+      : <div className="review-tag-input">
+        <input
+          value={input}
+          maxLength={EPISODE_TAG_MAX_LENGTH}
+          placeholder={t("Add a tag, press Enter")}
+          aria-label={t("Add a tag, press Enter")}
+          onChange={(event) => setInput(event.target.value)}
+          onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); commitInput(); } }}
+          onBlur={commitInput}
+        />
+        <button type="button" className="review-tag-save" disabled={!dirty || saving} onClick={save}>
+          {saving ? t("Saving…") : t("Save tags")}
+        </button>
+      </div>}
+    {error ? <p className="review-tag-error" role="alert">{error}</p> : null}
+    {saveError ? <p className="review-tag-error" role="alert">{t("Save failed")}: {saveError}</p> : null}
+    {!readOnly ? <p className="review-tag-boundary">{t("Tags are descriptive labels only; they do not change any recorded fact.")}</p> : null}
+  </div>;
+}
+
+/** Episode-level review-pack section: exit quality facts plus tag editing. */
+function ReviewPackEpisodeSection({ mode, subjectId, accountId, episodeId }: {
+  mode: "demo" | "real_user"; subjectId: string; accountId: string; episodeId: string;
+}) {
+  const { t } = useLocale();
+  const [reloadKey, setReloadKey] = useState(0);
+  const { pack, loading, error } = useAccountReviewPack(subjectId, accountId, mode, reloadKey);
+  const exitItem = pack ? episodeExitQuality(pack, episodeId) : null;
+  return <section data-exit-quality className="iw-inset review-exit-quality">
+    <div className="iw-panel-heading">
+      <div>
+        <p className="iw-kicker">{t("Exit quality")}</p>
+        <h2>{t("What the recorded price path looked like from this episode")}</h2>
+      </div>
+      <span className="iw-subtle">{t("Account review pack")}</span>
+    </div>
+    {loading ? <StateNotice state="loading" compact title={t("Loading review pack…")} detail={t("Rebuilding from local canonical facts.")} /> : null}
+    {error ? <StateNotice state="error" compact title={t("Review pack unavailable")} detail={error} /> : null}
+    {pack && !loading && !error
+      ? exitItem
+        ? <ExitQualityBlock item={exitItem} />
+        : <StateNotice state="insufficient" compact title={t("Insufficient data")} detail={t("This episode has no exit-quality record in the account review pack yet.")} />
+      : null}
+    {pack && !loading && !error
+      ? <EpisodeTagsEditor pack={pack} episodeId={episodeId} subjectId={subjectId} accountId={accountId}
+        readOnly={mode === "demo"} onSaved={() => setReloadKey((value) => value + 1)} />
+      : null}
+  </section>;
+}
+
 export function PositionEpisodePage() {
   const { episodeId } = useParams();
   const [search, setSearch] = useSearchParams();
@@ -211,9 +375,14 @@ export function PositionEpisodePage() {
   const entry = data.mode === "demo" ? (demoEntry && belongsToExample(demoEntry, data.exampleAccount) ? demoEntry : null)
     : runtimeEntry?.episode.episodeId === episodeId && runtimeEntry?.episode.subjectId === data.activeAccount?.subject_id && runtimeEntry?.episode.accountId === data.activeAccount?.account_id ? runtimeEntry : null;
   // Same-instrument rule replay fills for demo episodes, following the user's
-  // persisted strategy choice (T1 artifact is the eager default).
-  const [compareStrategyId, setCompareStrategyIdState] = useState<string>(
-    () => (typeof localStorage === "undefined" ? "toujing_t1_breakout_trend" : localStorage.getItem("toujing.strategy") ?? "toujing_t1_breakout_trend"));
+  // persisted strategy choice (T1 artifact is the eager default).  Only
+  // built-in ids are ever written to "toujing.strategy"; an unknown or
+  // stale id falls back to the default so the select, the label and the
+  // comparison all describe the same strategy.
+  const [compareStrategyId, setCompareStrategyIdState] = useState<string>(() => {
+    const stored = typeof localStorage === "undefined" ? null : localStorage.getItem("toujing.strategy");
+    return stored && RULE_REPLAY_STRATEGY_IDS.includes(stored) ? stored : "toujing_t1_breakout_trend";
+  });
   const setCompareStrategyId = (id: string) => {
     setCompareStrategyIdState(id);
     localStorage.setItem("toujing.strategy", id);
@@ -240,18 +409,32 @@ export function PositionEpisodePage() {
   // Real accounts: on-demand same-instrument comparison via the sidecar.
   const [realCompare, setRealCompare] = useState<
     { state: "loading" } | { state: "ready"; report: ComparisonReportView } | { state: "error"; reason: string } | null>(null);
+  const realCompareGeneration = useRef(0);
   const loadRealCompare = () => {
     if (!episode.accountId) return;
+    const requestedEpisodeId = episode.episodeId;
+    const generation = ++realCompareGeneration.current;
     setRealCompare({ state: "loading" });
-    realUserApi.strategyComparison(episode.subjectId, episode.accountId, episode.episodeId)
+    realUserApi.strategyComparison(episode.subjectId, episode.accountId, requestedEpisodeId)
       .then((result) => {
+        if (generation !== realCompareGeneration.current) return;
         if (result.status === "available" && result.report) {
-          setRealCompare({ state: "ready", report: adaptSingleComparisonReport(result.report) });
+          const report = adaptSingleComparisonReport(result.report);
+          // Drop responses that describe a different Episode than the one
+          // the user asked about: cross-episode data must never render.
+          if (report.episodeId !== requestedEpisodeId) {
+            setRealCompare({ state: "error", reason: "comparison_episode_mismatch" });
+            return;
+          }
+          setRealCompare({ state: "ready", report });
         } else {
           setRealCompare({ state: "error", reason: result.reason ?? "comparison_unavailable" });
         }
       })
-      .catch((value) => setRealCompare({ state: "error", reason: value instanceof Error ? value.message : String(value) }));
+      .catch((value) => {
+        if (generation !== realCompareGeneration.current) return;
+        setRealCompare({ state: "error", reason: value instanceof Error ? value.message : String(value) });
+      });
   };
   const currentVerdicts = useMemo(() => {
     if (data.mode !== "demo" || !entry) return [];
@@ -272,7 +455,13 @@ export function PositionEpisodePage() {
   const sampleTop = useRef<HTMLDivElement>(null);
   useEffect(() => { sampleTop.current?.scrollIntoView({block:"start", behavior:"instant"}); }, [sample]);
   const selectedDecision = entry?.decisions.find((item) => item.decisionId === selectedDecisionId) ?? null;
-  useEffect(() => { setSelectedDecisionId(null); setSelectedPathItemId(null); setShowBackground(false); }, [episodeId, data.mode, data.exampleAccount, data.activeAccount]);
+  useEffect(() => {
+    // Route parameter changes reuse this component instance; clear every
+    // per-Episode selection and any in-flight comparison for the old Episode.
+    setSelectedDecisionId(null); setSelectedPathItemId(null); setShowBackground(false);
+    realCompareGeneration.current += 1;
+    setRealCompare(null);
+  }, [episodeId, data.mode, data.exampleAccount, data.activeAccount]);
   useEffect(() => {
     if (!entry || !requestedDecisionId) return;
     if (entry.decisions.some((decision) => decision.decisionId === requestedDecisionId)) setSelectedDecisionId(requestedDecisionId);
@@ -365,7 +554,9 @@ export function PositionEpisodePage() {
         anchor.href = url;
         anchor.download = card.filename;
         anchor.click();
-        URL.revokeObjectURL(url);
+        // Revoking synchronously can abort the download before WebKit's
+        // WebView has started it; release the URL asynchronously instead.
+        window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
       }}>{t("Review card")}</button>
       <span className="iw-subtle">{t("A desensitized summary you can share: no instrument names, no absolute amounts.")}</span>
     </div> : null}
@@ -426,6 +617,12 @@ export function PositionEpisodePage() {
         const copy = pathItemCopy(item, entry.pathAnalysis.phases, entry.pathAnalysis.patterns, t, formatPercent, formatNumber);
         return <button type="button" key={fact.itemId} data-review-fact={fact.itemId} className="iw-fact" aria-pressed={selectedPathItemId === fact.itemId} onClick={() => { setSelectedPathItemId(fact.itemId); timeNavigation.apply(factFocusDomain(Date.parse(fact.startAt), Date.parse(fact.endAt), observationTimes), "reset"); chartRef.current?.scrollIntoView({block: "start", behavior: "smooth"}); }}><strong>{copy.title}</strong><span>{copy.detail}</span>{sample && <span className="episode-fact-action">{c.focus}<ArrowRight size={13} /></span>}</button>;
       })}</aside> : <aside className="iw-facts iw-inset"><div className="iw-facts-title"><p className="iw-kicker">{t("Review queue")}</p><h2 className="mt-1 text-sm font-semibold">{t("No review facts are available")}</h2><p className="iw-subtle mt-2">{t("The recorded investment path remains available below.")}</p></div></aside>}</div>
+    {!(sample && sampleSection !== "process") ? <ReviewPackEpisodeSection
+      mode={data.mode}
+      subjectId={episode.subjectId}
+      accountId={episode.accountId}
+      episodeId={episode.episodeId}
+    /> : null}
     {sampleSection === "process" ? <section className="iw-inset strategy-panel strategy-decision-verdicts">
         <div className="strategy-panel__head">
           <p className="iw-kicker">{t("Check against your strategy")}</p>

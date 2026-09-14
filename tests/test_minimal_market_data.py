@@ -179,11 +179,138 @@ def test_requirement_resolution_complete_partial_and_missing() -> None:
     all_facts = facts()
     complete = resolve_market_data_requirements(bundle, all_facts)
     assert complete.status == "complete"
-    assert complete.required_observation_count == 3
+    # The replay panel needs a price for the traded symbol on every date the
+    # panel contains, so the requirement spans the full imported daily series
+    # (65 observations), not just the three execution dates.
+    assert complete.required_observation_count == 65
     required_dates = {"2025-01-02", "2025-01-06", "2025-01-07"}
     partial_facts = tuple(item for item in all_facts if item.date.isoformat() in required_dates - {"2025-01-07"})
     assert resolve_market_data_requirements(bundle, partial_facts).status == "partial"
     assert resolve_market_data_requirements(bundle, ()).status == "missing"
+
+
+def test_requirements_cover_cross_symbol_panel_dates() -> None:
+    """A date priced for one traded symbol is required for every traded symbol.
+
+    The replay pivot builds one panel over all traded symbols from the global
+    earliest execution date, so an execution on a date priced only for another
+    symbol must be reported as pending market data instead of crashing the
+    builder after the gate passed.
+    """
+
+    trades = (
+        "symbol,market,security_type,event_time,side,quantity,price,fee,source_execution_id\n"
+        "ALPHA,X,equity,2025-01-06 10:00:00,BUY,100,10.00,1,E1\n"
+        "BETA,X,equity,2025-01-08 10:00:00,BUY,100,20.00,1,E2\n"
+    )
+    prices = (
+        "local_symbol,market,security_type,date,price,price_type\n"
+        "ALPHA,X,equity,2025-01-06,10,adjusted_close\n"
+        "BETA,X,equity,2025-01-08,20,adjusted_close\n"
+    )
+    preview_result = preview_generic_csv(
+        trades,
+        config=GenericCsvImportConfig(
+            subject_id=SUBJECT,
+            account_id=ACCOUNT,
+            source_timezone="Asia/Shanghai",
+        ),
+    )
+    bundle = build_canonical_import_bundle(preview_result)
+    price_facts = tuple(
+        row.candidate
+        for row in preview(prices).rows
+        if row.status == "new_observation" and row.candidate
+    )
+    assert len(price_facts) == 2
+    availability = resolve_market_data_requirements(bundle, price_facts)
+    assert availability.status == "partial"
+    assert availability.missing == (
+        (price_facts[0].instrument.instrument_id, ("2025-01-08",)),
+        (price_facts[1].instrument.instrument_id, ("2025-01-06",)),
+    )
+    gated = build_episode_when_market_ready(
+        bundle,
+        price_facts,
+        as_of=pd.Timestamp("2025-01-08 23:59:00"),
+        init_cash=100_000,
+        calculation_code_version="market-data-test",
+    )
+    assert gated.status == "unavailable_pending_market_data"
+    assert gated.lifecycle is None
+
+
+def test_gate_maps_residual_panel_gap_to_pending_instead_of_crashing(
+    monkeypatch,
+) -> None:
+    """Defense in depth: the original two-symbol crash is reported as pending."""
+
+    import src.market_data.episode_gate as gate_module
+    from src.market_data.models import MarketDataAvailability
+
+    trades = (
+        "symbol,market,security_type,event_time,side,quantity,price,fee,source_execution_id\n"
+        "ALPHA,X,equity,2025-01-06 10:00:00,BUY,100,10.00,1,E1\n"
+        "BETA,X,equity,2025-01-08 10:00:00,BUY,100,20.00,1,E2\n"
+    )
+    prices = (
+        "local_symbol,market,security_type,date,price,price_type\n"
+        "ALPHA,X,equity,2025-01-06,10,adjusted_close\n"
+        "BETA,X,equity,2025-01-08,20,adjusted_close\n"
+    )
+    preview_result = preview_generic_csv(
+        trades,
+        config=GenericCsvImportConfig(
+            subject_id=SUBJECT,
+            account_id=ACCOUNT,
+            source_timezone="Asia/Shanghai",
+        ),
+    )
+    bundle = build_canonical_import_bundle(preview_result)
+    price_facts = tuple(
+        row.candidate
+        for row in preview(prices).rows
+        if row.status == "new_observation" and row.candidate
+    )
+    # Force the gate past requirement resolution to prove the builder's panel
+    # error is mapped instead of crashing the caller.
+    monkeypatch.setattr(
+        gate_module,
+        "resolve_market_data_requirements",
+        lambda *args, **kwargs: MarketDataAvailability("complete", 2, 2, (), ()),
+    )
+    gated = gate_module.build_episode_when_market_ready(
+        bundle,
+        price_facts,
+        as_of=pd.Timestamp("2025-01-08 23:59:00"),
+        init_cash=100_000,
+        calculation_code_version="market-data-test",
+    )
+    assert gated.status == "unavailable_pending_market_data"
+    assert "panel is incomplete" in (gated.reason or "")
+    assert gated.lifecycle is None
+
+
+def test_gate_does_not_mask_non_market_data_build_errors(monkeypatch) -> None:
+    """Non-coverage PositionEpisodeError must propagate, not become pending."""
+
+    import src.market_data.episode_gate as gate_module
+    from src.episodes.position_episode import PositionEpisodeError
+
+    bundle = trade_bundle()
+
+    def explode(*args, **kwargs):
+        raise PositionEpisodeError("Unsupported SELL state transition for long-only lifecycle")
+
+    monkeypatch.setattr(gate_module, "build_position_episode_lifecycle", explode)
+    with pytest.raises(PositionEpisodeError):
+        gate_module.build_episode_when_market_ready(
+            bundle,
+            facts(),
+            as_of=pd.Timestamp("2025-04-02 23:59:00"),
+            init_cash=100_000,
+            calculation_code_version="market-data-test",
+        )
 
 
 def test_missing_required_date_is_reported_without_forward_fill() -> None:

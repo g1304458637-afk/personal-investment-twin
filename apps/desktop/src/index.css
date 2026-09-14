@@ -1055,6 +1055,24 @@ a {
   font-size: 8px;
 }
 
+/* Top-level error boundary fallback: styled like a state notice. */
+.app-error-boundary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 20px;
+  padding: 16px;
+}
+
+.app-error-boundary__message {
+  margin: 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: hsl(var(--muted));
+  word-break: break-all;
+}
+
 .state-notice {
   display: flex;
   align-items: flex-start;

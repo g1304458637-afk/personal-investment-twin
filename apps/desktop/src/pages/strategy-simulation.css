@@ -556,6 +556,8 @@
 .workshop-actions button:not(.workshop-save) { background: transparent; border: 1px solid var(--border);
   border-radius: 8px; color: var(--muted); padding: 6px 16px; cursor: pointer; }
 .workshop-error { color: #ff8f9c; }
+.workshop-num-hint { flex-basis: 100%; font-size: 11px; color: #faca70; }
+.workshop-inline-num input[aria-invalid="true"], .workshop-param input[aria-invalid="true"] { border-color: rgba(250,202,112,.6); }
 
 .strategy-sensitivity-controls {
   display: flex;

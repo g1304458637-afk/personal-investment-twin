@@ -15,9 +15,11 @@ export const isTauriRuntime = () => typeof window !== "undefined" && "__TAURI_IN
 export async function runtimeRequest<T>(method: string, params: Record<string, unknown>): Promise<T> {
   if (!isTauriRuntime()) throw new Error("desktop_runtime_required");
   const response = await invoke<RuntimeResponse<T>>("runtime_product_request", { method, params });
-  if (!response.ok || !response.result) throw new Error(response.error?.message ?? "runtime_request_failed");
+  // Only ok/error decide failure: a null, false or 0 result is a valid
+  // payload, not an error.  Fail closed on any error marker.
+  if (!response.ok || response.error) throw new Error(response.error?.message ?? "runtime_request_failed");
   notifyRuntimeDataChange(method, params);
-  return response.result;
+  return response.result as T;
 }
 
 export async function pickCsv(): Promise<{ path: string; filename: string } | null> {
@@ -40,6 +42,10 @@ export const realUserApi = {
   strategyComparison: (subjectId: string, accountId: string, episodeId: string) => runtimeRequest<{ status: string; reason: string | null; report: unknown | null }>("strategy_comparison.get", { subject_id: subjectId, account_id: accountId, episode_id: episodeId }),
   strategyTeaching: (report: Record<string, unknown>, focus: string | null) => runtimeRequest<{ status: string; reason: string | null; texts: string[]; dropped: unknown[]; note: string | null }>("strategy_teaching.explain", { report, focus }),
   strategySensitivity: (request: { strategy_id?: string; strategy?: Record<string, unknown>; parameter: string; values: number[] }) => runtimeRequest<{ status: string; reason: string | null; report: SensitivityReportView | null }>("strategy_sensitivity.run", request),
+  // Account-level review pack (review_pack.v1). The result is untyped here on
+  // purpose: adaptReviewPack owns the fail-closed validation.
+  reviewPack: (params: { subject_id: string; account_id: string }) => runtimeRequest<unknown>("review_pack.get", params),
+  setEpisodeTags: (params: { subject_id: string; account_id: string; episode_id: string; tags: string[] }) => runtimeRequest<unknown>("episode_tags.set", params),
 };
 
 export interface RuntimeAccount { subject_id: string; account_id: string; display_name: string; initial_cash: number; created_at: string; updated_at: string }

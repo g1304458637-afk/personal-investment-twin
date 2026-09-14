@@ -5,6 +5,7 @@ import { HashRouter, Navigate, Route, Routes, useLocation } from "react-router-d
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { WorkspaceShell } from "@/components/layout/WorkspaceShell";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AppErrorBoundary } from "@/components/common/ErrorBoundary";
 import { LocaleProvider, useLocale } from "@/locales/LocaleProvider";
 import { StateNotice } from "@/components/common/StateNotice";
 import { DataModeProvider, useDataMode } from "@/data/DataModeProvider";
@@ -87,36 +88,38 @@ export default function App() {
   };
   return (
     <LocaleProvider>
-      <DataModeProvider><ThemeProvider>
-        <MotionConfig reducedMotion="user">
-          <TooltipProvider delayDuration={360} skipDelayDuration={120}>
-            <HashRouter>
-              <Routes>
-                <Route index element={load(<WelcomeEntry />)} />
-                <Route path="/welcome" element={load(<WelcomePage />)} />
-                <Route element={<WorkspaceShell />}>
-                  {productRoutes.map((definition) => {
-                    const element = workspacePages[definition.id] ?? routeElements[definition.id];
-                    const legacy = !workspacePages[definition.id] && ["review", "review_decisions", "review_patterns", "twin", "pretrade", "advanced_evidence"].includes(definition.id);
-                    return element ? <Route key={definition.id} path={definition.path} element={load(legacy ? <LegacyExample>{element}</LegacyExample> : element)} /> : null;
-                  })}
-                  <Route path="/history" element={load(<HistoryWorkspace />)} />
-                  <Route path="/analysis" element={load(<AnalysisWorkspace />)} />
-                  <Route path="/comparison" element={<Navigate to="/analysis" replace />} />
-                  <Route path="/comparison/history" element={load(<SelfComparisonWorkspace />)} />
-                  <Route path="/comparison/professional" element={load(<ProfessionalComparisonWorkspace />)} />
-                  <Route path="/journal" element={load(<ReviewWorkspace view="journal" />)} />
-                  <Route path="/ask" element={load(<AgentWorkspace />)} />
-                  {legacyRoutePaths().map((path) => (
-                    <Route key={`legacy:${path}`} path={path} element={<LegacyRouteRedirect />} />
-                  ))}
-                  <Route path="*" element={<Navigate to="/investments" replace />} />
-                </Route>
-              </Routes>
-            </HashRouter>
-          </TooltipProvider>
-        </MotionConfig>
-      </ThemeProvider></DataModeProvider>
+      <AppErrorBoundary>
+        <DataModeProvider><ThemeProvider>
+          <MotionConfig reducedMotion="user">
+            <TooltipProvider delayDuration={360} skipDelayDuration={120}>
+              <HashRouter>
+                <Routes>
+                  <Route index element={load(<WelcomeEntry />)} />
+                  <Route path="/welcome" element={load(<WelcomePage />)} />
+                  <Route element={<WorkspaceShell />}>
+                    {productRoutes.map((definition) => {
+                      const element = workspacePages[definition.id] ?? routeElements[definition.id];
+                      const legacy = !workspacePages[definition.id] && ["review", "review_decisions", "review_patterns", "twin", "pretrade", "advanced_evidence"].includes(definition.id);
+                      return element ? <Route key={definition.id} path={definition.path} element={load(legacy ? <LegacyExample>{element}</LegacyExample> : element)} /> : null;
+                    })}
+                    <Route path="/history" element={load(<HistoryWorkspace />)} />
+                    <Route path="/analysis" element={load(<AnalysisWorkspace />)} />
+                    <Route path="/comparison" element={<Navigate to="/analysis" replace />} />
+                    <Route path="/comparison/history" element={load(<SelfComparisonWorkspace />)} />
+                    <Route path="/comparison/professional" element={load(<ProfessionalComparisonWorkspace />)} />
+                    <Route path="/journal" element={load(<ReviewWorkspace view="journal" />)} />
+                    <Route path="/ask" element={load(<AgentWorkspace />)} />
+                    {legacyRoutePaths().map((path) => (
+                      <Route key={`legacy:${path}`} path={path} element={<LegacyRouteRedirect />} />
+                    ))}
+                    <Route path="*" element={<Navigate to="/investments" replace />} />
+                  </Route>
+                </Routes>
+              </HashRouter>
+            </TooltipProvider>
+          </MotionConfig>
+        </ThemeProvider></DataModeProvider>
+      </AppErrorBoundary>
     </LocaleProvider>
   );
 }

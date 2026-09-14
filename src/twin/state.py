@@ -909,9 +909,15 @@ def build_twin_metric_comparison(series: HistoricalMetricSeries) -> TwinMetricCo
 
     reference = valid[0]
     absolute_change = current.value - reference.value
-    relative_change = absolute_change / reference.value if reference.value != 0 else None
     if not math.isfinite(absolute_change):  # pragma: no cover - point invariant
         raise ValueError("absolute_change must be finite")
+    relative_change: float | None = None
+    if reference.value != 0:
+        quotient = absolute_change / reference.value
+        # A tiny non-zero reference can overflow the quotient to +/-inf (or a
+        # NaN from inf/inf-like point values).  The comparison must stay a
+        # finite, presentable ratio or be reported as unavailable.
+        relative_change = quotient if math.isfinite(quotient) else None
     return TwinMetricComparison(
         metric_id=series.metric_id,
         method_id=series.method_id,
@@ -926,7 +932,11 @@ def build_twin_metric_comparison(series: HistoricalMetricSeries) -> TwinMetricCo
         evidence_reason=(
             "Relative change is unavailable because the reference value is zero"
             if reference.value == 0
-            else None
+            else (
+                "Relative change is unavailable because the ratio is not finite"
+                if relative_change is None
+                else None
+            )
         ),
         reference_evidence_id=reference.source_evidence_id,
         current_evidence_id=current.source_evidence_id,

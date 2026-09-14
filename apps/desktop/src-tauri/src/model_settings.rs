@@ -111,21 +111,62 @@ fn search_status(configured: bool, enabled: bool) -> SearchStatus {
     SearchStatus { configured, enabled, provider: "bocha" }
 }
 
+const SEARCH_PREFS_FILE: &str = "research-prefs.json";
+
 fn search_prefs_path(app_data: &std::path::Path) -> std::path::PathBuf {
-    app_data.join("research-prefs.json")
+    app_data.join(SEARCH_PREFS_FILE)
 }
 
-fn read_search_enabled(app_data: &std::path::Path) -> bool {
-    let Ok(bytes) = std::fs::read(search_prefs_path(app_data)) else { return true };
-    serde_json::from_slice::<Value>(&bytes).ok()
-        .and_then(|value| value.get("search_enabled")?.as_bool())
-        .unwrap_or(true)
+fn read_search_enabled(app_data: &std::path::Path) -> Result<bool, String> {
+    let bytes = match std::fs::read(search_prefs_path(app_data)) {
+        Ok(bytes) => bytes,
+        // No file yet: first-run default keeps search enabled.
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(true),
+        Err(_) => return Err("search_prefs_unavailable".to_owned()),
+    };
+    let value: Value = match serde_json::from_slice(&bytes) {
+        Ok(value) => value,
+        Err(_) => {
+            // A corrupt file must never re-open a feature the user closed:
+            // the safe default is disabled, not enabled.
+            eprintln!(
+                "toujing: {} is corrupt; search stays disabled until re-enabled",
+                SEARCH_PREFS_FILE
+            );
+            return Ok(false);
+        }
+    };
+    match value.get("search_enabled").and_then(Value::as_bool) {
+        Some(enabled) => Ok(enabled),
+        None => {
+            eprintln!(
+                "toujing: {} has no boolean search_enabled; search stays disabled",
+                SEARCH_PREFS_FILE
+            );
+            Ok(false)
+        }
+    }
 }
 
 fn write_search_enabled(app_data: &std::path::Path, enabled: bool) -> Result<(), String> {
     std::fs::create_dir_all(app_data).map_err(|_| "search_prefs_unavailable".to_owned())?;
-    std::fs::write(search_prefs_path(app_data), serde_json::to_vec(&json!({"search_enabled": enabled})).unwrap())
-        .map_err(|_| "search_prefs_unavailable".into())
+    let payload = serde_json::to_vec(&json!({ "search_enabled": enabled }))
+        .expect("search prefs payload always serializes");
+    // Write to a temp file and rename so a crash can never leave a
+    // half-written or corrupt prefs file behind.
+    let temporary = app_data.join(format!(
+        "{}.{}.tmp",
+        SEARCH_PREFS_FILE,
+        std::process::id()
+    ));
+    let committed = std::fs::write(&temporary, &payload)
+        .and_then(|()| std::fs::rename(&temporary, search_prefs_path(app_data)));
+    if let Err(error) = committed {
+        let _ = std::fs::remove_file(&temporary);
+        eprintln!("toujing: failed to persist search preferences: {error}");
+        return Err("search_prefs_unavailable".into());
+    }
+    Ok(())
 }
 
 #[cfg(target_os = "macos")]
@@ -149,7 +190,7 @@ fn read_bocha_key() -> Result<Option<String>, String> { Err("model_keychain_unsu
 pub async fn search_service_status(manager: tauri::State<'_, crate::runtime::RuntimeManager>) -> Result<SearchStatus, String> {
     let app_data = manager.app_data.clone();
     tauri::async_runtime::spawn_blocking(move || {
-        Ok(search_status(read_bocha_key()?.is_some(), read_search_enabled(&app_data)))
+        Ok(search_status(read_bocha_key()?.is_some(), read_search_enabled(&app_data)?))
     }).await.map_err(|_| "model_keychain_unavailable".to_owned())?
 }
 
@@ -162,7 +203,7 @@ pub async fn search_service_save(api_key: String, manager: tauri::State<'_, crat
         {
             security_framework::passwords::set_generic_password(SERVICE, BOCHA_ACCOUNT, api_key.as_bytes())
                 .map_err(|_| "model_keychain_unavailable".to_owned())?;
-            Ok(search_status(true, read_search_enabled(&app_data)))
+            Ok(search_status(true, read_search_enabled(&app_data)?))
         }
         #[cfg(not(target_os = "macos"))]
         { Err("model_keychain_unsupported".into()) }
@@ -175,9 +216,10 @@ pub async fn search_service_delete(manager: tauri::State<'_, crate::runtime::Run
     tauri::async_runtime::spawn_blocking(move || {
         #[cfg(target_os = "macos")]
         {
+            let enabled = read_search_enabled(&app_data)?;
             match security_framework::passwords::delete_generic_password(SERVICE, BOCHA_ACCOUNT) {
-                Ok(()) => Ok(search_status(false, read_search_enabled(&app_data))),
-                Err(e) if e.code() == -25300 => Ok(search_status(false, read_search_enabled(&app_data))),
+                Ok(()) => Ok(search_status(false, enabled)),
+                Err(e) if e.code() == -25300 => Ok(search_status(false, enabled)),
                 Err(_) => Err("model_keychain_unavailable".to_owned()),
             }
         }
@@ -190,8 +232,11 @@ pub async fn search_service_delete(manager: tauri::State<'_, crate::runtime::Run
 pub async fn search_service_set_enabled(enabled: bool, manager: tauri::State<'_, crate::runtime::RuntimeManager>) -> Result<SearchStatus, String> {
     let app_data = manager.app_data.clone();
     tauri::async_runtime::spawn_blocking(move || {
+        // Read the Keychain before touching the file: a Keychain failure must
+        // not silently flip the stored preference.
+        let configured = read_bocha_key()?.is_some();
         write_search_enabled(&app_data, enabled)?;
-        Ok(search_status(read_bocha_key()?.is_some(), enabled))
+        Ok(search_status(configured, enabled))
     }).await.map_err(|_| "search_prefs_unavailable".to_owned())?
 }
 
@@ -211,7 +256,7 @@ fn attach_optional_search(mut params: Value, key: Option<String>, enabled: bool)
 pub async fn with_optional_search(params: Value, app_data: &std::path::Path) -> Result<Value, String> {
     let app_data = app_data.to_path_buf();
     let (key, enabled) = tauri::async_runtime::spawn_blocking(move || {
-        Ok::<_, String>((read_bocha_key()?, read_search_enabled(&app_data)))
+        Ok::<_, String>((read_bocha_key()?, read_search_enabled(&app_data)?))
     }).await.map_err(|_| "model_keychain_unavailable".to_owned())??;
     attach_optional_search(params, key, enabled)
 }
@@ -278,6 +323,51 @@ mod tests {
         for key in ["", "secret\n", " secret", "秘密", &"x".repeat(513)] {
             assert_eq!(validate_key(key).unwrap_err(), "model_key_invalid");
         }
+    }
+
+    fn temp_app_data(tag: &str) -> std::path::PathBuf {
+        let directory = std::env::temp_dir().join(format!(
+            "toujing-prefs-tests-{}-{tag}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&directory);
+        std::fs::create_dir_all(&directory).unwrap();
+        directory
+    }
+
+    #[test]
+    fn missing_prefs_file_defaults_to_enabled() {
+        let app_data = temp_app_data("missing");
+        assert_eq!(read_search_enabled(&app_data), Ok(true));
+        std::fs::remove_dir_all(&app_data).unwrap();
+    }
+
+    #[test]
+    fn corrupt_prefs_file_reports_disabled_not_enabled() {
+        let app_data = temp_app_data("corrupt");
+        std::fs::write(search_prefs_path(&app_data), b"{not json").unwrap();
+        assert_eq!(read_search_enabled(&app_data), Ok(false));
+        std::fs::write(search_prefs_path(&app_data), b"[]").unwrap();
+        assert_eq!(read_search_enabled(&app_data), Ok(false));
+        std::fs::write(search_prefs_path(&app_data), br#"{"search_enabled":"yes"}"#).unwrap();
+        assert_eq!(read_search_enabled(&app_data), Ok(false));
+        std::fs::remove_dir_all(&app_data).unwrap();
+    }
+
+    #[test]
+    fn prefs_round_trip_is_atomic_without_temp_litter() {
+        let app_data = temp_app_data("roundtrip");
+        write_search_enabled(&app_data, false).unwrap();
+        assert_eq!(read_search_enabled(&app_data), Ok(false));
+        write_search_enabled(&app_data, true).unwrap();
+        assert_eq!(read_search_enabled(&app_data), Ok(true));
+        let leftovers: Vec<_> = std::fs::read_dir(&app_data)
+            .unwrap()
+            .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
+            .filter(|name| name.ends_with(".tmp"))
+            .collect();
+        assert!(leftovers.is_empty(), "temp files left behind: {leftovers:?}");
+        std::fs::remove_dir_all(&app_data).unwrap();
     }
 
     // Explicit opt-in integration test: only a unique, disposable synthetic item.

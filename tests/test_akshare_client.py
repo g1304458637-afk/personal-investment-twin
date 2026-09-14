@@ -78,3 +78,60 @@ def test_lazy_import_failure_is_explainable(isolated_cache, monkeypatch):
     monkeypatch.setitem(sys.modules, "akshare", None)  # import akshare raises ImportError.
     with pytest.raises(AkshareUnavailable, match="akshare_import_failed"):
         fetch_ohlc("600000.SH", "2025-01-01", "2025-01-31")
+
+
+def test_corrupt_cache_is_a_miss_and_gets_replaced(isolated_cache):
+    from src.data.akshare_client import _cache_path, cached_bars
+
+    cache_file = _cache_path("600000", "2025-01-01", "2025-01-31", "")
+    cache_file.parent.mkdir(parents=True, exist_ok=True)
+    cache_file.write_text('{"source": "akshare_public", "bars": [{"date": "2025-01-0', encoding="utf-8")
+    assert cached_bars("600000.SH", "2025-01-01", "2025-01-31") is None
+    assert not cache_file.exists()  # corrupt entry removed, not surfaced as JSONDecodeError
+
+    calls = []
+    def fetcher(**kwargs):
+        calls.append(kwargs)
+        return _fake_frame()
+    assert fetch_ohlc("600000.SH", "2025-01-01", "2025-01-31", fetcher=fetcher)[0]["close"] == 10.5
+    assert calls, "corrupt cache must fall back to a fresh fetch"
+    assert cached_bars("600000.SH", "2025-01-01", "2025-01-31") is not None
+
+
+def test_cache_write_uses_temp_file_and_atomic_rename(isolated_cache, monkeypatch):
+    import os
+
+    from src.data.akshare_client import _CACHE_ROOT, _cache_path
+
+    replacements = []
+    real_replace = os.replace
+
+    def recording_replace(src, dst):
+        replacements.append((str(src), str(dst)))
+        real_replace(src, dst)
+
+    monkeypatch.setattr(akshare_client.os, "replace", recording_replace)
+    fetch_ohlc("600000.SH", "2025-01-01", "2025-01-31", fetcher=lambda **kwargs: _fake_frame())
+
+    target = _cache_path("600000", "2025-01-01", "2025-01-31", "")
+    assert len(replacements) == 1
+    src, dst = replacements[0]
+    assert dst == str(target)
+    assert src.startswith(str(_CACHE_ROOT)) and src.endswith(".tmp") and src != dst
+    assert target.exists()
+    assert not list(_CACHE_ROOT.glob("*.tmp"))  # no half-written leftovers
+    def exploding_fetcher(**kwargs):
+        raise AssertionError("network must not be hit after atomic rename")
+    assert fetch_ohlc("600000.SH", "2025-01-01", "2025-01-31", fetcher=exploding_fetcher)[0]["close"] == 10.5
+
+
+def test_non_finite_and_unparseable_rows_are_dropped(isolated_cache):
+    frame = pd.DataFrame([
+        {"日期": "2025-01-02", "开盘": 10.0, "收盘": 10.5, "最高": 10.8, "最低": 9.9},
+        {"日期": "2025-01-03", "开盘": float("nan"), "收盘": 11.0, "最高": 11.2, "最低": 10.4},
+        {"日期": "2025-01-04", "开盘": 11.0, "收盘": float("inf"), "最高": 11.2, "最低": 10.4},
+        {"日期": "2025-01-05", "开盘": 11.0, "收盘": 0.0, "最高": 11.2, "最低": 10.4},
+        {"日期": "not-a-date", "开盘": 11.0, "收盘": 11.1, "最高": 11.2, "最低": 10.4},
+    ])
+    bars = fetch_ohlc("600000.SH", "2025-01-01", "2025-01-31", fetcher=lambda **kwargs: frame)
+    assert [item["date"] for item in bars] == ["2025-01-02"]

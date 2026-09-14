@@ -189,6 +189,16 @@ class ExecutionTime:
 
     @property
     def ordering_key(self) -> str:
+        # Sort contract: deterministic lexical order within one precision.
+        # Date-precision keys ("date:2025-01-05") and timed keys
+        # ("2025-01-05T10:30:00+00:00") are NOT comparable with each other, so
+        # a mixed-precision sequence sorted by this string is not
+        # chronological.  This is deliberate: the value is persisted verbatim
+        # (repository event_order_key, result_payload event_time), and
+        # rewriting it would silently change stored payload identity for
+        # existing rows.  Consumers needing chronology re-sort on timestamps
+        # (see canonical_executions_to_frame and
+        # src/persistence/repository.py::executions).
         if self.instant_utc is not None:
             return self.instant_utc.isoformat()
         return f"date:{self.calendar_date.isoformat()}"
@@ -210,6 +220,10 @@ def execution_time(
         raise CanonicalExecutionError("time precision is unsupported")
 
     if precision == "date":
+        # ``pd.NaT`` is a ``datetime`` subclass; NaT/None must fail closed
+        # before any ``.time()`` access, which would raise a bare ValueError.
+        if value is not None and pd.isna(value):
+            raise CanonicalExecutionError("date precision cannot be NaT")
         if isinstance(value, datetime) or (
             isinstance(value, pd.Timestamp) and not pd.isna(value)
         ):

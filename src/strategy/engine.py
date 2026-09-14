@@ -97,6 +97,10 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
     fill_seq = 0
     peak_equity = initial_cash
     round_trips: list[dict[str, object]] = []
+    # Per-instrument risk at the opening fill, frozen for the whole trade:
+    # {"entry_price", "initial_stop"} (both in raw price terms).  Used for the
+    # R-multiple of the round trip that eventually closes the position.
+    open_risk: dict[str, dict[str, float | None]] = {}
 
     def next_order_id() -> str:
         nonlocal order_seq
@@ -132,6 +136,24 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
         return {"kind": "order_cancelled", "order_id": order.order_id,
                 "instrument": order.instrument, "side": order.side, "reason": reason}
 
+    def close_round_trip(instrument: str, day: date, pnl: float, reason: str) -> None:
+        """Record one closed round trip plus its R-multiple.
+
+        R = pnl ÷ initial_risk, initial_risk = |opening entry price − opening
+        stop price|.  A trade opened without a stop (or with a zero stop) has
+        no defined risk unit: its R stays null and it counts as skipped.
+        """
+        risk = open_risk.pop(instrument, None)
+        r_multiple: float | None = None
+        if risk is not None:
+            initial_stop = risk["initial_stop"]
+            if initial_stop is not None and float(initial_stop) > 0:
+                initial_risk = abs(float(risk["entry_price"]) - float(initial_stop))
+                if initial_risk > 0:
+                    r_multiple = pnl / initial_risk
+        round_trips.append({"instrument": instrument, "closed_on": day.isoformat(),
+                            "pnl": pnl, "reason": reason, "r_multiple": r_multiple})
+
     def reject(order: OrderRecord, day: date, reason: str, detail: dict[str, object] | None = None) -> dict[str, object]:
         order.status = ORDER_STATUS_REJECTED
         order.resolution_date = day
@@ -157,6 +179,13 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
         for action in actions_by_day.get(day, []):
             if action.instrument in account.positions:
                 account.apply_split(action.instrument, action.ratio)
+                # Keep the frozen opening risk in the same (post-split) price
+                # terms as the position, so the R-multiple stays comparable.
+                risk = open_risk.get(action.instrument)
+                if risk is not None:
+                    risk["entry_price"] = float(risk["entry_price"]) / action.ratio
+                    if risk["initial_stop"] is not None:
+                        risk["initial_stop"] = float(risk["initial_stop"]) / action.ratio
                 events.append({"kind": "split_applied", "instrument": action.instrument,
                                "ratio": action.ratio})
             for order in [item for item in pending if item.instrument == action.instrument]:
@@ -183,9 +212,8 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
                                position.available_quantity, price, fee, fee_detail,
                                note="delisting_forced_liquidation")
             cost_basis = position.average_cost * position.available_quantity
-            round_trips.append({"instrument": instrument, "closed_on": day.isoformat(),
-                                "pnl": amount - fee - cost_basis,
-                                "reason": "delisting_forced_liquidation"})
+            close_round_trip(instrument, day, amount - fee - cost_basis,
+                             "delisting_forced_liquidation")
             account.apply_sell(instrument, position.available_quantity, price, fee)
             events.append({"kind": "fill", "fill_id": fill.fill_id, "order_id": None,
                            "trigger": fill.trigger, "instrument": instrument, "side": "SELL",
@@ -209,8 +237,8 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
             order.status = ORDER_STATUS_FILLED
             order.resolution_date = day
             cost_basis = position.average_cost * quantity
-            round_trips.append({"instrument": order.instrument, "closed_on": day.isoformat(),
-                                "pnl": amount - fee - cost_basis, "reason": order.reason_code})
+            close_round_trip(order.instrument, day, amount - fee - cost_basis,
+                             order.reason_code)
             account.apply_sell(order.instrument, quantity, price, fee)
             order.resolution_reason = fill.fill_id
             events.append({"kind": "fill", "fill_id": fill.fill_id, "order_id": order.order_id,
@@ -244,8 +272,7 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
             fill = record_fill(day, None, TRIGGER_STOP_LOSS, instrument, "SELL", quantity,
                                price, fee, fee_detail, note=note)
             cost_basis = position.average_cost * quantity
-            round_trips.append({"instrument": instrument, "closed_on": day.isoformat(),
-                                "pnl": amount - fee - cost_basis, "reason": "stop_loss"})
+            close_round_trip(instrument, day, amount - fee - cost_basis, "stop_loss")
             account.apply_sell(instrument, quantity, price, fee)
             events.append({"kind": "fill", "fill_id": fill.fill_id, "order_id": None,
                            "trigger": fill.trigger, "instrument": instrument, "side": "SELL",
@@ -286,11 +313,18 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
             order.resolution_date = day
             order.resolution_reason = fill.fill_id
             existing = account.positions.get(order.instrument)
+            # Fixed-stop strategies re-arm the stop from every fill; strategies
+            # without a fixed stop pass None so an add-on never wipes the
+            # trailing stop a provider already ratcheted onto the position.
+            fill_stop = price * (1.0 - stop_loss_pct) if stop_loss_pct > 0 else None
             account.apply_buy(order.instrument, quantity, price, fee, day=day,
-                              stop_price=price * (1.0 - stop_loss_pct) if stop_loss_pct > 0 else None)
+                              stop_price=fill_stop)
             if existing is not None:
                 existing.entry_count += 1
                 existing.entry_price = price  # last entry price (adds refresh it)
+            else:
+                open_risk[order.instrument] = {"entry_price": price,
+                                               "initial_stop": fill_stop}
             events.append({"kind": "fill", "fill_id": fill.fill_id, "order_id": order.order_id,
                            "trigger": fill.trigger, "instrument": order.instrument, "side": "BUY",
                            "quantity": fill.quantity, "price": fill.price, "fee": fill.fee,
@@ -333,12 +367,14 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
                                                 account_view={"equity": equity, "cash": account.cash,
                                                               "positions": position_view})
             adds = [item for item in candidates if item.kind == "add_candidate"]
-            entries = [item for item in candidates if item.kind == "add_candidate" or item.kind == "entry_candidate"]
             entries = [item for item in candidates if item.kind == "entry_candidate"]
-            entries = list(entries)
             stop_updates = [item for item in candidates if item.kind == "stop_update"]
             for update in stop_updates:
-                new_stop = update.conditions[0]["threshold"] if update.conditions else None
+                # Contract: a stop_update condition dict carries the new stop
+                # price in "actual"; "threshold" is only the comparison operand
+                # and may be unrelated (e.g. 0.0 for a ratchet check).
+                conditions = update.conditions[0] if update.conditions else {}
+                new_stop = conditions.get("actual", conditions.get("threshold"))
                 if new_stop is not None and update.instrument in account.positions:
                     account.positions[update.instrument].stop_price = float(new_stop)
                     events.append({"kind": "stop_updated", "instrument": update.instrument,
@@ -418,9 +454,19 @@ def _build_summary(spec: StrategySpec, initial_cash: float, days: list[DayRecord
     if not days:
         raise ValueError("simulation produced no days")
     final_day = days[-1]
-    peak_index = max(range(len(days)), key=lambda index: days[index].equity)
     trough_index = min(range(len(days)), key=lambda index: days[index].drawdown_from_peak)
+    # Peak of the max drawdown: highest equity strictly before the trough (the
+    # running peak that drawdown_from_peak at the trough is measured against),
+    # not the all-time equity high, which can sit after the trough.
+    peak_index = max(range(trough_index + 1), key=lambda index: days[index].equity)
     wins = sum(1 for item in round_trips if float(item["pnl"]) > 0)
+    r_values = [float(item["r_multiple"]) for item in round_trips if item.get("r_multiple") is not None]
+    r_sorted = sorted(r_values)
+    if r_sorted:
+        mid = len(r_sorted) // 2
+        r_median = r_sorted[mid] if len(r_sorted) % 2 else (r_sorted[mid - 1] + r_sorted[mid]) / 2.0
+    else:
+        r_median = None
     total_fees = sum(fill.fee for fill in fills)
     return {
         "initial_cash": initial_cash,
@@ -437,6 +483,17 @@ def _build_summary(spec: StrategySpec, initial_cash: float, days: list[DayRecord
         "total_fees": total_fees,
         "round_trip_count": len(round_trips),
         "win_rate": (wins / len(round_trips)) if round_trips else None,
+        "r_multiple_stats": {
+            "count": len(r_values),
+            "avg_r": (sum(r_values) / len(r_values)) if r_values else None,
+            "median_r": r_median if r_values else None,
+            "max_r": max(r_values) if r_values else None,
+            "min_r": min(r_values) if r_values else None,
+            "skipped_no_stop": sum(1 for item in round_trips if item.get("r_multiple") is None),
+            "definition": "R = round-trip pnl / |opening entry price - opening stop|; "
+                          "trades opened without a positive stop have no defined risk unit "
+                          "and are counted in skipped_no_stop with r_multiple null.",
+        },
         "average_invested_fraction": sum(day.invested_fraction for day in days) / len(days),
         "round_trips": round_trips,
     }

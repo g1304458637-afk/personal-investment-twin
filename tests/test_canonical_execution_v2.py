@@ -192,6 +192,14 @@ def test_date_only_retains_precision_without_asserting_an_instant():
     assert value.ordering_key == "date:2025-01-02"
 
 
+@pytest.mark.parametrize("value", [pd.NaT, None, float("nan")])
+def test_date_precision_rejects_missing_values_without_bare_valueerror(value):
+    # pd.NaT is a datetime subclass; missing values must fail closed with the
+    # canonical error instead of raising a bare ValueError from NaTType.time().
+    with pytest.raises(CanonicalExecutionError):
+        execution_time(value, precision="date")
+
+
 @pytest.mark.parametrize(
     ("value", "precision"),
     [

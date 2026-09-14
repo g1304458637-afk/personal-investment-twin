@@ -14,7 +14,9 @@ An AI investment decision coach for individual investors. It rebuilds investment
 - **行为分析（Behavioral Analytics）**：过度交易、集中度、持仓周期、处置效应、追涨、亏损加仓等可观测指标
 - **Investor DNA**：个人投资能力画像，每个维度标注样本量与置信度，样本不足时输出 Insufficient Evidence，不强行评分
 - **决策前提醒（Pre-Decision Intervention）**：输入一笔准备执行的新交易，系统检索你历史上的相似决策，用真实结果提示风险；是否继续由你决定
-- **策略引擎与仿真**：内置双均线、RSI 均值回归、海龟等规则策略库，可在你的数据上回放对照，规则来源透明标注
+- **复盘面板（Review Pack）**：出场质量（MFE/MAE、出场效率、浮盈回吐）、月度盈亏热力图、连亏后行为观察（纯描述性统计，不推断心理动机）、打法标签聚合（样本不足时如实显示 Insufficient Evidence）
+- **策略引擎与仿真**：内置双均线、RSI 均值回归、海龟等规则策略库，可在你的数据上回放对照，规则来源透明标注，结果含 R-multiple 统计
+- **券商导出导入**：自动识别东方财富 / 同花顺的成交导出 CSV（含 GBK 编码与千分位），转换为标准交易格式；也支持通用 CSV 格式
 
 ## 设计原则
 
@@ -68,6 +70,16 @@ npm install
 npm run dev          # 浏览器预览 http://127.0.0.1:1420
 npm run tauri dev    # 原生桌面壳
 ```
+
+### 运行测试
+
+```bash
+python -m pytest tests/ -q              # Python 核心（仓库根目录）
+cd apps/desktop && npm test             # 桌面端前端（tsc 检查用 npm run check）
+cd apps/desktop/src-tauri && cargo test # 桌面端 Rust 后端
+```
+
+推送与 PR 会自动触发 GitHub Actions 跑以上三套（见 `.github/workflows/ci.yml`）。
 
 ### 生产 sidecar 构建
 

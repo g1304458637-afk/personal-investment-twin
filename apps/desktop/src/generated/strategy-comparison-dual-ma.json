@@ -211,7 +211,7 @@
     "final_equity": 1095168.79183,
     "total_return": 0.09516879182999993,
     "max_drawdown": -0.011638636546399423,
-    "max_drawdown_peak_date": "2025-12-30",
+    "max_drawdown_peak_date": "2025-06-16",
     "max_drawdown_trough_date": "2025-08-12",
     "trading_days": 260,
     "order_count": 3,
@@ -221,13 +221,23 @@
     "total_fees": 569.30817,
     "round_trip_count": 1,
     "win_rate": 1.0,
+    "r_multiple_stats": {
+     "count": 0,
+     "avg_r": null,
+     "median_r": null,
+     "max_r": null,
+     "min_r": null,
+     "skipped_no_stop": 1,
+     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+    },
     "average_invested_fraction": 0.1967427483524708,
     "round_trips": [
      {
       "instrument": "SYN_VALUE",
       "closed_on": "2025-06-27",
       "pnl": 67453.11291600001,
-      "reason": "signal_entry_dual_ma"
+      "reason": "signal_entry_dual_ma",
+      "r_multiple": null
      }
     ]
    },
@@ -385,7 +395,7 @@
     "final_equity": 1054738.20396,
     "total_return": 0.054738203960000176,
     "max_drawdown": -0.002583143351925108,
-    "max_drawdown_peak_date": "2025-12-30",
+    "max_drawdown_peak_date": "2025-12-09",
     "max_drawdown_trough_date": "2025-12-11",
     "trading_days": 260,
     "order_count": 1,
@@ -395,6 +405,15 @@
     "total_fees": 74.99604,
     "round_trip_count": 0,
     "win_rate": null,
+    "r_multiple_stats": {
+     "count": 0,
+     "avg_r": null,
+     "median_r": null,
+     "max_r": null,
+     "min_r": null,
+     "skipped_no_stop": 0,
+     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+    },
     "average_invested_fraction": 0.2170685631623715,
     "round_trips": []
    },
@@ -749,7 +768,7 @@
     "final_equity": 1086955.6849990003,
     "total_return": 0.0869556849990003,
     "max_drawdown": -0.009408069858482781,
-    "max_drawdown_peak_date": "2025-12-31",
+    "max_drawdown_peak_date": "2025-10-01",
     "max_drawdown_trough_date": "2025-10-14",
     "trading_days": 260,
     "order_count": 7,
@@ -759,25 +778,37 @@
     "total_fees": 1356.285001,
     "round_trip_count": 3,
     "win_rate": 0.3333333333333333,
+    "r_multiple_stats": {
+     "count": 0,
+     "avg_r": null,
+     "median_r": null,
+     "max_r": null,
+     "min_r": null,
+     "skipped_no_stop": 3,
+     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+    },
     "average_invested_fraction": 0.11703220541888783,
     "round_trips": [
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-05-02",
       "pnl": -5668.342635999958,
-      "reason": "signal_entry_dual_ma"
+      "reason": "signal_entry_dual_ma",
+      "r_multiple": null
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-07-23",
       "pnl": -728.8188449999725,
-      "reason": "signal_entry_dual_ma"
+      "reason": "signal_entry_dual_ma",
+      "r_multiple": null
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-10-15",
       "pnl": 64676.784069999994,
-      "reason": "signal_entry_dual_ma"
+      "reason": "signal_entry_dual_ma",
+      "r_multiple": null
      }
     ]
    },
@@ -1149,7 +1180,7 @@
     "final_equity": 1086955.6849990003,
     "total_return": 0.0869556849990003,
     "max_drawdown": -0.009408069858482781,
-    "max_drawdown_peak_date": "2025-12-31",
+    "max_drawdown_peak_date": "2025-10-01",
     "max_drawdown_trough_date": "2025-10-14",
     "trading_days": 260,
     "order_count": 7,
@@ -1159,25 +1190,37 @@
     "total_fees": 1356.285001,
     "round_trip_count": 3,
     "win_rate": 0.3333333333333333,
+    "r_multiple_stats": {
+     "count": 0,
+     "avg_r": null,
+     "median_r": null,
+     "max_r": null,
+     "min_r": null,
+     "skipped_no_stop": 3,
+     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+    },
     "average_invested_fraction": 0.11703220541888783,
     "round_trips": [
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-05-02",
       "pnl": -5668.342635999958,
-      "reason": "signal_entry_dual_ma"
+      "reason": "signal_entry_dual_ma",
+      "r_multiple": null
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-07-23",
       "pnl": -728.8188449999725,
-      "reason": "signal_entry_dual_ma"
+      "reason": "signal_entry_dual_ma",
+      "r_multiple": null
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-10-15",
       "pnl": 64676.784069999994,
-      "reason": "signal_entry_dual_ma"
+      "reason": "signal_entry_dual_ma",
+      "r_multiple": null
      }
     ]
    },
@@ -1384,7 +1427,7 @@
     "final_equity": 1095168.79183,
     "total_return": 0.09516879182999993,
     "max_drawdown": -0.011638636546399423,
-    "max_drawdown_peak_date": "2025-12-30",
+    "max_drawdown_peak_date": "2025-06-16",
     "max_drawdown_trough_date": "2025-08-12",
     "trading_days": 260,
     "order_count": 3,
@@ -1394,13 +1437,23 @@
     "total_fees": 569.30817,
     "round_trip_count": 1,
     "win_rate": 1.0,
+    "r_multiple_stats": {
+     "count": 0,
+     "avg_r": null,
+     "median_r": null,
+     "max_r": null,
+     "min_r": null,
+     "skipped_no_stop": 1,
+     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+    },
     "average_invested_fraction": 0.1967427483524708,
     "round_trips": [
      {
       "instrument": "SYN_VALUE",
       "closed_on": "2025-06-27",
       "pnl": 67453.11291600001,
-      "reason": "signal_entry_dual_ma"
+      "reason": "signal_entry_dual_ma",
+      "r_multiple": null
      }
     ]
    },
