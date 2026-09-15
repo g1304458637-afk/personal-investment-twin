@@ -19,6 +19,8 @@ const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 // gets this deadline; start reuses fingerprint-bound facts, never a cached answer.
 const REVIEW_CONTEXT_TIMEOUT: Duration = Duration::from_secs(300);
 const STARTUP_TIMEOUT: Duration = Duration::from_secs(90);
+const HEALTH_PROBE_TIMEOUT: Duration = Duration::from_secs(10);
+const MAX_LINE_BYTES: usize = 64 * 1024 * 1024;
 // RunEvent::Exit must never hang waiting for the sidecar; after this deadline
 // the shutdown proceeds straight to kill().
 const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(3);
@@ -126,8 +128,35 @@ fn fail_pending(pending: &Pending, code: &str, message: &str) {
 /// Feeds one stdout chunk into the line buffer and routes every complete line.
 /// The sidecar speaks newline-delimited JSON, and one read may contain a
 /// partial line or several lines at once.
+/// Truncates and redacts sidecar diagnostics before they reach system logs:
+/// a Python traceback that quotes a params blob containing `_desktop_model_key`
+/// must never carry the secret into Console.app.
+fn redact_secrets(text: &str) -> String {
+    const MAX_LOG_BYTES: usize = 2048;
+    let truncated = if text.len() > MAX_LOG_BYTES {
+        let mut cut = MAX_LOG_BYTES;
+        while !text.is_char_boundary(cut) {
+            cut -= 1;
+        }
+        format!("{}…[truncated]", &text[..cut])
+    } else {
+        text.to_owned()
+    };
+    if truncated.contains("_desktop_model_key") {
+        return truncated.replace("_desktop_model_key", "_desktop_[redacted]_key");
+    }
+    truncated
+}
+
 fn route_stdout_chunk(pending: &Pending, alive: &AtomicBool, buffer: &mut Vec<u8>, chunk: &[u8]) {
     buffer.extend_from_slice(chunk);
+    // A buggy sidecar emitting one endless line must hit a heap cap, not grow
+    // unboundedly.  64 MiB is orders of magnitude above any real payload.
+    if buffer.len() > MAX_LINE_BYTES {
+        fail_pending(pending, "runtime_protocol_error", "sidecar stdout line exceeded 64 MiB");
+        buffer.clear();
+        return;
+    }
     while let Some(newline) = buffer.iter().position(|&byte| byte == b'\n') {
         let line: Vec<u8> = buffer.drain(..=newline).collect();
         route_stdout_line(pending, alive, &line[..line.len() - 1]);
@@ -340,7 +369,7 @@ impl RuntimeManager {
                         route_stdout_chunk(&reader_pending, &reader_alive, &mut line_buffer, &bytes)
                     }
                     CommandEvent::Stderr(bytes) => {
-                        eprintln!("toujing-core: {}", String::from_utf8_lossy(&bytes));
+                        eprintln!("toujing-core: {}", redact_secrets(&String::from_utf8_lossy(&bytes)));
                     }
                     CommandEvent::Error(message) => {
                         reader_alive.store(false, Ordering::SeqCst);
@@ -391,7 +420,7 @@ impl RuntimeManager {
     }
 
     pub async fn request(&self, method: &str, params: Value) -> Result<RuntimeResponse, String> {
-        self.request_with_timeout(method, params, request_timeout(method))
+        self.request_inner(method, params, request_timeout(method), true)
             .await
     }
 
@@ -400,6 +429,23 @@ impl RuntimeManager {
         method: &str,
         params: Value,
         timeout: Duration,
+    ) -> Result<RuntimeResponse, String> {
+        self.request_inner(method, params, timeout, true).await
+    }
+
+    /// A request timeout no longer stops the shared runtime by itself: one
+    /// slow replay (cold caches, big CSV preview) must fail alone instead of
+    /// turning into a global outage for every other in-flight request.  The
+    /// runtime is killed only when a follow-up health probe also fails —
+    /// that distinguishes "slow" from "wedged" without losing the wedged-
+    /// child protection.  `rescue=false` (the probe itself) skips the probe
+    /// so a failing probe can never recurse.
+    async fn request_inner(
+        &self,
+        method: &str,
+        params: Value,
+        timeout: Duration,
+        rescue: bool,
     ) -> Result<RuntimeResponse, String> {
         if !self.alive.load(Ordering::SeqCst) {
             return Err("core runtime is unavailable".to_owned());
@@ -434,8 +480,25 @@ impl RuntimeManager {
             }
             Err(_) => {
                 let error = format!("core runtime request timed out after {:?}", timeout);
-                eprintln!("toujing: {error} for {method}; stopping the core runtime");
-                self.kill();
+                if rescue {
+                    eprintln!("toujing: {error} for {method}; probing runtime health");
+                    // Box::pin: the compiler cannot prove rescue=false ends
+                    // the recursion, so the probe future needs indirection.
+                    let probe = tokio::time::timeout(
+                        HEALTH_PROBE_TIMEOUT,
+                        Box::pin(
+                            self.request_inner("runtime.health", json!({}), HEALTH_PROBE_TIMEOUT, false),
+                        ),
+                    )
+                    .await;
+                    let healthy = matches!(probe, Ok(Ok(response)) if response.ok);
+                    if !healthy {
+                        eprintln!("toujing: health probe failed; stopping the core runtime");
+                        self.kill();
+                    }
+                } else {
+                    eprintln!("toujing: {error} for {method}");
+                }
                 remove_pending(&self.pending, &request_id);
                 Err(error)
             }
