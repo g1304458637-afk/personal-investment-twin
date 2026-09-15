@@ -4,6 +4,7 @@ import { StateNotice } from "@/components/common/StateNotice";
 import {
   adaptReviewPack,
   prepareMonthlyHeatmap,
+  type ReviewPackCalendarMonthView,
   type ReviewPackTiltFlagView,
   type ReviewPackView,
 } from "@/data/reviewPack";
@@ -149,7 +150,7 @@ export function AccountReviewPackPanel() {
             <h3>{t("Monthly realized PnL")}</h3>
             <span className="iw-subtle">
               {t("Red/green follow the sign of realized PnL; hover a month for closed and win counts")}
-              {pack && pack.calendar.months.length > 0 ? <button type="button" className="ml-2 underline underline-offset-2" onClick={() => exportCalendarCsv(pack.calendar.months, t)}>{t("Export CSV")}</button> : null}
+              {pack && pack.calendar.months.length > 0 ? <button type="button" className="ml-2 underline underline-offset-2" onClick={() => exportCalendarCsv(pack.calendar.months)}>{t("Export CSV")}</button> : null}
             </span>
           </div>
           {years.length === 0 ? <StateNotice state="insufficient" compact title={t("Insufficient data")} detail={t("No monthly results were reported for this account yet.")} /> : years.map((year) => (
@@ -205,7 +206,7 @@ export function AccountReviewPackPanel() {
 }
 
 // Calendar CSV: one row per reported month, backend values verbatim.
-function exportCalendarCsv(months: ReviewPackCalendarMonthView[], t: (source: string) => string) {
+function exportCalendarCsv(months: ReviewPackCalendarMonthView[]) {
   const csv = toCsv(
     ["month", "realized_pnl", "closed_count", "win_count"],
     months.map((month) => [month.month, month.realizedPnl, month.closedCount, month.winCount]));
