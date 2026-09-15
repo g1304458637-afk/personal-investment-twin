@@ -31,6 +31,32 @@ const statusLabels: Record<string, string> = {
   replay_ineligible: "Replay unavailable", no_trades: "No transactions",
 };
 
+// Backend issue codes (src/ingestion): mapped to bilingual copy so the
+// preview table never shows a raw machine code. Unknown codes fall back to
+// the code itself, which stays honest when the backend grows a new one.
+const issueLabels: Record<string, string> = {
+  unknown_fee: "Unrecognized fee",
+  unresolved_instrument: "Unresolved instrument",
+  missing_required_field: "Missing required field",
+  missing_csv_header: "Missing CSV header",
+  ambiguous_column_mapping: "Ambiguous column mapping",
+  missing_market_data: "Missing market data",
+  duplicate_file: "Duplicate file",
+  duplicate_summary: "Duplicate summary",
+  invalid_fee: "Invalid fee",
+  invalid_price: "Invalid price",
+  invalid_quantity: "Invalid quantity",
+  invalid_side: "Invalid side",
+  invalid_timestamp: "Invalid timestamp",
+  unknown_canonical_field: "Unrecognized column",
+  missing_explicit_source_column: "Missing source column",
+  ambiguous_execution_order: "Ambiguous execution order",
+  ambiguous_instrument: "Ambiguous instrument",
+  unsupported_csv_encoding: "Unsupported CSV encoding",
+  unsupported_short_or_margin: "Short or margin trade unsupported",
+  no_fx_conversion_or_multi_currency_accounting: "Multi-currency not supported",
+};
+
 export function DataAccountsPage({ initialKind = "trade" }: { initialKind?: Kind }) {
   const { t, formatNumber } = useLocale();
   const data = useDataMode();
@@ -122,7 +148,7 @@ export function DataAccountsPage({ initialKind = "trade" }: { initialKind?: Kind
       row.candidate.event_time, row.candidate.instrument_id ?? "unresolved", row.candidate.side,
       row.candidate.executed_quantity, row.candidate.executed_price,
       row.candidate.fee_status, row.candidate.fee_amount ?? "—",
-    ].map(String).join(" · ") : [row.candidate.date, row.candidate.symbol, row.candidate.close, row.candidate.price_type].join(" · ")) : "—"}</td><td>{row.issues.map((x) => t(x.code)).join(", ") || "—"}</td><td>{row.status === "possible_duplicate" && "row_ref" in row ? <span className="flex gap-1"><Button size="sm" variant={duplicateChoices[row.row_ref] === "keep" ? "primary" : "quiet"} onClick={() => setDuplicateChoices((old) => ({ ...old, [row.row_ref]: "keep" }))}>{t("Keep as another execution")}</Button><Button size="sm" variant={duplicateChoices[row.row_ref] === "skip" ? "primary" : "quiet"} onClick={() => setDuplicateChoices((old) => ({ ...old, [row.row_ref]: "skip" }))}>{t("Skip as duplicate")}</Button></span> : "—"}</td></tr>; })}</tbody></table></div><Button className="mt-4" disabled={busy || !canConfirmImport(preview, duplicateChoices)} onClick={commit}>{t("Confirm import")}</Button></div> : null}
+    ].map(String).join(" · ") : [row.candidate.date, row.candidate.symbol, row.candidate.close, row.candidate.price_type].join(" · ")) : "—"}</td><td>{row.issues.map((x) => t(issueLabels[x.code] ?? x.code)).join(", ") || "—"}</td><td>{row.status === "possible_duplicate" && "row_ref" in row ? <span className="flex gap-1"><Button size="sm" variant={duplicateChoices[row.row_ref] === "keep" ? "primary" : "quiet"} onClick={() => setDuplicateChoices((old) => ({ ...old, [row.row_ref]: "keep" }))}>{t("Keep as another execution")}</Button><Button size="sm" variant={duplicateChoices[row.row_ref] === "skip" ? "primary" : "quiet"} onClick={() => setDuplicateChoices((old) => ({ ...old, [row.row_ref]: "skip" }))}>{t("Skip as duplicate")}</Button></span> : "—"}</td></tr>; })}</tbody></table></div><Button className="mt-4" disabled={busy || !canConfirmImport(preview, duplicateChoices)} onClick={commit}>{t("Confirm import")}</Button></div> : null}
       </GlassPanel>
       <div className="space-y-4"><GlassPanel className="p-5"><div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm font-semibold"><Database className="size-4 text-accent" />{t("Local accounts")}</div><Button size="icon" variant="ghost" disabled={busy} onClick={() => { void data.refresh().catch((value) => setError(String(value))); }}><RefreshCw /></Button></div>{data.accounts.length ? <div className="mt-4 space-y-2">{data.accounts.map((account) => <button key={`${account.subject_id}:${account.account_id}`} className="w-full rounded-lg border border-border/70 p-3 text-left text-sm" onClick={() => data.setActiveAccount(account)}><strong>{account.display_name}</strong><span className="mt-1 block font-mono text-[10px] text-muted">{account.account_id}</span></button>)}</div> : <p className="mt-4 text-sm text-muted">{t("No real account imported yet.")}</p>}</GlassPanel>
         {active && status?.subject_id === active.subject_id && status?.account_id === active.account_id ? <GlassPanel className="p-5"><SectionHeading eyebrow={t("Data status")} title={active.display_name} /><dl className="mt-4 space-y-3 text-sm"><div className="flex justify-between"><dt>{t("Transactions")}</dt><dd>{status.execution_count}</dd></div><div className="flex justify-between"><dt>{t("Fees")}</dt><dd>{t(statusLabels[status.fee_status] ?? status.fee_status)}</dd></div><div className="flex justify-between"><dt>{t("Market prices")}</dt><dd>{t(statusLabels[status.market_data.status] ?? status.market_data.status)}</dd></div><div className="flex justify-between"><dt>{t("Review status")}</dt><dd>{t(statusLabels[status.review_status] ?? status.review_status)}</dd></div><div className="flex justify-between"><dt>{t("Last trade import")}</dt><dd>{status.last_trade_import?.slice(0, 10) ?? "—"}</dd></div><div className="flex justify-between"><dt>{t("Last market import")}</dt><dd>{status.last_market_import?.slice(0, 10) ?? "—"}</dd></div><div className="flex justify-between"><dt>{t("Market prices through")}</dt><dd>{status.latest_market_date ?? "—"}</dd></div></dl><div className="mt-5 border-t border-border/70 pt-4"><p className="text-xs font-medium">{t("Recent imports")}</p>{status.import_history.slice(0, 4).map((batch) => <p key={batch.batch_id} className="mt-2 text-xs text-muted">{batch.filename} · {batch.imported_at.slice(0, 10)}</p>)}</div><Button variant="quiet" className="mt-5 text-danger" onClick={remove}><Trash2 />{t("Delete local account")}</Button></GlassPanel> : null}

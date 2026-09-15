@@ -24,7 +24,7 @@ function InvestmentRow({ episode }: { episode: import("@/data/investments").Inve
   const displayName = episode.isSynthetic
     ? showcaseInstrumentName(episode.instrumentId, locale, episode.displayName)
     : t(episode.displayName);
-  const date = (value: string) => new Intl.DateTimeFormat(locale, { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value));
+  const date = (value: string) => Number.isNaN(Date.parse(value)) ? "—" : new Intl.DateTimeFormat(locale, { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value));
   const outcome = episode.outcome;
   const pnl = outcome.pnl;
   const resultAvailable = outcome.availability === "available" && pnl !== null;

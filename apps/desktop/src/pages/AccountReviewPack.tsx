@@ -91,7 +91,7 @@ function TiltFlagItem({ flag }: { flag: ReviewPackTiltFlagView }) {
   const { t, formatNumber, formatPercent } = useLocale();
   const sizeChange = flag.window.avgSizeChangePct === null
     ? t("Insufficient data")
-    : formatPercent(flag.window.avgSizeChangePct / 100, 1);
+    : formatPercent(flag.window.avgSizeChangePct, 1);
   return <div className="review-tilt-item">
     <div className="review-tilt-item__head">
       <strong>{t("Trigger date")}: {flag.triggerDate}</strong>
@@ -122,8 +122,11 @@ export function AccountReviewPackPanel() {
   const accountId = demo ? data.exampleAccount.accountId : data.activeAccount?.account_id ?? null;
   const [open, setOpen] = useState(false);
   // The panel is presentation-only; it never writes, so the pack loads once
-  // per expansion (and per account change) with a fixed reload key.
-  const { pack, loading, error } = useAccountReviewPack(subjectId, accountId, data.mode, 0);
+  // per expansion (and per account change) with a fixed reload key. Passing
+  // null ids while collapsed keeps the expensive review_pack rebuild from
+  // firing on page mount — the hook skips loading until ids exist.
+  const { pack, loading, error } = useAccountReviewPack(
+    open ? subjectId : null, open ? accountId : null, data.mode, 0);
   const years = pack ? prepareMonthlyHeatmap(pack.calendar.months) : [];
   const maxAbs = pack ? Math.max(0, ...pack.calendar.months.map((month) => Math.abs(month.realizedPnl))) : 0;
   return <details className="iw-inset review-pack-panel" open={open}>

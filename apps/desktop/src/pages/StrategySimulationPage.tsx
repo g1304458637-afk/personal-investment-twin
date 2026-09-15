@@ -4,14 +4,14 @@ import { useSearchParams } from "react-router-dom";
 import { EChart } from "@/components/charts/EChart";
 import { InvestmentChartWorkspace } from "@/components/charts/InvestmentChartWorkspace";
 import { useTheme } from "@/components/layout/ThemeProvider";
-import { isTauriRuntime, runtimeRequest, type SensitivityReportView } from "@/data/runtimeService";
+import { isTauriRuntime, LONG_TIMEOUT_MS, runtimeRequest, type SensitivityReportView } from "@/data/runtimeService";
 import { useDataMode } from "@/data/DataModeProvider";
 import { adaptStrategySimulation, type StrategySimulationView } from "@/data/strategySimulation";
 import { StrategyWorkshop, type WorkshopDraft } from "@/components/strategy/StrategyWorkshop";
 import { rawComparisonReportFor, strategyComparison } from "@/data/strategyComparisonDemo";
 import { strategySimulation } from "@/data/strategySimulationDemo";
 import { useLocale } from "@/locales/LocaleProvider";
-import { describeUserStrategySpec, readUserStrategies } from "@/lib/userStrategyLibrary";
+import { describeUserStrategySpec, newUserStrategyId, readUserStrategies } from "@/lib/userStrategyLibrary";
 import { formatCurrencyValue } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -129,7 +129,7 @@ export function StrategySimulationPage() {
     meta: "",
   };
   const saveWorkshopStrategy = (draft: WorkshopDraft, spec: Record<string, unknown>) => {
-    const id = `user_${JSON.stringify(spec).length}_${Math.abs(draft.name.length)}_${Date.now().toString(36)}`;
+    const id = newUserStrategyId();
     const entry = { id, name: draft.name.trim(), savedAt: new Date().toISOString().slice(0, 10), spec };
     const next = [...userStrategies, entry];
     setUserStrategies(next);
@@ -147,12 +147,12 @@ export function StrategySimulationPage() {
       base.account_id = data.activeAccount.account_id;
     }
     runtimeRequest<{ status: string; reason: string | null; artifact: unknown }>(
-      "strategy_simulation.run_custom", base)
+      "strategy_simulation.run_custom", base, LONG_TIMEOUT_MS)
       .then((result) => {
         if (result.status !== "available" || !result.artifact) {
           // Failure lands in the "error" run state so the run button and
           // the reason stay visible and the strategy can be re-run.
-          setUserRunError((state) => ({ ...state, [entry.id]: result.reason ?? "运行失败" }));
+          setUserRunError((state) => ({ ...state, [entry.id]: result.reason ?? t("Run failed") }));
           setUserRunState((state) => ({ ...state, [entry.id]: "error" }));
           return;
         }
@@ -175,11 +175,11 @@ export function StrategySimulationPage() {
   const [instrument, setInstrument] = useState<string>("all");
   const [chartInstrument, setChartInstrument] = useState<string | null>(null);
   const SENSITIVITY_PARAMS = [
-    { id: "stop_loss_pct", label: "止损比例" },
-    { id: "position_fraction", label: "每仓占比" },
-    { id: "max_positions", label: "最多持仓数" },
-    { id: "commission_rate", label: "佣金率" },
-    { id: "slippage_rate", label: "滑点" },
+    { id: "stop_loss_pct", label: "Stop-loss %" },
+    { id: "position_fraction", label: "Position size %" },
+    { id: "max_positions", label: "Max positions" },
+    { id: "commission_rate", label: "Commission rate" },
+    { id: "slippage_rate", label: "Slippage" },
   ] as const;
   const [sensitivityParam, setSensitivityParam] = useState<string>("stop_loss_pct");
   const [sensitivityValues, setSensitivityValues] = useState("0.05, 0.1, 0.2, 0.3");
@@ -195,13 +195,21 @@ export function StrategySimulationPage() {
     setSensitivityResult(null);
     setSensitivityError(null);
   }, [strategyId, sensitivityParam]);
+  // Instrument filters describe one strategy's universe; carrying them across
+  // a tab switch leaves the chart and trades list pointed at an instrument
+  // the new strategy may never trade, with no way to tell from the UI.
+  useEffect(() => {
+    setInstrument("all");
+    setChartInstrument(null);
+  }, [strategyId]);
   const runSensitivity = () => {
     if (!isTauriRuntime()) {
-      setSensitivityError("需要桌面应用环境（浏览器预览不运行变体）。");
+      setSensitivityError(t("Desktop app required (variants do not run in the browser preview)."));
       return;
     }
-    const values = sensitivityValues.split(",").map((text) => Number(text.trim())).filter((value) => Number.isFinite(value));
-    if (values.length < 2) { setSensitivityError("请至少输入两个取值，用逗号分隔。"); return; }
+    // Accept the ASCII and the full-width comma: the default zh IME inserts "，".
+    const values = sensitivityValues.split(/[,，]/).map((text) => Number(text.trim())).filter((value) => Number.isFinite(value));
+    if (values.length < 2) { setSensitivityError(t("Enter at least two values, separated by commas.")); return; }
     const generation = ++sensitivityGeneration.current;
     setSensitivityBusy(true);
     setSensitivityError(null);
@@ -213,7 +221,7 @@ export function StrategySimulationPage() {
       .then((result) => {
         if (generation !== sensitivityGeneration.current) return;
         if (result.status === "available" && result.report) setSensitivityResult(result.report);
-        else setSensitivityError(result.reason ?? "运行失败");
+        else setSensitivityError(result.reason ?? t("Run failed"));
       })
       .catch((value) => {
         if (generation !== sensitivityGeneration.current) return;
@@ -878,7 +886,7 @@ export function StrategySimulationPage() {
 
           <select aria-label={t("Parameter")} value={sensitivityParam} onChange={(event) => setSensitivityParam(event.target.value)}>
 
-            {SENSITIVITY_PARAMS.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+            {SENSITIVITY_PARAMS.map((item) => <option key={item.id} value={item.id}>{t(item.label)}</option>)}
 
           </select>
 

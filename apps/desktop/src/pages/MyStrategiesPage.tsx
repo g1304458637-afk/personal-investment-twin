@@ -3,11 +3,11 @@ import { useMemo, useRef, useState } from "react";
 import { StrategyWorkshop, type WorkshopDraft } from "@/components/strategy/StrategyWorkshop";
 import { WorkshopNumberInput } from "@/components/strategy/WorkshopNumberInput";
 import { strategyLibrary } from "@/data/strategyLibrary";
-import { isTauriRuntime, runtimeRequest } from "@/data/runtimeService";
+import { isTauriRuntime, LONG_TIMEOUT_MS, runtimeRequest } from "@/data/runtimeService";
 import { adaptStrategySimulation, type StrategySimulationView } from "@/data/strategySimulation";
 import { useDataMode } from "@/data/DataModeProvider";
 import { useLocale } from "@/locales/LocaleProvider";
-import { readUserStrategies, type SavedUserStrategy } from "@/lib/userStrategyLibrary";
+import { newUserStrategyId, readUserStrategies, type SavedUserStrategy } from "@/lib/userStrategyLibrary";
 import {
   buildSpecExportFile,
   dedupeStrategyName,
@@ -105,7 +105,7 @@ export function MyStrategiesPage() {
   };
 
   const onWorkshopSave = (draft: WorkshopDraft, spec: Record<string, unknown>) => {
-    const id = `user_${JSON.stringify(spec).length}_${Math.abs(draft.name.length)}_${Date.now().toString(36)}`;
+    const id = newUserStrategyId();
     persist([...saved, { id, name: draft.name.trim(), savedAt: new Date().toISOString().slice(0, 10), spec }]);
     setWorkshopDraft(null);
     setSelectedId(id);
@@ -143,7 +143,7 @@ export function MyStrategiesPage() {
     // Duplicate names get a numeric suffix so an import can never overwrite
     // or visually collide with an existing saved strategy.
     const name = dedupeStrategyName(saved.map((item) => item.name), result.name);
-    const id = `user_import_${Date.now().toString(36)}`;
+    const id = newUserStrategyId("import");
     persist([...saved, { id, name, savedAt: new Date().toISOString().slice(0, 10), spec: result.spec }]);
     setSelectedId(id);
   };
@@ -157,7 +157,7 @@ export function MyStrategiesPage() {
       base.account_id = data.activeAccount.account_id;
     }
     runtimeRequest<{ status: string; reason: string | null; artifact: unknown }>(
-      "strategy_simulation.run_custom", base)
+      "strategy_simulation.run_custom", base, LONG_TIMEOUT_MS)
       .then((result) => {
         if (result.status === "available" && result.artifact) {
           setArtifacts((state) => ({ ...state, [entry.id]: adaptStrategySimulation(result.artifact) }));
@@ -257,7 +257,7 @@ export function MyStrategiesPage() {
                 sizing: { mode: "equal_weight", fraction: 0.25 },
                 constraints: { max_positions: 4 },
               };
-              const id = `user_formula_${Date.now().toString(36)}`;
+              const id = newUserStrategyId("formula");
               persist([...saved, { id, name: formulaName.trim() || "公式策略", savedAt: new Date().toISOString().slice(0, 10), spec }]);
               setSelectedId(id);
             }}>{t("Save and validate")}</button>

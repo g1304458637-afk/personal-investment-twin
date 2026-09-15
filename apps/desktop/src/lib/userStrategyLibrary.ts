@@ -46,6 +46,18 @@ export function readUserStrategies(storage?: Pick<Storage, "getItem">): SavedUse
     && nonEmptyText(item.spec.schema_version));
 }
 
+/**
+ * Collision-free id for a locally saved strategy. Older builds keyed entries
+ * by content length + timestamp, which could collide when two saves landed
+ * in the same millisecond with equal shapes.
+ */
+export function newUserStrategyId(kind: "user" | "import" | "formula" = "user"): string {
+  const random = typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+  return kind === "user" ? `user_${random}` : `user_${kind}_${random}`;
+}
+
 export type UserStrategySpecDisplay = {
   kind: "conditions" | "formula";
   entry: string[];

@@ -12,9 +12,30 @@ export interface RuntimeResponse<T> {
 
 export const isTauriRuntime = () => typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
-export async function runtimeRequest<T>(method: string, params: Record<string, unknown>): Promise<T> {
+const DEFAULT_TIMEOUT_MS = 90_000;
+// Long-running replays: a full strategy simulation (and its sensitivity
+// variants) legitimately walks years of daily bars before answering.
+export const LONG_TIMEOUT_MS = 300_000;
+
+function withTimeout<T>(promise: Promise<T>, method: string, timeoutMs: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(
+      new Error(`runtime_request_timeout: ${method} did not answer within ${Math.round(timeoutMs / 1000)}s`)),
+    timeoutMs);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
+export async function runtimeRequest<T>(method: string, params: Record<string, unknown>,
+  timeoutMs: number = DEFAULT_TIMEOUT_MS): Promise<T> {
   if (!isTauriRuntime()) throw new Error("desktop_runtime_required");
-  const response = await invoke<RuntimeResponse<T>>("runtime_product_request", { method, params });
+  // A hung Python sidecar must degrade into an error the screen can render,
+  // not a perpetual loading state. The invoke itself is not cancellable, so a
+  // late answer after the timeout is simply discarded by the caller's
+  // generation guard.
+  const response = await withTimeout(
+    invoke<RuntimeResponse<T>>("runtime_product_request", { method, params }), method, timeoutMs);
   // Only ok/error decide failure: a null, false or 0 result is a valid
   // payload, not an error.  Fail closed on any error marker.
   if (!response.ok || response.error) throw new Error(response.error?.message ?? "runtime_request_failed");
@@ -41,7 +62,7 @@ export const realUserApi = {
   deleteAccount: (subjectId: string, accountId: string) => runtimeRequest<{ deleted: boolean }>("data.delete_account", { subject_id: subjectId, account_id: accountId }),
   strategyComparison: (subjectId: string, accountId: string, episodeId: string) => runtimeRequest<{ status: string; reason: string | null; report: unknown | null }>("strategy_comparison.get", { subject_id: subjectId, account_id: accountId, episode_id: episodeId }),
   strategyTeaching: (report: Record<string, unknown>, focus: string | null) => runtimeRequest<{ status: string; reason: string | null; texts: string[]; dropped: unknown[]; note: string | null }>("strategy_teaching.explain", { report, focus }),
-  strategySensitivity: (request: { strategy_id?: string; strategy?: Record<string, unknown>; parameter: string; values: number[] }) => runtimeRequest<{ status: string; reason: string | null; report: SensitivityReportView | null }>("strategy_sensitivity.run", request),
+  strategySensitivity: (request: { strategy_id?: string; strategy?: Record<string, unknown>; parameter: string; values: number[] }) => runtimeRequest<{ status: string; reason: string | null; report: SensitivityReportView | null }>("strategy_sensitivity.run", request, LONG_TIMEOUT_MS),
   // Account-level review pack (review_pack.v1). The result is untyped here on
   // purpose: adaptReviewPack owns the fail-closed validation.
   reviewPack: (params: { subject_id: string; account_id: string }) => runtimeRequest<unknown>("review_pack.get", params),

@@ -506,7 +506,7 @@ export function PositionEpisodePage() {
   const result = entry.outcomeStory.episodeOutcome.actualResult;
   const formatCurrency = (value: number) => formatCurrencyValue(value, locale, entry.instrument.currency);
   const dateOnly = new Intl.DateTimeFormat(locale, { year: "numeric", month: "2-digit", day: "2-digit" });
-  const date = (value: string) => dateOnly.format(new Date(value));
+  const date = (value: string) => Number.isNaN(Date.parse(value)) ? "—" : dateOnly.format(new Date(value));
   const review = entry.reviewPresentation ? {
     ...entry.reviewPresentation,
     facts: entry.reviewPresentation.facts.filter((fact) => isVisibleReviewPattern(
