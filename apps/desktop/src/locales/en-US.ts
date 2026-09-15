@@ -1788,6 +1788,14 @@ export const enUS = {
   "Unsupported CSV encoding": "Unsupported CSV encoding",
   "Short or margin trade unsupported": "Short or margin trade unsupported",
   "Multi-currency not supported": "Multi-currency not supported",
+  "Sortino ratio": "Sortino ratio",
+  "Calmar ratio": "Calmar ratio",
+  "Profit factor": "Profit factor",
+  "Annual volatility": "Annual volatility",
+  "Avg win": "Avg win",
+  "Avg loss": "Avg loss",
+  "Excess vs buy-and-hold": "Excess vs buy-and-hold",
+  "Benchmark annualized": "Benchmark annualized",
 } as const;
 
 export type LocaleMessage = keyof typeof enUS;

@@ -1789,6 +1789,14 @@ export const zhCN = {
   "Unsupported CSV encoding": "不支持的 CSV 编码",
   "Short or margin trade unsupported": "不支持融券/融资交易",
   "Multi-currency not supported": "暂不支持多币种",
+  "Sortino ratio": "Sortino 比率",
+  "Calmar ratio": "Calmar 比率",
+  "Profit factor": "盈亏比",
+  "Annual volatility": "年化波动率",
+  "Avg win": "平均盈利",
+  "Avg loss": "平均亏损",
+  "Excess vs buy-and-hold": "相对买入持有超额",
+  "Benchmark annualized": "基准年化",
 } satisfies Record<keyof typeof enUS, string>;
 
 export type ZhCNMessage = keyof typeof zhCN;

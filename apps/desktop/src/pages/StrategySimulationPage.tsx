@@ -576,9 +576,27 @@ export function StrategySimulationPage() {
           value={summary.rMultipleStats.avgR === null ? "—" : `${summary.rMultipleStats.avgR.toFixed(2)}R`}
           detail={`${t("Median")} ${summary.rMultipleStats.medianR === null ? "—" : `${summary.rMultipleStats.medianR.toFixed(2)}R`} · ${t("Min")} ${summary.rMultipleStats.minR === null ? "—" : `${summary.rMultipleStats.minR.toFixed(2)}R`} · ${t("Max")} ${summary.rMultipleStats.maxR === null ? "—" : `${summary.rMultipleStats.maxR.toFixed(2)}R`} · ${t("Skipped (no stop-loss)")} ${summary.rMultipleStats.skippedNoStop}`} /> : null}
 
+        {summary.performanceStats ? <StatCard label={t("Sortino ratio")}
+          value={summary.performanceStats.sortinoRatio === null ? "—" : summary.performanceStats.sortinoRatio.toFixed(2)}
+          detail={`${t("Annual volatility")} ${summary.performanceStats.annualVolatility === null ? "—" : percentLabel(summary.performanceStats.annualVolatility)}`} /> : null}
+        {summary.performanceStats ? <StatCard label={t("Calmar ratio")}
+          value={summary.performanceStats.calmarRatio === null ? "—" : summary.performanceStats.calmarRatio.toFixed(2)}
+          detail={`${t("Max drawdown")} ${percentLabel(summary.maxDrawdown)}`} /> : null}
+        {summary.performanceStats ? <StatCard label={t("Profit factor")}
+          value={summary.performanceStats.profitFactor === null ? "—" : summary.performanceStats.profitFactor.toFixed(2)}
+          detail={`${t("Avg win")} ${summary.performanceStats.avgWin === null ? "—" : money(summary.performanceStats.avgWin)} · ${t("Avg loss")} ${summary.performanceStats.avgLoss === null ? "—" : money(summary.performanceStats.avgLoss)}`} /> : null}
+        {summary.performanceStats ? <StatCard label={t("Excess vs buy-and-hold")}
+          value={summary.performanceStats.excessAnnualizedReturn === null ? "—" : percentLabel(summary.performanceStats.excessAnnualizedReturn)}
+          detail={`${t("Benchmark annualized")} ${summary.performanceStats.benchmarkAnnualizedReturn === null ? "—" : percentLabel(summary.performanceStats.benchmarkAnnualizedReturn)}`} /> : null}
+
       </section>
 
       {summary.rMultipleStats ? <p className="strategy-comparison-note r-multiple-note">{t("R multiple definition")}: {summary.rMultipleStats.definition}</p> : null}
+      {summary.performanceStats && Object.keys(summary.performanceStats.definitions).length > 0 ? (
+        <p className="strategy-comparison-note r-multiple-note">
+          {Object.entries(summary.performanceStats.definitions).map(([key, defText]) => <span key={key} className="block">{defText}</span>)}
+        </p>
+      ) : null}
 
 
 
