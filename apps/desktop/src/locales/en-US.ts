@@ -1796,6 +1796,7 @@ export const enUS = {
   "Avg loss": "Avg loss",
   "Excess vs buy-and-hold": "Excess vs buy-and-hold",
   "Benchmark annualized": "Benchmark annualized",
+  "Export CSV": "Export CSV",
 } as const;
 
 export type LocaleMessage = keyof typeof enUS;

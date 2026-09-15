@@ -10,6 +10,7 @@ import {
 import { realUserApi } from "@/data/runtimeService";
 import { useDataMode } from "@/data/DataModeProvider";
 import { useLocale } from "@/locales/LocaleProvider";
+import { downloadText, toCsv } from "@/lib/download";
 import { formatCurrencyValue } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -145,7 +146,10 @@ export function AccountReviewPackPanel() {
         <section className="review-pack-section" aria-label={t("Monthly realized PnL")}>
           <div className="review-pack-section__head">
             <h3>{t("Monthly realized PnL")}</h3>
-            <span className="iw-subtle">{t("Red/green follow the sign of realized PnL; hover a month for closed and win counts")}</span>
+            <span className="iw-subtle">
+              {t("Red/green follow the sign of realized PnL; hover a month for closed and win counts")}
+              {pack && pack.calendar.months.length > 0 ? <button type="button" className="ml-2 underline underline-offset-2" onClick={() => exportCalendarCsv(pack.calendar.months, t)}>{t("Export CSV")}</button> : null}
+            </span>
           </div>
           {years.length === 0 ? <StateNotice state="insufficient" compact title={t("Insufficient data")} detail={t("No monthly results were reported for this account yet.")} /> : years.map((year) => (
             <div key={year.year} className="review-heatmap-year">
@@ -197,4 +201,12 @@ export function AccountReviewPackPanel() {
       </> : null}
     </div> : null}
   </details>;
+}
+
+// Calendar CSV: one row per reported month, backend values verbatim.
+function exportCalendarCsv(months: ReviewPackCalendarMonthView[], t: (source: string) => string) {
+  const csv = toCsv(
+    ["month", "realized_pnl", "closed_count", "win_count"],
+    months.map((month) => [month.month, month.realizedPnl, month.closedCount, month.winCount]));
+  downloadText("toujing-review-calendar.csv", csv);
 }

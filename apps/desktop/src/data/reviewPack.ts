@@ -154,10 +154,10 @@ function tiltFlag(raw: unknown): ReviewPackTiltFlagView {
     triggerDate: day(value.trigger_date),
     window: {
       days: nonNegativeFinite(window.days),
-      tradeCount: nullableFinite(window.trade_count),
-      baselineTradeCount: nullableFinite(window.baseline_trade_count),
+      tradeCount: nullableNonNegativeFinite(window.trade_count),
+      baselineTradeCount: nullableNonNegativeFinite(window.baseline_trade_count),
       avgSizeChangePct: nullableFinite(window.avg_size_change_pct),
-      sameInstrumentRebuyCount: nullableFinite(window.same_instrument_rebuy_count),
+      sameInstrumentRebuyCount: nullableNonNegativeFinite(window.same_instrument_rebuy_count),
     },
     note: text(value.note),
     limitations: textList(value.limitations),

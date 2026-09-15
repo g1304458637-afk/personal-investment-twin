@@ -1797,6 +1797,7 @@ export const zhCN = {
   "Avg loss": "平均亏损",
   "Excess vs buy-and-hold": "相对买入持有超额",
   "Benchmark annualized": "基准年化",
+  "Export CSV": "导出 CSV",
 } satisfies Record<keyof typeof enUS, string>;
 
 export type ZhCNMessage = keyof typeof zhCN;

@@ -610,7 +610,7 @@ export function StrategySimulationPage() {
 
         </div>
 
-        <EChart option={equityOption} label={t("Equity curve")} className="strategy-equity-chart" />
+        <EChart option={equityOption} label={t("Equity curve")} className="strategy-equity-chart" exportable />
 
       </section>
 

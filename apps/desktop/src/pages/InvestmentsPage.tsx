@@ -5,12 +5,13 @@ import { useEffect, useMemo, useState } from "react";
 import { StateNotice } from "@/components/common/StateNotice";
 import { positionEpisodeDemo } from "@/data/backendEvidence";
 import { showcaseInstrumentName } from "@/data/showcaseDemo";
-import { adaptDemoInvestmentsCatalog, archiveRows } from "@/data/investments";
+import { adaptDemoInvestmentsCatalog, archiveRows, type InvestmentsView } from "@/data/investments";
 import { belongsToExample, exampleAccountLabel } from "@/data/accountContext";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useDataMode } from "@/data/DataModeProvider";
 import { realUserApi, type RuntimeInvestments } from "@/data/runtimeService";
+import { downloadText, toCsv } from "@/lib/download";
 import { formatCurrencyValue } from "@/lib/format";
 import { useLocale } from "@/locales/LocaleProvider";
 
@@ -85,7 +86,7 @@ export function InvestmentsPage() {
     <header className="iw-investments-head"><div><p className="iw-kicker">{t("Investment intelligence")}</p><h1 className="iw-investments-title">{t("My Investments")}</h1><p className="iw-subtle mt-3 max-w-2xl">{t("Every entry is one complete investment experience reconstructed from recorded executions — including later re-entries in the same security.")}</p></div><div className="iw-context"><span><strong>{accountName}</strong></span><span>{t("Data as of {date}", {date: date(view.asOf)})}</span><span>{view.dataTier === "synthetic" ? t("Synthetic preview") : t("Authorized account")}</span></div></header>
     {view.portfolioState.status !== "available" ? <StateNotice state="insufficient" title={t("Portfolio state is unavailable")} detail={t(view.portfolioState.reason ?? "The current position state cannot be shown from the available facts.")} /> : null}
     <dl className="iw-account-deck iw-inset"><div><dt>{t("Account context")}</dt><dd className="iw-account-name">{accountName}</dd><p className="iw-account-note">{t("Results remain authoritative only where an Outcome record is available.")}</p></div><div><dt>{t("Currently holding")}</dt><dd>{view.summary.openEpisodeCount}</dd><p className="iw-account-note">{t("Open investment experiences")}</p></div><div><dt>{t("Current positions")}</dt><dd>{view.summary.currentPositionCount}</dd><p className="iw-account-note">{t("Available portfolio projection")}</p></div><div><dt>{t("Completed")}</dt><dd>{view.summary.closedEpisodeCount}</dd><p className="iw-account-note">{t("Closed investment experiences")}</p></div></dl>
-    <div className="iw-listbar"><div><div className="iw-filter" role="group" aria-label={t("Investment status")}>{(["open", "closed", "all"] as const).map((value) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)}>{t({open: "Holding", closed: "Closed", all: "All investments"}[value])}</button>)}</div><p className="iw-subtle mt-2">{t("Newest start date first · select an investment to review its path")}</p></div><label className="iw-search"><Search className="size-3.5" aria-hidden="true" /><input aria-label={t("Search securities")} placeholder={t("Search securities")} value={query} onChange={(event) => setQuery(event.target.value)} /></label></div>
+    <div className="iw-listbar"><div><div className="iw-filter" role="group" aria-label={t("Investment status")}>{(["open", "closed", "all"] as const).map((value) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)}>{t({open: "Holding", closed: "Closed", all: "All investments"}[value])}</button>)}</div><p className="iw-subtle mt-2">{t("Newest start date first · select an investment to review its path")}</p><button type="button" className="iw-subtle mt-2 underline underline-offset-2" onClick={() => exportEpisodesCsv(view, t)}>{t("Export CSV")}</button></div><label className="iw-search"><Search className="size-3.5" aria-hidden="true" /><input aria-label={t("Search securities")} placeholder={t("Search securities")} value={query} onChange={(event) => setQuery(event.target.value)} /></label></div>
     <section className="iw-episode-list" aria-label={t("Investment experiences")}>{rows.map((episode) => <InvestmentRow key={episode.episodeId} episode={episode} />)}</section>
     {!rows.length && view.portfolioState.status === "available" ? <div className="mt-5"><StateNotice compact state="empty"
       title={t(!hasInvestments ? "No investment records yet" : query ? "No matching investments" : filter === "open" ? "No investment experiences are currently in progress" : "No closed investment experiences yet")}
@@ -94,4 +95,20 @@ export function InvestmentsPage() {
     </div> : null}
     <AccountReviewPackPanel />
   </div>;
+}
+
+// CSV export transports the rendered episode facts verbatim — one row per
+// investment experience, no recomputation. Nulls export as empty cells.
+function exportEpisodesCsv(view: InvestmentsView, t: (source: string) => string) {
+  const rows = [...view.openEpisodes, ...view.closedEpisodes].map((episode) => [
+    episode.instrumentId, episode.displayName, episode.status,
+    episode.openedAt, episode.closedAt, episode.durationDays,
+    episode.quantity, episode.averageCost, episode.marketValue,
+    episode.outcome.pnl, episode.outcome.return_value,
+  ]);
+  const csv = toCsv(
+    ["instrument", "name", "status", "opened_at", "closed_at", "duration_days",
+      "quantity", "average_cost", "market_value", "pnl", "return"],
+    rows);
+  downloadText(`toujing-episodes-${view.asOf}.csv`, csv);
 }

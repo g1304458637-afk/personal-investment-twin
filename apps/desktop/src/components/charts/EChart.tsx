@@ -29,6 +29,7 @@ import type { DailyTimeNavigationStore } from "./useDailyTimeNavigation.ts";
 import { publishChartCursor, subscribeChartCursor } from "./chartCursor.ts";
 import { forwardChartPageScroll } from "./chartPageScroll.ts";
 import { useLocale } from "@/locales/LocaleProvider";
+import { downloadPngDataUrl } from "@/lib/download";
 import { cn } from "@/lib/utils";
 
 use([
@@ -75,6 +76,7 @@ export function EChart({
   resetKey,
   observationTimes,
   timeNavigation,
+  exportable = false,
 }: {
   option: EChartsCoreOption;
   label: string;
@@ -84,6 +86,8 @@ export function EChart({
   resetKey?: string;
   observationTimes?: number[];
   timeNavigation?: DailyTimeNavigationStore;
+  /** Render a "save as PNG" button using the chart's own rendered pixels. */
+  exportable?: boolean;
 }) {
   const { locale } = useLocale();
   const [linkedCursor, setLinkedCursor] = useState<{ x: number; top: number; height: number } | null>(null);
@@ -341,8 +345,24 @@ export function EChart({
     else return;
     event.preventDefault();
   };
+  const exportPng = () => {
+    const chart = chartRef.current;
+    if (!chart) return;
+    const background = getComputedStyle(containerRef.current ?? document.body).backgroundColor || "#ffffff";
+    const dataUrl = chart.getDataURL({ type: "png", pixelRatio: 2, backgroundColor: background });
+    const safeName = label.replace(/[^\w\u4e00-\u9fff.-]+/g, "_");
+    downloadPngDataUrl(dataUrl, `${safeName}.png`);
+  };
+
   return <div tabIndex={timeNavigation ? 0 : undefined} onKeyDown={onKeyDown} ref={containerRef} className={cn("echart", className)} style={{ position: "relative" }} role="img" aria-label={label}>
     {linkedCursor && <div aria-hidden="true" data-linked-time-cursor style={{ position: "absolute", pointerEvents: "none", zIndex: 2,
       left: linkedCursor.x, top: linkedCursor.top, height: linkedCursor.height, borderLeft: "1px dashed rgba(170,210,234,.65)" }} />}
+    {exportable && <button
+      type="button"
+      onClick={exportPng}
+      className="absolute right-2 top-2 z-[3] rounded-md border border-border/60 bg-background/70 px-2 py-1 text-xs text-muted backdrop-blur hover:text-foreground"
+      aria-label={`${label} · PNG`}
+      title="PNG"
+    >PNG ↓</button>}
   </div>;
 }
