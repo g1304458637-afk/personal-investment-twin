@@ -7,6 +7,7 @@ import {
   type ConditionDraft,
 } from "@/lib/strategyFactors";
 import { WorkshopNumberInput } from "@/components/strategy/WorkshopNumberInput";
+import { useLocale } from "@/locales/LocaleProvider";
 
 /**
  * Strategy workshop: the five-slot fill-in builder.  Specs are plain data
@@ -32,11 +33,12 @@ export interface WorkshopDraft {
   maxPositions: number;
 }
 
+// Values are locale keys (the English strings); translate at render with t().
 const numericThresholdHint: Record<string, string> = {
-  rsi: "RSI 数值，如 30",
-  sma_gap: "偏离度小数，如 0.05 表示高于均线 5%",
-  roc: "涨跌幅小数，如 0.10 表示 10%",
-  atr_ratio: "波动占比小数，如 0.03",
+  rsi: "RSI value, e.g. 30",
+  sma_gap: "Deviation as a decimal, e.g. 0.05 means 5% above the moving average",
+  roc: "Change as a decimal, e.g. 0.10 means 10%",
+  atr_ratio: "Volatility share as a decimal, e.g. 0.03",
 };
 
 function newCondition(): ConditionDraft {
@@ -77,9 +79,11 @@ function ConditionRow({ draft, onChange, onRemove, removable }: {
   onRemove?: () => void;
   removable: boolean;
 }) {
+  const { t } = useLocale();
   const option = factorOption(draft.factor) ?? FACTORS[0];
+  const hintKey = numericThresholdHint[draft.factor];
   return <div className="workshop-condition">
-    <select aria-label="因子" value={draft.factor} onChange={(event) => {
+    <select aria-label={t("Factor")} value={draft.factor} onChange={(event) => {
       const next = factorOption(event.target.value) ?? FACTORS[0];
       onChange({ ...draft, factor: next.id, op: next.opType === "bool" ? "true" : "gt", window: next.paramDefault });
     }}>
@@ -94,16 +98,16 @@ function ConditionRow({ draft, onChange, onRemove, removable }: {
     ) : null}
     {option.opType === "numeric" ? (
       <>
-        <select aria-label="比较" value={draft.op} onChange={(event) => onChange({ ...draft, op: event.target.value as "gt" | "lt" })}>
-          <option value="gt">高于或等于</option>
-          <option value="lt">低于</option>
+        <select aria-label={t("Comparison operator")} value={draft.op} onChange={(event) => onChange({ ...draft, op: event.target.value as "gt" | "lt" })}>
+          <option value="gt">{t("At or above")}</option>
+          <option value="lt">{t("Below")}</option>
         </select>
         <WorkshopNumberInput value={draft.threshold} step={0.01}
-          title={numericThresholdHint[draft.factor]}
+          title={hintKey ? t(hintKey) : undefined}
           onCommit={(next) => onChange({ ...draft, threshold: next })} />
       </>
     ) : null}
-    {removable && onRemove ? <button type="button" className="workshop-remove" onClick={onRemove} aria-label="移除条件">×</button> : null}
+    {removable && onRemove ? <button type="button" className="workshop-remove" onClick={onRemove} aria-label={t("Remove condition")}>×</button> : null}
     <p className="workshop-misread">⚠ {option.misread}</p>
   </div>;
 }
@@ -122,11 +126,12 @@ export function StrategyWorkshop({ onSave, onCancel, initialDraft }: {
   const [fraction, setFraction] = useState(25);
   const [maxPositions, setMaxPositions] = useState(4);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useLocale();
 
   const save = () => {
-    if (!name.trim()) { setError("请给策略起个名字"); return; }
-    if (entry.length === 0) { setError("至少需要一个入场条件"); return; }
-    if (exitFactor === null && stopPct === null) { setError("至少需要一种退出机制"); return; }
+    if (!name.trim()) { setError(t("Give your strategy a name")); return; }
+    if (entry.length === 0) { setError(t("At least one entry condition is required")); return; }
+    if (exitFactor === null && stopPct === null) { setError(t("At least one exit mechanism is required")); return; }
     const draft: WorkshopDraft = { name, entry, exitFactor, stopPct, atrMult, addsUnits, fraction, maxPositions };
     try {
       const spec = draftToSpec(draft);
@@ -139,36 +144,36 @@ export function StrategyWorkshop({ onSave, onCancel, initialDraft }: {
 
   return <div className="workshop">
     <label className="workshop-name">
-      策略名称
-      <input value={name} maxLength={60} placeholder="例如：跌了就买，反弹就走"
+      {t("Strategy name")}
+      <input value={name} maxLength={60} placeholder={t("e.g. Buy the dip, sell the bounce")}
         onChange={(event) => setName(event.target.value)} />
     </label>
     <section>
-      <p className="workshop-title">① 什么时候买入（条件需同时满足）</p>
+      <p className="workshop-title">{t("① When to buy (all conditions must hold)")}</p>
       {entry.map((condition, index) => (
         <ConditionRow key={index} draft={condition} removable={entry.length > 1}
           onChange={(next) => setEntry(entry.map((item, i) => (i === index ? next : item)))}
           onRemove={() => setEntry(entry.filter((_, i) => i !== index))} />
       ))}
-      {entry.length < 3 ? <button type="button" className="workshop-add" onClick={() => setEntry([...entry, newCondition()])}>＋ 加条件</button> : null}
+      {entry.length < 3 ? <button type="button" className="workshop-add" onClick={() => setEntry([...entry, newCondition()])}>{t("＋ Add condition")}</button> : null}
     </section>
     <section>
-      <p className="workshop-title">③ 什么时候卖出</p>
+      <p className="workshop-title">{t("② When to sell")}</p>
       <label className="workshop-check">
         <input type="checkbox" checked={exitFactor !== null} onChange={(event) => setExitFactor(event.target.checked ? newCondition() : null)} />
-        反向条件退出
+        {t("Exit on reverse condition")}
       </label>
       {exitFactor ? <ConditionRow draft={exitFactor} removable={false} onChange={setExitFactor} /> : null}
       <label className="workshop-check">
         <input type="checkbox" checked={stopPct !== null} onChange={(event) => setStopPct(event.target.checked ? 10 : null)} />
-        固定止损：
+        {t("Fixed stop-loss:")}
       </label>
       {stopPct !== null ? <span className="workshop-inline-num">
         <WorkshopNumberInput value={stopPct} min={1} max={50} onCommit={setStopPct} /> %
       </span> : null}
       <label className="workshop-check">
         <input type="checkbox" checked={atrMult !== null} onChange={(event) => setAtrMult(event.target.checked ? 2 : null)} />
-        ATR 跟踪止损：止损每日上移至 前收 −
+        {t("ATR trailing stop: raised daily to prior close −")}
       </label>
       {atrMult !== null ? <span className="workshop-inline-num">
         <WorkshopNumberInput value={atrMult * 10} min={10} max={50} step={5}
@@ -176,34 +181,34 @@ export function StrategyWorkshop({ onSave, onCancel, initialDraft }: {
       </span> : null}
     </section>
     <section>
-      <p className="workshop-title">③b 加仓规则（可选）</p>
+      <p className="workshop-title">{t("③ Add-on rules (optional)")}</p>
       <label className="workshop-check">
         <input type="checkbox" checked={addsUnits !== null} onChange={(event) => setAddsUnits(event.target.checked ? 2 : null)} />
-        入场条件再次满足时追加 1 单元，最多
+        {t("Add 1 unit when the entry conditions trigger again, up to")}
       </label>
       {addsUnits !== null ? <span className="workshop-inline-num">
-        <WorkshopNumberInput value={addsUnits} min={2} max={4} onCommit={setAddsUnits} /> 单元
+        <WorkshopNumberInput value={addsUnits} min={2} max={4} onCommit={setAddsUnits} /> {t("units")}
       </span> : null}
     </section>
     <section>
-      <p className="workshop-title">④ 每笔买多少</p>
+      <p className="workshop-title">{t("④ How much per trade")}</p>
       <label className="workshop-inline-num">
-        等权：每仓 = 净值
+        {t("Equal weight: each position = equity")}
         <WorkshopNumberInput value={fraction} min={5} max={100} onCommit={setFraction} /> %
       </label>
       <label className="workshop-inline-num">
-        最多同时
-        <WorkshopNumberInput value={maxPositions} min={1} max={8} onCommit={setMaxPositions} /> 仓
+        {t("Max simultaneous")}
+        <WorkshopNumberInput value={maxPositions} min={1} max={8} onCommit={setMaxPositions} /> {t("positions")}
       </label>
     </section>
     <section>
-      <p className="workshop-title">⑤ 执行（固定，不可修改）</p>
-      <p className="workshop-misread">信号收盘确认 → 次日开盘成交 · 100 股整手 · 佣金 0.03%（最低 5 元）+ 卖出印花税 0.1% · 默认不加仓</p>
+      <p className="workshop-title">{t("⑤ Execution (fixed, not editable)")}</p>
+      <p className="workshop-misread">{t("Signals confirm at close, fill at next open · round lots of 100 shares · commission 0.03% (min CNY 5) + 0.1% stamp duty on sells · no add-ons by default")}</p>
     </section>
     {error ? <p className="workshop-error" role="alert">{error}</p> : null}
     <div className="workshop-actions">
-      <button type="button" className="workshop-save" onClick={save}>保存策略</button>
-      <button type="button" onClick={onCancel}>取消</button>
+      <button type="button" className="workshop-save" onClick={save}>{t("Save strategy")}</button>
+      <button type="button" onClick={onCancel}>{t("Cancel")}</button>
     </div>
   </div>;
 }

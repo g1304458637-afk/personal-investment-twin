@@ -10,7 +10,7 @@ import { belongsToExample, exampleAccountLabel } from "@/data/accountContext";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useDataMode } from "@/data/DataModeProvider";
-import { realUserApi, type RuntimeInvestments } from "@/data/runtimeService";
+import { realUserApi, type RuntimeAllocation, type RuntimeInvestments } from "@/data/runtimeService";
 import { downloadText, toCsv } from "@/lib/download";
 import { formatCurrencyValue } from "@/lib/format";
 import { useLocale } from "@/locales/LocaleProvider";
@@ -80,12 +80,17 @@ export function InvestmentsPage() {
   if (data.mode === "real_user" && !runtime) return <div className="page"><StateNotice state={runtimeError ? "disconnected" : "loading"} title={runtimeError ? t("Portfolio state is unavailable") : t("Opening investment workspace…")} detail={runtimeError ?? t("Rebuilding from local canonical facts.")} /></div>;
   const date = (value: string) => Number.isNaN(Date.parse(value)) ? "—" : new Intl.DateTimeFormat(locale, { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value));
   const rows = archiveRows([...view.openEpisodes, ...view.closedEpisodes], filter, query);
+  // Optional backend block (newer sidecars): position weights computed by
+  // Python. Absent or malformed payload hides the section — never recomputed
+  // client-side.
+  const allocation = data.mode === "real_user" && runtime?.allocation ? runtime.allocation : null;
   const hasInvestments = view.openEpisodes.length > 0 || view.closedEpisodes.length > 0;
   const accountName = data.mode === "demo" ? exampleAccountLabel(data.exampleAccount, locale) : data.activeAccount?.display_name ?? t("Selected account");
   return <div className="page iw-investments">
     <header className="iw-investments-head"><div><p className="iw-kicker">{t("Investment intelligence")}</p><h1 className="iw-investments-title">{t("My Investments")}</h1><p className="iw-subtle mt-3 max-w-2xl">{t("Every entry is one complete investment experience reconstructed from recorded executions — including later re-entries in the same security.")}</p></div><div className="iw-context"><span><strong>{accountName}</strong></span><span>{t("Data as of {date}", {date: date(view.asOf)})}</span><span>{view.dataTier === "synthetic" ? t("Synthetic preview") : t("Authorized account")}</span></div></header>
     {view.portfolioState.status !== "available" ? <StateNotice state="insufficient" title={t("Portfolio state is unavailable")} detail={t(view.portfolioState.reason ?? "The current position state cannot be shown from the available facts.")} /> : null}
     <dl className="iw-account-deck iw-inset"><div><dt>{t("Account context")}</dt><dd className="iw-account-name">{accountName}</dd><p className="iw-account-note">{t("Results remain authoritative only where an Outcome record is available.")}</p></div><div><dt>{t("Currently holding")}</dt><dd>{view.summary.openEpisodeCount}</dd><p className="iw-account-note">{t("Open investment experiences")}</p></div><div><dt>{t("Current positions")}</dt><dd>{view.summary.currentPositionCount}</dd><p className="iw-account-note">{t("Available portfolio projection")}</p></div><div><dt>{t("Completed")}</dt><dd>{view.summary.closedEpisodeCount}</dd><p className="iw-account-note">{t("Closed investment experiences")}</p></div></dl>
+    <AllocationStrip allocation={allocation} currency={view.openEpisodes[0]?.currency ?? "CNY"} />
     <div className="iw-listbar"><div><div className="iw-filter" role="group" aria-label={t("Investment status")}>{(["open", "closed", "all"] as const).map((value) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)}>{t({open: "Holding", closed: "Closed", all: "All investments"}[value])}</button>)}</div><p className="iw-subtle mt-2">{t("Newest start date first · select an investment to review its path")}</p><button type="button" className="iw-subtle mt-2 underline underline-offset-2" onClick={() => exportEpisodesCsv(view, t)}>{t("Export CSV")}</button></div><label className="iw-search"><Search className="size-3.5" aria-hidden="true" /><input aria-label={t("Search securities")} placeholder={t("Search securities")} value={query} onChange={(event) => setQuery(event.target.value)} /></label></div>
     <section className="iw-episode-list" aria-label={t("Investment experiences")}>{rows.map((episode) => <InvestmentRow key={episode.episodeId} episode={episode} />)}</section>
     {!rows.length && view.portfolioState.status === "available" ? <div className="mt-5"><StateNotice compact state="empty"
@@ -111,4 +116,32 @@ function exportEpisodesCsv(view: InvestmentsView, t: (source: string) => string)
       "quantity", "average_cost", "market_value", "pnl", "return"],
     rows);
   downloadText(`toujing-episodes-${view.asOf}.csv`, csv);
+}
+
+function AllocationStrip({ allocation, currency }: { allocation: RuntimeAllocation | null; currency: string }) {
+  const { t, locale, formatPercent } = useLocale();
+  if (!allocation || allocation.positions.length === 0) return null;
+  return <section className="iw-inset" aria-label={t("Position allocation")}>
+    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+      <h2 className="iw-kicker">{t("Position allocation")}</h2>
+      <span className="iw-subtle">{t("Positions value")}: {formatCurrencyValue(allocation.positions_value, locale, currency)}</span>
+      <span className="iw-subtle">{t("HHI concentration")}: {allocation.hhi === null ? "—" : formatPercent(allocation.hhi, 1)}</span>
+      {allocation.skipped_no_market_value > 0 ? <span className="iw-subtle">{t("Skipped (no market value)")}: {allocation.skipped_no_market_value}</span> : null}
+    </div>
+    <ul className="mt-3 space-y-2">
+      {allocation.positions.map((item) => (
+        <li key={item.instrument_id} className="flex items-center gap-3 text-sm">
+          <span className="w-40 shrink-0 truncate" title={item.display_name}>{item.display_name}</span>
+          <span className="h-2 flex-1 overflow-hidden rounded-full bg-border/40">
+            {/* Weight is already a Python-normalized 0..1 fraction: the bar
+                renders it verbatim, no client-side rescaling. */}
+            <span className="block h-full rounded-full bg-accent/70" style={{ width: `${item.weight === null ? 0 : item.weight * 100}%`, minWidth: item.weight === null ? undefined : "2px" }} />
+          </span>
+          <span className="w-16 shrink-0 text-right font-mono text-xs">{item.weight === null ? "—" : formatPercent(item.weight, 1)}</span>
+          <span className="w-28 shrink-0 text-right text-xs text-muted">{formatCurrencyValue(item.market_value, locale, currency)}</span>
+        </li>
+      ))}
+    </ul>
+    <p className="iw-subtle mt-2">{allocation.definition}</p>
+  </section>;
 }
