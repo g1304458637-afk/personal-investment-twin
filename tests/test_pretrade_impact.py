@@ -191,6 +191,27 @@ def test_buy_with_insufficient_cash_is_rejected_by_replay(
     assert result.after is None
 
 
+def test_full_exit_sell_reports_undefined_hhi_not_internal_error(
+    executions, prices, hhi_history, peer_context
+) -> None:
+    # A single-position account (SYN_PAPER_WIN only ever bought: 400 + 50)
+    # proposing to sell all 450 shares: executable, but the after-state has
+    # no risky asset, so HHI is undefined.  The answer must name that
+    # plainly, not echo an internal replay error.
+    single_position = executions[executions["symbol"] == "SYN_PAPER_WIN"].copy()
+
+    result = _simulate(
+        _trade(symbol="SYN_PAPER_WIN", side="SELL", quantity=450.0, execution_price=13.0),
+        single_position, prices, hhi_history, peer_context,
+    )
+
+    assert result.simulation_status == "insufficient_evidence"
+    reason = str(result.simulation_reason)
+    assert "Full exit" in reason
+    assert "HHI" in reason
+    assert "No risky asset holdings" not in reason
+
+
 def test_sell_above_position_is_rejected(
     executions, prices, hhi_history, peer_context
 ) -> None:

@@ -20,7 +20,7 @@ SECTION_LIMITATIONS: tuple[str, ...] = (
 )
 
 
-def build_calendar_rows(closed_episodes: list[dict]) -> list[dict]:
+def build_calendar_rows(closed_episodes: list[dict]) -> dict:
     """Aggregate closed episodes into (months, days) calendar rows.
 
     ``closed_episodes`` items carry episode_id, realized_pnl and closed_at.

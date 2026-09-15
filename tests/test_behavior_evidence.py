@@ -153,14 +153,17 @@ def test_odean_counts_and_pgr_plr_match_hand_calculation(disposition):
     assert disposition.method_id == "odean_pgr_plr_v1"
     assert disposition.eligible_sale_events == 2
     assert disposition.realized_gains == 1
-    assert disposition.paper_gains == 2
+    # Both sale days are PARTIAL exits (50 of 100): the residual shares stay
+    # paper opportunities on their sale day, one extra gain (SYN_WIN_SOLD)
+    # and one extra loss (SYN_LOSS_SOLD) versus the old whole-symbol rule.
+    assert disposition.paper_gains == 3
     assert disposition.realized_losses == 1
-    assert disposition.paper_losses == 3
+    assert disposition.paper_losses == 4
     assert disposition.neutral_observations == 3
-    assert disposition.observation_count == 10
-    assert disposition.pgr == pytest.approx(1 / 3)
-    assert disposition.plr == pytest.approx(1 / 4)
-    assert disposition.disposition_effect == pytest.approx(1 / 12)
+    assert disposition.observation_count == 12
+    assert disposition.pgr == pytest.approx(1 / 4)
+    assert disposition.plr == pytest.approx(1 / 5)
+    assert disposition.disposition_effect == pytest.approx(1 / 20)
     assert disposition.evidence_status == "complete"
 
 
@@ -172,7 +175,7 @@ def test_neutral_positions_are_excluded_from_gain_and_loss_counts(disposition):
         + disposition.paper_losses
     )
 
-    assert gain_and_loss_count == 7
+    assert gain_and_loss_count == 9
     assert disposition.neutral_observations == 3
     assert disposition.observation_count == gain_and_loss_count + 3
 
