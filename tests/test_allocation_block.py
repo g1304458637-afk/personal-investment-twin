@@ -46,3 +46,20 @@ def test_empty_and_all_markless_stay_honest():
     assert markless["skipped_no_market_value"] == 2
     assert markless["hhi"] is None
     assert "definition" in markless
+
+
+def test_csv_importer_ids_stay_unique_for_identical_fills(tmp_path):
+    """load_normalized_csv assigns occurrence-disambiguated internal ids: two
+    content-identical rows must not collapse onto one execution_id."""
+    import pandas as pd
+
+    from src.data.csv_importer import load_normalized_csv
+
+    path = tmp_path / "dup.csv"
+    path.write_text(
+        "execution_time,symbol,side,quantity,price,fee\n"
+        "2025-01-02 10:00,SYN_A,BUY,100,10.0,0.0\n"
+        "2025-01-02 10:00,SYN_A,BUY,100,10.0,0.0\n"
+    )
+    frame = load_normalized_csv(path)
+    assert frame["execution_id"].nunique() == 2

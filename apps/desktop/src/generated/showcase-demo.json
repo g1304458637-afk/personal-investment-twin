@@ -36348,19 +36348,19 @@
                 }
               ],
               "disposition": {
-                "disposition_effect": -0.55,
+                "disposition_effect": -0.3181818181818182,
                 "eligible_sale_events": 5,
                 "evidence_reason": null,
                 "evidence_status": "complete",
-                "limitation": "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
+                "limitation": "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. A sale day symbol counts as a paper opportunity only through its residual shares (pre-sale quantity minus the day's sold quantity); a full exit on the day contributes none. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
                 "method_id": "odean_pgr_plr_v1",
                 "method_source": "Odean-style product implementation v1, following Odean (1998), Are Investors Reluctant to Realize Their Losses?: PGR = RG / (RG + PG) and PLR = RL / (RL + PL), with realized outcomes counted at SELL executions and paper opportunities on sale calendar days.",
                 "neutral_observations": 0,
-                "observation_count": 14,
-                "paper_gains": 8,
-                "paper_losses": 1,
-                "pgr": 0.2,
-                "plr": 0.75,
+                "observation_count": 17,
+                "paper_gains": 9,
+                "paper_losses": 3,
+                "pgr": 0.18181818181818182,
+                "plr": 0.5,
                 "provenance": [
                   {
                     "as_of": "2025-07-02T00:00:00",
@@ -40752,19 +40752,19 @@
                 }
               ],
               "disposition": {
-                "disposition_effect": -0.4868421052631579,
+                "disposition_effect": -0.28260869565217395,
                 "eligible_sale_events": 8,
                 "evidence_reason": null,
                 "evidence_status": "complete",
-                "limitation": "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
+                "limitation": "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. A sale day symbol counts as a paper opportunity only through its residual shares (pre-sale quantity minus the day's sold quantity); a full exit on the day contributes none. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
                 "method_id": "odean_pgr_plr_v1",
                 "method_source": "Odean-style product implementation v1, following Odean (1998), Are Investors Reluctant to Realize Their Losses?: PGR = RG / (RG + PG) and PLR = RL / (RL + PL), with realized outcomes counted at SELL executions and paper opportunities on sale calendar days.",
                 "neutral_observations": 0,
-                "observation_count": 23,
-                "paper_gains": 14,
-                "paper_losses": 1,
-                "pgr": 0.2631578947368421,
-                "plr": 0.75,
+                "observation_count": 29,
+                "paper_gains": 18,
+                "paper_losses": 3,
+                "pgr": 0.21739130434782608,
+                "plr": 0.5,
                 "provenance": [
                   {
                     "as_of": "2025-12-31T00:00:00",
@@ -46763,14 +46763,14 @@
                 "eligible_sale_events": 3,
                 "evidence_reason": "PLR denominator is zero",
                 "evidence_status": "insufficient_evidence",
-                "limitation": "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
+                "limitation": "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. A sale day symbol counts as a paper opportunity only through its residual shares (pre-sale quantity minus the day's sold quantity); a full exit on the day contributes none. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
                 "method_id": "odean_pgr_plr_v1",
                 "method_source": "Odean-style product implementation v1, following Odean (1998), Are Investors Reluctant to Realize Their Losses?: PGR = RG / (RG + PG) and PLR = RL / (RL + PL), with realized outcomes counted at SELL executions and paper opportunities on sale calendar days.",
                 "neutral_observations": 0,
-                "observation_count": 9,
-                "paper_gains": 6,
+                "observation_count": 12,
+                "paper_gains": 9,
                 "paper_losses": 0,
-                "pgr": 0.3333333333333333,
+                "pgr": 0.25,
                 "plr": null,
                 "provenance": [
                   {
@@ -50359,18 +50359,18 @@
                 }
               ],
               "disposition": {
-                "disposition_effect": 0.42857142857142855,
+                "disposition_effect": 0.3333333333333333,
                 "eligible_sale_events": 3,
                 "evidence_reason": null,
                 "evidence_status": "complete",
-                "limitation": "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
+                "limitation": "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. A sale day symbol counts as a paper opportunity only through its residual shares (pre-sale quantity minus the day's sold quantity); a full exit on the day contributes none. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
                 "method_id": "odean_pgr_plr_v1",
                 "method_source": "Odean-style product implementation v1, following Odean (1998), Are Investors Reluctant to Realize Their Losses?: PGR = RG / (RG + PG) and PLR = RL / (RL + PL), with realized outcomes counted at SELL executions and paper opportunities on sale calendar days.",
                 "neutral_observations": 0,
-                "observation_count": 8,
-                "paper_gains": 4,
+                "observation_count": 10,
+                "paper_gains": 6,
                 "paper_losses": 1,
-                "pgr": 0.42857142857142855,
+                "pgr": 0.3333333333333333,
                 "plr": 0.0,
                 "provenance": [
                   {
@@ -54635,18 +54635,18 @@
                 }
               ],
               "disposition": {
-                "disposition_effect": 0.38461538461538464,
+                "disposition_effect": 0.29411764705882354,
                 "eligible_sale_events": 5,
                 "evidence_reason": null,
                 "evidence_status": "complete",
-                "limitation": "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
+                "limitation": "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. A sale day symbol counts as a paper opportunity only through its residual shares (pre-sale quantity minus the day's sold quantity); a full exit on the day contributes none. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
                 "method_id": "odean_pgr_plr_v1",
                 "method_source": "Odean-style product implementation v1, following Odean (1998), Are Investors Reluctant to Realize Their Losses?: PGR = RG / (RG + PG) and PLR = RL / (RL + PL), with realized outcomes counted at SELL executions and paper opportunities on sale calendar days.",
                 "neutral_observations": 0,
-                "observation_count": 14,
-                "paper_gains": 8,
+                "observation_count": 18,
+                "paper_gains": 12,
                 "paper_losses": 1,
-                "pgr": 0.38461538461538464,
+                "pgr": 0.29411764705882354,
                 "plr": 0.0,
                 "provenance": [
                   {
@@ -60404,14 +60404,14 @@
                 "eligible_sale_events": 2,
                 "evidence_reason": "PLR denominator is zero",
                 "evidence_status": "insufficient_evidence",
-                "limitation": "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
+                "limitation": "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. A sale day symbol counts as a paper opportunity only through its residual shares (pre-sale quantity minus the day's sold quantity); a full exit on the day contributes none. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
                 "method_id": "odean_pgr_plr_v1",
                 "method_source": "Odean-style product implementation v1, following Odean (1998), Are Investors Reluctant to Realize Their Losses?: PGR = RG / (RG + PG) and PLR = RL / (RL + PL), with realized outcomes counted at SELL executions and paper opportunities on sale calendar days.",
                 "neutral_observations": 0,
-                "observation_count": 6,
-                "paper_gains": 4,
+                "observation_count": 8,
+                "paper_gains": 6,
                 "paper_losses": 0,
-                "pgr": 0.3333333333333333,
+                "pgr": 0.25,
                 "plr": null,
                 "provenance": [
                   {
@@ -65364,10 +65364,10 @@
       "attributes": {
         "eligible_sale_events": 8,
         "neutral_observations": 0,
-        "paper_gains": 14,
-        "paper_losses": 1,
-        "pgr": 0.2631578947368421,
-        "plr": 0.75,
+        "paper_gains": 18,
+        "paper_losses": 3,
+        "pgr": 0.21739130434782608,
+        "plr": 0.5,
         "realized_gains": 5,
         "realized_losses": 3,
         "synthetic_provenance_present": true
@@ -65377,18 +65377,18 @@
       "ci_upper": null,
       "data_tier": "synthetic",
       "denominator": null,
-      "evidence_id": "ev_627caf79398f12978731169dfc5a1c616e95a8d9fd2fb4045068099f3ebf7cda",
+      "evidence_id": "ev_4ea64168f4ebc64754cfc0533b629f126fd8a1c8b148ffc9027114d8e4a5fa99",
       "evidence_kind": "behavior_evidence",
       "evidence_reason": null,
       "evidence_status": "complete",
       "limitations": [
-        "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment."
+        "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. A sale day symbol counts as a paper opportunity only through its residual shares (pre-sale quantity minus the day's sold quantity); a full exit on the day contributes none. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment."
       ],
       "method_id": "odean_pgr_plr_v1",
       "method_version": "1",
       "metric_id": "disposition_effect",
       "numerator": null,
-      "observation_count": 23,
+      "observation_count": 29,
       "observation_end": null,
       "observation_start": null,
       "provenance": [
@@ -65430,7 +65430,7 @@
         }
       ],
       "subject_id": "SYN_STUDY_SHOWCASE",
-      "value": -0.4868421052631579
+      "value": -0.28260869565217395
     },
     {
       "as_of": "2025-11-14T10:19:00",
@@ -65732,7 +65732,7 @@
           ]
         },
         "limitations": [
-          "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
+          "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. A sale day symbol counts as a paper opportunity only through its residual shares (pre-sale quantity minus the day's sold quantity); a full exit on the day contributes none. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
           "Current market data has daily date semantics and no intraday availability timestamp. The system excludes future dates but cannot prove that a day's final close was available at an intraday decision time."
         ],
         "method_id": "odean_pgr_plr_v1",
@@ -123442,7 +123442,7 @@
         {
           "available_at": "2025-12-31T00:00:00",
           "calculation_code_version": "toujing_showcase_v1",
-          "evidence_id": "ev_627caf79398f12978731169dfc5a1c616e95a8d9fd2fb4045068099f3ebf7cda",
+          "evidence_id": "ev_4ea64168f4ebc64754cfc0533b629f126fd8a1c8b148ffc9027114d8e4a5fa99",
           "evidence_kind": "behavior_evidence",
           "evidence_reason": null,
           "evidence_status": "complete",
@@ -123559,9 +123559,9 @@
           "as_of": "2025-12-31T00:00:00",
           "evidence_status": "complete",
           "metric_id": "disposition_effect",
-          "observation_count": 23,
-          "source_evidence_id": "ev_627caf79398f12978731169dfc5a1c616e95a8d9fd2fb4045068099f3ebf7cda",
-          "value": -0.4868421052631579
+          "observation_count": 29,
+          "source_evidence_id": "ev_4ea64168f4ebc64754cfc0533b629f126fd8a1c8b148ffc9027114d8e4a5fa99",
+          "value": -0.28260869565217395
         },
         {
           "as_of": "2025-12-31T00:00:00",
@@ -123982,7 +123982,7 @@
         "Self baseline, peer context, notable changes, and intervention history are unavailable in v1.",
         "The historical counterfactual is not sizing skill, alpha, causal attribution, or a recommendation.",
         "This is a retrospective fixed-horizon counterfactual. The 20-session horizon is a fixed project policy, not an optimal or industry-standard horizon, and does not imply that subsequent price changes were knowable at the actual exit time.",
-        "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
+        "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. A sale day symbol counts as a paper opportunity only through its residual shares (pre-sale quantity minus the day's sold quantity); a full exit on the day contributes none. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
         "Turnover Intensity is descriptive and is not an overtrading label, skill score, or psychological inference. It uses double-sided filled dollars, excludes fees from traded value, and is sensitive to low portfolio values."
       ],
       "notable_change_refs": [],
@@ -124033,7 +124033,7 @@
       "schema_version": "1",
       "self_baseline_refs": [],
       "snapshot_at": "2025-12-31T23:59:00",
-      "snapshot_id": "tw_81102de0f77310647a280bb7960097f18d03a57a23841ba179f8eea2586cc05b",
+      "snapshot_id": "tw_097086330983ffaef615c7de736d333dda5c11be2a05226565063bf785d2cc12",
       "subject_id": "SYN_STUDY_SHOWCASE"
     },
     "data_tier": "synthetic",
@@ -171951,7 +171951,7 @@
           {
             "available_at": "2025-12-31T00:00:00",
             "calculation_code_version": "toujing_showcase_v1",
-            "evidence_id": "ev_627caf79398f12978731169dfc5a1c616e95a8d9fd2fb4045068099f3ebf7cda",
+            "evidence_id": "ev_4ea64168f4ebc64754cfc0533b629f126fd8a1c8b148ffc9027114d8e4a5fa99",
             "evidence_kind": "behavior_evidence",
             "evidence_reason": null,
             "evidence_status": "complete",
@@ -172068,9 +172068,9 @@
             "as_of": "2025-12-31T00:00:00",
             "evidence_status": "complete",
             "metric_id": "disposition_effect",
-            "observation_count": 23,
-            "source_evidence_id": "ev_627caf79398f12978731169dfc5a1c616e95a8d9fd2fb4045068099f3ebf7cda",
-            "value": -0.4868421052631579
+            "observation_count": 29,
+            "source_evidence_id": "ev_4ea64168f4ebc64754cfc0533b629f126fd8a1c8b148ffc9027114d8e4a5fa99",
+            "value": -0.28260869565217395
           },
           {
             "as_of": "2025-12-31T00:00:00",
@@ -172334,7 +172334,7 @@
           "Self baseline, peer context, notable changes, and intervention history are unavailable in v1.",
           "The historical counterfactual is not sizing skill, alpha, causal attribution, or a recommendation.",
           "This is a retrospective fixed-horizon counterfactual. The 20-session horizon is a fixed project policy, not an optimal or industry-standard horizon, and does not imply that subsequent price changes were knowable at the actual exit time.",
-          "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
+          "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. A sale day symbol counts as a paper opportunity only through its residual shares (pre-sale quantity minus the day's sold quantity); a full exit on the day contributes none. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
           "Turnover Intensity is descriptive and is not an overtrading label, skill score, or psychological inference. It uses double-sided filled dollars, excludes fees from traded value, and is sensitive to low portfolio values."
         ],
         "notable_change_refs": [],
@@ -172351,7 +172351,7 @@
         "schema_version": "1",
         "self_baseline_refs": [],
         "snapshot_at": "2025-12-31T00:00:00",
-        "snapshot_id": "tw_fb043608672825ee582c287ba42e504c1f315ec179c216603ea2b7ae723244ea",
+        "snapshot_id": "tw_682e5d79a6bfa70505e9a6017983d029cb275670082beab04c97f4845d3077ce",
         "subject_id": "SYN_STUDY_SHOWCASE"
       }
     ]

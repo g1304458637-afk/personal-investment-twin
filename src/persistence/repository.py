@@ -161,6 +161,11 @@ class LocalRepository:
         self.connection = sqlite3.connect(self.path)
         self.connection.row_factory = sqlite3.Row
         self.connection.execute("PRAGMA foreign_keys=ON")
+        # WAL + busy_timeout: the sidecar holds a long-lived connection; any
+        # second opener (scripts, backup tools) must not hit rollback-journal
+        # lock contention where readers block writers and 5s locks fail.
+        self.connection.execute("PRAGMA journal_mode=WAL")
+        self.connection.execute("PRAGMA busy_timeout=5000")
         self._migrate()
 
     def close(self) -> None:
@@ -170,6 +175,24 @@ class LocalRepository:
         current = int(self.connection.execute("PRAGMA user_version").fetchone()[0])
         if current > SCHEMA_VERSION:
             raise RepositoryError(f"unsupported future schema version {current}")
+        if current == 0:
+            # A pre-versioning database already carries the base tables
+            # (created before schema_migrations existed): stamp it at version 1
+            # so the recorded migrations apply cleanly on top, instead of
+            # failing with "table accounts already exists".
+            base_tables = {
+                row[0]
+                for row in self.connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                )
+            }
+            if base_tables & {"accounts", "executions"}:
+                # Base layout exists without version metadata. Stamp the
+                # version implied by which migration artifacts are present:
+                # the resolutions table is migration 2's product.
+                stamped = 2 if "execution_instrument_resolutions" in base_tables else 1
+                self.connection.execute(f"PRAGMA user_version={stamped}")
+                current = stamped
         if current == 0:
             try:
                 self.connection.executescript(

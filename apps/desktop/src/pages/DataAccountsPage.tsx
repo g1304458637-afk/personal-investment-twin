@@ -82,6 +82,7 @@ export function DataAccountsPage({ initialKind = "trade" }: { initialKind?: Kind
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const active = data.activeAccount;
+  const [statusReloadKey, setStatusReloadKey] = useState(0);
   useEffect(() => {
     let cancelled = false;
     setStatus(null);
@@ -90,9 +91,11 @@ export function DataAccountsPage({ initialKind = "trade" }: { initialKind?: Kind
       .then((value) => { if (!cancelled) setStatus(value); })
       .catch((value) => { if (!cancelled) setError(String(value)); });
     return () => { cancelled = true; };
-  }, [active]);
+  }, [active, statusReloadKey]);
+  const parsedInitialCash = Number(initialCash);
+  const initialCashInvalid = !Number.isFinite(parsedInitialCash) || parsedInitialCash <= 0;
   const params = () => ({ file_path: file?.path, subject_id: subjectId, account_id: accountId,
-    display_name: displayName, initial_cash: Number(initialCash), source_timezone: timezone,
+    display_name: displayName, initial_cash: parsedInitialCash, source_timezone: timezone,
     use_source_row_order_as_sequence: true, source_id: sourceId, source_version: sourceVersion,
     resolution_symbol: resolutionSymbol, resolution_market: resolutionMarket, resolution_security_type: resolutionType });
   const configurationKey = JSON.stringify([kind, params()]);
@@ -124,6 +127,9 @@ export function DataAccountsPage({ initialKind = "trade" }: { initialKind?: Kind
       if (kind === "trade") await realUserApi.commitTrades(request);
       else await realUserApi.commitPrices(request);
       await data.refresh(); data.setMode("real_user"); setPreview(null); setFile(null);
+      // The imported facts changed: refetch the data-status panel instead of
+      // showing stale execution counts until the account is re-selected.
+      setStatusReloadKey((value) => value + 1);
     } catch (value) { setError(value instanceof Error ? value.message : String(value)); }
     finally { pending.current = false; setBusy(false); }
   };
@@ -142,7 +148,7 @@ export function DataAccountsPage({ initialKind = "trade" }: { initialKind?: Kind
       <GlassPanel className="p-5 md:p-6"><SectionHeading eyebrow={t("Import workflow")} title={t(kind === "trade" ? "Import transaction CSV" : "Import historical price CSV")} description={t("Select a local CSV, inspect the deterministic preview, then explicitly confirm.")} />
         <fieldset disabled={busy} className="contents"><div className="mt-5 flex gap-2"><Button variant={kind === "trade" ? "primary" : "quiet"} onClick={() => { setKind("trade"); setPreview(null); }}>{t("Transactions")}</Button><Button variant={kind === "market" ? "primary" : "quiet"} onClick={() => { setKind("market"); setPreview(null); }}>{t("Historical prices")}</Button></div>
         <div className="mt-5 grid gap-3 sm:grid-cols-2"><Input value={subjectId} onChange={(e) => setSubjectId(e.target.value)} placeholder="Subject ID" /><Input value={accountId} onChange={(e) => setAccountId(e.target.value)} placeholder="Account ID" />{kind === "trade" ? <><Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder={t("Account name")} /><Input value={initialCash} onChange={(e) => setInitialCash(e.target.value)} inputMode="decimal" placeholder={t("Initial cash")} /><Input value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="IANA timezone" /><Input value={resolutionSymbol} onChange={(e) => setResolutionSymbol(e.target.value)} placeholder={t("Unresolved symbol (optional)")} /><Input value={resolutionMarket} onChange={(e) => setResolutionMarket(e.target.value)} placeholder={t("Confirmed market (optional)")} /><Input value={resolutionType} onChange={(e) => setResolutionType(e.target.value)} placeholder={t("Security type")} /></> : <><Input value={sourceId} onChange={(e) => setSourceId(e.target.value)} placeholder="Source ID" /><Input value={sourceVersion} onChange={(e) => setSourceVersion(e.target.value)} placeholder="Source version" /></>}</div>
-        <div className="mt-5 flex flex-wrap items-center gap-3"><Button onClick={choose} variant="quiet"><FileUp />{t("Choose CSV")}</Button><span className="text-sm text-muted">{file?.filename ?? t("No file selected")}</span><Button disabled={!file || busy} onClick={runPreview}>{busy ? t("Loading…") : t("Preview import")}</Button></div>
+        <div className="mt-5 flex flex-wrap items-center gap-3"><Button onClick={choose} variant="quiet"><FileUp />{t("Choose CSV")}</Button><span className="text-sm text-muted">{file?.filename ?? t("No file selected")}</span><Button disabled={!file || busy || initialCashInvalid} onClick={runPreview}>{busy ? t("Loading…") : t("Preview import")}</Button>{initialCashInvalid ? <span className="text-sm text-danger">{t("Initial cash must be a positive number.")}</span> : null}</div>
         </fieldset>{error ? <div className="mt-4 flex gap-2 rounded-lg border border-danger/30 bg-danger/5 p-3 text-sm text-danger"><AlertTriangle className="size-4 shrink-0" />{error}</div> : null}
         {preview ? <div className="mt-6"><dl className="product-fact-strip">{Object.entries(summary).filter(([, value]) => value !== 0).map(([key, value]) => <div key={key}><dt>{t(summaryLabels[key] ?? key)}</dt><dd>{formatNumber(value)}</dd></div>)}</dl><div className="mt-4 max-h-64 overflow-auto border-y border-border/70"><table className="w-full text-left text-xs"><thead className="text-muted"><tr><th className="py-3">{t("Row")}</th><th>{t("Status")}</th><th>{t("Confirmed facts")}</th><th>{t("Issues")}</th><th>{t("Resolution")}</th></tr></thead><tbody>{preview.rows.map((row) => { const key = "row_ref" in row ? row.row_ref : String(row.row_number); return <tr key={key} className="border-t border-border/50"><td className="py-3 font-mono">{key.split(":").at(-1)}</td><td>{t(statusLabels[row.status] ?? row.status)}</td><td className="max-w-80 whitespace-normal break-words p-2 font-mono">{row.candidate ? ("row_ref" in row ? [
       row.candidate.event_time, row.candidate.instrument_id ?? "unresolved", row.candidate.side,

@@ -86,8 +86,11 @@ def _instrument(
     mapping: Mapping[str, str],
     known: Mapping[str, InstrumentRef],
 ) -> InstrumentRef:
-    raw_id = row.get(mapping.get("instrument_id", ""), "").strip()
-    has_parts = all(row.get(mapping.get(name, ""), "").strip() for name in ("local_symbol", "market", "security_type"))
+    # DictReader yields None (not "") for truncated rows: `or ""` keeps a
+    # short row a per-row validation error instead of an AttributeError that
+    # aborts the whole preview.
+    raw_id = (row.get(mapping.get("instrument_id", "")) or "").strip()
+    has_parts = all((row.get(mapping.get(name, "")) or "").strip() for name in ("local_symbol", "market", "security_type"))
     if has_parts:
         resolved = instrument_ref(
             local_symbol=row[mapping["local_symbol"]],

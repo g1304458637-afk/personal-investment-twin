@@ -1832,6 +1832,7 @@ export const enUS = {
   "Signals confirm at close, fill at next open · round lots of 100 shares · commission 0.03% (min CNY 5) + 0.1% stamp duty on sells · no add-ons by default": "Signals confirm at close, fill at next open · round lots of 100 shares · commission 0.03% (min CNY 5) + 0.1% stamp duty on sells · no add-ons by default",
   "Save strategy": "Save strategy",
   "Retry": "Retry",
+  "Initial cash must be a positive number.": "Initial cash must be a positive number.",
   "Export PNG": "Export PNG",
   "Available functions: sma(n) ema(n) highest(n) lowest(n) rsi(n) roc(n) atr(n) atr_ratio(n) volume_ratio(n) range_pos(n) streak_down() cross_up(s,l) cross_down(s,l). Fields: close, entry_price (exit formula only).": "Available functions: sma(n) ema(n) highest(n) lowest(n) rsi(n) roc(n) atr(n) atr_ratio(n) volume_ratio(n) range_pos(n) streak_down() cross_up(s,l) cross_down(s,l). Fields: close, entry_price (exit formula only).",
 } as const;

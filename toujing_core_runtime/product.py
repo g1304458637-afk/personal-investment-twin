@@ -406,19 +406,34 @@ class ProductRuntime:
                             "current_position_count": len(lifecycle.snapshots)},
                 "allocation": allocation_block(entries), "episodes": entries}
 
+    _LIFECYCLE_UNAVAILABLE_REASONS = {
+        "unavailable_pending_market_data": "exact required daily market observations are incomplete",
+        "unavailable_replay_ineligible": "recorded executions are not replay-eligible",
+        "unavailable_mixed_currency_without_fx": "mixed-currency accounting without FX conversion is unsupported",
+    }
+
     def episode(self, params: Mapping[str, object]) -> dict[str, object]:
         from src.presentation.runtime_episode import episode_entry
         account, bundle, facts, lifecycle, status = self._lifecycle(params)
         if lifecycle is None:
-            return {"status": status, "reason": "market prices are incomplete", "entry": None}
+            # Echo the gate's actual cause instead of a generic (and often
+            # wrong) market-data message.
+            reason = self._LIFECYCLE_UNAVAILABLE_REASONS.get(status, "market prices are incomplete")
+            return {"status": status, "reason": reason, "entry": None}
         episode_id = _required_text(params, "episode_id")
         if not any(item.episode_id == episode_id for item in lifecycle.episodes):
             return {"status": "unavailable", "reason": "episode does not belong to this account", "entry": None}
+        target_instrument = next(
+            (e.instrument_id for e in lifecycle.episodes if e.episode_id == episode_id), None)
+        display_name = next(
+            (x.instrument.display_name or x.instrument.display_symbol or x.instrument.local_symbol
+             for x in bundle.accepted_canonical_executions
+             if target_instrument is not None and x.instrument.instrument_id == target_instrument),
+            target_instrument)
         entry = episode_entry(lifecycle, canonical_executions_to_frame(bundle.accepted_canonical_executions),
             facts_to_market_data_frame(facts), episode_id=episode_id, init_cash=float(account["initial_cash"]),
             currency=_currency_context(bundle, facts)[0],
-            display_name=next(x.instrument.display_name or x.instrument.display_symbol or x.instrument.local_symbol
-                              for x in bundle.accepted_canonical_executions if x.instrument.instrument_id == next(e.instrument_id for e in lifecycle.episodes if e.episode_id == episode_id)))
+            display_name=display_name)
         return {"status": "available", "reason": None, "entry": entry}
 
     def strategy_simulation_run_custom(self, params: Mapping[str, object]) -> dict[str, object]:

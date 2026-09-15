@@ -14,12 +14,34 @@ COLUMN_MAP = {
 
 
 def _stable_execution_id(row: pd.Series) -> str:
-    """Generate a stable internal ID when the source file has no execution ID."""
+    """Generate a stable internal ID when the source file has no execution ID.
+
+    ``occurrence`` (1-based) disambiguates content-identical fills: without it
+    two identical rows collapse onto one id and anything keyed by execution_id
+    silently drops the duplicate.  The first occurrence hashes exactly as
+    before, so existing generated ids are unchanged.
+    """
     raw = (
         f"{row['event_time']}|{row['symbol']}|{row['side']}|"
         f"{row['executed_quantity']}|{row['executed_price']}|{row['fee']}"
     )
+    if row.get("_occurrence", 1) != 1:
+        raw = f"{raw}|{int(row['_occurrence'])}"
     return "INT-" + hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+
+
+def _with_occurrence_index(frame: pd.DataFrame) -> pd.DataFrame:
+    """Adds a per-content occurrence counter (1, 2, ...) for duplicate rows."""
+    content = frame.apply(
+        lambda row: (
+            f"{row['event_time']}|{row['symbol']}|{row['side']}|"
+            f"{row['executed_quantity']}|{row['executed_price']}|{row['fee']}"
+        ),
+        axis=1,
+    )
+    frame = frame.copy()
+    frame["_occurrence"] = content.groupby(content).cumcount() + 1
+    return frame
 
 
 def load_normalized_csv(path: str | Path) -> pd.DataFrame:
@@ -65,7 +87,9 @@ def load_normalized_csv(path: str | Path) -> pd.DataFrame:
         df["order_id"] = [f"INT-ORDER-{i:06d}" for i in range(1, len(df) + 1)]
 
     if "execution_id" not in df.columns:
+        df = _with_occurrence_index(df)
         df["execution_id"] = df.apply(_stable_execution_id, axis=1)
+        df = df.drop(columns=["_occurrence"])
 
     return df[
         [
