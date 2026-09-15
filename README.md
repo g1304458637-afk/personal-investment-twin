@@ -26,7 +26,8 @@ All screens show bundled synthetic demo data, rendered in the offline browser pr
 - **Investor DNA**：个人投资能力画像，每个维度标注样本量与置信度，样本不足时输出 Insufficient Evidence，不强行评分
 - **决策前提醒（Pre-Decision Intervention）**：输入一笔准备执行的新交易，系统检索你历史上的相似决策，用真实结果提示风险；是否继续由你决定
 - **复盘面板（Review Pack）**：出场质量（MFE/MAE、出场效率、浮盈回吐）、月度盈亏热力图、连亏后行为观察（纯描述性统计，不推断心理动机）、打法标签聚合（样本不足时如实显示 Insufficient Evidence）
-- **策略引擎与仿真**：内置双均线、RSI 均值回归、海龟等规则策略库，可在你的数据上回放对照，规则来源透明标注，结果含 R-multiple 统计
+- **策略引擎与仿真**：内置双均线、RSI 均值回归、海龟等规则策略库，可在你的数据上回放对照，规则来源透明标注，结果含 R-multiple 与标准绩效指标（年化波动、Sortino、Calmar、盈亏比、相对等权买入持有的超额年化，定义随结果一并展示）
+- **数据导出**：投资 Episode 列表与月度盈亏热力图一键导出 CSV，策略净值曲线导出 PNG；导出的数值与界面展示完全一致
 - **券商导出导入**：自动识别东方财富 / 同花顺的成交导出 CSV（含 GBK 编码与千分位），转换为标准交易格式；也支持通用 CSV 格式
 
 ## 设计原则
