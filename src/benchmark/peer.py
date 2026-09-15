@@ -33,8 +33,26 @@ def build_synthetic_peer_benchmark(
     market_prices: pd.DataFrame,
     init_cash: float,
     calculation_code_version: str,
+    data_tier: str = "synthetic",
 ) -> SyntheticPeerBenchmark:
-    """Compare one existing demo subject with 72 separately replayed peer accounts."""
+    """Compare one existing demo subject with 72 separately replayed peer accounts.
+
+    The cohort is synthetic by construction, so the subject must be one too:
+    a real account's executions must never be percentile-ranked against
+    synthetic fixtures and exported as synthetic.  The frame's
+    ``data_tier`` column (normalized executions carry one) is checked when
+    present, and an explicit non-synthetic ``data_tier`` argument is refused.
+    """
+    if data_tier != "synthetic":
+        raise ValueError(
+            "synthetic peer benchmark refuses non-synthetic subject data_tier "
+            f"(received {data_tier!r})"
+        )
+    tier_column = subject_executions.get("data_tier")
+    if tier_column is not None and not (tier_column == "synthetic").all():
+        raise ValueError(
+            "synthetic peer benchmark requires synthetic-tier subject executions"
+        )
 
     definition = synthetic_cohort_definition()
     peer_accounts = generate_synthetic_cohort_accounts(

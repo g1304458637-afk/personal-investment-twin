@@ -295,3 +295,55 @@ def test_desktop_investments_projection_copies_twin_refs_and_neutral_names():
         and entry["instrument"]["is_synthetic"] is True
         for entry in entries
     )
+
+
+def test_cross_tier_evidence_records_are_refused():
+    """A production-tier record must never be projected into a synthetic
+    snapshot (and vice versa): the UI presents the snapshot's tier as fact."""
+    import hashlib
+
+    from src.evidence.contracts import EvidenceProvenance, EvidenceRecord
+
+    def _record(data_tier: str, is_synthetic: bool) -> EvidenceRecord:
+        payload = f"{data_tier}:disposition_effect".encode()
+        return EvidenceRecord(
+            evidence_id=f"ev_{hashlib.sha256(payload).hexdigest()}",
+            subject_id=SUBJECT_ID,
+            metric_id="disposition_effect",
+            evidence_kind="behavior",
+            method_id="odean_pgr_plr_v1",
+            method_version="1",
+            observation_start=None,
+            observation_end=pd.Timestamp("2025-01-07"),
+            as_of=pd.Timestamp("2025-01-07"),
+            value=0.1,
+            numerator=None,
+            denominator=None,
+            observation_count=10,
+            ci_lower=None,
+            ci_upper=None,
+            evidence_status="complete",
+            evidence_reason=None,
+            provenance=(EvidenceProvenance("test", "ref-1", "v1", pd.Timestamp("2025-01-07"), None, is_synthetic),),
+            data_tier=data_tier,
+            calculation_code_version="twin-state-test-v1",
+            limitations=(),
+            attributes={},
+        )
+
+    with pytest.raises(ValueError, match="data_tier"):
+        build_twin_snapshot(
+            [_record("production", is_synthetic=False)],
+            [],
+            subject_id=SUBJECT_ID,
+            snapshot_at=SNAPSHOT_AT,
+            data_tier="synthetic",
+        )
+    # Matching tier stays accepted.
+    build_twin_snapshot(
+        [_record("synthetic", is_synthetic=True)],
+        [],
+        subject_id=SUBJECT_ID,
+        snapshot_at=SNAPSHOT_AT,
+        data_tier="synthetic",
+    )

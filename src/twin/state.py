@@ -55,6 +55,10 @@ HISTORICAL_METRICS = (
     "portfolio_concentration_hhi",
     "mean_daily_turnover",
 )
+# The single source of truth for which behavior metrics read historical
+# series versus latest records: reordering or extending BEHAVIOR_METRICS must
+# not silently move the record/series partition (positional slicing broke).
+_RECORD_METRICS = tuple(m for m in BEHAVIOR_METRICS if m not in HISTORICAL_METRICS)
 
 PortfolioStateStatus = Literal["available", "not_started", "unavailable"]
 
@@ -537,6 +541,16 @@ def build_twin_snapshot(
             "Every EvidenceRecord must be owned by the Twin subject; "
             f"received subject_id values {mismatched_subjects}"
         )
+    # Tier must match too: a production record must never be projected into a
+    # snapshot the UI presents as synthetic/demo (or vice versa).
+    mismatched_tiers = sorted(
+        {record.data_tier for record in records if record.data_tier != data_tier}
+    )
+    if mismatched_tiers:
+        raise ValueError(
+            "Every EvidenceRecord must match the snapshot data_tier "
+            f"{data_tier!r}; received data_tier values {mismatched_tiers}"
+        )
     evidence_by_id = {record.evidence_id: record for record in records}
     if position_lifecycle is not None:
         _validate_lifecycle(
@@ -591,7 +605,7 @@ def build_twin_snapshot(
                 observation_count=point.observation_count,
             )
         )
-    for metric_id in BEHAVIOR_METRICS[2:]:
+    for metric_id in _RECORD_METRICS:
         item = latest_records.get(metric_id)
         if item is None:
             continue
