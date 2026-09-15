@@ -366,6 +366,7 @@ class ProductRuntime:
         return accounts[0], bundle, facts, gated.lifecycle, gated.status
 
     def investments(self, params: Mapping[str, object]) -> dict[str, object]:
+        from src.presentation.allocation import allocation_block
         from src.presentation.investment_archive import outcome_summaries
         account, bundle, facts, lifecycle, status = self._lifecycle(params)
         currency, _ = _currency_context(bundle, facts)
@@ -374,6 +375,7 @@ class ProductRuntime:
                     "as_of": max((x.date.isoformat() for x in facts), default=account["updated_at"]),
                     "data_tier": "authorized_beta", "portfolio_state_status": "unavailable",
                     "portfolio_state_reason": status, "summary": {"open_episode_count": 0, "closed_episode_count": 0, "current_position_count": 0},
+                    "allocation": allocation_block([]),
                     "episodes": []}
         state_by_id = {x.state_id: x for x in lifecycle.states}
         snapshot_by_episode = {x.episode_id: state_by_id[x.position_state_ref] for x in lifecycle.snapshots}
@@ -401,7 +403,8 @@ class ProductRuntime:
                 "data_tier": "authorized_beta", "portfolio_state_status": "available", "portfolio_state_reason": None,
                 "summary": {"open_episode_count": sum(x.status == "open" for x in lifecycle.episodes),
                             "closed_episode_count": sum(x.status == "closed" for x in lifecycle.episodes),
-                            "current_position_count": len(lifecycle.snapshots)}, "episodes": entries}
+                            "current_position_count": len(lifecycle.snapshots)},
+                "allocation": allocation_block(entries), "episodes": entries}
 
     def episode(self, params: Mapping[str, object]) -> dict[str, object]:
         from src.presentation.runtime_episode import episode_entry
