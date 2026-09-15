@@ -380,6 +380,10 @@ export function PositionEpisodePage() {
   // stale id falls back to the default so the select, the label and the
   // comparison all describe the same strategy.
   const [compareStrategyId, setCompareStrategyIdState] = useState<string>(() => {
+    // URL param wins so a shared link renders the strategy it names;
+    // localStorage keeps the user's last choice for plain navigation.
+    const fromQuery = search.get("compareStrategy");
+    if (fromQuery && RULE_REPLAY_STRATEGY_IDS.includes(fromQuery)) return fromQuery;
     const stored = typeof localStorage === "undefined" ? null : localStorage.getItem("toujing.strategy");
     return stored && RULE_REPLAY_STRATEGY_IDS.includes(stored) ? stored : "toujing_t1_breakout_trend";
   });

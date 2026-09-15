@@ -87,7 +87,7 @@ metrics.py     标准绩效指标套件（纯函数，无法定义时输出 null
 report.py      JSON 安全序列化 + 汇总（收益、最大回撤、成交/拒单统计）
 ```
 
-产出 schema（`strategy_simulation.v1`）：策略与参数版本、数据指纹、逐日日志（选股理由、信号、订单、成交/拒单、现金、持仓、净值、回撤）、订单与成交全路径、汇总指标。`enrich_summary` 在汇总上追加 `summary.performance_stats`（`src/strategy/metrics.py`，对齐 quantstats/empyrical 常用指标集）：年化波动率、Sortino、Calmar、盈亏比（profit factor，基于已闭合回合，无亏损回合时为 null）、平均/最大单笔盈亏、等权买入持有基准年化与描述性超额年化；每项定义随数据一起传输到 UI 原样展示。全部年化使用 252 交易日因子，与既有年化收益/Sharpe 一致；指标无法定义时输出 null（诚实的缺失值），绝不以 0 代替。落盘 `data/sample/strategy_universe/t1_v1_result.json`（可由脚本重生成）；运行脚本同时写入裁剪版桌面产物 `apps/desktop/src/generated/strategy-simulation-demo.json`（摘要 + 逐日净值 + 订单/成交全路径），由桌面端"策略历史模拟"页（`/strategy-simulation`）静态加载展示；浏览器端只做传输校验与账目一致性检查，不计算金融数值。
+产出 schema（`strategy_simulation.v1`）：策略与参数版本、数据指纹、逐日日志（选股理由、信号、订单、成交/拒单、现金、持仓、净值、回撤）、订单与成交全路径、汇总指标。`enrich_summary` 在汇总上追加 `summary.performance_stats`（`src/strategy/metrics.py`，对齐 quantstats/empyrical 常用指标集）：年化波动率、Sortino、Calmar、盈亏比（profit factor，基于已闭合回合，无亏损回合时为 null）、平均/最大单笔盈亏、等权买入持有基准年化与描述性超额年化；每项定义随数据一起传输到 UI 原样展示。全部年化使用 252 交易日因子，与既有年化收益/Sharpe 一致；指标无法定义时输出 null（诚实的缺失值），绝不以 0 代替。`definitions` 字典覆盖 Sortino/Calmar/盈亏比/超额/年化因子五项；年化波动、Sharpe、单笔盈亏与基准年化沿用同一套约定，未单独附定义。落盘 `data/sample/strategy_universe/t1_v1_result.json`（可由脚本重生成）；运行脚本同时写入裁剪版桌面产物 `apps/desktop/src/generated/strategy-simulation-demo.json`（摘要 + 逐日净值 + 订单/成交全路径），由桌面端"策略历史模拟"页（`/strategy-simulation`）静态加载展示；浏览器端只做传输校验与账目一致性检查，不计算金融数值。
 
 ## 7. 首个验证目标
 
