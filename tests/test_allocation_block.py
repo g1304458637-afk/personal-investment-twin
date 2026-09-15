@@ -6,7 +6,7 @@ from src.presentation.allocation import allocation_block
 
 def _entry(instrument_id, market_value, status="open", quantity=10):
     return {"instrument_id": instrument_id, "display_name": instrument_id, "status": status,
-            "quantity": quantity, "market_value": market_value,
+            "quantity": quantity, "market_value": market_value, "currency": "CNY",
             "valuation_at": "2025-01-02T15:00:00" if market_value is not None else None}
 
 
@@ -21,6 +21,7 @@ def test_weights_sorted_and_normalized():
     assert math.isclose(sum(item["weight"] for item in positions), 1.0)
     assert block["positions_value"] == 1100.0
     assert block["position_count"] == 3
+    assert all(item["currency"] == "CNY" for item in block["positions"])
     assert block["hhi"] == sum(item["weight"] ** 2 for item in positions)
 
 

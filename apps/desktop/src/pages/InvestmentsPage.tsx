@@ -139,7 +139,7 @@ function AllocationStrip({ allocation, currency }: { allocation: RuntimeAllocati
             <span className="block h-full rounded-full bg-accent/70" style={{ width: `${item.weight === null ? 0 : item.weight * 100}%`, minWidth: item.weight === null ? undefined : "2px" }} />
           </span>
           <span className="w-16 shrink-0 text-right font-mono text-xs">{item.weight === null ? "—" : formatPercent(item.weight, 1)}</span>
-          <span className="w-28 shrink-0 text-right text-xs text-muted">{formatCurrencyValue(item.market_value, locale, currency)}</span>
+          <span className="w-28 shrink-0 text-right text-xs text-muted">{formatCurrencyValue(item.market_value, locale, item.currency ?? currency)}</span>
         </li>
       ))}
     </ul>

@@ -38,6 +38,7 @@ def allocation_block(entries: list[Mapping[str, Any]]) -> dict[str, object]:
             "display_name": str(entry.get("display_name") or entry.get("instrument_id")),
             "quantity": entry.get("quantity"),
             "market_value": float(market_value),
+            "currency": entry.get("currency"),
             "as_of": entry.get("valuation_at"),
         })
     positions.sort(key=lambda item: (-item["market_value"], str(item["instrument_id"])))

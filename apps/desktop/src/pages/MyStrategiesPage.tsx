@@ -235,7 +235,7 @@ export function MyStrategiesPage() {
             <WorkshopNumberInput value={formulaAtrMult * 10} min={10} max={50} step={5}
               onCommit={(next) => setFormulaAtrMult(next / 10)} /> × ATR(14)
           </span> : null}
-          <p className="workshop-misread">可用函数：sma(n) ema(n) highest(n) lowest(n) rsi(n) roc(n) atr(n) atr_ratio(n) volume_ratio(n) range_pos(n) streak_down() cross_up(s,l) cross_down(s,l)；字段：close entry_price（仅退出公式）</p>
+          <p className="workshop-misread">{t("Available functions: sma(n) ema(n) highest(n) lowest(n) rsi(n) roc(n) atr(n) atr_ratio(n) volume_ratio(n) range_pos(n) streak_down() cross_up(s,l) cross_down(s,l). Fields: close, entry_price (exit formula only).")}</p>
           <div className="formula-presets">
             {Object.entries(FORMULA_PRESETS).map(([id, preset]) => (
               <button key={id} type="button" className="workshop-remove" title={preset.entry}

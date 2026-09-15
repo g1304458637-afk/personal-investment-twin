@@ -1833,6 +1833,8 @@ export const zhCN = {
   "Signals confirm at close, fill at next open · round lots of 100 shares · commission 0.03% (min CNY 5) + 0.1% stamp duty on sells · no add-ons by default": "信号收盘确认 → 次日开盘成交 · 100 股整手 · 佣金 0.03%（最低 5 元）+ 卖出印花税 0.1% · 默认不加仓",
   "Save strategy": "保存策略",
   "Retry": "重试",
+  "Export PNG": "导出 PNG",
+  "Available functions: sma(n) ema(n) highest(n) lowest(n) rsi(n) roc(n) atr(n) atr_ratio(n) volume_ratio(n) range_pos(n) streak_down() cross_up(s,l) cross_down(s,l). Fields: close, entry_price (exit formula only).": "可用函数：sma(n) ema(n) highest(n) lowest(n) rsi(n) roc(n) atr(n) atr_ratio(n) volume_ratio(n) range_pos(n) streak_down() cross_up(s,l) cross_down(s,l)；字段：close、entry_price（仅退出公式）",
 } satisfies Record<keyof typeof enUS, string>;
 
 export type ZhCNMessage = keyof typeof zhCN;

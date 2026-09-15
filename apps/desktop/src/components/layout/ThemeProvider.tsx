@@ -31,11 +31,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     () => ({
       theme,
       setTheme: updateTheme,
-      toggleTheme: () => setTheme((current) => {
-        const next = current === "dark" ? "light" : "dark";
+      toggleTheme: () => {
+        // Derive outside the updater (StrictMode double-invokes updaters);
+        // persist explicitly, once per toggle.
+        const next = theme === "dark" ? "light" : "dark";
         storeTheme(next);
-        return next;
-      }),
+        setTheme(next);
+      },
     }),
     [theme],
   );

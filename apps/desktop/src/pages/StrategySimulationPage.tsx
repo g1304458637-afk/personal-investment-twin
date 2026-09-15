@@ -407,7 +407,7 @@ export function StrategySimulationPage() {
         // Two saved spec shapes exist (workshop conditions and formula
         // mode); render each through the shared, shape-checked helper and
         // skip malformed entries instead of crashing the whole page.
-        const display = describeUserStrategySpec(selectedUserStrategy.spec);
+        const display = describeUserStrategySpec(selectedUserStrategy.spec, locale);
         if (display.entry.length === 0 && display.exit.length === 0) return null;
         const label = (kind: "entry" | "exit", index: number) =>
           display.kind === "formula" ? t(kind === "entry" ? "Entry formula" : "Exit formula")

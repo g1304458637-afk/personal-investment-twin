@@ -89,7 +89,7 @@ export function EChart({
   /** Render a "save as PNG" button using the chart's own rendered pixels. */
   exportable?: boolean;
 }) {
-  const { locale } = useLocale();
+  const { locale, t } = useLocale();
   const [linkedCursor, setLinkedCursor] = useState<{ x: number; top: number; height: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ReturnType<typeof init> | null>(null);
@@ -348,7 +348,12 @@ export function EChart({
   const exportPng = () => {
     const chart = chartRef.current;
     if (!chart) return;
-    const background = getComputedStyle(containerRef.current ?? document.body).backgroundColor || "#ffffff";
+    // The chart container itself is transparent; fall back to the body canvas
+    // color so dark-theme exports are not invisible on white viewers.
+    const containerBackground = getComputedStyle(containerRef.current ?? document.body).backgroundColor;
+    const background = !containerBackground || containerBackground === "transparent" || containerBackground === "rgba(0, 0, 0, 0)"
+      ? getComputedStyle(document.body).backgroundColor
+      : containerBackground;
     const dataUrl = chart.getDataURL({ type: "png", pixelRatio: 2, backgroundColor: background });
     const safeName = label.replace(/[^\w\u4e00-\u9fff.-]+/g, "_");
     downloadPngDataUrl(dataUrl, `${safeName}.png`);
@@ -363,6 +368,6 @@ export function EChart({
       className="absolute right-2 top-2 z-[3] rounded-md border border-border/60 bg-background/70 px-2 py-1 text-xs text-muted backdrop-blur hover:text-foreground"
       aria-label={`${label} · PNG`}
       title="PNG"
-    >PNG ↓</button>}
+    >{t("Export PNG")}</button>}
   </div>;
 }

@@ -1,8 +1,10 @@
 import { useState } from "react";
 
 import {
-  conditionStatement,
+  factorLabel,
+  factorMisread,
   factorOption,
+  paramLabelText,
   FACTORS,
   type ConditionDraft,
 } from "@/lib/strategyFactors";
@@ -79,7 +81,7 @@ function ConditionRow({ draft, onChange, onRemove, removable }: {
   onRemove?: () => void;
   removable: boolean;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const option = factorOption(draft.factor) ?? FACTORS[0];
   const hintKey = numericThresholdHint[draft.factor];
   return <div className="workshop-condition">
@@ -87,11 +89,11 @@ function ConditionRow({ draft, onChange, onRemove, removable }: {
       const next = factorOption(event.target.value) ?? FACTORS[0];
       onChange({ ...draft, factor: next.id, op: next.opType === "bool" ? "true" : "gt", window: next.paramDefault });
     }}>
-      {FACTORS.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+      {FACTORS.map((item) => <option key={item.id} value={item.id}>{factorLabel(item, locale)}</option>)}
     </select>
     {option.paramLabel ? (
       <label className="workshop-param">
-        {option.paramLabel}
+        {paramLabelText(option.paramLabel, locale)}
         <WorkshopNumberInput value={draft.window} min={2} max={250}
           onCommit={(next) => onChange({ ...draft, window: next })} />
       </label>
@@ -108,7 +110,7 @@ function ConditionRow({ draft, onChange, onRemove, removable }: {
       </>
     ) : null}
     {removable && onRemove ? <button type="button" className="workshop-remove" onClick={onRemove} aria-label={t("Remove condition")}>×</button> : null}
-    <p className="workshop-misread">⚠ {option.misread}</p>
+    <p className="workshop-misread">⚠ {factorMisread(option, locale)}</p>
   </div>;
 }
 

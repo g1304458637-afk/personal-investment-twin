@@ -7,7 +7,7 @@
  * adapters.  A corrupted or hostile localStorage payload must never crash
  * a page, so reads validate entry shapes and drop anything malformed.
  */
-import { conditionStatement } from "./strategyFactors.ts";
+import { conditionStatement, type FactorLocale } from "./strategyFactors.ts";
 
 export const USER_STRATEGIES_KEY = "toujing.userStrategies";
 
@@ -66,10 +66,10 @@ export type UserStrategySpecDisplay = {
 
 const FORMULA_SCHEMA_VERSION = "user_strategy_formula.v1";
 
-function conditionLines(group: unknown): string[] {
+function conditionLines(group: unknown, locale?: FactorLocale): string[] {
   if (!Array.isArray(group)) return [];
   return group
-    .map((condition) => isPlainObject(condition) ? conditionStatement(condition) : "")
+    .map((condition) => isPlainObject(condition) ? conditionStatement(condition, locale) : "")
     .filter((line) => line.length > 0);
 }
 
@@ -82,7 +82,7 @@ function conditionLines(group: unknown): string[] {
  * Unknown shapes or malformed entries yield empty lists — the caller skips
  * them instead of crashing on missing fields.
  */
-export function describeUserStrategySpec(spec: unknown): UserStrategySpecDisplay {
+export function describeUserStrategySpec(spec: unknown, locale?: FactorLocale): UserStrategySpecDisplay {
   if (!isPlainObject(spec)) return { kind: "conditions", entry: [], exit: [] };
   if (spec.schema_version === FORMULA_SCHEMA_VERSION) {
     const entry = typeof spec.entry_formula === "string" && spec.entry_formula.trim().length > 0
@@ -95,7 +95,7 @@ export function describeUserStrategySpec(spec: unknown): UserStrategySpecDisplay
   const exit = isPlainObject(spec.exit) ? spec.exit : {};
   return {
     kind: "conditions",
-    entry: [...conditionLines(entry.all_of), ...conditionLines(entry.any_of)],
-    exit: conditionLines(exit.any_of),
+    entry: [...conditionLines(entry.all_of, locale), ...conditionLines(entry.any_of, locale)],
+    exit: conditionLines(exit.any_of, locale),
   };
 }
