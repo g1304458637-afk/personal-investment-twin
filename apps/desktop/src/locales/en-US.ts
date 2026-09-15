@@ -1831,6 +1831,7 @@ export const enUS = {
   "⑤ Execution (fixed, not editable)": "⑤ Execution (fixed, not editable)",
   "Signals confirm at close, fill at next open · round lots of 100 shares · commission 0.03% (min CNY 5) + 0.1% stamp duty on sells · no add-ons by default": "Signals confirm at close, fill at next open · round lots of 100 shares · commission 0.03% (min CNY 5) + 0.1% stamp duty on sells · no add-ons by default",
   "Save strategy": "Save strategy",
+  "Retry": "Retry",
 } as const;
 
 export type LocaleMessage = keyof typeof enUS;

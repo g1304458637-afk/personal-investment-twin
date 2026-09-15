@@ -47,6 +47,7 @@ export function InvestmentsPage() {
   const [loadedRuntime, setRuntime] = useState<RuntimeInvestments | null>(null);
   const runtime = loadedRuntime?.subject_id === data.activeAccount?.subject_id && loadedRuntime?.account_id === data.activeAccount?.account_id ? loadedRuntime : null;
   const [runtimeError, setRuntimeError] = useState<string | null>(null);
+  const [runtimeReloadKey, setRuntimeReloadKey] = useState(0);
   useEffect(() => {
     let cancelled = false;
     setRuntime(null); setRuntimeError(null);
@@ -54,7 +55,7 @@ export function InvestmentsPage() {
     void realUserApi.investments(data.activeAccount.subject_id, data.activeAccount.account_id)
       .then((value) => { if (!cancelled) setRuntime(value); }).catch((value) => { if (!cancelled) setRuntimeError(String(value)); });
     return () => { cancelled = true; };
-  }, [data.mode, data.activeAccount]);
+  }, [data.mode, data.activeAccount, runtimeReloadKey]);
   const view = useMemo(() => {
     if (data.mode !== "real_user" || !runtime) {
       const entries = positionEpisodeDemo.entries.filter((entry) => belongsToExample(entry, data.exampleAccount));
@@ -77,7 +78,7 @@ export function InvestmentsPage() {
     <section className="iw-onboarding iw-inset"><div><p className="iw-kicker">{t("Account required")}</p><h2>{t("Open your investment workspace")}</h2><p className="iw-subtle mt-2">{t("An account context is required before authoritative investment experiences can be shown.")}</p></div><div className="iw-onboarding-actions"><div><span>01</span><strong>{t("Import recorded executions")}</strong><p>{t("Create a local account context from your own files, then review each complete investment path.")}</p><Button asChild variant="primary"><Link to="/data">{t("Import data")}</Link></Button></div><div><span>02</span><strong>{t("Explore a synthetic preview")}</strong><p>{t("Preview data is clearly labelled, stays separate from your account, and never writes to your records.")}</p><Button variant="quiet" onClick={() => data.setMode("demo")}>{t("View example account")}</Button></div></div></section>
     {data.accountsLoading || data.accountError ? <div className="mt-4"><StateNotice compact state={data.accountError ? "error" : "loading"} title={t(data.accountError ? "Could not read local accounts" : "Opening local accounts…")} detail={data.accountError ?? t("Checking the local account directory.")} /></div> : null}
   </div>;
-  if (data.mode === "real_user" && !runtime) return <div className="page"><StateNotice state={runtimeError ? "disconnected" : "loading"} title={runtimeError ? t("Portfolio state is unavailable") : t("Opening investment workspace…")} detail={runtimeError ?? t("Rebuilding from local canonical facts.")} /></div>;
+  if (data.mode === "real_user" && !runtime) return <div className="page"><StateNotice state={runtimeError ? "disconnected" : "loading"} title={runtimeError ? t("Portfolio state is unavailable") : t("Opening investment workspace…")} detail={runtimeError ?? t("Rebuilding from local canonical facts.")} onRetry={runtimeError ? () => setRuntimeReloadKey((value) => value + 1) : undefined} /></div>;
   const date = (value: string) => Number.isNaN(Date.parse(value)) ? "—" : new Intl.DateTimeFormat(locale, { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value));
   const rows = archiveRows([...view.openEpisodes, ...view.closedEpisodes], filter, query);
   // Optional backend block (newer sidecars): position weights computed by

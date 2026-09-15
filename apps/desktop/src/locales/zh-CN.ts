@@ -1832,6 +1832,7 @@ export const zhCN = {
   "⑤ Execution (fixed, not editable)": "⑤ 执行（固定，不可修改）",
   "Signals confirm at close, fill at next open · round lots of 100 shares · commission 0.03% (min CNY 5) + 0.1% stamp duty on sells · no add-ons by default": "信号收盘确认 → 次日开盘成交 · 100 股整手 · 佣金 0.03%（最低 5 元）+ 卖出印花税 0.1% · 默认不加仓",
   "Save strategy": "保存策略",
+  "Retry": "重试",
 } satisfies Record<keyof typeof enUS, string>;
 
 export type ZhCNMessage = keyof typeof zhCN;

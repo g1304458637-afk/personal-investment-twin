@@ -122,12 +122,13 @@ export function AccountReviewPackPanel() {
   const subjectId = demo ? data.exampleAccount.subjectId : data.activeAccount?.subject_id ?? null;
   const accountId = demo ? data.exampleAccount.accountId : data.activeAccount?.account_id ?? null;
   const [open, setOpen] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   // The panel is presentation-only; it never writes, so the pack loads once
   // per expansion (and per account change) with a fixed reload key. Passing
   // null ids while collapsed keeps the expensive review_pack rebuild from
   // firing on page mount — the hook skips loading until ids exist.
   const { pack, loading, error } = useAccountReviewPack(
-    open ? subjectId : null, open ? accountId : null, data.mode, 0);
+    open ? subjectId : null, open ? accountId : null, data.mode, reloadKey);
   const years = pack ? prepareMonthlyHeatmap(pack.calendar.months) : [];
   const maxAbs = pack ? Math.max(0, ...pack.calendar.months.map((month) => Math.abs(month.realizedPnl))) : 0;
   return <details className="iw-inset review-pack-panel" open={open}>
@@ -140,7 +141,7 @@ export function AccountReviewPackPanel() {
       <span className="review-pack-panel__toggle" aria-hidden="true">{open ? "−" : "+"}</span>
     </summary>
     {open ? <div className="review-pack-grid">
-      {error ? <StateNotice state="error" title={t("Review pack unavailable")} detail={error} /> : null}
+      {error ? <StateNotice state="error" title={t("Review pack unavailable")} detail={error} onRetry={() => setReloadKey((value) => value + 1)} /> : null}
       {loading ? <StateNotice state="loading" title={t("Loading review pack…")} detail={t("Rebuilding from local canonical facts.")} /> : null}
       {pack ? <>
         <section className="review-pack-section" aria-label={t("Monthly realized PnL")}>
