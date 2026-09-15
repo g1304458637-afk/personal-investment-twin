@@ -207,6 +207,23 @@ def test_convert_empty_required_cell_fails_with_row_number():
         convert_to_generic_csv(raw, BROKER_THS)
 
 
+def test_convert_skips_footer_summary_and_repeated_header_rows():
+    # Real exports carry 合计 footer rows, per-page repeated headers and
+    # metadata lines: they carry no trade and must not abort the file.
+    raw = _gbk(
+        "日期,时间,代码,操作,成交价,数量\n"
+        "2024-12-31,09:31:05,600519,证券买入,1500.00,100\n"
+        "合计,,,,,\n"
+        "日期,时间,代码,操作,成交价,数量\n"
+        "币种:人民币,区间统计,,,,\n"
+        "2024-12-31,14:55:00,000858,证券卖出,128.50,1200\n"
+        "合计,----,两笔,成交金额:165900.00,----,1300\n"
+    )
+    converted = convert_to_generic_csv(raw, BROKER_THS)
+    data_rows = [line for line in converted.strip().splitlines()[1:]]
+    assert len(data_rows) == 2
+
+
 def test_convert_invalid_date_fails_with_chinese_message():
     raw = _gbk(
         "日期,时间,代码,操作,成交价,数量\n"

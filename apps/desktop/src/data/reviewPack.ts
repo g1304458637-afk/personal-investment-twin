@@ -45,10 +45,12 @@ export interface ReviewPackTiltFlagView {
   triggerDate: string;
   window: {
     days: number;
-    tradeCount: number;
-    baselineTradeCount: number;
+    // Nullable when the trigger day has no observed trading day after it:
+    // the window could not be evaluated and the item says so.
+    tradeCount: number | null;
+    baselineTradeCount: number | null;
     avgSizeChangePct: number | null;
-    sameInstrumentRebuyCount: number;
+    sameInstrumentRebuyCount: number | null;
   };
   note: string;
   limitations: string[];
@@ -152,10 +154,10 @@ function tiltFlag(raw: unknown): ReviewPackTiltFlagView {
     triggerDate: day(value.trigger_date),
     window: {
       days: nonNegativeFinite(window.days),
-      tradeCount: nonNegativeFinite(window.trade_count),
-      baselineTradeCount: nonNegativeFinite(window.baseline_trade_count),
+      tradeCount: nullableFinite(window.trade_count),
+      baselineTradeCount: nullableFinite(window.baseline_trade_count),
       avgSizeChangePct: nullableFinite(window.avg_size_change_pct),
-      sameInstrumentRebuyCount: nonNegativeFinite(window.same_instrument_rebuy_count),
+      sameInstrumentRebuyCount: nullableFinite(window.same_instrument_rebuy_count),
     },
     note: text(value.note),
     limitations: textList(value.limitations),

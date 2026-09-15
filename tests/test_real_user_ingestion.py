@@ -287,12 +287,20 @@ def test_same_time_fills_preserve_two_candidates_ids_and_sequences():
     assert [item.executed_price for item in items] == [10.0, 10.01]
 
 
-def test_field_identical_fills_are_not_content_deduped():
+def test_field_identical_fills_are_flagged_not_silently_deduped():
+    """Two content-identical rows in one file both stay importable, but the
+    second requires an explicit keep/skip decision — a pasted-duplicate block
+    must never silently double the position (both rows keep distinct ids and
+    the bundle still carries both once the user resolves the review)."""
     preview = _preview("fixture_j_identical_fills.csv")
     items = _new(preview)
-    assert len(items) == 2
-    assert len({item.execution_id for item in items}) == 2
-    assert preview.summary.exact_duplicates == 0
+    assert len(items) == 1
+    statuses = [row.status for row in preview.rows]
+    assert statuses == ["new_execution", "possible_duplicate"]
+    flagged = preview.rows[1].candidate
+    assert flagged is not None
+    assert len({items[0].execution_id, flagged.execution_id}) == 2
+    assert preview.summary.possible_duplicates == 1
 
 
 def test_same_time_without_order_evidence_is_canonical_but_replay_blocked():
@@ -376,6 +384,25 @@ def test_file_sha_is_exact_bytes_and_bom_is_supported():
     preview = preview_generic_csv(b"\xef\xbb\xbf" + content, config=CONFIG)
     assert preview.batch.file_sha256 == hashlib.sha256(b"\xef\xbb\xbf" + content).hexdigest()
     assert preview.summary.new_executions == 1
+
+
+def test_human_formatted_numbers_parse_in_generic_csv():
+    # Thousands separators, currency suffixes and full-width digits are human
+    # formatting, the same normalization the broker adapter applies — not
+    # invalid_quantity/invalid_price rejections.
+    content = (
+        'symbol,market,security_type,event_time,side,quantity,price,fee\n'
+        '600000,XSHG,equity,2025-01-02 09:30:00,BUY,"1,200","12.5元","￥5.50"\n'
+        '600000,XSHG,equity,2025-01-03 09:30:00,BUY,"１００","１２.５０",０\n'
+    )
+    preview = preview_generic_csv(content, config=CONFIG)
+    items = _new(preview)
+    assert len(items) == 2
+    assert items[0].executed_quantity == 1200
+    assert items[0].executed_price == 12.5
+    assert items[0].fee.amount == 5.5
+    assert items[1].executed_quantity == 100
+    assert items[1].executed_price == 12.5
 
 
 def test_quoted_security_name_with_comma_and_crlf_parse_without_entering_canonical():

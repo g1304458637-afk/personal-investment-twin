@@ -30,6 +30,7 @@ from src.core.canonical_execution import (
     replay_eligibility,
 )
 from src.evidence.contracts import canonical_json_bytes
+from src.ingestion.numeric import clean_numeric_text
 from src.ingestion.contracts import (
     CanonicalImportBundle,
     ColumnMapping,
@@ -256,7 +257,9 @@ def _number(value: str | None, *, field: str, positive: bool) -> float:
     if value is None:
         raise ValueError("missing_required_field")
     try:
-        result = float(value)
+        # Same normalization as the broker adapter: "1,234.56", "12.5元" and
+        # full-width digits are human formatting, not invalid numbers.
+        result = float(clean_numeric_text(value))
     except ValueError as exc:
         raise ValueError(f"invalid_{field}") from exc
     if not math.isfinite(result) or (positive and result <= 0):
@@ -426,7 +429,8 @@ def _candidate(
     price = _number(_value(row, mapping, "price"), field="price", positive=True)
     raw_fee = _value(row, mapping, "fee")
     try:
-        fees = fee_fact(raw_fee, currency=_value(row, mapping, "currency"))
+        raw_fee_clean = clean_numeric_text(raw_fee) if isinstance(raw_fee, str) else raw_fee
+        fees = fee_fact(raw_fee_clean, currency=_value(row, mapping, "currency"))
     except CanonicalExecutionError as exc:
         raise ValueError("invalid_fee") from exc
     precision = _precision(_value(row, mapping, "time_precision"), config.default_time_precision)
@@ -508,6 +512,54 @@ def _candidate(
     if fees.status == "unknown":
         issues.append(_issue("unknown_fee", "warning", None, "fee"))
     return provisional, tuple(issues)
+
+
+def _flag_infile_duplicates(rows: list[ImportPreviewRow]) -> list[ImportPreviewRow]:
+    """Flag content-identical rows within one file as possible duplicates.
+
+    A pasted-duplicate block must never silently double the position.  The
+    flag is decided per similarity group by explicit order evidence
+    (execution_sequence), never by physical row order: the lowest sequence
+    stays a new_execution and the rest require an explicit keep/skip in the
+    preview review.  Groups without complete distinct sequences are left
+    alone — _annotate_group_eligibility raises ambiguous_execution_order for
+    those, which is the honest outcome for fills without order evidence.
+    """
+    groups: dict[tuple[object, ...], list[int]] = defaultdict(list)
+    for index, row in enumerate(rows):
+        if row.status == "new_execution" and row.candidate is not None:
+            groups[_similarity_key(row.candidate)].append(index)
+    for indices in groups.values():
+        if len(indices) <= 1:
+            continue
+        keyed = []
+        for index in indices:
+            candidate = rows[index].candidate
+            assert candidate is not None
+            if candidate.execution_sequence is None:
+                keyed = []
+                break
+            keyed.append((candidate.execution_sequence, index))
+        if not keyed:
+            continue
+        sequences = [sequence for sequence, _ in keyed]
+        if len(set(sequences)) != len(sequences):
+            continue
+        keyed.sort()
+        kept_index = keyed[0][1]
+        kept = rows[kept_index].candidate
+        assert kept is not None
+        for _, index in keyed[1:]:
+            row = rows[index]
+            issue = _issue("possible_duplicate", "warning", row.row_ref)
+            rows[index] = ImportPreviewRow(
+                row_ref=row.row_ref,
+                status="possible_duplicate",
+                candidate=row.candidate,
+                issues=(*row.issues, issue),
+                existing_execution_id=kept.execution_id,
+            )
+    return rows
 
 
 def _annotate_group_eligibility(rows: list[ImportPreviewRow]) -> list[ImportPreviewRow]:
@@ -659,6 +711,7 @@ def preview_generic_csv(
             if candidate.source_execution_id is not None:
                 by_source_id[source_key] = candidate
 
+    preview_rows = _flag_infile_duplicates(preview_rows)
     preview_rows = _annotate_group_eligibility(preview_rows)
     summary = _summary(preview_rows)
     candidates = [row.candidate for row in preview_rows if row.candidate is not None]

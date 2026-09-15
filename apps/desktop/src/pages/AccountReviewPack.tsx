@@ -98,10 +98,10 @@ function TiltFlagItem({ flag }: { flag: ReviewPackTiltFlagView }) {
       <span className="review-tilt-item__trigger">{flag.trigger}</span>
     </div>
     <dl className="review-tilt-facts">
-      <div><dt>{t("Trades in window")}</dt><dd>{formatNumber(flag.window.tradeCount, 0)}</dd></div>
-      <div><dt>{t("Baseline trades")}</dt><dd>{formatNumber(flag.window.baselineTradeCount, 0)}</dd></div>
+      <div><dt>{t("Trades in window")}</dt><dd>{flag.window.tradeCount === null ? "—" : formatNumber(flag.window.tradeCount, 0)}</dd></div>
+      <div><dt>{t("Baseline trades")}</dt><dd>{flag.window.baselineTradeCount === null ? "—" : formatNumber(flag.window.baselineTradeCount, 0)}</dd></div>
       <div><dt>{t("Avg size change")}</dt><dd>{sizeChange}</dd></div>
-      <div><dt>{t("Same-instrument rebuys")}</dt><dd>{formatNumber(flag.window.sameInstrumentRebuyCount, 0)}</dd></div>
+      <div><dt>{t("Same-instrument rebuys")}</dt><dd>{flag.window.sameInstrumentRebuyCount === null ? "—" : formatNumber(flag.window.sameInstrumentRebuyCount, 0)}</dd></div>
     </dl>
     <p className="review-tilt-note">{flag.note}</p>
     <Limitations items={flag.limitations} />

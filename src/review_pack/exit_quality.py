@@ -97,8 +97,13 @@ def _window_path(inputs: _EpisodeInputs) -> tuple[list[pd.Timestamp], list[float
     )
     quantity = 0.0
     average_cost = 0.0
-    bought_quantity = 0.0
-    entry_fees = 0.0
+    # Entry-fee pool for shares still held: buys add their fees, sells remove
+    # the sold fraction proportionally.  This matches average-cost fee
+    # attribution exactly at every step (a uniform share of lifetime fees is
+    # wrong once fee-per-share differs between buys, which the 5 CNY minimum
+    # commission makes the norm for small adds).  A full exit empties the
+    # pool, so the final-day value equals the authoritative realized PnL.
+    entry_fee_pool = 0.0
     realized_so_far = 0.0
     exit_pnl_by_day: dict[pd.Timestamp, float] = {}
     for decision in inputs.decisions:
@@ -121,18 +126,21 @@ def _window_path(inputs: _EpisodeInputs) -> tuple[list[pd.Timestamp], list[float
                     continue
                 average_cost = (average_cost * quantity + float(decision.execution_price) * size) / total
                 quantity = total
-                bought_quantity += size
-                entry_fees += float(decision.fees)
+                entry_fee_pool += float(decision.fees)
             elif side == "SELL":
+                if quantity > 0:
+                    sold = min(size, quantity)
+                    entry_fee_pool *= 1.0 - sold / quantity
                 quantity = max(0.0, quantity - size)
                 if quantity <= 1e-12:
                     quantity = 0.0
                     average_cost = 0.0
+                    entry_fee_pool = 0.0
         realized_so_far += exit_pnl_by_day.get(day, 0.0)
         close = inputs.closes.get(day)
         if close is None:
             continue
-        unallocated = entry_fees * (quantity / bought_quantity) if bought_quantity > 0 else 0.0
+        unallocated = entry_fee_pool
         unrealized = quantity * (close - average_cost) if quantity > 0 else 0.0
         dates.append(day)
         cum_values.append(realized_so_far + unrealized - unallocated)
