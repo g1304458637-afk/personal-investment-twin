@@ -6,6 +6,17 @@
 
 An AI investment decision coach for individual investors. It rebuilds investment episodes from your own trading history, attributes P&L with deterministic computation, and reminds you — with your own historical evidence — before you repeat past mistakes. Stock picks, market prediction and auto-trading are explicitly out of scope.
 
+## Screenshots
+
+All screens show bundled synthetic demo data, rendered in the offline browser preview (English UI).
+
+| | |
+|---|---|
+| ![My Investments — reconstructed investment episodes](docs/screenshots/investments-overview.jpg) | ![Review panel — monthly realized P&L heatmap](docs/screenshots/review-panel.jpg) |
+| *My Investments — every card is one reconstructed investment episode* | *Review panel — monthly realized P&L heatmap, computed by Python* |
+| ![Strategy simulation — results with R-multiple statistics](docs/screenshots/strategy-results-rmultiple.jpg) | ![My strategies — build, write formulas, import/export specs](docs/screenshots/my-strategies.jpg) |
+| *Strategy simulation — deterministic replay with R-multiple statistics* | *My strategies — factor rules, formula DSL, spec import/export* |
+
 ## 核心能力
 
 - **交易数据导入**：统一标准交易 Schema，支持 Excel / CSV 交易记录导入

@@ -228,7 +228,7 @@
      "max_r": null,
      "min_r": null,
      "skipped_no_stop": 1,
-     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+     "definition": "R = 单轮回合盈亏 ÷（|建仓成交价 − 建仓止损价| × 建仓数量），即建仓时该笔仓位承担的风险金额；无正止损开仓的回合没有确定风险单位，计入 skipped_no_stop 且 r_multiple 为 null。"
     },
     "average_invested_fraction": 0.1967427483524708,
     "round_trips": [
@@ -412,7 +412,7 @@
      "max_r": null,
      "min_r": null,
      "skipped_no_stop": 0,
-     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+     "definition": "R = 单轮回合盈亏 ÷（|建仓成交价 − 建仓止损价| × 建仓数量），即建仓时该笔仓位承担的风险金额；无正止损开仓的回合没有确定风险单位，计入 skipped_no_stop 且 r_multiple 为 null。"
     },
     "average_invested_fraction": 0.2170685631623715,
     "round_trips": []
@@ -785,7 +785,7 @@
      "max_r": null,
      "min_r": null,
      "skipped_no_stop": 3,
-     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+     "definition": "R = 单轮回合盈亏 ÷（|建仓成交价 − 建仓止损价| × 建仓数量），即建仓时该笔仓位承担的风险金额；无正止损开仓的回合没有确定风险单位，计入 skipped_no_stop 且 r_multiple 为 null。"
     },
     "average_invested_fraction": 0.11703220541888783,
     "round_trips": [
@@ -1197,7 +1197,7 @@
      "max_r": null,
      "min_r": null,
      "skipped_no_stop": 3,
-     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+     "definition": "R = 单轮回合盈亏 ÷（|建仓成交价 − 建仓止损价| × 建仓数量），即建仓时该笔仓位承担的风险金额；无正止损开仓的回合没有确定风险单位，计入 skipped_no_stop 且 r_multiple 为 null。"
     },
     "average_invested_fraction": 0.11703220541888783,
     "round_trips": [
@@ -1444,7 +1444,7 @@
      "max_r": null,
      "min_r": null,
      "skipped_no_stop": 1,
-     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+     "definition": "R = 单轮回合盈亏 ÷（|建仓成交价 − 建仓止损价| × 建仓数量），即建仓时该笔仓位承担的风险金额；无正止损开仓的回合没有确定风险单位，计入 skipped_no_stop 且 r_multiple 为 null。"
     },
     "average_invested_fraction": 0.1967427483524708,
     "round_trips": [

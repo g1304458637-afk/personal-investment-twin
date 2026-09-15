@@ -140,15 +140,18 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
         """Record one closed round trip plus its R-multiple.
 
         R = pnl ÷ initial_risk, initial_risk = |opening entry price − opening
-        stop price|.  A trade opened without a stop (or with a zero stop) has
-        no defined risk unit: its R stays null and it counts as skipped.
+        stop price| × opening quantity: the position-level cash actually at
+        risk when the trade opened.  A trade opened without a stop (or with a
+        zero stop) has no defined risk unit: its R stays null and it counts as
+        skipped.
         """
         risk = open_risk.pop(instrument, None)
         r_multiple: float | None = None
         if risk is not None:
             initial_stop = risk["initial_stop"]
             if initial_stop is not None and float(initial_stop) > 0:
-                initial_risk = abs(float(risk["entry_price"]) - float(initial_stop))
+                per_share_risk = abs(float(risk["entry_price"]) - float(initial_stop))
+                initial_risk = per_share_risk * float(risk["quantity"])
                 if initial_risk > 0:
                     r_multiple = pnl / initial_risk
         round_trips.append({"instrument": instrument, "closed_on": day.isoformat(),
@@ -184,6 +187,7 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
                 risk = open_risk.get(action.instrument)
                 if risk is not None:
                     risk["entry_price"] = float(risk["entry_price"]) / action.ratio
+                    risk["quantity"] = float(risk["quantity"]) * action.ratio
                     if risk["initial_stop"] is not None:
                         risk["initial_stop"] = float(risk["initial_stop"]) / action.ratio
                 events.append({"kind": "split_applied", "instrument": action.instrument,
@@ -324,7 +328,8 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
                 existing.entry_price = price  # last entry price (adds refresh it)
             else:
                 open_risk[order.instrument] = {"entry_price": price,
-                                               "initial_stop": fill_stop}
+                                               "initial_stop": fill_stop,
+                                               "quantity": quantity}
             events.append({"kind": "fill", "fill_id": fill.fill_id, "order_id": order.order_id,
                            "trigger": fill.trigger, "instrument": order.instrument, "side": "BUY",
                            "quantity": fill.quantity, "price": fill.price, "fee": fill.fee,
@@ -490,9 +495,9 @@ def _build_summary(spec: StrategySpec, initial_cash: float, days: list[DayRecord
             "max_r": max(r_values) if r_values else None,
             "min_r": min(r_values) if r_values else None,
             "skipped_no_stop": sum(1 for item in round_trips if item.get("r_multiple") is None),
-            "definition": "R = round-trip pnl / |opening entry price - opening stop|; "
-                          "trades opened without a positive stop have no defined risk unit "
-                          "and are counted in skipped_no_stop with r_multiple null.",
+            "definition": "R = 单轮回合盈亏 ÷（|建仓成交价 − 建仓止损价| × 建仓数量），"
+                          "即建仓时该笔仓位承担的风险金额；无正止损开仓的回合没有确定风险单位，"
+                          "计入 skipped_no_stop 且 r_multiple 为 null。",
         },
         "average_invested_fraction": sum(day.invested_fraction for day in days) / len(days),
         "round_trips": round_trips,

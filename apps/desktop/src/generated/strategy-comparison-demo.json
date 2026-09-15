@@ -218,12 +218,12 @@
     "win_rate": 1.0,
     "r_multiple_stats": {
      "count": 1,
-     "avg_r": 44963.2644067327,
-     "median_r": 44963.2644067327,
-     "max_r": 44963.2644067327,
-     "min_r": 44963.2644067327,
+     "avg_r": 3.568513048153389,
+     "median_r": 3.568513048153389,
+     "max_r": 3.568513048153389,
+     "min_r": 3.568513048153389,
      "skipped_no_stop": 0,
-     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+     "definition": "R = 单轮回合盈亏 ÷（|建仓成交价 − 建仓止损价| × 建仓数量），即建仓时该笔仓位承担的风险金额；无正止损开仓的回合没有确定风险单位，计入 skipped_no_stop 且 r_multiple 为 null。"
     },
     "average_invested_fraction": 0.19084947597426966,
     "round_trips": [
@@ -232,7 +232,7 @@
       "closed_on": "2025-06-24",
       "pnl": 71420.72830199997,
       "reason": "signal_entry_breakout_trend",
-      "r_multiple": 44963.2644067327
+      "r_multiple": 3.568513048153389
      }
     ]
    },
@@ -407,7 +407,7 @@
      "max_r": null,
      "min_r": null,
      "skipped_no_stop": 0,
-     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+     "definition": "R = 单轮回合盈亏 ÷（|建仓成交价 − 建仓止损价| × 建仓数量），即建仓时该笔仓位承担的风险金额；无正止损开仓的回合没有确定风险单位，计入 skipped_no_stop 且 r_multiple 为 null。"
     },
     "average_invested_fraction": 0.2170685631623715,
     "round_trips": []
@@ -775,12 +775,12 @@
     "win_rate": 1.0,
     "r_multiple_stats": {
      "count": 3,
-     "avg_r": 35952.6760895451,
-     "median_r": 25994.969804149914,
-     "max_r": 75854.07115736861,
-     "min_r": 6008.987307116773,
+     "avg_r": 1.5202581585726465,
+     "median_r": 1.1253233681450179,
+     "max_r": 3.187145846948261,
+     "min_r": 0.24830526062466005,
      "skipped_no_stop": 0,
-     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+     "definition": "R = 单轮回合盈亏 ÷（|建仓成交价 − 建仓止损价| × 建仓数量），即建仓时该笔仓位承担的风险金额；无正止损开仓的回合没有确定风险单位，计入 skipped_no_stop 且 r_multiple 为 null。"
     },
     "average_invested_fraction": 0.14044867512881992,
     "round_trips": [
@@ -789,21 +789,21 @@
       "closed_on": "2025-03-26",
       "pnl": 22680.715134,
       "reason": "signal_entry_breakout_trend",
-      "r_multiple": 25994.969804149914
+      "r_multiple": 1.1253233681450179
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-07-21",
       "pnl": 5043.751657999994,
       "reason": "signal_entry_breakout_trend",
-      "r_multiple": 6008.987307116773
+      "r_multiple": 0.24830526062466005
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-10-14",
       "pnl": 65928.11082200002,
       "reason": "signal_entry_breakout_trend",
-      "r_multiple": 75854.07115736861
+      "r_multiple": 3.187145846948261
      }
     ]
    },
@@ -1187,12 +1187,12 @@
     "win_rate": 1.0,
     "r_multiple_stats": {
      "count": 3,
-     "avg_r": 35952.6760895451,
-     "median_r": 25994.969804149914,
-     "max_r": 75854.07115736861,
-     "min_r": 6008.987307116773,
+     "avg_r": 1.5202581585726465,
+     "median_r": 1.1253233681450179,
+     "max_r": 3.187145846948261,
+     "min_r": 0.24830526062466005,
      "skipped_no_stop": 0,
-     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+     "definition": "R = 单轮回合盈亏 ÷（|建仓成交价 − 建仓止损价| × 建仓数量），即建仓时该笔仓位承担的风险金额；无正止损开仓的回合没有确定风险单位，计入 skipped_no_stop 且 r_multiple 为 null。"
     },
     "average_invested_fraction": 0.14044867512881992,
     "round_trips": [
@@ -1201,21 +1201,21 @@
       "closed_on": "2025-03-26",
       "pnl": 22680.715134,
       "reason": "signal_entry_breakout_trend",
-      "r_multiple": 25994.969804149914
+      "r_multiple": 1.1253233681450179
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-07-21",
       "pnl": 5043.751657999994,
       "reason": "signal_entry_breakout_trend",
-      "r_multiple": 6008.987307116773
+      "r_multiple": 0.24830526062466005
      },
      {
       "instrument": "SYN_GROWTH",
       "closed_on": "2025-10-14",
       "pnl": 65928.11082200002,
       "reason": "signal_entry_breakout_trend",
-      "r_multiple": 75854.07115736861
+      "r_multiple": 3.187145846948261
      }
     ]
    },
@@ -1434,12 +1434,12 @@
     "win_rate": 1.0,
     "r_multiple_stats": {
      "count": 1,
-     "avg_r": 44963.2644067327,
-     "median_r": 44963.2644067327,
-     "max_r": 44963.2644067327,
-     "min_r": 44963.2644067327,
+     "avg_r": 3.568513048153389,
+     "median_r": 3.568513048153389,
+     "max_r": 3.568513048153389,
+     "min_r": 3.568513048153389,
      "skipped_no_stop": 0,
-     "definition": "R = round-trip pnl / |opening entry price - opening stop|; trades opened without a positive stop have no defined risk unit and are counted in skipped_no_stop with r_multiple null."
+     "definition": "R = 单轮回合盈亏 ÷（|建仓成交价 − 建仓止损价| × 建仓数量），即建仓时该笔仓位承担的风险金额；无正止损开仓的回合没有确定风险单位，计入 skipped_no_stop 且 r_multiple 为 null。"
     },
     "average_invested_fraction": 0.19084947597426966,
     "round_trips": [
@@ -1448,7 +1448,7 @@
       "closed_on": "2025-06-24",
       "pnl": 71420.72830199997,
       "reason": "signal_entry_breakout_trend",
-      "r_multiple": 44963.2644067327
+      "r_multiple": 3.568513048153389
      }
     ]
    },
