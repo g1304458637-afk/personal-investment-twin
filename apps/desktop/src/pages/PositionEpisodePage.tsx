@@ -520,9 +520,10 @@ export function PositionEpisodePage() {
   const selectedPhase = selectedFact?.phaseId ? entry.pathAnalysis.phases.find((phase) => phase.phaseId === selectedFact.phaseId) ?? null : null;
   const phaseCounterfactual = selectedPhase ? entry.pathAnalysis.phaseCounterfactuals.find((item) => item.scenarioId === "omit_decision_phase_until_next_decision_v2" && item.decisionEventId === selectedPhase.decisionEventIds[0]) ?? null : null;
   const story = review?.storySteps.map((step) => {
-    const phase = entry.pathAnalysis.phases.find((item) => item.phaseId === step.phaseId)!;
+    const phase = entry.pathAnalysis.phases.find((item) => item.phaseId === step.phaseId);
+    if (!phase) return null;
     return t(({entry: "Opened with {quantity} shares", scaling_in: "{count} additions brought the holding to {quantity} shares", scaling_out: "{count} reductions left {quantity} shares", exit: "Finally closed the position"})[phase.phaseType], {count: step.decisionCount, quantity: formatNumber(phase.quantityAfter, 0)});
-  }).join(t("Story separator"));
+  }).filter((part): part is string => part !== null).join(t("Story separator"));
   const chartGroup = `episode-path-${episode.episodeId}`;
   const hasBackground = entry.pricePoints.some((point) => point.segment !== "episode");
   const instrumentName = data.mode === "demo"
@@ -610,10 +611,11 @@ export function PositionEpisodePage() {
         />}
         {showBackground && !showcaseChart ? <p className="episode-chart-workspace__context">{t("Outside-holding market context does not extend this investment's lifecycle.")}</p> : null}
         {sample && selectedFact && <div className="episode-focus-toolbar"><span>{c.selected}</span><button onClick={() => { setSelectedPathItemId(null); timeNavigation.reset(); }}>{c.clear}</button></div>}
-        {selectedFact ? <div data-selected-phase className="mt-3 border-t border-border/60 pt-3"><p className="iw-subtle">{date(selectedFact.startAt)} → {date(selectedFact.endAt)}</p><div className="mt-2 flex flex-wrap gap-2">{selectedFact.decisionIds.map((id) => { const decision = entry.decisions.find((item) => item.decisionId === id)!; return <Button key={id} variant="quiet" size="sm" onClick={() => setSelectedDecisionId(id)}>{date(decision.occurredAt)} · <DecisionName type={decision.decisionType} /></Button>; })}</div>{phaseCounterfactual ? <details className="mt-3"><summary className="cursor-pointer text-xs text-accent">{t("Historical comparison under fixed assumptions")}</summary><div className="mt-3"><CounterfactualBlock item={phaseCounterfactual} scope="phase" /></div></details> : null}</div> : null}
+        {selectedFact ? <div data-selected-phase className="mt-3 border-t border-border/60 pt-3"><p className="iw-subtle">{date(selectedFact.startAt)} → {date(selectedFact.endAt)}</p><div className="mt-2 flex flex-wrap gap-2">{selectedFact.decisionIds.map((id) => { const decision = entry.decisions.find((item) => item.decisionId === id); if (!decision) return null; return <Button key={id} variant="quiet" size="sm" onClick={() => setSelectedDecisionId(id)}>{date(decision.occurredAt)} · <DecisionName type={decision.decisionType} /></Button>; })}</div>{phaseCounterfactual ? <details className="mt-3"><summary className="cursor-pointer text-xs text-accent">{t("Historical comparison under fixed assumptions")}</summary><div className="mt-3"><CounterfactualBlock item={phaseCounterfactual} scope="phase" /></div></details> : null}</div> : null}
       </section>
     {review?.facts.length ? <aside data-review-facts className="iw-facts iw-inset"><div className="iw-facts-title"><p className="iw-kicker">{t("Review queue")}</p><h2 className="mt-1 text-sm font-semibold">{t("Facts worth revisiting")}</h2><p className="iw-subtle mt-1">{sample ? c.factHint : t("Select a fact to focus its recorded interval in the chart.")}</p></div>{review.facts.map((fact) => {
-        const item = entry.pathAnalysis.presentationItems.find((item) => item.itemId === fact.itemId)!;
+        const item = entry.pathAnalysis.presentationItems.find((item) => item.itemId === fact.itemId);
+        if (!item) return null;
         const copy = pathItemCopy(item, entry.pathAnalysis.phases, entry.pathAnalysis.patterns, t, formatPercent, formatNumber);
         return <button type="button" key={fact.itemId} data-review-fact={fact.itemId} className="iw-fact" aria-pressed={selectedPathItemId === fact.itemId} onClick={() => { setSelectedPathItemId(fact.itemId); timeNavigation.apply(factFocusDomain(Date.parse(fact.startAt), Date.parse(fact.endAt), observationTimes), "reset"); chartRef.current?.scrollIntoView({block: "start", behavior: "smooth"}); }}><strong>{copy.title}</strong><span>{copy.detail}</span>{sample && <span className="episode-fact-action">{c.focus}<ArrowRight size={13} /></span>}</button>;
       })}</aside> : <aside className="iw-facts iw-inset"><div className="iw-facts-title"><p className="iw-kicker">{t("Review queue")}</p><h2 className="mt-1 text-sm font-semibold">{t("No review facts are available")}</h2><p className="iw-subtle mt-2">{t("The recorded investment path remains available below.")}</p></div></aside>}</div>
