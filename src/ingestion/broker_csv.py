@@ -52,10 +52,10 @@ _TIMEZONE_OFFSET = "+08:00"
 _HEADER_SCAN_LIMIT = 10
 
 # Full-width ASCII block (U+FF01..U+FF5E) folds onto ASCII; U+3000 folds to space.
-_FULLWIDTH_MAP: dict[str, str] = {
-    chr(0xFF01 + offset): chr(0x21 + offset) for offset in range(0x5E)
+_FULLWIDTH_MAP: dict[int, str] = {
+    0xFF01 + offset: chr(0x21 + offset) for offset in range(0x5E)
 }
-_FULLWIDTH_MAP["\u3000"] = " "
+_FULLWIDTH_MAP[0x3000] = " "
 
 # Broker headers carry trailing unit suffixes like (元)/(股)/(人民币); strip them.
 _UNIT_SUFFIX_PATTERN = re.compile(r"[([（\[]+[^)）\]]*[)\]）\]]+$")

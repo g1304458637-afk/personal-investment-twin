@@ -191,7 +191,14 @@ class LocalRepository:
                 # version implied by which migration artifacts are present:
                 # the resolutions table is migration 2's product.
                 stamped = 2 if "execution_instrument_resolutions" in base_tables else 1
-                self.connection.execute(f"PRAGMA user_version={stamped}")
+                # Later migration steps INSERT INTO schema_migrations; a
+                # pre-versioning database has never created it.
+                self.connection.executescript(
+                    "BEGIN IMMEDIATE;"
+                    + "\nCREATE TABLE IF NOT EXISTS schema_migrations(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL);"
+                    + f"\nINSERT INTO schema_migrations VALUES({stamped}, datetime('now'));"
+                    + f"\nPRAGMA user_version={stamped};\nCOMMIT;"
+                )
                 current = stamped
         if current == 0:
             try:

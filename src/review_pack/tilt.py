@@ -88,7 +88,10 @@ def detect_tilt(
             # snap the window to the first observed day at or after the
             # trigger, or report honestly when none exists.
             position_of_next = bisect.bisect_left(trading_days, trigger_day)
-            if position_of_next >= len(trading_days):
+            if position_of_next >= len(trading_days) - 1:
+                # Snapping onto the final observed day still leaves an empty
+                # window — the honest answer is "could not be evaluated".
+                position_of_next = len(trading_days)
                 observations.append({
                     "trigger": "three_consecutive_losses",
                     "trigger_date": trigger_day.date().isoformat(),

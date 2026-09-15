@@ -12,10 +12,11 @@ import re
 
 # Full-width ASCII (０-９，．，＋－…) folds to its ASCII counterpart;
 # \u3000 is the full-width space.
-_FULLWIDTH_MAP: dict[str, str] = {
-    chr(0xFF01 + offset): chr(0x21 + offset) for offset in range(0x5E)
+# str.translate is keyed by unicode ordinals — string keys silently no-op.
+_FULLWIDTH_MAP: dict[int, str] = {
+    0xFF01 + offset: chr(0x21 + offset) for offset in range(0x5E)
 }
-_FULLWIDTH_MAP["\u3000"] = " "
+_FULLWIDTH_MAP[0x3000] = " "
 
 _STRIP_CHARS = (" ", ",", "元", "￥", "¥")
 _SIGN_RE = re.compile(r"^[+-]?")
