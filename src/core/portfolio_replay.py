@@ -281,6 +281,13 @@ def _verified_execution_links(
         }
         order_by_id[order_id] = order
 
+    # Reverse index built once: the previous next()-over-all-executions scan
+    # inside the exit loop made link verification O(sells x n) on large accounts.
+    execution_by_order_record = {
+        value["vectorbt_order_record_id"]: execution_id
+        for execution_id, value in mutable.items()
+    }
+
     # In vectorbt 1.1.0 get_exit_trades_nb, each long-position SELL order
     # produces one closed Exit Trade while scanning per-column Order Ids in
     # ascending order.  Validate every public field that links the two records.
@@ -312,11 +319,13 @@ def _verified_execution_links(
                 raise PortfolioReplayError(
                     f"outcome_mapping_unavailable: Exit Trade mismatch for order {order_id}"
                 )
-            execution_id = next(
-                key
-                for key, value in mutable.items()
-                if value["vectorbt_order_record_id"] == order_id
-            )
+            # Reverse index built once: the previous next()-over-all-executions
+            # scan made link verification O(sells x n) on large accounts.
+            execution_id = execution_by_order_record.get(order_id)
+            if execution_id is None:
+                raise PortfolioReplayError(
+                    f"outcome_mapping_unavailable: no execution maps to order record {order_id}"
+                )
             mutable[execution_id]["vectorbt_exit_trade_record_id"] = int(
                 exit_record["Exit Trade Id"]
             )
