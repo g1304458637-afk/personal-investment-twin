@@ -25,6 +25,7 @@ import ast
 from typing import Any, Mapping
 
 from src.strategy.signals import prior_extreme, trailing_mean
+from src.strategy.rsi_state import wilder_rsi_at
 from src.strategy.factors import _rsi
 
 FORMULA_SCHEMA_VERSION = "user_strategy_formula.v1"
@@ -82,8 +83,8 @@ def _f_rsi(series, index, args) -> float | None:
     # indicator name must produce the same value in both user modes. The
     # previous local copy sliced exactly window+1 closes, so its smoothing
     # loop never ran and formula mode silently computed a simple-average RSI.
-    window = int(args[0])
-    return _rsi(tuple(series.adjusted_close[: index + 1]), window)
+    # The incremental fold below is bit-identical to factors._rsi.
+    return wilder_rsi_at(series, index, int(args[0]))
 
 
 def _f_roc(series, index, args) -> float | None:
