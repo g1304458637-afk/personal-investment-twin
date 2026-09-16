@@ -155,6 +155,9 @@ function WorkspaceShellContent() {
       </aside>
 
       <div className="workspace-main">
+        <a href="#workspace-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded-md focus:bg-background focus:p-2 focus:text-foreground focus:shadow">
+          {skipLabel}
+        </a>
         <header className="workspace-topbar">
           <div className="workspace-topbar__drag-region" data-tauri-drag-region>
             <span>{t("Workspace")}</span>
@@ -187,9 +190,6 @@ function WorkspaceShellContent() {
           </div>
         </header>
 
-        <a href="#workspace-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded-md focus:bg-background focus:p-2 focus:text-foreground focus:shadow">
-          {skipLabel}
-        </a>
         <main ref={mainRef} tabIndex={-1} className="workspace-content focus:outline-none" id="workspace-content">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div

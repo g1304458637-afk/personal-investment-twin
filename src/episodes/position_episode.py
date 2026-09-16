@@ -26,7 +26,6 @@ from src.behavior.replay_state import (
 from src.core.portfolio_replay import (
     PortfolioReplayError,
     _validated_executions,
-    replay_multi_asset_executions,
 )
 from src.evidence.adapters import adapt_price_provenance
 from src.evidence.contracts import (
@@ -330,6 +329,11 @@ def _validated_account_executions(
 _FOLD_CACHE: "OrderedDict[int, tuple[BehaviorReplayContext, dict[str, object]]]" = OrderedDict()
 _FOLD_CACHE_MAX_CONTEXTS = 8
 _FOLD_SNAPSHOTS_KEPT = 4
+
+
+def clear_fold_cache() -> None:
+    """Drops cached fold state (each entry pins a full replay context)."""
+    _FOLD_CACHE.clear()
 
 
 def _fold_positions(context: BehaviorReplayContext, frame: pd.DataFrame, prefix_count: int) -> dict[str, tuple[float, float | None]]:
