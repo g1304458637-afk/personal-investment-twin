@@ -577,10 +577,10 @@
       "attributes": {
         "eligible_sale_events": 2,
         "neutral_observations": 3,
-        "paper_gains": 2,
-        "paper_losses": 3,
-        "pgr": 0.3333333333333333,
-        "plr": 0.25,
+        "paper_gains": 3,
+        "paper_losses": 4,
+        "pgr": 0.25,
+        "plr": 0.2,
         "realized_gains": 1,
         "realized_losses": 1,
         "synthetic_provenance_present": true
@@ -590,18 +590,18 @@
       "ci_upper": null,
       "data_tier": "synthetic",
       "denominator": null,
-      "evidence_id": "ev_97b9cf058c2ea4e7ff75087d24fa0ec2316dc0372bc82df274c7eacac779dcbe",
+      "evidence_id": "ev_b2443d2828d22854cfad3fe26e8fdd76dc8a482aaf5a23dea2d0f0e8c38c6c83",
       "evidence_kind": "behavior_evidence",
       "evidence_reason": null,
       "evidence_status": "complete",
       "limitations": [
-        "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment."
+        "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. A sale day symbol counts as a paper opportunity only through its residual shares (pre-sale quantity minus the day's sold quantity); a full exit on the day contributes none. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment."
       ],
       "method_id": "odean_pgr_plr_v1",
       "method_version": "1",
       "metric_id": "disposition_effect",
       "numerator": null,
-      "observation_count": 10,
+      "observation_count": 12,
       "observation_end": null,
       "observation_start": null,
       "provenance": [
@@ -667,7 +667,7 @@
         }
       ],
       "subject_id": "demo-user:synthetic-behavior",
-      "value": 0.08333333333333331
+      "value": 0.04999999999999999
     },
     {
       "as_of": "2025-01-03T00:00:00",
@@ -938,7 +938,7 @@
           ]
         },
         "limitations": [
-          "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
+          "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. A sale day symbol counts as a paper opportunity only through its residual shares (pre-sale quantity minus the day's sold quantity); a full exit on the day contributes none. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
           "Current market data has daily date semantics and no intraday availability timestamp. The system excludes future dates but cannot prove that a day's final close was available at an intraday decision time."
         ],
         "method_id": "odean_pgr_plr_v1",
@@ -59955,7 +59955,7 @@
         {
           "available_at": "2025-01-08T00:00:00",
           "calculation_code_version": "desktop-demo-evidence-v1",
-          "evidence_id": "ev_97b9cf058c2ea4e7ff75087d24fa0ec2316dc0372bc82df274c7eacac779dcbe",
+          "evidence_id": "ev_b2443d2828d22854cfad3fe26e8fdd76dc8a482aaf5a23dea2d0f0e8c38c6c83",
           "evidence_kind": "behavior_evidence",
           "evidence_reason": null,
           "evidence_status": "complete",
@@ -60120,9 +60120,9 @@
           "as_of": "2025-01-08T00:00:00",
           "evidence_status": "complete",
           "metric_id": "disposition_effect",
-          "observation_count": 10,
-          "source_evidence_id": "ev_97b9cf058c2ea4e7ff75087d24fa0ec2316dc0372bc82df274c7eacac779dcbe",
-          "value": 0.08333333333333331
+          "observation_count": 12,
+          "source_evidence_id": "ev_b2443d2828d22854cfad3fe26e8fdd76dc8a482aaf5a23dea2d0f0e8c38c6c83",
+          "value": 0.04999999999999999
         },
         {
           "as_of": "2025-01-08T00:00:00",
@@ -60374,7 +60374,7 @@
         "Position Episode v1 supports only normalized long-only BUY/SELL executions.",
         "Self baseline, peer context, notable changes, and intervention history are unavailable in v1.",
         "The historical counterfactual is not sizing skill, alpha, causal attribution, or a recommendation.",
-        "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
+        "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. A sale day symbol counts as a paper opportunity only through its residual shares (pre-sale quantity minus the day's sold quantity); a full exit on the day contributes none. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
         "Turnover Intensity is descriptive and is not an overtrading label, skill score, or psychological inference. It uses double-sided filled dollars, excludes fees from traded value, and is sensitive to low portfolio values."
       ],
       "notable_change_refs": [],
@@ -60447,7 +60447,7 @@
       "schema_version": "1",
       "self_baseline_refs": [],
       "snapshot_at": "2025-01-08T23:59:00",
-      "snapshot_id": "tw_322fcf99b514315918afa12d8fc8af7f9c04003435a55ab702ca72d6a1b5b72b",
+      "snapshot_id": "tw_ae760f752efae6d7dfd2dde9c7ef019f748bd97d57d9b5d3a3f499eaf4878539",
       "subject_id": "demo-user:synthetic-behavior"
     },
     "data_tier": "synthetic",
@@ -61003,7 +61003,7 @@
           {
             "available_at": "2025-01-08T00:00:00",
             "calculation_code_version": "desktop-demo-evidence-v1",
-            "evidence_id": "ev_97b9cf058c2ea4e7ff75087d24fa0ec2316dc0372bc82df274c7eacac779dcbe",
+            "evidence_id": "ev_b2443d2828d22854cfad3fe26e8fdd76dc8a482aaf5a23dea2d0f0e8c38c6c83",
             "evidence_kind": "behavior_evidence",
             "evidence_reason": null,
             "evidence_status": "complete",
@@ -61168,9 +61168,9 @@
             "as_of": "2025-01-08T00:00:00",
             "evidence_status": "complete",
             "metric_id": "disposition_effect",
-            "observation_count": 10,
-            "source_evidence_id": "ev_97b9cf058c2ea4e7ff75087d24fa0ec2316dc0372bc82df274c7eacac779dcbe",
-            "value": 0.08333333333333331
+            "observation_count": 12,
+            "source_evidence_id": "ev_b2443d2828d22854cfad3fe26e8fdd76dc8a482aaf5a23dea2d0f0e8c38c6c83",
+            "value": 0.04999999999999999
           },
           {
             "as_of": "2025-01-08T00:00:00",
@@ -61299,7 +61299,7 @@
           "Personal Twin is a derived point-in-time read model, not a financial ledger.",
           "Self baseline, peer context, notable changes, and intervention history are unavailable in v1.",
           "The historical counterfactual is not sizing skill, alpha, causal attribution, or a recommendation.",
-          "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
+          "This is observable historical evidence, not a psychological diagnosis or skill score. Realized outcomes use actual SELL execution prices; paper outcomes use the Market Data Contract's same-day close. Both are compared with vectorbt open-position average entry price, and neutral observations are excluded. A sale day symbol counts as a paper opportunity only through its residual shares (pre-sale quantity minus the day's sold quantity); a full exit on the day contributes none. This is not a full Odean replication and does not reproduce tax-lot, commission-adjusted, or daily high/low research data treatment.",
           "Turnover Intensity is descriptive and is not an overtrading label, skill score, or psychological inference. It uses double-sided filled dollars, excludes fees from traded value, and is sensitive to low portfolio values."
         ],
         "notable_change_refs": [],
@@ -61316,7 +61316,7 @@
         "schema_version": "1",
         "self_baseline_refs": [],
         "snapshot_at": "2025-01-08T00:00:00",
-        "snapshot_id": "tw_2b292b448cf3ab5124c43ebfb0c2e10f59e86b274d0f13ba4f8bea6c7745ba11",
+        "snapshot_id": "tw_080d6b7ea21c2f04a7181b2a70b4b64fb89bba289e3c72ae6fb5ded3ac11c681",
         "subject_id": "demo-user:synthetic-behavior"
       }
     ]
