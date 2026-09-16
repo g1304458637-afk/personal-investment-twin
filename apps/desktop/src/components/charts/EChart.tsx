@@ -359,7 +359,10 @@ export function EChart({
     downloadPngDataUrl(dataUrl, `${safeName}.png`);
   };
 
-  return <div tabIndex={timeNavigation ? 0 : undefined} onKeyDown={onKeyDown} ref={containerRef} className={cn("echart", className)} style={{ position: "relative" }} role="img" aria-label={label}>
+  // Interactive charts keep role="img" for the summary but tell keyboard
+  // users how to drive them; the focus ring itself lives in .echart:focus-visible.
+  const ariaHint = timeNavigation ? `${label} · ${t("Arrow keys pan, plus and minus zoom, Home resets")}` : label;
+  return <div tabIndex={timeNavigation ? 0 : undefined} onKeyDown={onKeyDown} ref={containerRef} className={cn("echart", className)} style={{ position: "relative" }} role="img" aria-label={ariaHint}>
     {linkedCursor && <div aria-hidden="true" data-linked-time-cursor style={{ position: "absolute", pointerEvents: "none", zIndex: 2,
       left: linkedCursor.x, top: linkedCursor.top, height: linkedCursor.height, borderLeft: "1px dashed rgba(170,210,234,.65)" }} />}
     {exportable && <button

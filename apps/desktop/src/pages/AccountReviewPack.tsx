@@ -133,7 +133,7 @@ export function AccountReviewPackPanel() {
   const years = pack ? prepareMonthlyHeatmap(pack.calendar.months) : [];
   const maxAbs = pack ? Math.max(0, ...pack.calendar.months.map((month) => Math.abs(month.realizedPnl))) : 0;
   return <details className="iw-inset review-pack-panel" open={open}>
-    <summary onClick={(event) => { event.preventDefault(); setOpen((value) => !value); }}>
+    <summary onClick={(event) => { event.preventDefault(); setOpen((value) => !value); }} aria-expanded={open}>
       <div>
         <p className="iw-kicker">{t("Review panel")}</p>
         <h2>{t("Monthly review, behavior observation, playbook")}</h2>

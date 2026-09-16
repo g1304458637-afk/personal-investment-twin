@@ -330,7 +330,7 @@ export function MyStrategiesPage() {
           : runState === "ready" && artifact ? null
           : <div>
               <button type="button" className="workshop-save" onClick={() => run(selected)}>{t("Run on history")}</button>
-              {runError ? <p className="strategy-compare__note">{t("Run failed")}: {runError}</p> : null}
+              {runError ? <p role="alert" className="strategy-compare__note">{t("Run failed")}: {runError}</p> : null}
             </div>}
         {artifact ? (
           <div className="space-y-4">

@@ -36,7 +36,7 @@ export function StateNotice({
   const Icon = icons[state];
 
   return (
-    <div className={cn("state-notice", compact && "state-notice--compact")} data-state={state}>
+    <div className={cn("state-notice", compact && "state-notice--compact")} data-state={state} role={state === "error" || state === "disconnected" ? "alert" : "status"} aria-live={state === "error" || state === "disconnected" ? "assertive" : "polite"}>
       <span className="state-notice__icon">
         <Icon aria-hidden="true" className={state === "loading" ? "animate-spin" : undefined} />
       </span>
