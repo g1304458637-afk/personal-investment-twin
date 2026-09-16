@@ -355,7 +355,8 @@ def test_pack_schema_shape_is_exact(tmp_path):
     for row in pack["exit_quality"]["episodes"]:
         assert set(row) == {"episode_id", "instrument", "mfe_amount", "mae_amount", "mfe_pct",
                             "mae_pct", "realized_pnl", "status", "exit_efficiency",
-                            "giveback_ratio", "facts", "limitations"}
+                            "giveback_ratio", "hold_baseline_pnl", "hold_baseline_delta",
+                            "facts", "limitations"}
         assert set(row["facts"]) == {"peak_date", "trough_date", "hold_days"}
     for row in pack["calendar"]["months"]:
         assert set(row) == {"month", "realized_pnl", "closed_count", "win_count"}

@@ -34,6 +34,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import math
+
 import pandas as pd
 
 BASE_LIMITATIONS: tuple[str, ...] = (
@@ -49,7 +51,44 @@ _SECTION_LIMITATIONS: tuple[str, ...] = (
     "仅分析已闭合 episode；未平仓持仓不参与出场质量统计。",
     "realized_pnl 为 vectorbt 仓位级净已实现盈亏（含费），与 investments 端口同源。",
     "连续多日并列峰值/谷值时取最早一天。",
+    "hold_baseline 只对照\u201c首笔买入数量一直拿到最后一日收盘\u201d的反事实，"
+    "与实际路径共用同一收盘序列与费用口径，不构成任何建议。",
 )
+
+_HOLD_BASELINE_DEFINITION = (
+    "持有基准 = 首笔买入数量 × (窗口内最后一个可用收盘 − 首笔成交价) − 首笔费用；"
+    "差额 = 实际已实现盈亏 − 持有基准。"
+)
+
+
+def _hold_baseline(inputs: _EpisodeInputs) -> tuple[float | None, float | None, str | None]:
+    """Ghost-portfolio style single-episode hold counterfactual.
+
+    Answers the most common review question — \u201cwhat if I had just held my
+    first buy to the end?\u201d — with one deterministic number pair: the
+    baseline PnL and the realized-vs-baseline difference.  Fail-closed to
+    (None, None, reason) whenever the episode or its price window cannot
+    support it.
+    """
+    first_buy = next((d for d in inputs.decisions if str(d.side) == "BUY"), None)
+    if first_buy is None:
+        return None, None, "episode 无买入决策"
+    first_qty = float(first_buy.executed_quantity)
+    first_price = float(first_buy.execution_price)
+    if first_qty <= 0 or first_price <= 0:
+        return None, None, "首笔买入数量或价格无效"
+    if not inputs.closes:
+        return None, None, "窗口内无可用收盘价"
+    last_day = max(pd.Timestamp(d.occurred_at).normalize() for d in inputs.decisions)
+    usable = [day for day in inputs.closes if day <= last_day]
+    if not usable:
+        return None, None, "窗口收盘价晚于最后决策日，无法对齐"
+    end_day = max(usable)
+    end_close = float(inputs.closes[end_day])
+    if not math.isfinite(end_close) or end_close <= 0:
+        return None, None, "窗口末收盘价无效"
+    baseline = first_qty * (end_close - first_price) - float(first_buy.fees)
+    return baseline, inputs.realized_pnl - baseline, None
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,6 +117,8 @@ def _empty_row(inputs: _EpisodeInputs, limitations: list[str]) -> dict:
         "status": "closed",
         "exit_efficiency": None,
         "giveback_ratio": None,
+        "hold_baseline_pnl": None,
+        "hold_baseline_delta": None,
         "facts": {"peak_date": None, "trough_date": None, "hold_days": inputs.hold_days},
         "limitations": [*limitations, *BASE_LIMITATIONS],
     }
@@ -202,6 +243,9 @@ def build_exit_quality_rows(closed_episodes: list[dict]) -> tuple[list[dict], li
             else None
         )
         giveback = min(1.0, (mfe - inputs.realized_pnl) / mfe) if mfe > 0 else None
+        baseline_pnl, baseline_delta, baseline_block = _hold_baseline(inputs)
+        if baseline_block:
+            limitations.append(f"持有基准未给出：{baseline_block}。")
         rows.append({
             "episode_id": inputs.episode_id,
             "instrument": inputs.instrument_id,
@@ -213,6 +257,8 @@ def build_exit_quality_rows(closed_episodes: list[dict]) -> tuple[list[dict], li
             "status": "closed",
             "exit_efficiency": efficiency,
             "giveback_ratio": giveback,
+            "hold_baseline_pnl": baseline_pnl,
+            "hold_baseline_delta": baseline_delta,
             "facts": {
                 "peak_date": dates[peak_index].date().isoformat(),
                 "trough_date": dates[trough_index].date().isoformat(),

@@ -27,6 +27,11 @@ export interface ReviewPackExitEpisodeView {
   status: string;
   exitEfficiency: number | null;
   givebackRatio: number | null;
+  // Hold-baseline counterfactual: what the FIRST buy would have produced if
+  // held to the window's last close; delta = realized - baseline. Backend
+  // values verbatim; null = the episode could not support the baseline.
+  holdBaselinePnl: number | null;
+  holdBaselineDelta: number | null;
   facts: { peakDate: string | null; troughDate: string | null; holdDays: number | null };
   limitations: string[];
 }
@@ -123,6 +128,10 @@ function exitEpisode(raw: unknown): ReviewPackExitEpisodeView {
     status: text(value.status),
     exitEfficiency: nullableFinite(value.exit_efficiency),
     givebackRatio: nullableFinite(value.giveback_ratio),
+    // Optional: artifacts generated before the hold baseline existed read as
+    // null; present-but-invalid still fails closed.
+    holdBaselinePnl: value.hold_baseline_pnl === undefined ? null : nullableFinite(value.hold_baseline_pnl),
+    holdBaselineDelta: value.hold_baseline_delta === undefined ? null : nullableFinite(value.hold_baseline_delta),
     facts: {
       peakDate: nullableDay(facts.peak_date),
       troughDate: nullableDay(facts.trough_date),

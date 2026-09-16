@@ -239,6 +239,8 @@ function ExitQualityBlock({ item }: { item: ReviewPackExitEpisodeView }) {
       <ExitQualityFact label={t("Trough date")} value={dayLabel(item.facts.troughDate)} />
       <ExitQualityFact label={t("Holding days")} value={days} />
       <ExitQualityFact label={t("Realized PnL")} value={item.realizedPnl === null ? insufficient : formatCurrency(item.realizedPnl)} />
+      <ExitQualityFact label={t("Hold-first-buy baseline")} value={item.holdBaselinePnl === null ? insufficient : formatCurrency(item.holdBaselinePnl)} title={t("What the first buy alone would have produced at the window's last close")} />
+      <ExitQualityFact label={t("Actual vs hold baseline")} value={item.holdBaselineDelta === null ? insufficient : formatCurrency(item.holdBaselineDelta)} title={t("Positive: your path beat holding the first buy; negative: holding would have done better")} />
     </dl>
     <p className="review-exit-quality__boundary">{t("Exit efficiency is the share of the maximum floating profit kept at exit. All values are measured on recorded daily price observations; intraday extremes are not visible.")}</p>
     {item.limitations.length ? <ul className="strategy-comparison-limits">{item.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul> : null}
