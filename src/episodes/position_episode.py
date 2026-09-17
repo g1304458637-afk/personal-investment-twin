@@ -23,6 +23,7 @@ from src.behavior.replay_state import (
     BehaviorReplayError,
     prepare_behavior_replay,
 )
+from src.core.position_fold import advance_fold
 from src.core.portfolio_replay import (
     PortfolioReplayError,
     _validated_executions,
@@ -362,27 +363,8 @@ def _fold_positions(context: BehaviorReplayContext, frame: pd.DataFrame, prefix_
         cache["max"] = 0
         cache["positions"] = {}
         snapshots.clear()
-    # Average cost mirrors get_exit_trades_nb exactly: the open trade's
-    # Avg Entry Price is (entry_gross_sum / entry_size_sum) where buys append
-    # size*price and PARTIAL SELLS rescale both sums by the remaining
-    # fraction ((entry_size_sum - sold) / entry_size_sum) — a sequential
-    # blend would differ in the last ulp, and so would skipping the rescale.
     positions: dict[str, tuple[float, float, float]] = cache["positions"]
-    for i in range(cache["max"], prefix_count):
-        row = frame.iloc[i]
-        symbol = str(row["symbol"])
-        size = float(row["executed_quantity"])
-        price = float(row["executed_price"])
-        quantity, entry_size_sum, entry_gross_sum = positions.get(symbol, (0.0, 0.0, 0.0))
-        if str(row["side"]) == "BUY":
-            positions[symbol] = (quantity + size, entry_size_sum + size, entry_gross_sum + size * price)
-        else:
-            remaining = quantity - size
-            if remaining <= 1e-12:
-                positions[symbol] = (0.0, 0.0, 0.0)
-            else:
-                fraction = (entry_size_sum - size) / entry_size_sum
-                positions[symbol] = (remaining, entry_size_sum * fraction, entry_gross_sum * fraction)
+    advance_fold(positions, frame, cache["max"], prefix_count)
     cache["max"] = prefix_count
     snapshot = dict(positions)
     snapshots[prefix_count] = snapshot
