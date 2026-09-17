@@ -52,7 +52,13 @@ def _confirmed_file(params: Mapping[str, object]) -> tuple[Path, bytes]:
 
 def _now(params: Mapping[str, object]) -> str:
     value = params.get("imported_at")
-    return str(value) if isinstance(value, str) and value else datetime.now(timezone.utc).isoformat()
+    if isinstance(value, str) and value:
+        try:
+            datetime.fromisoformat(value)
+        except ValueError as exc:
+            raise ValueError("imported_at must be an ISO-8601 timestamp") from exc
+        return value
+    return datetime.now(timezone.utc).isoformat()
 
 
 def _preview_fingerprint(params: Mapping[str, object], content: bytes, kind: str) -> str:
@@ -335,9 +341,12 @@ class ProductRuntime:
 
     def delete_account(self, params: Mapping[str, object]) -> dict[str, object]:
         subject, account = _required_text(params, "subject_id"), _required_text(params, "account_id")
+        # Derived read models go first: they are rebuildable from the repo, so
+        # a cleanup failure before the destructive delete is recoverable — the
+        # reverse order could strand notes/chat behind a deleted account with
+        # deleted:false on retry, never cleaning up.
+        self.review_runtime().drop_account(subject, account)
         deleted = self.repo.delete_account(subject, account)
-        if deleted:
-            self.review_runtime().drop_account(subject, account)
         return {"deleted": deleted}
 
     def _lifecycle(self, params: Mapping[str, object]):
@@ -471,9 +480,10 @@ class ProductRuntime:
         universe = params.get("universe", "synthetic")
         limitations_extra: list[str] = []
         if universe == "own_account":
-            subject_id = params.get("subject_id")
-            account_id = params.get("account_id")
-            if not isinstance(subject_id, str) or not isinstance(account_id, str) or not subject_id or not account_id:
+            try:
+                subject_id = _required_text(params, "subject_id")
+                account_id = _required_text(params, "account_id")
+            except ValueError:
                 return {"status": "unavailable", "reason": "own_account_requires_account", "artifact": None}
             bundle = bundle_from_repository(self.repo, subject_id, account_id)
             # Collect per-instrument raw symbol and date span.
