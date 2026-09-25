@@ -128,24 +128,103 @@ fn fail_pending(pending: &Pending, code: &str, message: &str) {
 /// Feeds one stdout chunk into the line buffer and routes every complete line.
 /// The sidecar speaks newline-delimited JSON, and one read may contain a
 /// partial line or several lines at once.
-/// Truncates and redacts sidecar diagnostics before they reach system logs:
-/// a Python traceback that quotes a params blob containing `_desktop_model_key`
-/// must never carry the secret into Console.app.
+/// Truncates and redacts sidecar diagnostics before they reach system logs.
+/// Python tracebacks may quote request params containing either desktop-only
+/// credential, so redact those field values in JSON and debug-style text.
 fn redact_secrets(text: &str) -> String {
     const MAX_LOG_BYTES: usize = 2048;
-    let truncated = if text.len() > MAX_LOG_BYTES {
+    let input = if text.len() > MAX_LOG_BYTES {
         let mut cut = MAX_LOG_BYTES;
         while !text.is_char_boundary(cut) {
             cut -= 1;
         }
-        format!("{}…[truncated]", &text[..cut])
+        &text[..cut]
     } else {
-        text.to_owned()
+        text
     };
-    if truncated.contains("_desktop_model_key") {
-        return truncated.replace("_desktop_model_key", "_desktop_[redacted]_key");
+
+    let mut output = String::with_capacity(input.len());
+    let mut remaining = input;
+    while let Some((index, key)) = next_secret_key(remaining) {
+        output.push_str(&remaining[..index + key.len()]);
+        remaining = &remaining[index + key.len()..];
+
+        if let Some(separator_end) = secret_separator_end(remaining) {
+            let value_start = remaining[separator_end..]
+                .find(|ch: char| !ch.is_whitespace())
+                .map(|offset| separator_end + offset);
+            if let Some(value_start) = value_start {
+                output.push_str(&remaining[..value_start]);
+                let value_end = value_expression_end(&remaining[value_start..]);
+                output.push_str("[redacted]");
+                remaining = &remaining[value_start + value_end..];
+            } else {
+                output.push_str(remaining);
+                remaining = "";
+            }
+        } else if let Some((next_index, _)) = next_secret_key(remaining) {
+            output.push_str(&remaining[..next_index]);
+            remaining = &remaining[next_index..];
+        } else {
+            output.push_str(remaining);
+            remaining = "";
+        }
     }
-    truncated
+    output.push_str(remaining);
+    if text.len() > input.len() {
+        output.push_str("…[truncated]");
+    }
+    output
+}
+
+fn next_secret_key(text: &str) -> Option<(usize, &'static str)> {
+    ["_desktop_model_key", "_desktop_bocha_key"]
+        .into_iter()
+        .filter_map(|key| text.find(key).map(|index| (index, key)))
+        .min_by_key(|(index, _)| *index)
+}
+
+fn secret_separator_end(text: &str) -> Option<usize> {
+    for (index, ch) in text.char_indices() {
+        match ch {
+            ':' | '=' => return Some(index + ch.len_utf8()),
+            '"' | '\'' => {}
+            ch if ch.is_whitespace() => {}
+            _ => return None,
+        }
+    }
+    None
+}
+
+/// Returns the byte length of a scalar or debug-style value expression. Quotes
+/// and nested wrappers keep delimiters inside the credential from ending it.
+fn value_expression_end(text: &str) -> usize {
+    let mut quote = None;
+    let mut escaped = false;
+    let mut depth = 0usize;
+    for (index, ch) in text.char_indices() {
+        if let Some(active_quote) = quote {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == active_quote {
+                quote = None;
+            }
+            continue;
+        }
+
+        match ch {
+            '"' | '\'' => quote = Some(ch),
+            '(' | '[' | '{' => depth += 1,
+            ')' | ']' | '}' if depth > 0 => depth -= 1,
+            ',' | ' ' | '\t' | '\r' | '\n' | ')' | ']' | '}' if depth == 0 => {
+                return index;
+            }
+            _ => {}
+        }
+    }
+    text.len()
 }
 
 fn route_stdout_chunk(pending: &Pending, alive: &AtomicBool, buffer: &mut Vec<u8>, chunk: &[u8]) {
@@ -169,17 +248,19 @@ fn route_stdout_line(pending: &Pending, alive: &AtomicBool, line: &[u8]) {
         Err(_) => {
             // Stray diagnostics on stdout are not protocol failures; failing
             // every in-flight request for them made one noisy line fatal.
+            let diagnostic = redact_secrets(&String::from_utf8_lossy(line));
             eprintln!(
                 "toujing-core: ignoring non-protocol stdout line: {:?}",
-                String::from_utf8_lossy(line)
+                diagnostic
             );
             return;
         }
     };
     let Some(request_id) = value.get("request_id").and_then(Value::as_str) else {
+        let diagnostic = redact_secrets(&String::from_utf8_lossy(line));
         eprintln!(
             "toujing-core: ignoring stdout line without request_id: {:?}",
-            String::from_utf8_lossy(line)
+            diagnostic
         );
         return;
     };

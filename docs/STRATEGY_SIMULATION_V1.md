@@ -106,7 +106,9 @@ report.py      JSON 安全序列化 + 汇总（收益、最大回撤、成交/�
 
 ## 7b. 同标的对比（第 3 步，进行中）
 
-`src/strategy/compare.py`（schema `strategy_comparison.v1`）：把 T1 v1 同一套规则在单标的自身 OHLC 历史上独立重放（`simulation_data_from_bars` 直建模拟数据），与该标的的规范成交并列。关键声明：窗口"净现金流" = 买入流出 − 卖出流入（含费用），窗口末仍有持仓时它主要是持仓成本而非盈亏；规则侧按策略自身仓位参数开仓，金额量级与记录侧不同，**不可直接相减为优劣**；合成隔离（SYN 前缀双向强制）；close-only 数据源 fail-closed（规则重放需要 OHLC）。示例导出 `scripts/export_strategy_comparison_demo.py` → `apps/desktop/src/generated/strategy-comparison-demo.json`（5 个示例 episode + 组合并列），策略模拟页新增「示例 Episode 对照」区块。待做：episode 图上规则买卖点叠加、真实账户 runtime 链路、CSV/akshare 行情接入。
+`src/strategy/compare.py`（schema `strategy_comparison.v1`）：把 T1 v1 同一套规则在单标的自身 OHLC 历史上独立重放（`simulation_data_from_bars` 直建模拟数据），与该标的的规范成交并列。关键声明：窗口"净现金流" = 买入流出 − 卖出流入（含费用），窗口末仍有持仓时它主要是持仓成本而非盈亏；规则侧按策略自身仓位参数开仓，金额量级与记录侧不同，**不可直接相减为优劣**；合成隔离（SYN 前缀双向强制）；close-only 数据源 fail-closed（规则重放需要 OHLC）。示例导出 `scripts/export_strategy_comparison_demo.py` → `apps/desktop/src/generated/strategy-comparison-demo.json`（5 个示例 episode + 组合并列），策略模拟页新增「示例 Episode 对照」区块。待做：episode 图上规则买卖点叠加；本对照视图的账户级 runtime 与 CSV 行情导入链路。
+
+自定义策略另有 `universe=own_account` 路径：仅取本账户曾交易且可识别的 A 股，以 AKShare 后复权日线运行；不可识别或无法获取数据的标的会跳过，并在结果中标明范围限制和幸存者偏差。它不等同于上述 `strategy_comparison.v1` 对照视图的真实账户行情接入。
 
 ## 8. 局限（当前明确不做）
 

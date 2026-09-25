@@ -59,6 +59,15 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: apps/desktop/src-tauri
+      # Tauri validates externalBin during cargo checks too. These steps only
+      # compile and test the Rust host; packaged-sidecar builds must use the
+      # real PyInstaller binary produced by scripts/build_python_sidecar.py.
+      - name: Stage placeholder external binary for Rust checks
+        run: |
+          target="$(rustc -vV | sed -n 's/^host: //p')"
+          mkdir -p binaries
+          printf '#!/bin/sh\nexit 1\n' > "binaries/toujing-core-${target}"
+          chmod +x "binaries/toujing-core-${target}"
       - name: Clippy
         run: cargo clippy -- -D warnings
       - name: Tests

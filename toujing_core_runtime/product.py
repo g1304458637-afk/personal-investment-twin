@@ -446,11 +446,14 @@ class ProductRuntime:
         return {"status": "available", "reason": None, "entry": entry}
 
     def strategy_simulation_run_custom(self, params: Mapping[str, object]) -> dict[str, object]:
-        """Run a user-composed strategy spec on the bundled synthetic universe.
+        """Run a user-composed strategy on synthetic or limited account data.
 
-        Deterministic, isolated from user accounts, and self-checked: the run
-        on full history must reproduce an identical prefix on truncated
-        history (no future functions), or the strategy is refused.
+        Synthetic runs use the bundled universe. The optional own_account
+        universe uses only previously traded, identifiable A-shares and
+        adjusted AKShare bars; skipped symbols and survivorship bias are
+        included in the returned limitations. Runs are self-checked: the full
+        history must reproduce the same prefix on truncated history, or the
+        strategy is refused.
         """
         from src.strategy.composite import (
             FORMULA_SCHEMA,
