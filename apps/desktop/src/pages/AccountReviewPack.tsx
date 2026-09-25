@@ -4,12 +4,14 @@ import { StateNotice } from "@/components/common/StateNotice";
 import {
   adaptReviewPack,
   prepareMonthlyHeatmap,
+  type ReviewPackCalendarMonthView,
   type ReviewPackTiltFlagView,
   type ReviewPackView,
 } from "@/data/reviewPack";
 import { realUserApi } from "@/data/runtimeService";
 import { useDataMode } from "@/data/DataModeProvider";
 import { useLocale } from "@/locales/LocaleProvider";
+import { downloadText, toCsv } from "@/lib/download";
 import { formatCurrencyValue } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -91,17 +93,17 @@ function TiltFlagItem({ flag }: { flag: ReviewPackTiltFlagView }) {
   const { t, formatNumber, formatPercent } = useLocale();
   const sizeChange = flag.window.avgSizeChangePct === null
     ? t("Insufficient data")
-    : formatPercent(flag.window.avgSizeChangePct / 100, 1);
+    : formatPercent(flag.window.avgSizeChangePct, 1);
   return <div className="review-tilt-item">
     <div className="review-tilt-item__head">
       <strong>{t("Trigger date")}: {flag.triggerDate}</strong>
       <span className="review-tilt-item__trigger">{flag.trigger}</span>
     </div>
     <dl className="review-tilt-facts">
-      <div><dt>{t("Trades in window")}</dt><dd>{formatNumber(flag.window.tradeCount, 0)}</dd></div>
-      <div><dt>{t("Baseline trades")}</dt><dd>{formatNumber(flag.window.baselineTradeCount, 0)}</dd></div>
+      <div><dt>{t("Trades in window")}</dt><dd>{flag.window.tradeCount === null ? "—" : formatNumber(flag.window.tradeCount, 0)}</dd></div>
+      <div><dt>{t("Baseline trades")}</dt><dd>{flag.window.baselineTradeCount === null ? "—" : formatNumber(flag.window.baselineTradeCount, 0)}</dd></div>
       <div><dt>{t("Avg size change")}</dt><dd>{sizeChange}</dd></div>
-      <div><dt>{t("Same-instrument rebuys")}</dt><dd>{formatNumber(flag.window.sameInstrumentRebuyCount, 0)}</dd></div>
+      <div><dt>{t("Same-instrument rebuys")}</dt><dd>{flag.window.sameInstrumentRebuyCount === null ? "—" : formatNumber(flag.window.sameInstrumentRebuyCount, 0)}</dd></div>
     </dl>
     <p className="review-tilt-note">{flag.note}</p>
     <Limitations items={flag.limitations} />
@@ -121,13 +123,17 @@ export function AccountReviewPackPanel() {
   const subjectId = demo ? data.exampleAccount.subjectId : data.activeAccount?.subject_id ?? null;
   const accountId = demo ? data.exampleAccount.accountId : data.activeAccount?.account_id ?? null;
   const [open, setOpen] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   // The panel is presentation-only; it never writes, so the pack loads once
-  // per expansion (and per account change) with a fixed reload key.
-  const { pack, loading, error } = useAccountReviewPack(subjectId, accountId, data.mode, 0);
+  // per expansion (and per account change) with a fixed reload key. Passing
+  // null ids while collapsed keeps the expensive review_pack rebuild from
+  // firing on page mount — the hook skips loading until ids exist.
+  const { pack, loading, error } = useAccountReviewPack(
+    open ? subjectId : null, open ? accountId : null, data.mode, reloadKey);
   const years = pack ? prepareMonthlyHeatmap(pack.calendar.months) : [];
   const maxAbs = pack ? Math.max(0, ...pack.calendar.months.map((month) => Math.abs(month.realizedPnl))) : 0;
   return <details className="iw-inset review-pack-panel" open={open}>
-    <summary onClick={(event) => { event.preventDefault(); setOpen((value) => !value); }}>
+    <summary onClick={(event) => { event.preventDefault(); setOpen((value) => !value); }} aria-expanded={open}>
       <div>
         <p className="iw-kicker">{t("Review panel")}</p>
         <h2>{t("Monthly review, behavior observation, playbook")}</h2>
@@ -136,13 +142,16 @@ export function AccountReviewPackPanel() {
       <span className="review-pack-panel__toggle" aria-hidden="true">{open ? "−" : "+"}</span>
     </summary>
     {open ? <div className="review-pack-grid">
-      {error ? <StateNotice state="error" title={t("Review pack unavailable")} detail={error} /> : null}
+      {error ? <StateNotice state="error" title={t("Review pack unavailable")} detail={error} onRetry={() => setReloadKey((value) => value + 1)} /> : null}
       {loading ? <StateNotice state="loading" title={t("Loading review pack…")} detail={t("Rebuilding from local canonical facts.")} /> : null}
       {pack ? <>
         <section className="review-pack-section" aria-label={t("Monthly realized PnL")}>
           <div className="review-pack-section__head">
             <h3>{t("Monthly realized PnL")}</h3>
-            <span className="iw-subtle">{t("Red/green follow the sign of realized PnL; hover a month for closed and win counts")}</span>
+            <span className="iw-subtle">
+              {t("Red/green follow the sign of realized PnL; hover a month for closed and win counts")}
+              {pack && pack.calendar.months.length > 0 ? <button type="button" className="ml-2 underline underline-offset-2" onClick={() => exportCalendarCsv(pack.calendar.months)}>{t("Export CSV")}</button> : null}
+            </span>
           </div>
           {years.length === 0 ? <StateNotice state="insufficient" compact title={t("Insufficient data")} detail={t("No monthly results were reported for this account yet.")} /> : years.map((year) => (
             <div key={year.year} className="review-heatmap-year">
@@ -194,4 +203,12 @@ export function AccountReviewPackPanel() {
       </> : null}
     </div> : null}
   </details>;
+}
+
+// Calendar CSV: one row per reported month, backend values verbatim.
+function exportCalendarCsv(months: ReviewPackCalendarMonthView[]) {
+  const csv = toCsv(
+    ["month", "realized_pnl", "closed_count", "win_count"],
+    months.map((month) => [month.month, month.realizedPnl, month.closedCount, month.winCount]));
+  downloadText("toujing-review-calendar.csv", csv);
 }

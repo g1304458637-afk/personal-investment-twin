@@ -19,6 +19,8 @@ const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 // gets this deadline; start reuses fingerprint-bound facts, never a cached answer.
 const REVIEW_CONTEXT_TIMEOUT: Duration = Duration::from_secs(300);
 const STARTUP_TIMEOUT: Duration = Duration::from_secs(90);
+const HEALTH_PROBE_TIMEOUT: Duration = Duration::from_secs(10);
+const MAX_LINE_BYTES: usize = 64 * 1024 * 1024;
 // RunEvent::Exit must never hang waiting for the sidecar; after this deadline
 // the shutdown proceeds straight to kill().
 const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(3);
@@ -126,8 +128,114 @@ fn fail_pending(pending: &Pending, code: &str, message: &str) {
 /// Feeds one stdout chunk into the line buffer and routes every complete line.
 /// The sidecar speaks newline-delimited JSON, and one read may contain a
 /// partial line or several lines at once.
+/// Truncates and redacts sidecar diagnostics before they reach system logs.
+/// Python tracebacks may quote request params containing either desktop-only
+/// credential, so redact those field values in JSON and debug-style text.
+fn redact_secrets(text: &str) -> String {
+    const MAX_LOG_BYTES: usize = 2048;
+    let input = if text.len() > MAX_LOG_BYTES {
+        let mut cut = MAX_LOG_BYTES;
+        while !text.is_char_boundary(cut) {
+            cut -= 1;
+        }
+        &text[..cut]
+    } else {
+        text
+    };
+
+    let mut output = String::with_capacity(input.len());
+    let mut remaining = input;
+    while let Some((index, key)) = next_secret_key(remaining) {
+        output.push_str(&remaining[..index + key.len()]);
+        remaining = &remaining[index + key.len()..];
+
+        if let Some(separator_end) = secret_separator_end(remaining) {
+            let value_start = remaining[separator_end..]
+                .find(|ch: char| !ch.is_whitespace())
+                .map(|offset| separator_end + offset);
+            if let Some(value_start) = value_start {
+                output.push_str(&remaining[..value_start]);
+                let value_end = value_expression_end(&remaining[value_start..]);
+                output.push_str("[redacted]");
+                remaining = &remaining[value_start + value_end..];
+            } else {
+                output.push_str(remaining);
+                remaining = "";
+            }
+        } else if let Some((next_index, _)) = next_secret_key(remaining) {
+            output.push_str(&remaining[..next_index]);
+            remaining = &remaining[next_index..];
+        } else {
+            output.push_str(remaining);
+            remaining = "";
+        }
+    }
+    output.push_str(remaining);
+    if text.len() > input.len() {
+        output.push_str("…[truncated]");
+    }
+    output
+}
+
+fn next_secret_key(text: &str) -> Option<(usize, &'static str)> {
+    ["_desktop_model_key", "_desktop_bocha_key"]
+        .into_iter()
+        .filter_map(|key| text.find(key).map(|index| (index, key)))
+        .min_by_key(|(index, _)| *index)
+}
+
+fn secret_separator_end(text: &str) -> Option<usize> {
+    for (index, ch) in text.char_indices() {
+        match ch {
+            ':' | '=' => return Some(index + ch.len_utf8()),
+            '"' | '\'' => {}
+            ch if ch.is_whitespace() => {}
+            _ => return None,
+        }
+    }
+    None
+}
+
+/// Returns the byte length of a scalar or debug-style value expression. Quotes
+/// and nested wrappers keep delimiters inside the credential from ending it.
+fn value_expression_end(text: &str) -> usize {
+    let mut quote = None;
+    let mut escaped = false;
+    let mut depth = 0usize;
+    for (index, ch) in text.char_indices() {
+        if let Some(active_quote) = quote {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == active_quote {
+                quote = None;
+            }
+            continue;
+        }
+
+        match ch {
+            '"' | '\'' => quote = Some(ch),
+            '(' | '[' | '{' => depth += 1,
+            ')' | ']' | '}' if depth > 0 => depth -= 1,
+            ',' | ' ' | '\t' | '\r' | '\n' | ')' | ']' | '}' if depth == 0 => {
+                return index;
+            }
+            _ => {}
+        }
+    }
+    text.len()
+}
+
 fn route_stdout_chunk(pending: &Pending, alive: &AtomicBool, buffer: &mut Vec<u8>, chunk: &[u8]) {
     buffer.extend_from_slice(chunk);
+    // A buggy sidecar emitting one endless line must hit a heap cap, not grow
+    // unboundedly.  64 MiB is orders of magnitude above any real payload.
+    if buffer.len() > MAX_LINE_BYTES {
+        fail_pending(pending, "runtime_protocol_error", "sidecar stdout line exceeded 64 MiB");
+        buffer.clear();
+        return;
+    }
     while let Some(newline) = buffer.iter().position(|&byte| byte == b'\n') {
         let line: Vec<u8> = buffer.drain(..=newline).collect();
         route_stdout_line(pending, alive, &line[..line.len() - 1]);
@@ -140,17 +248,19 @@ fn route_stdout_line(pending: &Pending, alive: &AtomicBool, line: &[u8]) {
         Err(_) => {
             // Stray diagnostics on stdout are not protocol failures; failing
             // every in-flight request for them made one noisy line fatal.
+            let diagnostic = redact_secrets(&String::from_utf8_lossy(line));
             eprintln!(
                 "toujing-core: ignoring non-protocol stdout line: {:?}",
-                String::from_utf8_lossy(line)
+                diagnostic
             );
             return;
         }
     };
     let Some(request_id) = value.get("request_id").and_then(Value::as_str) else {
+        let diagnostic = redact_secrets(&String::from_utf8_lossy(line));
         eprintln!(
             "toujing-core: ignoring stdout line without request_id: {:?}",
-            String::from_utf8_lossy(line)
+            diagnostic
         );
         return;
     };
@@ -340,7 +450,7 @@ impl RuntimeManager {
                         route_stdout_chunk(&reader_pending, &reader_alive, &mut line_buffer, &bytes)
                     }
                     CommandEvent::Stderr(bytes) => {
-                        eprintln!("toujing-core: {}", String::from_utf8_lossy(&bytes));
+                        eprintln!("toujing-core: {}", redact_secrets(&String::from_utf8_lossy(&bytes)));
                     }
                     CommandEvent::Error(message) => {
                         reader_alive.store(false, Ordering::SeqCst);
@@ -391,7 +501,7 @@ impl RuntimeManager {
     }
 
     pub async fn request(&self, method: &str, params: Value) -> Result<RuntimeResponse, String> {
-        self.request_with_timeout(method, params, request_timeout(method))
+        self.request_inner(method, params, request_timeout(method), true)
             .await
     }
 
@@ -400,6 +510,23 @@ impl RuntimeManager {
         method: &str,
         params: Value,
         timeout: Duration,
+    ) -> Result<RuntimeResponse, String> {
+        self.request_inner(method, params, timeout, true).await
+    }
+
+    /// A request timeout no longer stops the shared runtime by itself: one
+    /// slow replay (cold caches, big CSV preview) must fail alone instead of
+    /// turning into a global outage for every other in-flight request.  The
+    /// runtime is killed only when a follow-up health probe also fails —
+    /// that distinguishes "slow" from "wedged" without losing the wedged-
+    /// child protection.  `rescue=false` (the probe itself) skips the probe
+    /// so a failing probe can never recurse.
+    async fn request_inner(
+        &self,
+        method: &str,
+        params: Value,
+        timeout: Duration,
+        rescue: bool,
     ) -> Result<RuntimeResponse, String> {
         if !self.alive.load(Ordering::SeqCst) {
             return Err("core runtime is unavailable".to_owned());
@@ -434,8 +561,25 @@ impl RuntimeManager {
             }
             Err(_) => {
                 let error = format!("core runtime request timed out after {:?}", timeout);
-                eprintln!("toujing: {error} for {method}; stopping the core runtime");
-                self.kill();
+                if rescue {
+                    eprintln!("toujing: {error} for {method}; probing runtime health");
+                    // Box::pin: the compiler cannot prove rescue=false ends
+                    // the recursion, so the probe future needs indirection.
+                    let probe = tokio::time::timeout(
+                        HEALTH_PROBE_TIMEOUT,
+                        Box::pin(
+                            self.request_inner("runtime.health", json!({}), HEALTH_PROBE_TIMEOUT, false),
+                        ),
+                    )
+                    .await;
+                    let healthy = matches!(probe, Ok(Ok(response)) if response.ok);
+                    if !healthy {
+                        eprintln!("toujing: health probe failed; stopping the core runtime");
+                        self.kill();
+                    }
+                } else {
+                    eprintln!("toujing: {error} for {method}");
+                }
                 remove_pending(&self.pending, &request_id);
                 Err(error)
             }

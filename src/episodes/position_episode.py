@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import math
+from collections import OrderedDict
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Final, Literal
@@ -22,10 +23,10 @@ from src.behavior.replay_state import (
     BehaviorReplayError,
     prepare_behavior_replay,
 )
+from src.core.position_fold import advance_fold
 from src.core.portfolio_replay import (
     PortfolioReplayError,
     _validated_executions,
-    replay_multi_asset_executions,
 )
 from src.evidence.adapters import adapt_price_provenance
 from src.evidence.contracts import (
@@ -326,6 +327,52 @@ def _validated_account_executions(
     return frame.reset_index(drop=True)
 
 
+_FOLD_CACHE: "OrderedDict[int, tuple[BehaviorReplayContext, dict[str, object]]]" = OrderedDict()
+_FOLD_CACHE_MAX_CONTEXTS = 8
+_FOLD_SNAPSHOTS_KEPT = 4
+
+
+def clear_fold_cache() -> None:
+    """Drops cached fold state (each entry pins a full replay context)."""
+    _FOLD_CACHE.clear()
+
+
+def _fold_positions(context: BehaviorReplayContext, frame: pd.DataFrame, prefix_count: int) -> dict[str, tuple[float, float | None]]:
+    """Position fold after the first ``prefix_count`` fills.
+
+    Applies vectorbt's own position semantics (update_pos_record_nb):
+    opening sets average cost to the price, adds blend it by size, sells
+    leave it untouched, and a full exit resets it.  Each step is the same
+    float operation in the same order as the engine, so the fold state is
+    bit-identical to a full prefix replay — one O(n) pass instead of O(n²)
+    total.  The context is the natural cache unit: it is immutable per
+    lifecycle build and held strongly while cached.
+    """
+    key = id(context)
+    entry = _FOLD_CACHE.get(key)
+    if entry is None or entry[0] is not context:
+        entry = (context, {"max": 0, "positions": {}, "snapshots": OrderedDict()})
+        _FOLD_CACHE[key] = entry
+        while len(_FOLD_CACHE) > _FOLD_CACHE_MAX_CONTEXTS:
+            _FOLD_CACHE.popitem(last=False)
+    cache = entry[1]
+    snapshots: OrderedDict = cache["snapshots"]
+    if prefix_count in snapshots:
+        return snapshots[prefix_count]
+    if prefix_count < cache["max"]:
+        cache["max"] = 0
+        cache["positions"] = {}
+        snapshots.clear()
+    positions: dict[str, tuple[float, float, float]] = cache["positions"]
+    advance_fold(positions, frame, cache["max"], prefix_count)
+    cache["max"] = prefix_count
+    snapshot = dict(positions)
+    snapshots[prefix_count] = snapshot
+    while len(snapshots) > _FOLD_SNAPSHOTS_KEPT:
+        snapshots.popitem(last=False)
+    return snapshot
+
+
 def _state_from_replay(
     context: BehaviorReplayContext,
     frame: pd.DataFrame,
@@ -367,41 +414,29 @@ def _state_from_replay(
             replay_method_id=REPLAY_METHOD_ID,
         )
 
+    # O(n) fold instead of a full vectorbt prefix replay per call: the fold
+    # applies the engine's own position formulas in the engine's order, so
+    # quantity/average_cost are bit-identical (verified against golden
+    # lifecycle builds).  Valuation still reads the validated panel verbatim.
     valuation_prices = context.valuation_prices.loc[:as_of]
     if valuation_prices.empty:
         raise PositionEpisodeError("No replay valuation is available at state as_of")
-    try:
-        portfolio = replay_multi_asset_executions(
-            frame.iloc[:prefix_count].drop(columns="_source_ordinal", errors="ignore"),
-            valuation_prices,
-            init_cash=context.init_cash,
-        )
-        valuation_at = pd.Timestamp(portfolio.close.index[-1])
-        assets = portfolio.assets().iloc[-1]
-        asset_values = portfolio.asset_value(group_by=False).iloc[-1]
-    except (PortfolioReplayError, IndexError, KeyError, TypeError, ValueError) as exc:
-        raise PositionEpisodeError(f"Position state replay failed: {exc}") from exc
-
-    if instrument_id not in assets.index:
+    positions = _fold_positions(context, frame, prefix_count)
+    valuation_at = pd.Timestamp(valuation_prices.index[-1])
+    if instrument_id not in positions or instrument_id not in valuation_prices.columns:
         quantity = 0.0
         average_cost = None
         valuation_price = None
         market_value = None
     else:
-        quantity = float(assets.loc[instrument_id])
-        valuation_price = float(portfolio.close[instrument_id].iloc[-1])
-        market_value = float(asset_values.loc[instrument_id])
-        if quantity > 1e-12:
-            records = portfolio.exit_trades.open.records_readable
-            records = records[records["Column"] == instrument_id]
-            if len(records) != 1:
-                raise PositionEpisodeError(
-                    f"vectorbt has no unique current open-position state for {instrument_id}"
-                )
-            average_cost = float(records.iloc[0]["Avg Entry Price"])
-        else:
+        quantity, entry_size_sum, entry_gross_sum = positions[instrument_id]
+        valuation_price = float(valuation_prices[instrument_id].iloc[-1])
+        market_value = quantity * valuation_price
+        if quantity <= 1e-12:
             quantity = 0.0
             average_cost = None
+        else:
+            average_cost = entry_gross_sum / entry_size_sum
 
     numeric = [quantity]
     numeric.extend(

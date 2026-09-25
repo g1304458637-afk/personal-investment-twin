@@ -29,6 +29,7 @@ import type { DailyTimeNavigationStore } from "./useDailyTimeNavigation.ts";
 import { publishChartCursor, subscribeChartCursor } from "./chartCursor.ts";
 import { forwardChartPageScroll } from "./chartPageScroll.ts";
 import { useLocale } from "@/locales/LocaleProvider";
+import { downloadPngDataUrl } from "@/lib/download";
 import { cn } from "@/lib/utils";
 
 use([
@@ -75,6 +76,7 @@ export function EChart({
   resetKey,
   observationTimes,
   timeNavigation,
+  exportable = false,
 }: {
   option: EChartsCoreOption;
   label: string;
@@ -84,8 +86,10 @@ export function EChart({
   resetKey?: string;
   observationTimes?: number[];
   timeNavigation?: DailyTimeNavigationStore;
+  /** Render a "save as PNG" button using the chart's own rendered pixels. */
+  exportable?: boolean;
 }) {
-  const { locale } = useLocale();
+  const { locale, t } = useLocale();
   const [linkedCursor, setLinkedCursor] = useState<{ x: number; top: number; height: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ReturnType<typeof init> | null>(null);
@@ -341,8 +345,32 @@ export function EChart({
     else return;
     event.preventDefault();
   };
-  return <div tabIndex={timeNavigation ? 0 : undefined} onKeyDown={onKeyDown} ref={containerRef} className={cn("echart", className)} style={{ position: "relative" }} role="img" aria-label={label}>
+  const exportPng = () => {
+    const chart = chartRef.current;
+    if (!chart) return;
+    // The chart container itself is transparent; fall back to the body canvas
+    // color so dark-theme exports are not invisible on white viewers.
+    const containerBackground = getComputedStyle(containerRef.current ?? document.body).backgroundColor;
+    const background = !containerBackground || containerBackground === "transparent" || containerBackground === "rgba(0, 0, 0, 0)"
+      ? getComputedStyle(document.body).backgroundColor
+      : containerBackground;
+    const dataUrl = chart.getDataURL({ type: "png", pixelRatio: 2, backgroundColor: background });
+    const safeName = label.replace(/[^\w\u4e00-\u9fff.-]+/g, "_");
+    downloadPngDataUrl(dataUrl, `${safeName}.png`);
+  };
+
+  // Interactive charts keep role="img" for the summary but tell keyboard
+  // users how to drive them; the focus ring itself lives in .echart:focus-visible.
+  const ariaHint = timeNavigation ? `${label} · ${t("Arrow keys pan, plus and minus zoom, Home resets")}` : label;
+  return <div tabIndex={timeNavigation ? 0 : undefined} onKeyDown={onKeyDown} ref={containerRef} className={cn("echart", className)} style={{ position: "relative" }} role="img" aria-label={ariaHint}>
     {linkedCursor && <div aria-hidden="true" data-linked-time-cursor style={{ position: "absolute", pointerEvents: "none", zIndex: 2,
       left: linkedCursor.x, top: linkedCursor.top, height: linkedCursor.height, borderLeft: "1px dashed rgba(170,210,234,.65)" }} />}
+    {exportable && <button
+      type="button"
+      onClick={exportPng}
+      className="absolute right-2 top-2 z-[3] rounded-md border border-border/60 bg-background/70 px-2 py-1 text-xs text-muted backdrop-blur hover:text-foreground"
+      aria-label={`${label} · PNG`}
+      title="PNG"
+    >{t("Export PNG")}</button>}
   </div>;
 }

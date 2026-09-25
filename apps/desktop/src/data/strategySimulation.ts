@@ -33,6 +33,20 @@ export interface StrategyRMultipleStatsView {
   definition: string;
 }
 
+export interface StrategyPerformanceStatsView {
+  annualVolatility: number | null;
+  sortinoRatio: number | null;
+  calmarRatio: number | null;
+  profitFactor: number | null;
+  avgWin: number | null;
+  avgLoss: number | null;
+  largestWin: number | null;
+  largestLoss: number | null;
+  benchmarkAnnualizedReturn: number | null;
+  excessAnnualizedReturn: number | null;
+  definitions: Record<string, string>;
+}
+
 export interface StrategySummaryView {
   initialCash: number;
   finalEquity: number;
@@ -56,6 +70,7 @@ export interface StrategySummaryView {
   // Optional newer field: missing in older artifacts, present-but-invalid
   // fails closed. Values are transported verbatim, never recomputed.
   rMultipleStats: StrategyRMultipleStatsView | null;
+  performanceStats: StrategyPerformanceStatsView | null;
 }
 
 export interface StrategyEquityPoint {
@@ -136,6 +151,26 @@ function rMultipleStats(raw: unknown): StrategyRMultipleStatsView {
   };
 }
 
+function performanceStats(raw: unknown): StrategyPerformanceStatsView {
+  const value = object(raw);
+  const definitionsRaw = object(value.definitions);
+  const definitions: Record<string, string> = {};
+  for (const [key, entry] of Object.entries(definitionsRaw)) definitions[key] = text(entry);
+  return {
+    annualVolatility: nullableFinite(value.annual_volatility),
+    sortinoRatio: nullableFinite(value.sortino_ratio),
+    calmarRatio: nullableFinite(value.calmar_ratio),
+    profitFactor: nullableFinite(value.profit_factor),
+    avgWin: nullableFinite(value.avg_win),
+    avgLoss: nullableFinite(value.avg_loss),
+    largestWin: nullableFinite(value.largest_win),
+    largestLoss: nullableFinite(value.largest_loss),
+    benchmarkAnnualizedReturn: nullableFinite(value.benchmark_annualized_return),
+    excessAnnualizedReturn: nullableFinite(value.excess_annualized_return),
+    definitions,
+  };
+}
+
 function spec(raw: unknown): StrategySpecView {
   const value = object(raw);
   const params = object(value.params);
@@ -196,6 +231,8 @@ function summary(raw: unknown): StrategySummaryView {
     roundTrips,
     // Optional: absent in artifacts generated before r_multiple_stats existed.
     rMultipleStats: value.r_multiple_stats === undefined ? null : rMultipleStats(value.r_multiple_stats),
+    // Optional: absent in artifacts generated before performance_stats existed.
+    performanceStats: value.performance_stats === undefined ? null : performanceStats(value.performance_stats),
   };
 }
 

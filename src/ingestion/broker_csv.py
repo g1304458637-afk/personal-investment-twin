@@ -41,6 +41,8 @@ from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from typing import Mapping
 
+from src.ingestion.numeric import clean_numeric_text
+
 __all__ = ["BROKER_EASTMONEY", "BROKER_THS", "convert_to_generic_csv", "detect_broker_format"]
 
 BROKER_EASTMONEY = "eastmoney"
@@ -50,10 +52,10 @@ _TIMEZONE_OFFSET = "+08:00"
 _HEADER_SCAN_LIMIT = 10
 
 # Full-width ASCII block (U+FF01..U+FF5E) folds onto ASCII; U+3000 folds to space.
-_FULLWIDTH_MAP: dict[str, str] = {
-    chr(0xFF01 + offset): chr(0x21 + offset) for offset in range(0x5E)
+_FULLWIDTH_MAP: dict[int, str] = {
+    0xFF01 + offset: chr(0x21 + offset) for offset in range(0x5E)
 }
-_FULLWIDTH_MAP["\u3000"] = " "
+_FULLWIDTH_MAP[0x3000] = " "
 
 # Broker headers carry trailing unit suffixes like (元)/(股)/(人民币); strip them.
 _UNIT_SUFFIX_PATTERN = re.compile(r"[([（\[]+[^)）\]]*[)\]）\]]+$")
@@ -217,11 +219,39 @@ def _cell(row: list[str], columns: Mapping[str, int], field: str) -> str:
     return row[index].strip()
 
 
+def _parseable_decimal(text: str) -> bool:
+    if not text:
+        return False
+    try:
+        value = Decimal(text)
+    except InvalidOperation:
+        return False
+    return value.is_finite()
+
+
+def _looks_like_data_row(row: list[str], columns: Mapping[str, int]) -> bool:
+    """True unless the row is a footer/summary/header/metadata line.
+
+    A row counts as data when its date cell parses, or its side maps, or both
+    price and quantity are numeric.  合计 rows, repeated headers and metadata
+    lines fail all three and are skipped by the conversion loop.
+    """
+    date_text = _cell(row, columns, "date").strip()
+    if date_text:
+        try:
+            _parse_date(date_text, 0)
+            return True
+        except ValueError:
+            pass
+    if _SIDE_MAP.get(_normalize_side(_cell(row, columns, "side"))) is not None:
+        return True
+    price = _clean_number(_cell(row, columns, "price"))
+    quantity = _clean_number(_cell(row, columns, "quantity"))
+    return _parseable_decimal(price) and _parseable_decimal(quantity)
+
+
 def _clean_number(raw: str) -> str:
-    text = raw.translate(_FULLWIDTH_MAP)
-    for char in (" ", ",", "元", "￥", "¥"):
-        text = text.replace(char, "")
-    return text.strip()
+    return clean_numeric_text(raw)
 
 
 def _to_decimal(text: str, row_number: int, label: str, raw: str) -> Decimal:
@@ -359,6 +389,13 @@ def convert_to_generic_csv(raw: bytes, broker: str) -> str:
     writer.writerow(header)
 
     for offset, row in enumerate(rows[header_index + 1 :], start=1):
+        if not _looks_like_data_row(row, columns):
+            # Real broker exports carry 合计/总计 footer rows, per-page
+            # repeated headers and account-metadata lines.  They carry no
+            # trade: skipping them beats aborting the whole file.  Any row
+            # with a parseable date or a mappable side is still treated as
+            # data and validated strictly below.
+            continue
         date_raw = _cell(row, columns, "date")
         if not date_raw:
             raise ValueError(f"第 {offset} 行数据缺少{spec['date'][0]}，无法转换")

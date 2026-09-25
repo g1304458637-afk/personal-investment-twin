@@ -27,6 +27,11 @@ export interface ReviewPackExitEpisodeView {
   status: string;
   exitEfficiency: number | null;
   givebackRatio: number | null;
+  // Hold-baseline counterfactual: what the FIRST buy would have produced if
+  // held to the window's last close; delta = realized - baseline. Backend
+  // values verbatim; null = the episode could not support the baseline.
+  holdBaselinePnl: number | null;
+  holdBaselineDelta: number | null;
   facts: { peakDate: string | null; troughDate: string | null; holdDays: number | null };
   limitations: string[];
 }
@@ -45,10 +50,12 @@ export interface ReviewPackTiltFlagView {
   triggerDate: string;
   window: {
     days: number;
-    tradeCount: number;
-    baselineTradeCount: number;
+    // Nullable when the trigger day has no observed trading day after it:
+    // the window could not be evaluated and the item says so.
+    tradeCount: number | null;
+    baselineTradeCount: number | null;
     avgSizeChangePct: number | null;
-    sameInstrumentRebuyCount: number;
+    sameInstrumentRebuyCount: number | null;
   };
   note: string;
   limitations: string[];
@@ -121,6 +128,10 @@ function exitEpisode(raw: unknown): ReviewPackExitEpisodeView {
     status: text(value.status),
     exitEfficiency: nullableFinite(value.exit_efficiency),
     givebackRatio: nullableFinite(value.giveback_ratio),
+    // Optional: artifacts generated before the hold baseline existed read as
+    // null; present-but-invalid still fails closed.
+    holdBaselinePnl: value.hold_baseline_pnl === undefined ? null : nullableFinite(value.hold_baseline_pnl),
+    holdBaselineDelta: value.hold_baseline_delta === undefined ? null : nullableFinite(value.hold_baseline_delta),
     facts: {
       peakDate: nullableDay(facts.peak_date),
       troughDate: nullableDay(facts.trough_date),
@@ -152,10 +163,10 @@ function tiltFlag(raw: unknown): ReviewPackTiltFlagView {
     triggerDate: day(value.trigger_date),
     window: {
       days: nonNegativeFinite(window.days),
-      tradeCount: nonNegativeFinite(window.trade_count),
-      baselineTradeCount: nonNegativeFinite(window.baseline_trade_count),
+      tradeCount: nullableNonNegativeFinite(window.trade_count),
+      baselineTradeCount: nullableNonNegativeFinite(window.baseline_trade_count),
       avgSizeChangePct: nullableFinite(window.avg_size_change_pct),
-      sameInstrumentRebuyCount: nonNegativeFinite(window.same_instrument_rebuy_count),
+      sameInstrumentRebuyCount: nullableNonNegativeFinite(window.same_instrument_rebuy_count),
     },
     note: text(value.note),
     limitations: textList(value.limitations),

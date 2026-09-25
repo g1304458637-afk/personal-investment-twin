@@ -175,3 +175,28 @@ def test_schema_one_upgrade_preserves_original_facts(tmp_path):
         assert repo.connection.execute("SELECT COUNT(*) FROM execution_instrument_resolutions").fetchone()[0] == 0
     finally:
         repo.close()
+
+
+def test_pre_versioning_database_with_base_tables_stamps_and_migrates(tmp_path):
+    from src.persistence.repository import SCHEMA_VERSION, _MIGRATION_1
+
+    """A database created before schema versioning (tables present, user_version
+    0, no schema_migrations) must stamp-and-migrate, not crash on migration."""
+    import sqlite3
+
+    db = tmp_path / "legacy.sqlite3"
+    raw = sqlite3.connect(db)
+    # Migration-1-era layout: base tables only, no version metadata at all.
+    raw.executescript(_MIGRATION_1)
+    raw.commit()
+    raw.close()
+
+    repo = LocalRepository(db)
+    version = int(repo.connection.execute("PRAGMA user_version").fetchone()[0])
+    assert version == SCHEMA_VERSION
+    tables = {
+        row[0]
+        for row in repo.connection.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    }
+    assert "schema_migrations" in tables
+    repo.close()

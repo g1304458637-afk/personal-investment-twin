@@ -231,7 +231,13 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
             if bar is None:
                 events.append(cancel(order, day, "suspended_expired"))
                 continue
-            position = account.positions[order.instrument]
+            position = account.positions.get(order.instrument)
+            if position is None:
+                # A duplicate or stale exit (provider bug, or two exit signals
+                # racing in one day) must cancel cleanly, never KeyError out of
+                # the whole simulation.
+                events.append(cancel(order, day, "position_already_closed"))
+                continue
             price = execution.sell_fill_price(bar.open)
             quantity = position.available_quantity
             amount = quantity * price
@@ -386,6 +392,10 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
                                    "day": day.isoformat(), "reason_code": update.reason_code,
                                    "stop_price": float(new_stop)})
             for signal in exits:
+                if signal.instrument not in account.positions:
+                    # Exit for a position already fully sold today: nothing to
+                    # exit, skip instead of crashing on the missing key.
+                    continue
                 order = create_order(day, signal.instrument, "SELL",
                                      account.positions[signal.instrument].quantity,
                                      getattr(signal, "reason_code", "signal_exit"),

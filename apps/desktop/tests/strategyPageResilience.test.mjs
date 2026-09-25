@@ -11,7 +11,7 @@ test("formula specs render through describeUserStrategySpec, never through spec.
   // The old code unconditionally dereferenced spec.entry.all_of / spec.exit.any_of
   // and crashed (white screen) on user_strategy_formula.v1 specs.
   assert.doesNotMatch(page, /spec\.entry as \{|spec\.exit as \{/);
-  assert.match(page, /describeUserStrategySpec\(selectedUserStrategy\.spec\)/);
+  assert.match(page, /describeUserStrategySpec\(selectedUserStrategy\.spec, locale\)/);
   assert.match(page, /display\.kind === "formula"/);
 });
 

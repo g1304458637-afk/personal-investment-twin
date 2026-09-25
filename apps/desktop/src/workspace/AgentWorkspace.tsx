@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUp, ArrowUpRight, ChartNoAxesCombined, MessageCircle, Plus, Square, RotateCcw, ChevronDown } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDataMode } from "@/data/DataModeProvider";
@@ -38,6 +38,14 @@ function ChatSession({ scope, candidates }: { scope: ConversationScope; candidat
   const [activeEntry, setActiveEntry] = useState<string | null>(null);
   const [busy, setBusy] = useState(false); const active = useRef<AbortController | null>(null);
   const latestTurns = useRef(turns); const transcript = useRef<HTMLDivElement>(null);
+  // Validation is O(transcript): recompute only when the transcript or the
+  // context changes, not on every phase poll (~1/s for up to 170s per turn).
+  const restoredTurns = useMemo(() => context ? restoredConversationTurns(context) : [], [context]);
+  const verifiedByTurnId = useMemo(() => {
+    const verified = new Map<string, boolean>();
+    if (context) for (const turn of turns) if (turn.result) verified.set(turn.id, verifiedChatResult(turn.result, context));
+    return verified;
+  }, [turns, context]);
   const followLatest = useRef(true);
   const textarea = useRef<HTMLTextAreaElement>(null);
   const restoreOnLoad = useRef(true);
@@ -119,7 +127,7 @@ function ChatSession({ scope, candidates }: { scope: ConversationScope; candidat
   return <div className="agent-chat__workspace">
     <AgentCapabilityOverview locale={locale} busy={busy} onQuestion={chooseQuestion} services={services} />
     <section className="agent-chat__conversation" aria-label={c.title}>
-    <div className="agent-chat__session-bar"><span>{isAccountScope(scope) ? c.account : c.episode}</span><div className="agent-chat__session-actions">{context && restoredConversationTurns(context).length > 0 && <button disabled={busy || loading} onClick={() => { update(restoredConversationTurns(context)); restoreOnLoad.current = true; }}><RotateCcw size={15}/>{locale === "zh-CN" ? "已保存的对话" : "Saved conversation"}</button>}<button onClick={newChat} disabled={busy}><Plus size={15} />{c.newChat}</button></div></div>
+    <div className="agent-chat__session-bar"><span>{isAccountScope(scope) ? c.account : c.episode}</span><div className="agent-chat__session-actions">{context && restoredTurns.length > 0 && <button disabled={busy || loading} onClick={() => { update(restoredTurns); restoreOnLoad.current = true; }}><RotateCcw size={15}/>{locale === "zh-CN" ? "已保存的对话" : "Saved conversation"}</button>}<button onClick={newChat} disabled={busy}><Plus size={15} />{c.newChat}</button></div></div>
     {!agentChatService.available() ? <p className="agent-chat__notice">{c.browser}</p> : loading ? <p role="status" className="agent-chat__notice">{context ? c.refreshing : c.loading}</p> : contextError ? <div role="alert" className="agent-chat__notice">{chatContextErrorText(contextError, locale)} <button onClick={() => setReload(value => value + 1)}>{c.retry}</button></div> : modelLoading ? <p role="status" className="agent-chat__notice">{c.modelLoading}</p> : modelError ? <div role="alert" className="agent-chat__notice">{chatErrorText(modelError, locale)} <Link to="/settings">{c.configuration} ↗</Link></div> : !configured ? <p className="agent-chat__notice">{c.missing} <Link to="/settings">{c.configuration} ↗</Link></p> : null}
     <div ref={transcript} className="agent-chat__transcript" role="log" aria-label={c.title} aria-live="polite" aria-relevant="additions text" onScroll={event => { const el = event.currentTarget; followLatest.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80; }}>
       {!turns.length && !contextError && <div className="agent-chat__welcome"><MessageCircle size={26} strokeWidth={1.3} /><h2>{c.emptyTitle}</h2><p>{c.empty}</p>
@@ -129,7 +137,7 @@ function ChatSession({ scope, candidates }: { scope: ConversationScope; candidat
         <div className="agent-chat__question"><span>{c.user}</span><p>{turn.question}</p></div>
         <div className="agent-chat__answer"><span className="agent-chat__speaker">{c.agent}</span>
           {turn.status !== "complete" ? <AgentTurnStatus turn={turn} locale={locale}/> : turn.result && context ? (() => {
-            if (!verifiedChatResult(turn.result, context)) return <p>{chatErrorText("conversation_stale", locale)}</p>;
+            if (!verifiedByTurnId.get(turn.id)) return <p>{chatErrorText("conversation_stale", locale)}</p>;
             if ("version" in context) {
               const answer = projectAccountAnswer(turn.result, context, locale);
               if (!answer) return <p>{chatErrorText("conversation_stale", locale)}</p>;

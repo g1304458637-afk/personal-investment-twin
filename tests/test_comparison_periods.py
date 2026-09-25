@@ -93,15 +93,18 @@ def test_period_disposition_subtracts_whole_start_calendar_day_and_keeps_zero_de
 
     # Only the Jan 4 sale belongs to the period. Its PGR denominator is zero,
     # so the existing _result contract keeps PGR as None rather than inventing 0.
+    # The Jan 4 sale is PARTIAL (5 of 15 shares): the residual position still
+    # counts as the day's paper opportunity (loss vs the Jan 4 close), so the
+    # PLR denominator has two observations.
     assert result.disposition.eligible_sale_events == 1
     assert result.disposition.realized_gains == 0
     assert result.disposition.realized_losses == 1
     assert result.disposition.paper_gains == 0
-    assert result.disposition.paper_losses == 0
+    assert result.disposition.paper_losses == 1
     assert result.disposition.pgr is None
-    assert result.disposition.plr == pytest.approx(1.0)
+    assert result.disposition.plr == pytest.approx(0.5)
     assert result.disposition.disposition_effect is None
-    assert result.disposition.observation_count == 1
+    assert result.disposition.observation_count == 2
 
 
 def test_start_day_sale_is_not_split_into_a_following_period_paper_opportunity():

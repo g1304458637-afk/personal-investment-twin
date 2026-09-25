@@ -12,9 +12,30 @@ export interface RuntimeResponse<T> {
 
 export const isTauriRuntime = () => typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
-export async function runtimeRequest<T>(method: string, params: Record<string, unknown>): Promise<T> {
+const DEFAULT_TIMEOUT_MS = 90_000;
+// Long-running replays: a full strategy simulation (and its sensitivity
+// variants) legitimately walks years of daily bars before answering.
+export const LONG_TIMEOUT_MS = 300_000;
+
+function withTimeout<T>(promise: Promise<T>, method: string, timeoutMs: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(
+      new Error(`runtime_request_timeout: ${method} did not answer within ${Math.round(timeoutMs / 1000)}s`)),
+    timeoutMs);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
+export async function runtimeRequest<T>(method: string, params: Record<string, unknown>,
+  timeoutMs: number = DEFAULT_TIMEOUT_MS): Promise<T> {
   if (!isTauriRuntime()) throw new Error("desktop_runtime_required");
-  const response = await invoke<RuntimeResponse<T>>("runtime_product_request", { method, params });
+  // A hung Python sidecar must degrade into an error the screen can render,
+  // not a perpetual loading state. The invoke itself is not cancellable, so a
+  // late answer after the timeout is simply discarded by the caller's
+  // generation guard.
+  const response = await withTimeout(
+    invoke<RuntimeResponse<T>>("runtime_product_request", { method, params }), method, timeoutMs);
   // Only ok/error decide failure: a null, false or 0 result is a valid
   // payload, not an error.  Fail closed on any error marker.
   if (!response.ok || response.error) throw new Error(response.error?.message ?? "runtime_request_failed");
@@ -41,7 +62,7 @@ export const realUserApi = {
   deleteAccount: (subjectId: string, accountId: string) => runtimeRequest<{ deleted: boolean }>("data.delete_account", { subject_id: subjectId, account_id: accountId }),
   strategyComparison: (subjectId: string, accountId: string, episodeId: string) => runtimeRequest<{ status: string; reason: string | null; report: unknown | null }>("strategy_comparison.get", { subject_id: subjectId, account_id: accountId, episode_id: episodeId }),
   strategyTeaching: (report: Record<string, unknown>, focus: string | null) => runtimeRequest<{ status: string; reason: string | null; texts: string[]; dropped: unknown[]; note: string | null }>("strategy_teaching.explain", { report, focus }),
-  strategySensitivity: (request: { strategy_id?: string; strategy?: Record<string, unknown>; parameter: string; values: number[] }) => runtimeRequest<{ status: string; reason: string | null; report: SensitivityReportView | null }>("strategy_sensitivity.run", request),
+  strategySensitivity: (request: { strategy_id?: string; strategy?: Record<string, unknown>; parameter: string; values: number[] }) => runtimeRequest<{ status: string; reason: string | null; report: SensitivityReportView | null }>("strategy_sensitivity.run", request, LONG_TIMEOUT_MS),
   // Account-level review pack (review_pack.v1). The result is untyped here on
   // purpose: adaptReviewPack owns the fail-closed validation.
   reviewPack: (params: { subject_id: string; account_id: string }) => runtimeRequest<unknown>("review_pack.get", params),
@@ -52,7 +73,9 @@ export interface RuntimeAccount { subject_id: string; account_id: string; displa
 export interface RuntimeDataStatus { subject_id: string; account_id: string; execution_count: number; instrument_status: string; fee_status: string; unknown_fee_count: number; market_data: { status: string; required: number; available: number; missing: [string, string[]][] }; review_status: string; last_trade_import: string | null; last_market_import: string | null; latest_market_date: string | null; import_history: Array<{ batch_id: string; kind: string; filename: string; imported_at: string; summary: Record<string, number> }> }
 export interface TradePreview { preview_fingerprint: string; filename: string; batch: { batch_id: string; file_sha256: string }; summary: Record<string, number>; rows: Array<{ row_ref: string; status: string; candidate: null | Record<string, unknown>; issues: Array<{ code: string }> }> }
 export interface MarketPreview { preview_fingerprint: string; filename: string; batch_id: string; file_sha256: string; summary: Record<string, number>; rows: Array<{ row_number: number; status: string; candidate: null | { date: string; symbol: string; close: number; price_type: string }; issues: Array<{ code: string }> }>; missing_required_dates: [string, string[]][] }
-export interface RuntimeInvestments { subject_id: string; account_id: string; as_of: string; data_tier: "authorized_beta"; portfolio_state_status: string; portfolio_state_reason: string | null; summary: { open_episode_count: number; closed_episode_count: number; current_position_count: number }; episodes: Array<{ outcome_summary: ArchiveOutcome; episode_id: string; instrument_id: string; display_name: string; currency: string | null; status: "open" | "closed"; opened_at: string; closed_at: string | null; duration_days: number; duration_kind: "final" | "so_far"; quantity: number | null; average_cost: number | null; valuation_at: string | null; valuation_price: number | null; market_value: number | null }> }
+export interface RuntimeAllocationPosition { instrument_id: string; display_name: string; quantity: number | null; market_value: number; currency: string | null; weight: number | null; as_of: string | null }
+export interface RuntimeAllocation { positions: RuntimeAllocationPosition[]; positions_value: number; position_count: number; skipped_no_market_value: number; hhi: number | null; definition: string }
+export interface RuntimeInvestments { subject_id: string; account_id: string; as_of: string; data_tier: "authorized_beta"; portfolio_state_status: string; portfolio_state_reason: string | null; summary: { open_episode_count: number; closed_episode_count: number; current_position_count: number }; allocation?: RuntimeAllocation; episodes: Array<{ outcome_summary: ArchiveOutcome; episode_id: string; instrument_id: string; display_name: string; currency: string | null; status: "open" | "closed"; opened_at: string; closed_at: string | null; duration_days: number; duration_kind: "final" | "so_far"; quantity: number | null; average_cost: number | null; valuation_at: string | null; valuation_price: number | null; market_value: number | null }> }
 export interface RuntimeEpisodeResult { status: string; reason: string | null; entry: unknown | null }
 
 

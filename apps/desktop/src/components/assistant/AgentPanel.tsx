@@ -56,7 +56,7 @@ export function AgentPanel({ open, onOpenChange }: AgentPanelProps) {
           <dl>
             <div>
               <dt>{t("Position Return")}</dt>
-              <dd>{formatPercent(selectedEpisode.return_value, 4)}</dd>
+              <dd>{selectedEpisode.return_value === null ? t("Not available") : formatPercent(selectedEpisode.return_value, 4)}</dd>
             </div>
             <div>
               <dt>{t("Asset Episode TWR")}</dt>

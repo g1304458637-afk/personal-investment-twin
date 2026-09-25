@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from collections import OrderedDict
 from dataclasses import dataclass
 
 import numpy as np
@@ -17,9 +18,9 @@ from src.core.portfolio_replay import (
     PortfolioReplayError,
     ReplayExecutionLink,
     _validated_executions,
-    replay_multi_asset_executions,
     replay_multi_asset_executions_with_links,
 )
+from src.core.position_fold import advance_fold
 from src.data.local_market_data_provider import PRICE_COLUMNS
 
 
@@ -235,36 +236,88 @@ def market_price(
     return value
 
 
+_FOLD_CACHE: "OrderedDict[int, tuple[BehaviorReplayContext, dict[str, object]]]" = OrderedDict()
+_FOLD_CACHE_MAX_CONTEXTS = 8
+_FOLD_SNAPSHOTS_KEPT = 4
+
+
+def clear_fold_cache() -> None:
+    """Drops cached fold state (entries pin executions and replay contexts)."""
+    _FOLD_CACHE.clear()
+
+
+def _execution_count_before(context: BehaviorReplayContext, event_time: pd.Timestamp) -> tuple[int, dict[str, tuple[float, float, float]]]:
+    """Count of fills strictly before ``event_time`` plus the position fold.
+
+    The count comes from a cached searchsorted over execution timestamps
+    (O(log n)); the fold advances monotonically with small snapshots, so a
+    full prefix replay per query is never needed.
+    """
+    key = id(context)
+    entry = _FOLD_CACHE.get(key)
+    if entry is None or entry[0] is not context:
+        times = context.executions["event_time"].to_numpy(dtype="datetime64[ns]")
+        entry = (context, {"times": times, "positions": {}, "max": 0,
+                           "snapshots": OrderedDict()})
+        _FOLD_CACHE[key] = entry
+        while len(_FOLD_CACHE) > _FOLD_CACHE_MAX_CONTEXTS:
+            _FOLD_CACHE.popitem(last=False)
+    cache = entry[1]
+    count = int(cache["times"].searchsorted(event_time.to_datetime64(), side="left"))
+    snapshots: OrderedDict = cache["snapshots"]
+    if count in snapshots:
+        return count, snapshots[count]
+    if count < cache["max"]:
+        cache["max"] = 0
+        cache["positions"] = {}
+        snapshots.clear()
+    advance_fold(cache["positions"], context.executions, cache["max"], count)
+    cache["max"] = count
+    snapshots[count] = dict(cache["positions"])
+    while len(snapshots) > _FOLD_SNAPSHOTS_KEPT:
+        snapshots.popitem(last=False)
+    return count, snapshots[count]
+
+
 def prefix_portfolio_state(
     context: BehaviorReplayContext,
     event_time: pd.Timestamp,
 ) -> PrefixPortfolioState:
-    """Replay executions strictly before ``event_time`` and inspect vectorbt."""
+    """Holdings and open-position costs strictly before ``event_time``.
+
+    Reads one row of the context's existing full replay (vectorbt is a
+    sequential row fold, so a full-replay row is bit-identical to a prefix
+    replay's row) and takes average costs from the shared position fold —
+    no per-query prefix replay.
+    """
 
     event_time = pd.Timestamp(event_time)
-    prior = context.executions[context.executions["event_time"] < event_time]
     symbols = context.daily_prices.columns
-    if prior.empty:
+    fill_count, positions = _execution_count_before(context, event_time)
+    if fill_count == 0:
         return PrefixPortfolioState(
             event_time=event_time,
             holdings=pd.Series(0.0, index=symbols, dtype=float),
             average_costs={},
         )
 
+    portfolio = context.portfolio
+    index = portfolio.assets().index
+    # The row STRICTLY before event_time: fills at exactly t must not leak
+    # into the pre-decision state (multiple fills can share one index row).
+    # Quantities and cash cannot change between the previous row and t — no
+    # fill exists in between — so this row IS the old prefix-replay state.
+    # The margin guards move to the same row (previous close, not t's); they
+    # are defensive checks only and never part of the returned state.
+    row_idx = index.searchsorted(event_time, side="left") - 1
     try:
-        portfolio = replay_multi_asset_executions(
-            prior,
-            context.valuation_prices.loc[:event_time],
-            init_cash=context.init_cash,
-        )
-    except PortfolioReplayError as exc:
-        raise BehaviorReplayError(f"Prefix replay unavailable: {exc}") from exc
-
-    assets = portfolio.assets()
-    try:
-        holdings = assets.loc[event_time].reindex(symbols, fill_value=0.0).astype(float)
-        cash = float(portfolio.cash().loc[event_time])
-        gross_exposure = float(portfolio.gross_exposure().loc[event_time])
+        if row_idx < 0:
+            raise BehaviorReplayError("Prefix replay state is unavailable")
+        holdings = portfolio.assets().iloc[row_idx].reindex(symbols, fill_value=0.0).astype(float)
+        cash = float(portfolio.cash().iloc[row_idx])
+        gross_exposure = float(portfolio.gross_exposure().iloc[row_idx])
+    except BehaviorReplayError:
+        raise
     except (KeyError, TypeError, ValueError) as exc:
         raise BehaviorReplayError("Prefix replay state is unavailable") from exc
     if not np.isfinite(holdings.to_numpy()).all() or (holdings < -1e-9).any():
@@ -279,16 +332,14 @@ def prefix_portfolio_state(
     # exit followed by another entry its Avg Entry Price is not necessarily
     # the cost basis of the quantity that remains open.  vectorbt's open exit
     # trade is the current remaining-position record.
-    open_positions = portfolio.exit_trades.open.records_readable
     average_costs: dict[str, float] = {}
     for symbol in holdings[holdings > 0].index:
-        records = open_positions[open_positions["Column"] == symbol]
-        if len(records) != 1:
+        entry = positions.get(str(symbol))
+        if entry is None or entry[1] <= 0:
             raise BehaviorReplayError(
                 f"vectorbt has no unique current open-position state for {symbol}"
             )
-        record = records.iloc[0]
-        average_cost = float(record["Avg Entry Price"])
+        average_cost = entry[2] / entry[1]
         if not math.isfinite(average_cost) or average_cost <= 0:
             raise BehaviorReplayError(
                 f"vectorbt open-position average cost is unavailable for {symbol}"

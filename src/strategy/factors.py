@@ -17,6 +17,7 @@ from collections.abc import Callable
 from typing import Final
 
 from src.strategy.data import InstrumentSeries
+from src.strategy.rsi_state import wilder_rsi_at
 from src.strategy.signals import prior_extreme, trailing_mean
 
 
@@ -78,8 +79,8 @@ def _make_breakout(high: bool):
 
 
 def _compute_rsi(series: InstrumentSeries, index: int, params: dict[str, float]) -> float | None:
-    closes = series.adjusted_close[: index + 1]
-    return _rsi(closes, int(params["window"]))
+    # Incremental fold — bit-identical to _rsi (same op order), O(1) amortized.
+    return wilder_rsi_at(series, index, int(params["window"]))
 
 
 def _compute_roc(series: InstrumentSeries, index: int, params: dict[str, float]) -> float | None:

@@ -31,6 +31,32 @@ const statusLabels: Record<string, string> = {
   replay_ineligible: "Replay unavailable", no_trades: "No transactions",
 };
 
+// Backend issue codes (src/ingestion): mapped to bilingual copy so the
+// preview table never shows a raw machine code. Unknown codes fall back to
+// the code itself, which stays honest when the backend grows a new one.
+const issueLabels: Record<string, string> = {
+  unknown_fee: "Unrecognized fee",
+  unresolved_instrument: "Unresolved instrument",
+  missing_required_field: "Missing required field",
+  missing_csv_header: "Missing CSV header",
+  ambiguous_column_mapping: "Ambiguous column mapping",
+  missing_market_data: "Missing market data",
+  duplicate_file: "Duplicate file",
+  duplicate_summary: "Duplicate summary",
+  invalid_fee: "Invalid fee",
+  invalid_price: "Invalid price",
+  invalid_quantity: "Invalid quantity",
+  invalid_side: "Invalid side",
+  invalid_timestamp: "Invalid timestamp",
+  unknown_canonical_field: "Unrecognized column",
+  missing_explicit_source_column: "Missing source column",
+  ambiguous_execution_order: "Ambiguous execution order",
+  ambiguous_instrument: "Ambiguous instrument",
+  unsupported_csv_encoding: "Unsupported CSV encoding",
+  unsupported_short_or_margin: "Short or margin trade unsupported",
+  no_fx_conversion_or_multi_currency_accounting: "Multi-currency not supported",
+};
+
 export function DataAccountsPage({ initialKind = "trade" }: { initialKind?: Kind }) {
   const { t, formatNumber } = useLocale();
   const data = useDataMode();
@@ -56,6 +82,7 @@ export function DataAccountsPage({ initialKind = "trade" }: { initialKind?: Kind
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const active = data.activeAccount;
+  const [statusReloadKey, setStatusReloadKey] = useState(0);
   useEffect(() => {
     let cancelled = false;
     setStatus(null);
@@ -64,9 +91,11 @@ export function DataAccountsPage({ initialKind = "trade" }: { initialKind?: Kind
       .then((value) => { if (!cancelled) setStatus(value); })
       .catch((value) => { if (!cancelled) setError(String(value)); });
     return () => { cancelled = true; };
-  }, [active]);
+  }, [active, statusReloadKey]);
+  const parsedInitialCash = Number(initialCash);
+  const initialCashInvalid = !Number.isFinite(parsedInitialCash) || parsedInitialCash <= 0;
   const params = () => ({ file_path: file?.path, subject_id: subjectId, account_id: accountId,
-    display_name: displayName, initial_cash: Number(initialCash), source_timezone: timezone,
+    display_name: displayName, initial_cash: parsedInitialCash, source_timezone: timezone,
     use_source_row_order_as_sequence: true, source_id: sourceId, source_version: sourceVersion,
     resolution_symbol: resolutionSymbol, resolution_market: resolutionMarket, resolution_security_type: resolutionType });
   const configurationKey = JSON.stringify([kind, params()]);
@@ -98,6 +127,9 @@ export function DataAccountsPage({ initialKind = "trade" }: { initialKind?: Kind
       if (kind === "trade") await realUserApi.commitTrades(request);
       else await realUserApi.commitPrices(request);
       await data.refresh(); data.setMode("real_user"); setPreview(null); setFile(null);
+      // The imported facts changed: refetch the data-status panel instead of
+      // showing stale execution counts until the account is re-selected.
+      setStatusReloadKey((value) => value + 1);
     } catch (value) { setError(value instanceof Error ? value.message : String(value)); }
     finally { pending.current = false; setBusy(false); }
   };
@@ -115,14 +147,14 @@ export function DataAccountsPage({ initialKind = "trade" }: { initialKind?: Kind
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
       <GlassPanel className="p-5 md:p-6"><SectionHeading eyebrow={t("Import workflow")} title={t(kind === "trade" ? "Import transaction CSV" : "Import historical price CSV")} description={t("Select a local CSV, inspect the deterministic preview, then explicitly confirm.")} />
         <fieldset disabled={busy} className="contents"><div className="mt-5 flex gap-2"><Button variant={kind === "trade" ? "primary" : "quiet"} onClick={() => { setKind("trade"); setPreview(null); }}>{t("Transactions")}</Button><Button variant={kind === "market" ? "primary" : "quiet"} onClick={() => { setKind("market"); setPreview(null); }}>{t("Historical prices")}</Button></div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2"><Input value={subjectId} onChange={(e) => setSubjectId(e.target.value)} placeholder="Subject ID" /><Input value={accountId} onChange={(e) => setAccountId(e.target.value)} placeholder="Account ID" />{kind === "trade" ? <><Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder={t("Account name")} /><Input value={initialCash} onChange={(e) => setInitialCash(e.target.value)} inputMode="decimal" placeholder={t("Initial cash")} /><Input value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="IANA timezone" /><Input value={resolutionSymbol} onChange={(e) => setResolutionSymbol(e.target.value)} placeholder={t("Unresolved symbol (optional)")} /><Input value={resolutionMarket} onChange={(e) => setResolutionMarket(e.target.value)} placeholder={t("Confirmed market (optional)")} /><Input value={resolutionType} onChange={(e) => setResolutionType(e.target.value)} placeholder={t("Security type")} /></> : <><Input value={sourceId} onChange={(e) => setSourceId(e.target.value)} placeholder="Source ID" /><Input value={sourceVersion} onChange={(e) => setSourceVersion(e.target.value)} placeholder="Source version" /></>}</div>
-        <div className="mt-5 flex flex-wrap items-center gap-3"><Button onClick={choose} variant="quiet"><FileUp />{t("Choose CSV")}</Button><span className="text-sm text-muted">{file?.filename ?? t("No file selected")}</span><Button disabled={!file || busy} onClick={runPreview}>{busy ? t("Loading…") : t("Preview import")}</Button></div>
-        </fieldset>{error ? <div className="mt-4 flex gap-2 rounded-lg border border-danger/30 bg-danger/5 p-3 text-sm text-danger"><AlertTriangle className="size-4 shrink-0" />{error}</div> : null}
-        {preview ? <div className="mt-6"><dl className="product-fact-strip">{Object.entries(summary).filter(([, value]) => value !== 0).map(([key, value]) => <div key={key}><dt>{t(summaryLabels[key] ?? key)}</dt><dd>{formatNumber(value)}</dd></div>)}</dl><div className="mt-4 max-h-64 overflow-auto border-y border-border/70"><table className="w-full text-left text-xs"><thead className="text-muted"><tr><th className="py-3">{t("Row")}</th><th>{t("Status")}</th><th>{t("Confirmed facts")}</th><th>{t("Issues")}</th><th>{t("Resolution")}</th></tr></thead><tbody>{preview.rows.map((row) => { const key = "row_ref" in row ? row.row_ref : String(row.row_number); return <tr key={key} className="border-t border-border/50"><td className="py-3 font-mono">{key.split(":").at(-1)}</td><td>{t(statusLabels[row.status] ?? row.status)}</td><td className="max-w-80 whitespace-normal break-words p-2 font-mono">{row.candidate ? ("row_ref" in row ? [
+        <div className="mt-5 grid gap-3 sm:grid-cols-2"><Input value={subjectId} onChange={(e) => setSubjectId(e.target.value)} placeholder="Subject ID" aria-label="Subject ID" /><Input value={accountId} onChange={(e) => setAccountId(e.target.value)} placeholder="Account ID" aria-label="Account ID" />{kind === "trade" ? <><Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder={t("Account name")} aria-label={t("Account name")} /><Input value={initialCash} onChange={(e) => setInitialCash(e.target.value)} inputMode="decimal" placeholder={t("Initial cash")} aria-label={t("Initial cash")} aria-invalid={initialCashInvalid} /><Input value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="IANA timezone" aria-label="IANA timezone" /><Input value={resolutionSymbol} onChange={(e) => setResolutionSymbol(e.target.value)} placeholder={t("Unresolved symbol (optional)")} aria-label={t("Unresolved symbol (optional)")} /><Input value={resolutionMarket} onChange={(e) => setResolutionMarket(e.target.value)} placeholder={t("Confirmed market (optional)")} aria-label={t("Confirmed market (optional)")} /><Input value={resolutionType} onChange={(e) => setResolutionType(e.target.value)} placeholder={t("Security type")} aria-label={t("Security type")} /></> : <><Input value={sourceId} onChange={(e) => setSourceId(e.target.value)} placeholder="Source ID" aria-label="Source ID" /><Input value={sourceVersion} onChange={(e) => setSourceVersion(e.target.value)} placeholder="Source version" aria-label="Source version" /></>}</div>
+        <div className="mt-5 flex flex-wrap items-center gap-3"><Button onClick={choose} variant="quiet"><FileUp />{t("Choose CSV")}</Button><span className="text-sm text-muted">{file?.filename ?? t("No file selected")}</span><Button disabled={!file || busy || initialCashInvalid} onClick={runPreview}>{busy ? t("Loading…") : t("Preview import")}</Button>{initialCashInvalid ? <span role="alert" className="text-sm text-danger">{t("Initial cash must be a positive number.")}</span> : null}</div>
+        </fieldset>{error ? <div role="alert" className="mt-4 flex gap-2 rounded-lg border border-danger/30 bg-danger/5 p-3 text-sm text-danger"><AlertTriangle className="size-4 shrink-0" />{error}</div> : null}
+        {preview ? <div className="mt-6"><dl className="product-fact-strip">{Object.entries(summary).filter(([, value]) => value !== 0).map(([key, value]) => <div key={key}><dt>{t(summaryLabels[key] ?? key)}</dt><dd>{formatNumber(value)}</dd></div>)}</dl><div className="mt-4 max-h-64 overflow-auto border-y border-border/70" tabIndex={0} role="region" aria-label={t("Import preview rows")}><table className="w-full text-left text-xs"><thead className="text-muted"><tr><th className="py-3">{t("Row")}</th><th>{t("Status")}</th><th>{t("Confirmed facts")}</th><th>{t("Issues")}</th><th>{t("Resolution")}</th></tr></thead><tbody>{preview.rows.map((row) => { const key = "row_ref" in row ? row.row_ref : String(row.row_number); return <tr key={key} className="border-t border-border/50"><td className="py-3 font-mono">{key.split(":").at(-1)}</td><td>{t(statusLabels[row.status] ?? row.status)}</td><td className="max-w-80 whitespace-normal break-words p-2 font-mono">{row.candidate ? ("row_ref" in row ? [
       row.candidate.event_time, row.candidate.instrument_id ?? "unresolved", row.candidate.side,
       row.candidate.executed_quantity, row.candidate.executed_price,
       row.candidate.fee_status, row.candidate.fee_amount ?? "—",
-    ].map(String).join(" · ") : [row.candidate.date, row.candidate.symbol, row.candidate.close, row.candidate.price_type].join(" · ")) : "—"}</td><td>{row.issues.map((x) => t(x.code)).join(", ") || "—"}</td><td>{row.status === "possible_duplicate" && "row_ref" in row ? <span className="flex gap-1"><Button size="sm" variant={duplicateChoices[row.row_ref] === "keep" ? "primary" : "quiet"} onClick={() => setDuplicateChoices((old) => ({ ...old, [row.row_ref]: "keep" }))}>{t("Keep as another execution")}</Button><Button size="sm" variant={duplicateChoices[row.row_ref] === "skip" ? "primary" : "quiet"} onClick={() => setDuplicateChoices((old) => ({ ...old, [row.row_ref]: "skip" }))}>{t("Skip as duplicate")}</Button></span> : "—"}</td></tr>; })}</tbody></table></div><Button className="mt-4" disabled={busy || !canConfirmImport(preview, duplicateChoices)} onClick={commit}>{t("Confirm import")}</Button></div> : null}
+    ].map(String).join(" · ") : [row.candidate.date, row.candidate.symbol, row.candidate.close, row.candidate.price_type].join(" · ")) : "—"}</td><td>{row.issues.map((x) => t(issueLabels[x.code] ?? x.code)).join(", ") || "—"}</td><td>{row.status === "possible_duplicate" && "row_ref" in row ? <span className="flex gap-1"><Button size="sm" variant={duplicateChoices[row.row_ref] === "keep" ? "primary" : "quiet"} onClick={() => setDuplicateChoices((old) => ({ ...old, [row.row_ref]: "keep" }))}>{t("Keep as another execution")}</Button><Button size="sm" variant={duplicateChoices[row.row_ref] === "skip" ? "primary" : "quiet"} onClick={() => setDuplicateChoices((old) => ({ ...old, [row.row_ref]: "skip" }))}>{t("Skip as duplicate")}</Button></span> : "—"}</td></tr>; })}</tbody></table></div><Button className="mt-4" disabled={busy || !canConfirmImport(preview, duplicateChoices)} onClick={commit}>{t("Confirm import")}</Button></div> : null}
       </GlassPanel>
       <div className="space-y-4"><GlassPanel className="p-5"><div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm font-semibold"><Database className="size-4 text-accent" />{t("Local accounts")}</div><Button size="icon" variant="ghost" disabled={busy} onClick={() => { void data.refresh().catch((value) => setError(String(value))); }}><RefreshCw /></Button></div>{data.accounts.length ? <div className="mt-4 space-y-2">{data.accounts.map((account) => <button key={`${account.subject_id}:${account.account_id}`} className="w-full rounded-lg border border-border/70 p-3 text-left text-sm" onClick={() => data.setActiveAccount(account)}><strong>{account.display_name}</strong><span className="mt-1 block font-mono text-[10px] text-muted">{account.account_id}</span></button>)}</div> : <p className="mt-4 text-sm text-muted">{t("No real account imported yet.")}</p>}</GlassPanel>
         {active && status?.subject_id === active.subject_id && status?.account_id === active.account_id ? <GlassPanel className="p-5"><SectionHeading eyebrow={t("Data status")} title={active.display_name} /><dl className="mt-4 space-y-3 text-sm"><div className="flex justify-between"><dt>{t("Transactions")}</dt><dd>{status.execution_count}</dd></div><div className="flex justify-between"><dt>{t("Fees")}</dt><dd>{t(statusLabels[status.fee_status] ?? status.fee_status)}</dd></div><div className="flex justify-between"><dt>{t("Market prices")}</dt><dd>{t(statusLabels[status.market_data.status] ?? status.market_data.status)}</dd></div><div className="flex justify-between"><dt>{t("Review status")}</dt><dd>{t(statusLabels[status.review_status] ?? status.review_status)}</dd></div><div className="flex justify-between"><dt>{t("Last trade import")}</dt><dd>{status.last_trade_import?.slice(0, 10) ?? "—"}</dd></div><div className="flex justify-between"><dt>{t("Last market import")}</dt><dd>{status.last_market_import?.slice(0, 10) ?? "—"}</dd></div><div className="flex justify-between"><dt>{t("Market prices through")}</dt><dd>{status.latest_market_date ?? "—"}</dd></div></dl><div className="mt-5 border-t border-border/70 pt-4"><p className="text-xs font-medium">{t("Recent imports")}</p>{status.import_history.slice(0, 4).map((batch) => <p key={batch.batch_id} className="mt-2 text-xs text-muted">{batch.filename} · {batch.imported_at.slice(0, 10)}</p>)}</div><Button variant="quiet" className="mt-5 text-danger" onClick={remove}><Trash2 />{t("Delete local account")}</Button></GlassPanel> : null}

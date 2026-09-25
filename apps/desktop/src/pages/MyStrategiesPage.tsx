@@ -3,11 +3,11 @@ import { useMemo, useRef, useState } from "react";
 import { StrategyWorkshop, type WorkshopDraft } from "@/components/strategy/StrategyWorkshop";
 import { WorkshopNumberInput } from "@/components/strategy/WorkshopNumberInput";
 import { strategyLibrary } from "@/data/strategyLibrary";
-import { isTauriRuntime, runtimeRequest } from "@/data/runtimeService";
+import { isTauriRuntime, LONG_TIMEOUT_MS, runtimeRequest } from "@/data/runtimeService";
 import { adaptStrategySimulation, type StrategySimulationView } from "@/data/strategySimulation";
 import { useDataMode } from "@/data/DataModeProvider";
 import { useLocale } from "@/locales/LocaleProvider";
-import { readUserStrategies, type SavedUserStrategy } from "@/lib/userStrategyLibrary";
+import { newUserStrategyId, readUserStrategies, type SavedUserStrategy } from "@/lib/userStrategyLibrary";
 import {
   buildSpecExportFile,
   dedupeStrategyName,
@@ -105,7 +105,7 @@ export function MyStrategiesPage() {
   };
 
   const onWorkshopSave = (draft: WorkshopDraft, spec: Record<string, unknown>) => {
-    const id = `user_${JSON.stringify(spec).length}_${Math.abs(draft.name.length)}_${Date.now().toString(36)}`;
+    const id = newUserStrategyId();
     persist([...saved, { id, name: draft.name.trim(), savedAt: new Date().toISOString().slice(0, 10), spec }]);
     setWorkshopDraft(null);
     setSelectedId(id);
@@ -143,7 +143,7 @@ export function MyStrategiesPage() {
     // Duplicate names get a numeric suffix so an import can never overwrite
     // or visually collide with an existing saved strategy.
     const name = dedupeStrategyName(saved.map((item) => item.name), result.name);
-    const id = `user_import_${Date.now().toString(36)}`;
+    const id = newUserStrategyId("import");
     persist([...saved, { id, name, savedAt: new Date().toISOString().slice(0, 10), spec: result.spec }]);
     setSelectedId(id);
   };
@@ -157,7 +157,7 @@ export function MyStrategiesPage() {
       base.account_id = data.activeAccount.account_id;
     }
     runtimeRequest<{ status: string; reason: string | null; artifact: unknown }>(
-      "strategy_simulation.run_custom", base)
+      "strategy_simulation.run_custom", base, LONG_TIMEOUT_MS)
       .then((result) => {
         if (result.status === "available" && result.artifact) {
           setArtifacts((state) => ({ ...state, [entry.id]: adaptStrategySimulation(result.artifact) }));
@@ -235,7 +235,7 @@ export function MyStrategiesPage() {
             <WorkshopNumberInput value={formulaAtrMult * 10} min={10} max={50} step={5}
               onCommit={(next) => setFormulaAtrMult(next / 10)} /> × ATR(14)
           </span> : null}
-          <p className="workshop-misread">可用函数：sma(n) ema(n) highest(n) lowest(n) rsi(n) roc(n) atr(n) atr_ratio(n) volume_ratio(n) range_pos(n) streak_down() cross_up(s,l) cross_down(s,l)；字段：close entry_price（仅退出公式）</p>
+          <p className="workshop-misread">{t("Available functions: sma(n) ema(n) highest(n) lowest(n) rsi(n) roc(n) atr(n) atr_ratio(n) volume_ratio(n) range_pos(n) streak_down() cross_up(s,l) cross_down(s,l). Fields: close, entry_price (exit formula only).")}</p>
           <div className="formula-presets">
             {Object.entries(FORMULA_PRESETS).map(([id, preset]) => (
               <button key={id} type="button" className="workshop-remove" title={preset.entry}
@@ -257,7 +257,7 @@ export function MyStrategiesPage() {
                 sizing: { mode: "equal_weight", fraction: 0.25 },
                 constraints: { max_positions: 4 },
               };
-              const id = `user_formula_${Date.now().toString(36)}`;
+              const id = newUserStrategyId("formula");
               persist([...saved, { id, name: formulaName.trim() || "公式策略", savedAt: new Date().toISOString().slice(0, 10), spec }]);
               setSelectedId(id);
             }}>{t("Save and validate")}</button>
@@ -330,7 +330,7 @@ export function MyStrategiesPage() {
           : runState === "ready" && artifact ? null
           : <div>
               <button type="button" className="workshop-save" onClick={() => run(selected)}>{t("Run on history")}</button>
-              {runError ? <p className="strategy-compare__note">{t("Run failed")}: {runError}</p> : null}
+              {runError ? <p role="alert" className="strategy-compare__note">{t("Run failed")}: {runError}</p> : null}
             </div>}
         {artifact ? (
           <div className="space-y-4">

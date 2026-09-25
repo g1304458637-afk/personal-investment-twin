@@ -65,7 +65,11 @@ test('adapter fails closed on any tampered payload', async () => {
     (r) => { r.calendar.months.reverse(); }, // months must ascend
     (r) => { r.calendar.days[0].closed_count = -1; },
     (r) => { r.behavior_flags.tilt[0].trigger_date = '2025-06-03T00:00:00'; },
-    (r) => { r.behavior_flags.tilt[0].window.trade_count = null; },
+    // trade_count null is legal since the unevaluated-window item exists
+    // (trigger day has no observed trading day after it); wrong types and
+    // negative counts must still fail closed.
+    (r) => { r.behavior_flags.tilt[0].window.trade_count = 'many'; },
+    (r) => { r.behavior_flags.tilt[0].window.trade_count = -1; },
     (r) => { r.behavior_flags.tilt[0].window.avg_size_change_pct = 'up'; },
     (r) => { r.playbook.tags[0].confidence = 'maybe'; },
     (r) => { r.playbook.tags[0].win_count = r.playbook.tags[0].episode_count + 1; }, // wins > episodes

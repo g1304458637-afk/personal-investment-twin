@@ -148,7 +148,14 @@ def buy_and_hold_curve(data: SimulationData, initial_cash: float) -> list[dict]:
 
 
 def enrich_summary(payload: dict, data: SimulationData) -> dict:
-    """Add annualized return, Sharpe, and buy-and-hold benchmark to the artifact."""
+    """Add annualized return, Sharpe, and buy-and-hold benchmark to the artifact.
+
+    Also assembles the standard performance-metrics block (volatility,
+    Sortino, Calmar, trade aggregates, benchmark excess) from
+    src.strategy.metrics into summary["performance_stats"].
+    """
+    from src.strategy.metrics import performance_stats
+
     summary = payload.get("summary", {})
     days = payload.get("days", [])
     initial_cash = float(summary.get("initial_cash", 1_000_000))
@@ -159,5 +166,9 @@ def enrich_summary(payload: dict, data: SimulationData) -> dict:
     sharpe = _sharpe(equity_series, initial_cash)
     summary["annualized_return"] = ann
     summary["sharpe_ratio"] = sharpe
-    summary["benchmark_buy_hold"] = buy_and_hold_curve(data, initial_cash)
+    benchmark_curve = buy_and_hold_curve(data, initial_cash)
+    summary["benchmark_buy_hold"] = benchmark_curve
+    summary["performance_stats"] = performance_stats(
+        days, initial_cash, float(summary.get("max_drawdown", 0.0)),
+        ann, sharpe, summary.get("round_trips", []), benchmark_curve)
     return payload

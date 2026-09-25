@@ -83,10 +83,11 @@ account.py     StrategyAccount：现金、持仓(数量/成本/T+1 可卖量)、
 execution.py   开盘撮合（限价检查、停牌过期）、止损撮合、费用、拒单理由码
 strategies/t1.py  T1 信号 → 订单（含排序与理由）
 engine.py      逐日循环：开盘撮合 → 止损 → 估值 → 收盘信号；全部确定性
+metrics.py     标准绩效指标套件（纯函数，无法定义时输出 null）
 report.py      JSON 安全序列化 + 汇总（收益、最大回撤、成交/拒单统计）
 ```
 
-产出 schema（`strategy_simulation.v1`）：策略与参数版本、数据指纹、逐日日志（选股理由、信号、订单、成交/拒单、现金、持仓、净值、回撤）、订单与成交全路径、汇总指标。落盘 `data/sample/strategy_universe/t1_v1_result.json`（可由脚本重生成）；运行脚本同时写入裁剪版桌面产物 `apps/desktop/src/generated/strategy-simulation-demo.json`（摘要 + 逐日净值 + 订单/成交全路径），由桌面端"策略历史模拟"页（`/strategy-simulation`）静态加载展示；浏览器端只做传输校验与账目一致性检查，不计算金融数值。
+产出 schema（`strategy_simulation.v1`）：策略与参数版本、数据指纹、逐日日志（选股理由、信号、订单、成交/拒单、现金、持仓、净值、回撤）、订单与成交全路径、汇总指标。`enrich_summary` 在汇总上追加 `summary.performance_stats`（`src/strategy/metrics.py`，对齐 quantstats/empyrical 常用指标集）：年化波动率、Sortino、Calmar、盈亏比（profit factor，基于已闭合回合，无亏损回合时为 null）、平均/最大单笔盈亏、等权买入持有基准年化与描述性超额年化；每项定义随数据一起传输到 UI 原样展示。全部年化使用 252 交易日因子，与既有年化收益/Sharpe 一致；指标无法定义时输出 null（诚实的缺失值），绝不以 0 代替。`definitions` 字典覆盖 Sortino/Calmar/盈亏比/超额/年化因子五项；年化波动、Sharpe、单笔盈亏与基准年化沿用同一套约定，未单独附定义。落盘 `data/sample/strategy_universe/t1_v1_result.json`（可由脚本重生成）；运行脚本同时写入裁剪版桌面产物 `apps/desktop/src/generated/strategy-simulation-demo.json`（摘要 + 逐日净值 + 订单/成交全路径），由桌面端"策略历史模拟"页（`/strategy-simulation`）静态加载展示；浏览器端只做传输校验与账目一致性检查，不计算金融数值。
 
 ## 7. 首个验证目标
 
@@ -105,7 +106,9 @@ report.py      JSON 安全序列化 + 汇总（收益、最大回撤、成交/�
 
 ## 7b. 同标的对比（第 3 步，进行中）
 
-`src/strategy/compare.py`（schema `strategy_comparison.v1`）：把 T1 v1 同一套规则在单标的自身 OHLC 历史上独立重放（`simulation_data_from_bars` 直建模拟数据），与该标的的规范成交并列。关键声明：窗口"净现金流" = 买入流出 − 卖出流入（含费用），窗口末仍有持仓时它主要是持仓成本而非盈亏；规则侧按策略自身仓位参数开仓，金额量级与记录侧不同，**不可直接相减为优劣**；合成隔离（SYN 前缀双向强制）；close-only 数据源 fail-closed（规则重放需要 OHLC）。示例导出 `scripts/export_strategy_comparison_demo.py` → `apps/desktop/src/generated/strategy-comparison-demo.json`（5 个示例 episode + 组合并列），策略模拟页新增「示例 Episode 对照」区块。待做：episode 图上规则买卖点叠加、真实账户 runtime 链路、CSV/akshare 行情接入。
+`src/strategy/compare.py`（schema `strategy_comparison.v1`）：把 T1 v1 同一套规则在单标的自身 OHLC 历史上独立重放（`simulation_data_from_bars` 直建模拟数据），与该标的的规范成交并列。关键声明：窗口"净现金流" = 买入流出 − 卖出流入（含费用），窗口末仍有持仓时它主要是持仓成本而非盈亏；规则侧按策略自身仓位参数开仓，金额量级与记录侧不同，**不可直接相减为优劣**；合成隔离（SYN 前缀双向强制）；close-only 数据源 fail-closed（规则重放需要 OHLC）。示例导出 `scripts/export_strategy_comparison_demo.py` → `apps/desktop/src/generated/strategy-comparison-demo.json`（5 个示例 episode + 组合并列），策略模拟页新增「示例 Episode 对照」区块。待做：episode 图上规则买卖点叠加；本对照视图的账户级 runtime 与 CSV 行情导入链路。
+
+自定义策略另有 `universe=own_account` 路径：仅取本账户曾交易且可识别的 A 股，以 AKShare 后复权日线运行；不可识别或无法获取数据的标的会跳过，并在结果中标明范围限制和幸存者偏差。它不等同于上述 `strategy_comparison.v1` 对照视图的真实账户行情接入。
 
 ## 8. 局限（当前明确不做）
 

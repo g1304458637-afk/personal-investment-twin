@@ -4,14 +4,14 @@ import { useSearchParams } from "react-router-dom";
 import { EChart } from "@/components/charts/EChart";
 import { InvestmentChartWorkspace } from "@/components/charts/InvestmentChartWorkspace";
 import { useTheme } from "@/components/layout/ThemeProvider";
-import { isTauriRuntime, runtimeRequest, type SensitivityReportView } from "@/data/runtimeService";
+import { isTauriRuntime, LONG_TIMEOUT_MS, runtimeRequest, type SensitivityReportView } from "@/data/runtimeService";
 import { useDataMode } from "@/data/DataModeProvider";
 import { adaptStrategySimulation, type StrategySimulationView } from "@/data/strategySimulation";
 import { StrategyWorkshop, type WorkshopDraft } from "@/components/strategy/StrategyWorkshop";
 import { rawComparisonReportFor, strategyComparison } from "@/data/strategyComparisonDemo";
 import { strategySimulation } from "@/data/strategySimulationDemo";
 import { useLocale } from "@/locales/LocaleProvider";
-import { describeUserStrategySpec, readUserStrategies } from "@/lib/userStrategyLibrary";
+import { describeUserStrategySpec, newUserStrategyId, readUserStrategies } from "@/lib/userStrategyLibrary";
 import { formatCurrencyValue } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -129,7 +129,7 @@ export function StrategySimulationPage() {
     meta: "",
   };
   const saveWorkshopStrategy = (draft: WorkshopDraft, spec: Record<string, unknown>) => {
-    const id = `user_${JSON.stringify(spec).length}_${Math.abs(draft.name.length)}_${Date.now().toString(36)}`;
+    const id = newUserStrategyId();
     const entry = { id, name: draft.name.trim(), savedAt: new Date().toISOString().slice(0, 10), spec };
     const next = [...userStrategies, entry];
     setUserStrategies(next);
@@ -147,12 +147,12 @@ export function StrategySimulationPage() {
       base.account_id = data.activeAccount.account_id;
     }
     runtimeRequest<{ status: string; reason: string | null; artifact: unknown }>(
-      "strategy_simulation.run_custom", base)
+      "strategy_simulation.run_custom", base, LONG_TIMEOUT_MS)
       .then((result) => {
         if (result.status !== "available" || !result.artifact) {
           // Failure lands in the "error" run state so the run button and
           // the reason stay visible and the strategy can be re-run.
-          setUserRunError((state) => ({ ...state, [entry.id]: result.reason ?? "运行失败" }));
+          setUserRunError((state) => ({ ...state, [entry.id]: result.reason ?? t("Run failed") }));
           setUserRunState((state) => ({ ...state, [entry.id]: "error" }));
           return;
         }
@@ -175,11 +175,11 @@ export function StrategySimulationPage() {
   const [instrument, setInstrument] = useState<string>("all");
   const [chartInstrument, setChartInstrument] = useState<string | null>(null);
   const SENSITIVITY_PARAMS = [
-    { id: "stop_loss_pct", label: "止损比例" },
-    { id: "position_fraction", label: "每仓占比" },
-    { id: "max_positions", label: "最多持仓数" },
-    { id: "commission_rate", label: "佣金率" },
-    { id: "slippage_rate", label: "滑点" },
+    { id: "stop_loss_pct", label: "Stop-loss %" },
+    { id: "position_fraction", label: "Position size %" },
+    { id: "max_positions", label: "Max positions" },
+    { id: "commission_rate", label: "Commission rate" },
+    { id: "slippage_rate", label: "Slippage" },
   ] as const;
   const [sensitivityParam, setSensitivityParam] = useState<string>("stop_loss_pct");
   const [sensitivityValues, setSensitivityValues] = useState("0.05, 0.1, 0.2, 0.3");
@@ -195,13 +195,21 @@ export function StrategySimulationPage() {
     setSensitivityResult(null);
     setSensitivityError(null);
   }, [strategyId, sensitivityParam]);
+  // Instrument filters describe one strategy's universe; carrying them across
+  // a tab switch leaves the chart and trades list pointed at an instrument
+  // the new strategy may never trade, with no way to tell from the UI.
+  useEffect(() => {
+    setInstrument("all");
+    setChartInstrument(null);
+  }, [strategyId]);
   const runSensitivity = () => {
     if (!isTauriRuntime()) {
-      setSensitivityError("需要桌面应用环境（浏览器预览不运行变体）。");
+      setSensitivityError(t("Desktop app required (variants do not run in the browser preview)."));
       return;
     }
-    const values = sensitivityValues.split(",").map((text) => Number(text.trim())).filter((value) => Number.isFinite(value));
-    if (values.length < 2) { setSensitivityError("请至少输入两个取值，用逗号分隔。"); return; }
+    // Accept the ASCII and the full-width comma: the default zh IME inserts "，".
+    const values = sensitivityValues.split(/[,，]/).map((text) => Number(text.trim())).filter((value) => Number.isFinite(value));
+    if (values.length < 2) { setSensitivityError(t("Enter at least two values, separated by commas.")); return; }
     const generation = ++sensitivityGeneration.current;
     setSensitivityBusy(true);
     setSensitivityError(null);
@@ -213,7 +221,7 @@ export function StrategySimulationPage() {
       .then((result) => {
         if (generation !== sensitivityGeneration.current) return;
         if (result.status === "available" && result.report) setSensitivityResult(result.report);
-        else setSensitivityError(result.reason ?? "运行失败");
+        else setSensitivityError(result.reason ?? t("Run failed"));
       })
       .catch((value) => {
         if (generation !== sensitivityGeneration.current) return;
@@ -399,7 +407,7 @@ export function StrategySimulationPage() {
         // Two saved spec shapes exist (workshop conditions and formula
         // mode); render each through the shared, shape-checked helper and
         // skip malformed entries instead of crashing the whole page.
-        const display = describeUserStrategySpec(selectedUserStrategy.spec);
+        const display = describeUserStrategySpec(selectedUserStrategy.spec, locale);
         if (display.entry.length === 0 && display.exit.length === 0) return null;
         const label = (kind: "entry" | "exit", index: number) =>
           display.kind === "formula" ? t(kind === "entry" ? "Entry formula" : "Exit formula")
@@ -568,9 +576,27 @@ export function StrategySimulationPage() {
           value={summary.rMultipleStats.avgR === null ? "—" : `${summary.rMultipleStats.avgR.toFixed(2)}R`}
           detail={`${t("Median")} ${summary.rMultipleStats.medianR === null ? "—" : `${summary.rMultipleStats.medianR.toFixed(2)}R`} · ${t("Min")} ${summary.rMultipleStats.minR === null ? "—" : `${summary.rMultipleStats.minR.toFixed(2)}R`} · ${t("Max")} ${summary.rMultipleStats.maxR === null ? "—" : `${summary.rMultipleStats.maxR.toFixed(2)}R`} · ${t("Skipped (no stop-loss)")} ${summary.rMultipleStats.skippedNoStop}`} /> : null}
 
+        {summary.performanceStats ? <StatCard label={t("Sortino ratio")}
+          value={summary.performanceStats.sortinoRatio === null ? "—" : summary.performanceStats.sortinoRatio.toFixed(2)}
+          detail={`${t("Annual volatility")} ${summary.performanceStats.annualVolatility === null ? "—" : percentLabel(summary.performanceStats.annualVolatility)}`} /> : null}
+        {summary.performanceStats ? <StatCard label={t("Calmar ratio")}
+          value={summary.performanceStats.calmarRatio === null ? "—" : summary.performanceStats.calmarRatio.toFixed(2)}
+          detail={`${t("Max drawdown")} ${percentLabel(summary.maxDrawdown)}`} /> : null}
+        {summary.performanceStats ? <StatCard label={t("Profit factor")}
+          value={summary.performanceStats.profitFactor === null ? "—" : summary.performanceStats.profitFactor.toFixed(2)}
+          detail={`${t("Avg win")} ${summary.performanceStats.avgWin === null ? "—" : money(summary.performanceStats.avgWin)} · ${t("Avg loss")} ${summary.performanceStats.avgLoss === null ? "—" : money(summary.performanceStats.avgLoss)}`} /> : null}
+        {summary.performanceStats ? <StatCard label={t("Excess vs buy-and-hold")}
+          value={summary.performanceStats.excessAnnualizedReturn === null ? "—" : percentLabel(summary.performanceStats.excessAnnualizedReturn)}
+          detail={`${t("Benchmark annualized")} ${summary.performanceStats.benchmarkAnnualizedReturn === null ? "—" : percentLabel(summary.performanceStats.benchmarkAnnualizedReturn)}`} /> : null}
+
       </section>
 
       {summary.rMultipleStats ? <p className="strategy-comparison-note r-multiple-note">{t("R multiple definition")}: {summary.rMultipleStats.definition}</p> : null}
+      {summary.performanceStats && Object.keys(summary.performanceStats.definitions).length > 0 ? (
+        <p className="strategy-comparison-note r-multiple-note">
+          {Object.entries(summary.performanceStats.definitions).map(([key, defText]) => <span key={key} className="block">{defText}</span>)}
+        </p>
+      ) : null}
 
 
 
@@ -584,7 +610,7 @@ export function StrategySimulationPage() {
 
         </div>
 
-        <EChart option={equityOption} label={t("Equity curve")} className="strategy-equity-chart" />
+        <EChart option={equityOption} label={t("Equity curve")} className="strategy-equity-chart" exportable />
 
       </section>
 
@@ -878,7 +904,7 @@ export function StrategySimulationPage() {
 
           <select aria-label={t("Parameter")} value={sensitivityParam} onChange={(event) => setSensitivityParam(event.target.value)}>
 
-            {SENSITIVITY_PARAMS.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+            {SENSITIVITY_PARAMS.map((item) => <option key={item.id} value={item.id}>{t(item.label)}</option>)}
 
           </select>
 

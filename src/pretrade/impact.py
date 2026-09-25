@@ -474,6 +474,17 @@ def simulate_trade_impact(
                 "Proposed BUY cannot be executed because cash is insufficient",
                 before=before,
             )
+        if proposed_trade.side == "SELL" and "No risky asset holdings" in reason:
+            # A full exit is executable but leaves the after-state without any
+            # risky asset, so concentration evidence is undefined there — say
+            # exactly that instead of surfacing the internal HHI error.
+            return _result(
+                proposed_trade,
+                "insufficient_evidence",
+                "Full exit leaves no risky holdings after the trade; "
+                "concentration (HHI) impact is undefined in this check",
+                before=before,
+            )
         return _result(proposed_trade, "insufficient_evidence", reason, before=before)
 
     try:

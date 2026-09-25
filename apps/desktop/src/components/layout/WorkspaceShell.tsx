@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Command, MoonStar, SunMedium } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 
 import { MirrorOrb } from "@/components/common/MirrorOrb";
@@ -27,8 +27,20 @@ import { isClassicWorkspace } from "@/workspace/workspaceMode";
 
 function WorkspaceShellContent() {
   const location = useLocation();
+  // Route changes must move focus to the content region: keyboard and screen
+  // reader users otherwise stay on the nav link they just activated.
+  const mainRef = useRef<HTMLElement>(null);
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    mainRef.current?.focus({ preventScroll: true });
+  }, [location.pathname]);
   const { theme, toggleTheme } = useTheme();
   const { t, locale } = useLocale();
+  const skipLabel = t("Skip to content");
   const [commandOpen, setCommandOpen] = useState(false);
   const data = useDataMode();
   const currentRouteId = activeNavigationRouteId(location.pathname);
@@ -143,6 +155,9 @@ function WorkspaceShellContent() {
       </aside>
 
       <div className="workspace-main">
+        <a href="#workspace-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded-md focus:bg-background focus:p-2 focus:text-foreground focus:shadow">
+          {skipLabel}
+        </a>
         <header className="workspace-topbar">
           <div className="workspace-topbar__drag-region" data-tauri-drag-region>
             <span>{t("Workspace")}</span>
@@ -175,7 +190,7 @@ function WorkspaceShellContent() {
           </div>
         </header>
 
-        <main className="workspace-content" id="workspace-content">
+        <main ref={mainRef} tabIndex={-1} className="workspace-content focus:outline-none" id="workspace-content">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={location.pathname}

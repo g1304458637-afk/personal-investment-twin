@@ -33,9 +33,20 @@ const LocaleContext = createContext<LocaleContextValue | null>(null);
 const CurrencyContext = createContext<string | null | undefined>(undefined);
 export const CurrencyProvider = CurrencyContext.Provider;
 
+const LOCALE_STORAGE_KEY = "toujing.locale";
+
 function initialLocale(): Locale {
+  // URL parameter is an explicit one-off override; the stored preference
+  // (set in Settings) wins when present, otherwise the zh-CN default.
   const requested = new URLSearchParams(window.location.search).get("locale");
-  return requested === "en-US" ? "en-US" : "zh-CN";
+  if (requested === "en-US" || requested === "zh-CN") return requested;
+  try {
+    const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+    if (stored === "en-US" || stored === "zh-CN") return stored;
+  } catch {
+    // Storage unavailable: keep the default.
+  }
+  return "zh-CN";
 }
 
 function interpolate(message: string, values?: TranslationValues) {
@@ -46,7 +57,16 @@ function interpolate(message: string, values?: TranslationValues) {
 }
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocale] = useState<Locale>(initialLocale);
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
+
+  const setLocale = useCallback((next: Locale) => {
+    try {
+      window.localStorage.setItem(LOCALE_STORAGE_KEY, next);
+    } catch {
+      // Private-mode storage denial keeps the session-only behavior.
+    }
+    setLocaleState(next);
+  }, []);
 
   const t = useCallback(
     (source: string, values?: TranslationValues) =>

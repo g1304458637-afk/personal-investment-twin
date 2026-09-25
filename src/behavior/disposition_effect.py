@@ -33,8 +33,11 @@ LIMITATION: Final = (
     "skill score. Realized outcomes use actual SELL execution prices; paper "
     "outcomes use the Market Data Contract's same-day close. Both are compared "
     "with vectorbt open-position average entry price, and neutral observations "
-    "are excluded. This is not a full Odean replication and does not reproduce "
-    "tax-lot, commission-adjusted, or daily high/low research data treatment."
+    "are excluded. A sale day symbol counts as a paper opportunity only through "
+    "its residual shares (pre-sale quantity minus the day's sold quantity); a "
+    "full exit on the day contributes none. This is not a full Odean replication "
+    "and does not reproduce tax-lot, commission-adjusted, or daily high/low "
+    "research data treatment."
 )
 
 EvidenceStatus = Literal["complete", "insufficient_evidence"]
@@ -153,7 +156,6 @@ def build_disposition_effect_evidence(
             sale_day_rows = sale_day_rows.sort_values("event_time", kind="stable")
             first_sale_time = pd.Timestamp(sale_day_rows["event_time"].iloc[0])
             paper_state = prefix_portfolio_state(context, first_sale_time)
-            sold_symbols = set(sale_day_rows["symbol"])
 
             state_by_time = {}
             for row in sale_day_rows.itertuples(index=False):
@@ -179,9 +181,18 @@ def build_disposition_effect_evidence(
                 else:
                     neutral_observations += 1
 
+            # Symbols fully exited today are not paper opportunities anymore;
+            # a PARTIAL exit leaves a residual position that is still one —
+            # excluding it would bias PGR/PLR denominators on scale-outs.
+            sold_quantity_by_symbol = {}
+            for row in sale_day_rows.itertuples(index=False):
+                sold_quantity_by_symbol[str(row.symbol)] = (
+                    sold_quantity_by_symbol.get(str(row.symbol), 0.0) + float(row.executed_quantity))
             for symbol, quantity in paper_state.holdings.items():
-                if quantity <= 0 or symbol in sold_symbols:
+                residual = quantity - sold_quantity_by_symbol.get(symbol, 0.0)
+                if quantity <= 0 or residual <= 1e-12:
                     continue
+                quantity = residual
                 average_cost = paper_state.average_costs.get(symbol)
                 if average_cost is None:
                     raise BehaviorReplayError(

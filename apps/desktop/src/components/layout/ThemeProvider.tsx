@@ -1,5 +1,5 @@
 import { createContext, useContext, useLayoutEffect, useMemo, useState } from "react";
-import { applyTheme, resolveTheme, type Theme } from "@/lib/theme";
+import { applyTheme, resolveTheme, storeTheme, type Theme } from "@/lib/theme";
 
 export type { Theme } from "@/lib/theme";
 
@@ -22,11 +22,22 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     applyTheme(document.documentElement, theme);
   }, [theme]);
 
+  const updateTheme = (next: Theme) => {
+    storeTheme(next);
+    setTheme(next);
+  };
+
   const value = useMemo<ThemeContextValue>(
     () => ({
       theme,
-      setTheme,
-      toggleTheme: () => setTheme((current) => (current === "dark" ? "light" : "dark")),
+      setTheme: updateTheme,
+      toggleTheme: () => {
+        // Derive outside the updater (StrictMode double-invokes updaters);
+        // persist explicitly, once per toggle.
+        const next = theme === "dark" ? "light" : "dark";
+        storeTheme(next);
+        setTheme(next);
+      },
     }),
     [theme],
   );

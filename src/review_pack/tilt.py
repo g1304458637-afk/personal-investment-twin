@@ -20,6 +20,8 @@ overlapping triggers do not stack: scanning resumes after a trigger window.
 
 from __future__ import annotations
 
+import bisect
+
 import pandas as pd
 
 MIN_TOTAL_EXECUTIONS = 20
@@ -78,9 +80,42 @@ def detect_tilt(
             continue
         trigger_day = pd.Timestamp(exit_item["exit_day"]).normalize()
         trigger_index = day_index.get(trigger_day)
+        snapped_limitation: str | None = None
         if trigger_index is None:
-            streak = 0
-            continue
+            # The trigger day itself may carry no price observation (holidays
+            # in the observed calendar, stale vendor rows).  Dropping the
+            # confirmed trigger silently violates the never-drop convention:
+            # snap the window to the first observed day at or after the
+            # trigger, or report honestly when none exists.
+            position_of_next = bisect.bisect_left(trading_days, trigger_day)
+            if position_of_next >= len(trading_days) - 1:
+                # Snapping onto the final observed day still leaves an empty
+                # window — the honest answer is "could not be evaluated".
+                position_of_next = len(trading_days)
+                observations.append({
+                    "trigger": "three_consecutive_losses",
+                    "trigger_date": trigger_day.date().isoformat(),
+                    "window": {
+                        "days": WINDOW_TRADING_DAYS,
+                        "trade_count": None,
+                        "baseline_trade_count": None,
+                        "avg_size_change_pct": None,
+                        "same_instrument_rebuy_count": None,
+                    },
+                    "note": (
+                        f"在 {trigger_day.date().isoformat()} 出现连续 {STREAK_LENGTH} 笔亏损平仓；"
+                        "但其后没有已观测的交易日，行为窗口未能评估。"
+                    ),
+                    "limitations": (*ITEM_LIMITATIONS,
+                                    "触发日之后无已观测交易日，窗口统计不可用"),
+                })
+                streak = 0
+                continue
+            trigger_index = position_of_next
+            snapped_limitation = (
+                f"触发日 {trigger_day.date().isoformat()} 非已观测交易日，"
+                f"窗口自其后首个观测交易日 "
+                f"{trading_days[trigger_index].date().isoformat()} 起计。")
         window_end_index = min(trigger_index + WINDOW_TRADING_DAYS, len(trading_days) - 1)
         window_days = set(trading_days[trigger_index + 1:window_end_index + 1])
         streak_instruments = {
@@ -111,7 +146,8 @@ def detect_tilt(
                 f"其中回买触发亏损序列标的 {window_counts['same_instrument_rebuy_count']} 笔。"
                 "以上为可观测成交事实的描述性统计。"
             ),
-            "limitations": list(ITEM_LIMITATIONS),
+            "limitations": (*ITEM_LIMITATIONS,
+                            *((snapped_limitation,) if snapped_limitation else ())),
         })
         streak = 0
         # Suppress later exits whose third loss would fall inside this

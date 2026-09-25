@@ -173,6 +173,7 @@ def compare_account_periods(
     if kind == "professional":
         if _performance_dates(left) != _performance_dates(right):
             raise AccountComparisonError("professional comparison requires exact matching observation dates")
+
     else:
         if left.account_id != right.account_id:
             raise AccountComparisonError("self-period comparison requires the same account_id")

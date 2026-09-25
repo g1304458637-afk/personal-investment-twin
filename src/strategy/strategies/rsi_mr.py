@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from src.strategy.data import SimulationData
+from src.strategy.rsi_state import wilder_rsi_at
 from src.strategy.spec import StrategySpec
 
 RSI_WINDOW = 14
@@ -109,10 +110,9 @@ def evaluate_close_signals(spec_params: dict[str, float | int | str], data: Simu
             continue
         index = member_series.index_on_or_before(day)
         assert index is not None
-        closes = member_series.adjusted_close[: index + 1]
-        if len(closes) < min_history:
+        if index + 1 < min_history:
             continue
-        rsi = wilder_rsi(closes)
+        rsi = wilder_rsi_at(member_series, index, RSI_WINDOW)
         if rsi is None:
             continue
         if instrument in held:

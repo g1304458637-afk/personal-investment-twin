@@ -3303,7 +3303,28 @@
     "date": "2025-07-31",
     "equity": 1216040.68
    }
-  ]
+  ],
+  "performance_stats": {
+   "annual_volatility": 0.036838470230188027,
+   "sharpe_ratio": -7.0995299442109685,
+   "sortino_ratio": -6.5343628836512675,
+   "calmar_ratio": -0.41350679071413615,
+   "profit_factor": 0.0,
+   "avg_win": null,
+   "avg_loss": -46076.30875714285,
+   "largest_win": -2090.549799999979,
+   "largest_loss": -119920.5454,
+   "benchmark_annualized_return": 0.06488999710995658,
+   "excess_annualized_return": -0.2953935171409384,
+   "count": 783,
+   "definitions": {
+    "annualization": "年化因子为 252 个交易日；波动率与比率基于日净值简单收益率。",
+    "sortino": "Sortino = 日均收益 ÷ 下行波动 × √252；下行波动只计入负收益（目标收益为 0）。",
+    "calmar": "Calmar = 年化收益 ÷ |最大回撤|；无回撤时无法定义。",
+    "profit_factor": "盈亏比 = 总盈利 ÷ |总亏损|，基于已闭合回合；没有亏损回合时无法定义。",
+    "excess": "超额年化 = 策略年化 − 等权买入持有基准年化，仅为描述性对比，不是风险调整 alpha。"
+   }
+  }
  },
  "bars": [
   {

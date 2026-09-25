@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import platform
+import sqlite3
 import sys
 from collections.abc import Callable, Mapping
 from typing import Any, TextIO
@@ -152,6 +153,11 @@ def _product_methods(db_path: str | None) -> tuple[dict[str, Callable[[object], 
                 return fn(params)
             except (TypeError, ValueError) as exc:
                 raise RuntimeRequestError("invalid_params", str(exc)) from exc
+            except (OSError, sqlite3.Error) as exc:
+                # Infrastructure failures (missing file, locked/failed sqlite)
+                # must not leak absolute paths or raw sqlite text through
+                # core_error.
+                raise RuntimeRequestError("storage_unavailable", "local storage operation failed") from exc
         return call
     methods = {
         "ingestion.preview_trade_csv": checked(product.preview_trade),
@@ -223,7 +229,16 @@ def run(stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout, *, db_path: str 
             )
         else:
             response, should_stop = handle_request(request, methods)
-        stdout.write(json.dumps(response, ensure_ascii=False, separators=(",", ":"), allow_nan=False) + "\n")
+        try:
+            line = json.dumps(response, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
+        except (TypeError, ValueError) as exc:
+            # A result that cannot serialize (NaN/non-JSON type) must fail THIS
+            # request, never kill the process: outside this guard the exception
+            # would escape run() and every later request would die with it.
+            line = json.dumps(
+                _error(response.get("request_id"), "serialization_error", f"response is not serializable: {exc}"),
+                ensure_ascii=False, separators=(",", ":"), allow_nan=False)
+        stdout.write(line + "\n")
         stdout.flush()
         if should_stop:
             if product is not None:

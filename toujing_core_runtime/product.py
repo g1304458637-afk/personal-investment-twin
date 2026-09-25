@@ -52,7 +52,13 @@ def _confirmed_file(params: Mapping[str, object]) -> tuple[Path, bytes]:
 
 def _now(params: Mapping[str, object]) -> str:
     value = params.get("imported_at")
-    return str(value) if isinstance(value, str) and value else datetime.now(timezone.utc).isoformat()
+    if isinstance(value, str) and value:
+        try:
+            datetime.fromisoformat(value)
+        except ValueError as exc:
+            raise ValueError("imported_at must be an ISO-8601 timestamp") from exc
+        return value
+    return datetime.now(timezone.utc).isoformat()
 
 
 def _preview_fingerprint(params: Mapping[str, object], content: bytes, kind: str) -> str:
@@ -335,9 +341,12 @@ class ProductRuntime:
 
     def delete_account(self, params: Mapping[str, object]) -> dict[str, object]:
         subject, account = _required_text(params, "subject_id"), _required_text(params, "account_id")
+        # Derived read models go first: they are rebuildable from the repo, so
+        # a cleanup failure before the destructive delete is recoverable — the
+        # reverse order could strand notes/chat behind a deleted account with
+        # deleted:false on retry, never cleaning up.
+        self.review_runtime().drop_account(subject, account)
         deleted = self.repo.delete_account(subject, account)
-        if deleted:
-            self.review_runtime().drop_account(subject, account)
         return {"deleted": deleted}
 
     def _lifecycle(self, params: Mapping[str, object]):
@@ -366,6 +375,7 @@ class ProductRuntime:
         return accounts[0], bundle, facts, gated.lifecycle, gated.status
 
     def investments(self, params: Mapping[str, object]) -> dict[str, object]:
+        from src.presentation.allocation import allocation_block
         from src.presentation.investment_archive import outcome_summaries
         account, bundle, facts, lifecycle, status = self._lifecycle(params)
         currency, _ = _currency_context(bundle, facts)
@@ -374,6 +384,7 @@ class ProductRuntime:
                     "as_of": max((x.date.isoformat() for x in facts), default=account["updated_at"]),
                     "data_tier": "authorized_beta", "portfolio_state_status": "unavailable",
                     "portfolio_state_reason": status, "summary": {"open_episode_count": 0, "closed_episode_count": 0, "current_position_count": 0},
+                    "allocation": allocation_block([]),
                     "episodes": []}
         state_by_id = {x.state_id: x for x in lifecycle.states}
         snapshot_by_episode = {x.episode_id: state_by_id[x.position_state_ref] for x in lifecycle.snapshots}
@@ -401,29 +412,48 @@ class ProductRuntime:
                 "data_tier": "authorized_beta", "portfolio_state_status": "available", "portfolio_state_reason": None,
                 "summary": {"open_episode_count": sum(x.status == "open" for x in lifecycle.episodes),
                             "closed_episode_count": sum(x.status == "closed" for x in lifecycle.episodes),
-                            "current_position_count": len(lifecycle.snapshots)}, "episodes": entries}
+                            "current_position_count": len(lifecycle.snapshots)},
+                "allocation": allocation_block(entries), "episodes": entries}
+
+    _LIFECYCLE_UNAVAILABLE_REASONS = {
+        "unavailable_pending_market_data": "exact required daily market observations are incomplete",
+        "unavailable_replay_ineligible": "recorded executions are not replay-eligible",
+        "unavailable_mixed_currency_without_fx": "mixed-currency accounting without FX conversion is unsupported",
+    }
 
     def episode(self, params: Mapping[str, object]) -> dict[str, object]:
         from src.presentation.runtime_episode import episode_entry
         account, bundle, facts, lifecycle, status = self._lifecycle(params)
         if lifecycle is None:
-            return {"status": status, "reason": "market prices are incomplete", "entry": None}
+            # Echo the gate's actual cause instead of a generic (and often
+            # wrong) market-data message.
+            reason = self._LIFECYCLE_UNAVAILABLE_REASONS.get(status, "market prices are incomplete")
+            return {"status": status, "reason": reason, "entry": None}
         episode_id = _required_text(params, "episode_id")
         if not any(item.episode_id == episode_id for item in lifecycle.episodes):
             return {"status": "unavailable", "reason": "episode does not belong to this account", "entry": None}
+        target_instrument = next(
+            (e.instrument_id for e in lifecycle.episodes if e.episode_id == episode_id), None)
+        display_name = next(
+            (x.instrument.display_name or x.instrument.display_symbol or x.instrument.local_symbol
+             for x in bundle.accepted_canonical_executions
+             if target_instrument is not None and x.instrument.instrument_id == target_instrument),
+            target_instrument)
         entry = episode_entry(lifecycle, canonical_executions_to_frame(bundle.accepted_canonical_executions),
             facts_to_market_data_frame(facts), episode_id=episode_id, init_cash=float(account["initial_cash"]),
             currency=_currency_context(bundle, facts)[0],
-            display_name=next(x.instrument.display_name or x.instrument.display_symbol or x.instrument.local_symbol
-                              for x in bundle.accepted_canonical_executions if x.instrument.instrument_id == next(e.instrument_id for e in lifecycle.episodes if e.episode_id == episode_id)))
+            display_name=display_name)
         return {"status": "available", "reason": None, "entry": entry}
 
     def strategy_simulation_run_custom(self, params: Mapping[str, object]) -> dict[str, object]:
-        """Run a user-composed strategy spec on the bundled synthetic universe.
+        """Run a user-composed strategy on synthetic or limited account data.
 
-        Deterministic, isolated from user accounts, and self-checked: the run
-        on full history must reproduce an identical prefix on truncated
-        history (no future functions), or the strategy is refused.
+        Synthetic runs use the bundled universe. The optional own_account
+        universe uses only previously traded, identifiable A-shares and
+        adjusted AKShare bars; skipped symbols and survivorship bias are
+        included in the returned limitations. Runs are self-checked: the full
+        history must reproduce the same prefix on truncated history, or the
+        strategy is refused.
         """
         from src.strategy.composite import (
             FORMULA_SCHEMA,
@@ -453,9 +483,10 @@ class ProductRuntime:
         universe = params.get("universe", "synthetic")
         limitations_extra: list[str] = []
         if universe == "own_account":
-            subject_id = params.get("subject_id")
-            account_id = params.get("account_id")
-            if not isinstance(subject_id, str) or not isinstance(account_id, str) or not subject_id or not account_id:
+            try:
+                subject_id = _required_text(params, "subject_id")
+                account_id = _required_text(params, "account_id")
+            except ValueError:
                 return {"status": "unavailable", "reason": "own_account_requires_account", "artifact": None}
             bundle = bundle_from_repository(self.repo, subject_id, account_id)
             # Collect per-instrument raw symbol and date span.

@@ -122,12 +122,21 @@ def fetch_ohlc(instrument: str, start: str, end: str, *, force_refresh: bool = F
         # rows (suspensions, vendor glitches) are skipped, never cached.
         if any(not math.isfinite(value) or value <= 0 for value in values.values()):
             continue
-        volume_raw = row.get("成交量")
+        try:
+            volume_raw = row.get("成交量")
+            volume = float(volume_raw) if volume_raw not in (None, "", 0) else None
+            if volume is not None and not math.isfinite(volume):
+                volume = None
+        except (TypeError, ValueError):
+            # A vendor volume format change must degrade to an unknown-volume
+            # row, exactly like the OHLC row-skip policy above — never an
+            # uncaught ValueError escaping fetch_ohlc.
+            volume = None
         bars.append({
             "date": observation_date,
             "open": values["open"], "close": values["close"],
             "high": values["high"], "low": values["low"],
-            "volume": float(volume_raw) if volume_raw not in (None, "", 0) else None,
+            "volume": volume,
             "source_id": SOURCE_ID, "source_version": SOURCE_VERSION,
             "adjust": adjust, "is_synthetic": False,
         })
