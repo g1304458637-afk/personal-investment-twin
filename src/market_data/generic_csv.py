@@ -21,7 +21,7 @@ from src.market_data.models import (
 )
 
 GENERIC_HISTORICAL_PRICE_CSV_V1 = "generic_historical_price_csv_v1"
-REAL_PRICE_TYPES = frozenset({"adjusted_close", "total_return"})
+REAL_PRICE_TYPES = frozenset({"unadjusted_close", "adjusted_close", "total_return"})
 ALIASES = {
     "instrument_id": ("instrument_id",),
     "local_symbol": ("local_symbol", "symbol", "ticker"),

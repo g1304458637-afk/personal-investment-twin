@@ -172,6 +172,7 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
         actions_by_day.setdefault(action.ex_date, []).append(action)
 
     pending: list[OrderRecord] = []
+    dividend_payments: list[tuple[date, float, float, str]] = []
     last_day = data.dates[-1]
 
     for day in data.dates:
@@ -180,6 +181,17 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
 
         # 0. Corporate actions at the open.
         for action in actions_by_day.get(day, []):
+            if action.action == "cash_dividend":
+                position = account.positions.get(action.instrument)
+                if position is not None:
+                    gross = position.quantity * action.cash_per_share
+                    tax = position.quantity * action.tax_per_share
+                    account.receivables += gross
+                    dividend_payments.append((action.payment_date or day, gross, tax, action.instrument))
+                    events.append({"kind": "dividend_entitlement", "instrument": action.instrument, "gross": gross, "tax": tax})
+                continue
+            if action.action != "split":
+                raise ValueError(f"unsupported simulation corporate action: {action.action}")
             if action.instrument in account.positions:
                 account.apply_split(action.instrument, action.ratio)
                 # Keep the frozen opening risk in the same (post-split) price
@@ -345,10 +357,17 @@ def run_simulation(spec: StrategySpec, data: SimulationData,
         account.settle_day()
 
         # 6. Mark-to-market, equity, drawdown.
+        for payment in list(dividend_payments):
+            pay_date, gross, tax, instrument = payment
+            if pay_date <= day:
+                account.receivables -= gross
+                account.cash += gross - tax
+                dividend_payments.remove(payment)
+                events.append({"kind": "dividend_payment", "instrument": instrument, "gross": gross, "tax": tax})
         marks = _marks_for(account, data, day)
         equity = account.equity(marks)
         peak_equity = max(peak_equity, equity)
-        market_value = equity - account.cash
+        market_value = equity - account.cash - account.receivables
         day_record.cash = account.cash
         day_record.equity = equity
         day_record.invested_fraction = 0.0 if equity <= 0 else market_value / equity

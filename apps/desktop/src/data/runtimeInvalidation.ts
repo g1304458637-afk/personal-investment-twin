@@ -1,7 +1,7 @@
 /** All successful local write RPCs notify app-scoped read caches. */
 type Change = { subject: string; account: string };
 const listeners = new Set<(change: Change) => void>();
-const writes = new Set(["ingestion.commit_trade_import", "market.commit_price_import", "data.delete_account",
+const writes = new Set(["ledger.commit", "ledger.research", "ingestion.commit_trade_import", "market.commit_price_import", "data.delete_account",
   "review.add_note", "compare.import_share", "compare.revoke_share"]);
 export function onRuntimeDataChange(listener: (change: Change) => void) {
   listeners.add(listener); return () => { listeners.delete(listener); };

@@ -12,7 +12,7 @@ import pandas as pd
 from src.core.canonical_execution import InstrumentRef
 from src.ingestion.contracts import CanonicalImportBundle
 
-PriceType = Literal["adjusted_close", "total_return", "synthetic"]
+PriceType = Literal["unadjusted_close", "adjusted_close", "total_return", "synthetic"]
 PriceSourceTier = Literal["user_provided", "licensed_provider", "synthetic_demo"]
 MarketDataRowStatus = Literal["new_observation", "exact_duplicate", "conflict", "invalid"]
 MarketDataCoverageStatus = Literal["complete", "partial", "missing"]
@@ -39,7 +39,7 @@ class HistoricalPriceFact:
             raise ValueError("historical price requires a qualified instrument")
         if not math.isfinite(self.close) or self.close <= 0:
             raise ValueError("historical price close must be finite and positive")
-        if self.price_type not in {"adjusted_close", "total_return", "synthetic"}:
+        if self.price_type not in {"unadjusted_close", "adjusted_close", "total_return", "synthetic"}:
             raise ValueError("unsupported Market Data Contract price_type")
         if self.source_tier == "synthetic_demo" and self.price_type != "synthetic":
             raise ValueError("synthetic_demo source requires synthetic price_type")

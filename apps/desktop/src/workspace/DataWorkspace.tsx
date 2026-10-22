@@ -1,3 +1,4 @@
+import { LedgerWorkspace } from "@/components/ledger/LedgerWorkspace";
 import { useState } from "react";
 import { ArrowRight, Check, FileText, FolderInput, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -8,15 +9,15 @@ import { useWorkspaceCopy } from "./copy";
 /** Browser workflow has no file input, read API or persistence. Native uses the existing contract. */
 export function DataWorkspace() {
   const data = useDataMode(); const c = useWorkspaceCopy();
-  const [tab, setTab] = useState<"import" | "prices" | "sharing">("import");
+  const [tab, setTab] = useState<"import" | "prices" | "sharing" | "ledger">("import");
   const [step, setStep] = useState(0);
   const [entered, setEntered] = useState(false);
   const [name, setName] = useState("");
   const [zone, setZone] = useState("Asia/Shanghai");
   const preview = entered || data.mode === "demo";
   return <div className="iw-page iw-data"><header className="iw-page-heading"><span className="iw-kicker">DATA / SOURCE OF TRUTH</span><h1>{c.dataTitle}</h1><p>{c.dataDetail}</p></header>
-    <div className="iw-tabs" role="group" aria-label={c.data}>{(["import", "prices", "sharing"] as const).map((item) => <button key={item} aria-pressed={tab === item} onClick={() => setTab(item)}>{c[item]}</button>)}</div>
-    {tab !== "sharing" && data.runtimeAvailable && data.mode === "real_user" ? <DataAccountsPage key={tab} initialKind={tab === "prices" ? "market" : "trade"} /> : tab !== "sharing" ? <>
+    <div className="iw-tabs" role="group" aria-label={c.data}>{(["ledger", "import", "prices", "sharing"] as const).map((item) => <button key={item} aria-pressed={tab === item} onClick={() => setTab(item)}>{item === "ledger" ? "真实账本 / 复盘 / 研究 / 备份" : c[item]}</button>)}</div>
+    {tab === "ledger" ? <LedgerWorkspace/> : tab !== "sharing" && data.runtimeAvailable && data.mode === "real_user" ? <DataAccountsPage key={tab} initialKind={tab === "prices" ? "market" : "trade"} /> : tab !== "sharing" ? <>
       <div className="iw-context-banner"><FolderInput size={18} /><div><strong>{c.browserImport}</strong><p>{tab === "prices" ? c.coverageDetail : c.importDetail}</p></div><span className="iw-badge">{c.previewOnly}</span></div>
       {!preview ? <section className="iw-surface iw-disconnected"><FileText size={32} /><h2>{c.desktopRequired}</h2><p>{c.importDetail}</p><button className="iw-primary" onClick={() => setEntered(true)}>{c.preview}<ArrowRight size={16} /></button></section> : <div className="iw-data-grid"><section className="iw-surface">
         <ol className="iw-stepper" aria-label={c.import}>{[c.source, c.inspect, c.confirm].map((label, index) => <li key={label}><button aria-current={step === index ? "step" : undefined} onClick={() => setStep(index)}><span>{index < step ? <Check size={14} /> : index + 1}</span>{label}</button></li>)}</ol>

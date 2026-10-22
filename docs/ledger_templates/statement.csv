@@ -1,0 +1,3 @@
+﻿row_type,as_of,currency,statement_id,source_ref,cash,equity,symbol,market,security_type,quantity,cost_basis,market_value,executions_from,execution_refs_complete,source_execution_id
+cash,2025-01-05,CNY,SYNTHETIC-statement,SYNTHETIC-QA,15090,16190,,,,,,,2025-01-01,true,
+position,2025-01-05,CNY,,,,,600000,XSHG,equity,200,1000,1100,,,

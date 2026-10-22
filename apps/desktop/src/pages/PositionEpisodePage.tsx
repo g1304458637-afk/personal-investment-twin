@@ -1,3 +1,4 @@
+import { LedgerWorkspace } from "@/components/ledger/LedgerWorkspace";
 import { formatCurrencyValue } from "@/lib/format";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -360,7 +361,7 @@ function ReviewPackEpisodeSection({ mode, subjectId, accountId, episodeId }: {
   </section>;
 }
 
-export function PositionEpisodePage() {
+function LegacyPositionEpisodePage() {
   const { episodeId } = useParams();
   const [search, setSearch] = useSearchParams();
   const sample = !isClassicWorkspace() && isEpisodeSample(search);
@@ -670,3 +671,5 @@ export function PositionEpisodePage() {
     <DecisionDrawer entry={entry} decision={selectedDecision} open={selectedDecision !== null} onOpenChange={(open) => !open && setSelectedDecisionId(null)} optical={optical} />
   </div></CurrencyProvider>;
 }
+
+export function PositionEpisodePage() { const d=useDataMode(); const {episodeId}=useParams(); return d.mode==="real_user" && d.activeAccount?.ledger_enabled ? <LedgerWorkspace episodeId={episodeId}/> : <LegacyPositionEpisodePage/>; }

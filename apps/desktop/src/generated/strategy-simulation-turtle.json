@@ -3365,7 +3365,8 @@
    "fees_and_slippage": "excluded (gross benchmark)",
    "split": "held shares multiplied by split ratio at ex-date open",
    "suspension": "held shares valued at last observed raw close",
-   "delisting": "liquidate at last observed raw close on delist_date; proceeds stay cash"
+   "delisting": "liquidate at last observed raw close on delist_date; proceeds stay cash",
+   "dividends": "gross cash entitlement at ex-date, receivable until payment; withholding tax excluded"
   },
   "performance_stats": {
    "annual_volatility": 0.065435992211973,

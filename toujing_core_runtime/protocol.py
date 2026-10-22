@@ -22,6 +22,8 @@ BASE_METHODS = (
     "runtime.shutdown",
 )
 PRODUCT_METHODS = (
+    "ledger.get", "ledger.preview", "ledger.commit", "ledger.research",
+    "backup.create", "backup.preview_restore", "backup.restore", "backup.pending_preferences", "backup.ack_preferences",
     "ingestion.preview_trade_csv", "ingestion.commit_trade_import",
     "market.preview_price_csv", "market.commit_price_import",
     "account.list", "account.get_data_status", "investments.list", "episode.get",
@@ -169,7 +171,19 @@ def _product_methods(db_path: str | None) -> tuple[dict[str, Callable[[object], 
                 # core_error.
                 raise RuntimeRequestError("storage_unavailable", "local storage operation failed") from exc
         return call
+    from .backup import BackupRuntime
+    from .research import run as research_run
+    backup = BackupRuntime(product)
     methods = {
+        "ledger.research": checked(lambda p: research_run(product, p)),
+        "backup.create": checked(backup.create),
+        "backup.preview_restore": checked(backup.preview),
+        "backup.restore": checked(backup.restore),
+        "backup.pending_preferences": checked(backup.pending),
+        "backup.ack_preferences": checked(backup.ack),
+        "ledger.get": checked(product.ledger_runtime().get),
+        "ledger.preview": checked(product.ledger_runtime().preview),
+        "ledger.commit": checked(product.ledger_runtime().commit),
         "ingestion.preview_trade_csv": checked(product.preview_trade),
         "ingestion.commit_trade_import": checked(product.commit_trade),
         "market.preview_price_csv": checked(product.preview_market),

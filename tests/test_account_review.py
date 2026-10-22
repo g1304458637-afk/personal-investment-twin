@@ -238,6 +238,15 @@ def test_real_source_fingerprint_includes_valuation_driving_account_config():
         def prices(self, subject, account):
             return ()
 
+        def ledger_profile(self, subject, account):
+            return None
+
+        def ledger_events(self, subject, account):
+            return []
+
+        def journal_entries(self, subject, account):
+            return []
+
     params = {"scope_kind": "account", "subject_id": "S", "account_id": "A", "data_mode": "real_user"}
     first = AccountReviewService(SimpleNamespace(repo=Repo(100_000)))
     second = AccountReviewService(SimpleNamespace(repo=Repo(200_000)))

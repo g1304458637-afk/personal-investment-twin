@@ -1,3 +1,4 @@
+import { LedgerWorkspace } from "@/components/ledger/LedgerWorkspace";
 import { useState } from "react";
 import { ArrowRight, FlaskConical, Layers3 } from "lucide-react";
 import { useDataMode } from "@/data/DataModeProvider";
@@ -8,7 +9,7 @@ import { useWorkspaceCopy } from "./copy";
 import { useLocale } from "@/locales/LocaleProvider";
 import { pretradeCopy } from "@/locales/pretrade";
 
-export function PretradeWorkspace() {
+function LegacyPretradeWorkspace() {
   const data = useDataMode(); const c = useWorkspaceCopy();
   const { locale } = useLocale(); const p = pretradeCopy[locale];
   const [entered, setEntered] = useState(false);
@@ -20,3 +21,5 @@ export function PretradeWorkspace() {
     <section className="iw-surface iw-supplement"><span className="iw-kicker">HISTORICAL CONTEXT</span><h2>{c.similar}</h2><p>{c.similarDetail}</p><span className="iw-badge">{c.unavailable}</span></section>
   </div>;
 }
+
+export function PretradeWorkspace() { const d=useDataMode(); return d.mode==="real_user" && d.activeAccount?.ledger_enabled ? <LedgerWorkspace initialTab="research"/> : <LegacyPretradeWorkspace/>; }

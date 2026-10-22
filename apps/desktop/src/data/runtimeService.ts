@@ -74,7 +74,7 @@ export const realUserApi = {
   setEpisodeTags: (params: { subject_id: string; account_id: string; episode_id: string; tags: string[] }) => runtimeRequest<unknown>("episode_tags.set", params),
 };
 
-export interface RuntimeAccount { subject_id: string; account_id: string; display_name: string; initial_cash: number; created_at: string; updated_at: string }
+export interface RuntimeAccount { ledger_enabled?: boolean; subject_id: string; account_id: string; display_name: string; initial_cash: number; created_at: string; updated_at: string }
 export interface RuntimeDataStatus { subject_id: string; account_id: string; execution_count: number; instrument_status: string; fee_status: string; unknown_fee_count: number; market_data: { status: string; required: number; available: number; missing: [string, string[]][] }; review_status: string; last_trade_import: string | null; last_market_import: string | null; latest_market_date: string | null; import_history: Array<{ batch_id: string; kind: string; filename: string; imported_at: string; summary: Record<string, number> }> }
 export interface TradePreview { preview_fingerprint: string; filename: string; batch: { batch_id: string; file_sha256: string }; summary: Record<string, number>; rows: Array<{ row_ref: string; status: string; candidate: null | Record<string, unknown>; issues: Array<{ code: string }> }> }
 export interface MarketPreview { preview_fingerprint: string; filename: string; batch_id: string; file_sha256: string; summary: Record<string, number>; rows: Array<{ row_number: number; status: string; candidate: null | { date: string; symbol: string; close: number; price_type: string }; issues: Array<{ code: string }> }>; missing_required_dates: [string, string[]][] }

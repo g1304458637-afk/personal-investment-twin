@@ -24,7 +24,7 @@ from src.core.canonical_execution import (
 from src.market_data.models import HistoricalPriceFact
 from .private_files import prepare_private_database, restrict_database_files
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 
 class RepositoryError(RuntimeError):
@@ -90,6 +90,36 @@ CREATE TABLE execution_instrument_resolutions (
   source_file_sha256 TEXT NOT NULL, source_row_ref TEXT NOT NULL,
   FOREIGN KEY(execution_id) REFERENCES canonical_executions(execution_id) ON DELETE CASCADE,
   FOREIGN KEY(subject_id, account_id) REFERENCES accounts(subject_id, account_id) ON DELETE CASCADE
+);
+"""
+
+_MIGRATION_3 = """
+CREATE TABLE account_ledger_profiles (
+ subject_id TEXT NOT NULL, account_id TEXT NOT NULL, payload_json TEXT NOT NULL,
+ PRIMARY KEY(subject_id,account_id),
+ FOREIGN KEY(subject_id,account_id) REFERENCES accounts(subject_id,account_id) ON DELETE CASCADE
+);
+CREATE TABLE account_ledger_events (
+ subject_id TEXT NOT NULL, account_id TEXT NOT NULL, event_id TEXT NOT NULL,
+ effective_date TEXT NOT NULL, payload_json TEXT NOT NULL, recorded_at TEXT NOT NULL,
+ PRIMARY KEY(subject_id,account_id,event_id),
+ FOREIGN KEY(subject_id,account_id) REFERENCES accounts(subject_id,account_id) ON DELETE CASCADE
+);
+CREATE TABLE account_reconciliation_runs (
+ subject_id TEXT NOT NULL, account_id TEXT NOT NULL, run_id TEXT NOT NULL,
+ statement_json TEXT NOT NULL, state_fingerprint TEXT NOT NULL,
+ report_json TEXT NOT NULL, recorded_at TEXT NOT NULL,
+ PRIMARY KEY(subject_id,account_id,run_id),
+ FOREIGN KEY(subject_id,account_id) REFERENCES accounts(subject_id,account_id) ON DELETE CASCADE
+);
+CREATE TABLE account_journal_entries (
+ subject_id TEXT NOT NULL, account_id TEXT NOT NULL, entry_id TEXT NOT NULL,
+ entry_type TEXT NOT NULL, payload_json TEXT NOT NULL, recorded_at TEXT NOT NULL,
+ PRIMARY KEY(subject_id,account_id,entry_id),
+ FOREIGN KEY(subject_id,account_id) REFERENCES accounts(subject_id,account_id) ON DELETE CASCADE
+);
+CREATE TABLE desktop_restore_preferences (
+ restore_id TEXT PRIMARY KEY, payload_json TEXT NOT NULL, applied INTEGER NOT NULL DEFAULT 0
 );
 """
 
@@ -177,53 +207,37 @@ class LocalRepository:
         current = int(self.connection.execute("PRAGMA user_version").fetchone()[0])
         if current > SCHEMA_VERSION:
             raise RepositoryError(f"unsupported future schema version {current}")
-        if current == 0:
-            # A pre-versioning database already carries the base tables
-            # (created before schema_migrations existed): stamp it at version 1
-            # so the recorded migrations apply cleanly on top, instead of
-            # failing with "table accounts already exists".
-            base_tables = {
-                row[0]
-                for row in self.connection.execute(
-                    "SELECT name FROM sqlite_master WHERE type='table'"
-                )
-            }
-            if base_tables & {"accounts", "executions"}:
-                # Base layout exists without version metadata. Stamp the
-                # version implied by which migration artifacts are present:
-                # the resolutions table is migration 2's product.
-                stamped = 2 if "execution_instrument_resolutions" in base_tables else 1
-                # Later migration steps INSERT INTO schema_migrations; a
-                # pre-versioning database has never created it.
-                self.connection.executescript(
-                    "BEGIN IMMEDIATE;"
-                    + "\nCREATE TABLE IF NOT EXISTS schema_migrations(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL);"
-                    + f"\nINSERT INTO schema_migrations VALUES({stamped}, datetime('now'));"
-                    + f"\nPRAGMA user_version={stamped};\nCOMMIT;"
-                )
-                current = stamped
-        if current == 0:
+        tables = {row[0] for row in self.connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        if current < 3 and "accounts" in tables and str(self.path) != ":memory:":
+            # SQLite backup includes committed WAL pages, before any migration.
+            import uuid
+            directory = self.path.parent / "backups"
+            directory.mkdir(mode=0o700, exist_ok=True)
+            target = directory / f"{self.path.stem}-before-ledger-v3-{uuid.uuid4().hex}.sqlite3"
+            prepare_private_database(target)
+            with sqlite3.connect(target) as destination:
+                self.connection.backup(destination)
+                if destination.execute("PRAGMA quick_check").fetchone()[0] != "ok":
+                    raise RepositoryError("pre-migration backup validation failed")
+        if current == 0 and tables & {"accounts", "executions"}:
+            stamped = 3 if "account_ledger_profiles" in tables else 2 if "execution_instrument_resolutions" in tables else 1
+            self.connection.executescript(
+                "BEGIN IMMEDIATE; CREATE TABLE IF NOT EXISTS schema_migrations(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL);"
+                + f"INSERT OR IGNORE INTO schema_migrations VALUES({stamped}, datetime('now')); PRAGMA user_version={stamped}; COMMIT;")
+            current = stamped
+        for version, script in ((1, _MIGRATION_1), (2, _MIGRATION_2), (3, _MIGRATION_3)):
+            if current >= version:
+                continue
             try:
-                self.connection.executescript(
-                    "BEGIN IMMEDIATE;\n" + _MIGRATION_1
-                    + "\nCREATE TABLE schema_migrations(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL);"
-                    + "\nINSERT INTO schema_migrations VALUES(1, datetime('now'));"
-                    + "\nPRAGMA user_version=1;\nCOMMIT;"
-                )
+                metadata = "CREATE TABLE schema_migrations(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL);" if version == 1 else ""
+                self.connection.executescript("BEGIN IMMEDIATE;\n" + script + metadata
+                    + f"\nINSERT INTO schema_migrations VALUES({version}, datetime('now'));"
+                    + f"\nPRAGMA user_version={version};\nCOMMIT;")
             except sqlite3.Error as exc:
                 if self.connection.in_transaction:
                     self.connection.rollback()
                 raise RepositoryError(f"migration failed: {exc}") from exc
-            current = 1
-        if current == 1:
-            try:
-                self.connection.executescript("BEGIN IMMEDIATE;\n" + _MIGRATION_2
-                    + "\nINSERT INTO schema_migrations VALUES(2, datetime('now'));"
-                    + "\nPRAGMA user_version=2;\nCOMMIT;")
-            except sqlite3.Error as exc:
-                if self.connection.in_transaction:
-                    self.connection.rollback()
-                raise RepositoryError(f"migration failed: {exc}") from exc
+            current = version
 
     @contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
@@ -357,3 +371,23 @@ class LocalRepository:
     def delete_account(self, subject_id: str, account_id: str) -> bool:
         with self.transaction() as db:
             return bool(db.execute("DELETE FROM accounts WHERE subject_id=? AND account_id=?", (subject_id, account_id)).rowcount)
+
+    def ledger_profile(self, subject_id, account_id):
+        row = self.connection.execute("SELECT payload_json FROM account_ledger_profiles WHERE subject_id=? AND account_id=?",
+            (subject_id, account_id)).fetchone()
+        return json.loads(row[0]) if row else None
+
+    def ledger_events(self, subject_id, account_id):
+        return [{**json.loads(row[0]), "recorded_at": row[1]} for row in self.connection.execute(
+            "SELECT payload_json,recorded_at FROM account_ledger_events WHERE subject_id=? AND account_id=? ORDER BY recorded_at,event_id",
+            (subject_id, account_id))]
+
+    def reconciliation_runs(self, subject_id, account_id):
+        return [dict(row) for row in self.connection.execute(
+            "SELECT run_id,statement_json,state_fingerprint,report_json,recorded_at FROM account_reconciliation_runs "
+            "WHERE subject_id=? AND account_id=? ORDER BY recorded_at DESC,run_id DESC", (subject_id, account_id))]
+
+    def journal_entries(self, subject_id, account_id):
+        return [{**json.loads(row["payload_json"]), "entry_id": row["entry_id"], "entry_type": row["entry_type"], "recorded_at": row["recorded_at"]} for row in self.connection.execute(
+            "SELECT payload_json,recorded_at,entry_id,entry_type FROM account_journal_entries WHERE subject_id=? AND account_id=? ORDER BY recorded_at,entry_id",
+            (subject_id, account_id))]

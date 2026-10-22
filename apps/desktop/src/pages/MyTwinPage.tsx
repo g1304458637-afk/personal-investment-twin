@@ -1,3 +1,5 @@
+import { useDataMode } from "@/data/DataModeProvider";
+import { LedgerWorkspace } from "@/components/ledger/LedgerWorkspace";
 import { ArrowRight, Braces, CircleCheck, Database, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -32,7 +34,7 @@ function shortEvidenceId(value: string) {
   return `${value.slice(0, 11)}…${value.slice(-6)}`;
 }
 
-export default function MyTwinPage() {
+function LegacyMyTwinPage() {
   const { locale, t, formatNumber, formatPercent } = useLocale();
   const { currentSnapshot } = twinState;
   const date = (value: string) => new Intl.DateTimeFormat(locale, {
@@ -195,3 +197,5 @@ export default function MyTwinPage() {
     </div>
   );
 }
+
+export default function MyTwinPage() { const d=useDataMode(); return d.mode==="real_user" && d.activeAccount?.ledger_enabled ? <LedgerWorkspace initialTab="history"/> : <LegacyMyTwinPage/>; }

@@ -116,6 +116,9 @@ class AccountReviewService:
                 account_rows,
                 self.product.repo.executions(subject, account),
                 self.product.repo.prices(subject, account),
+                self.product.repo.ledger_profile(subject, account),
+                self.product.repo.ledger_events(subject, account),
+                self.product.repo.journal_entries(subject, account),
             ))
         return hashlib.sha256(canonical_json_bytes({"scope": scope, "source": source})).hexdigest()
 

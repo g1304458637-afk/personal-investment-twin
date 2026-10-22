@@ -1,3 +1,4 @@
+import { LedgerWorkspace } from "@/components/ledger/LedgerWorkspace";
 
 import { Search, ArrowUpRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -37,7 +38,7 @@ function InvestmentRow({ episode }: { episode: import("@/data/investments").Inve
   </Link>;
 }
 
-export function InvestmentsPage() {
+function LegacyInvestmentsPage() {
   const { locale, t } = useLocale();
   const data = useDataMode();
   const glass = useLiquidCopy();
@@ -146,3 +147,5 @@ function AllocationStrip({ allocation, currency }: { allocation: RuntimeAllocati
     <p className="iw-subtle mt-2">{allocation.definition}</p>
   </section>;
 }
+
+export function InvestmentsPage() { const d=useDataMode(); return d.mode==="real_user" && d.activeAccount?.ledger_enabled ? <LedgerWorkspace initialTab="overview"/> : <LegacyInvestmentsPage/>; }

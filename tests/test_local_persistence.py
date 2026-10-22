@@ -170,7 +170,7 @@ def test_schema_one_upgrade_preserves_original_facts(tmp_path):
     repo = LocalRepository(path)
     try:
         assert [tuple(x) for x in repo.connection.execute("SELECT * FROM accounts")] == before
-        assert repo.connection.execute("PRAGMA user_version").fetchone()[0] == 2
+        assert repo.connection.execute("PRAGMA user_version").fetchone()[0] == 3
         assert repo.connection.execute("SELECT applied_at FROM schema_migrations WHERE version=1").fetchone()[0] == "original"
         assert repo.connection.execute("SELECT COUNT(*) FROM execution_instrument_resolutions").fetchone()[0] == 0
     finally:

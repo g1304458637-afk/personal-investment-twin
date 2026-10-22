@@ -1,3 +1,4 @@
+import { LedgerWorkspace } from "@/components/ledger/LedgerWorkspace";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, BookOpen, MessageCircle, ScanLine } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -33,7 +34,7 @@ function JournalDraft({ episodeId }: { episodeId: string }) {
   </section>;
 }
 
-export function ReviewWorkspace({ view = "review" }: { view?: "review" | "journal" | "ask" }) {
+function LegacyReviewWorkspace({ view = "review" }: { view?: "review" | "journal" | "ask" }) {
   const data = useDataMode(); const { locale, t, formatNumber } = useLocale(); const w = useWorkspaceCopy(); const c = locale === "zh-CN" ? zh : en;
   const location = useLocation(); const navigate = useNavigate();
   const [selectedId, setSelectedId] = useState<string | null>(new URLSearchParams(location.search).get("episode"));
@@ -82,3 +83,5 @@ export function ReviewWorkspace({ view = "review" }: { view?: "review" | "journa
     {data.mode === "demo" && <section className="iw-surface iw-method-study"><span className="iw-kicker">SYNTHETIC / INDEPENDENT METHOD STUDIES</span><h2>{t("Decision evidence")}</h2><p>{t("Standalone legacy example · not the selected account")}</p><div className="iw-context"><Link className="iw-text-link" to="/review/decisions">{t("Selection")} · {t("Sizing")} · {t("Exit")} · {t("Friction")}<ArrowRight size={14} /></Link><Link className="iw-text-link" to="/advanced/evidence">{t("Evidence, method, and source")}<ArrowRight size={14} /></Link></div></section>}
   </div>;
 }
+
+export function ReviewWorkspace(props: Parameters<typeof LegacyReviewWorkspace>[0]) { const d=useDataMode(); return d.mode==="real_user" && d.activeAccount?.ledger_enabled ? <LedgerWorkspace initialTab={props.view==="journal"?"journal":"history"}/> : <LegacyReviewWorkspace {...props}/>; }

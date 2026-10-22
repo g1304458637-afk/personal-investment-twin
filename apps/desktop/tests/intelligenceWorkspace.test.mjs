@@ -40,9 +40,9 @@ test("live importer is only mounted in native real-account mode", async () => {
   assert.doesNotMatch(page,/commitTrades|commitPrices|runtimeRequest|type="file"/);
 });
 
-test("Journal is temporary user input and cannot write financial or model facts", async () => {
+test("Legacy episode Journal draft remains temporary and cannot write financial or model facts", async () => {
   const page=await source("workspace/ReviewWorkspace.tsx");
-  const journal=page.slice(page.indexOf("function JournalDraft"),page.indexOf("export function ReviewWorkspace"));
+  const journal=page.slice(page.indexOf("function JournalDraft"),page.indexOf("function LegacyReviewWorkspace"));
   assert.match(journal,/new Date\(\)\.toISOString\(\)/);
   assert.match(journal,/retrospective/);
   assert.doesNotMatch(journal,/localStorage|sessionStorage|fetch\(|invoke\(|realUserApi|reviewService|\.note\(/);

@@ -53,6 +53,8 @@ def build_review_pack(repo, subject_id: str, account_id: str) -> dict:
                 if item["subject_id"] == subject_id and item["account_id"] == account_id]
     if not accounts:
         raise ValueError("account not found")
+    if repo.ledger_profile(subject_id, account_id) is not None:
+        raise ValueError("ledger_account_requires_ledger_projection: 请使用真实账户工作台的长期复盘，旧版固定资金复盘不适用于含出入金及公司行动的账户。")
     init_cash = float(accounts[0]["initial_cash"])
 
     executions = repo.executions(subject_id, account_id)

@@ -27,6 +27,7 @@ class StrategyAccount:
     initial_cash: float
     cash: float
     positions: dict[str, Position] = field(default_factory=dict)
+    receivables: float = 0.0
 
     @classmethod
     def opening(cls, initial_cash: float) -> "StrategyAccount":
@@ -90,4 +91,4 @@ class StrategyAccount:
         )
 
     def equity(self, marks: dict[str, float]) -> float:
-        return self.cash + self.market_value(marks)
+        return self.cash + self.market_value(marks) + self.receivables

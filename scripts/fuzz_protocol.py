@@ -16,7 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from toujing_core_runtime.protocol import handle_request, _product_methods, run
+from toujing_core_runtime.protocol import handle_request, _product_methods, run, PRODUCT_METHODS
 
 BASE = {"protocol_version": "1", "request_id": "fuzz", "method": "", "params": {}}
 
@@ -48,16 +48,7 @@ def hostile_params() -> list[tuple[str, object]]:
         ("mismatched", {"subject_id": None, "account_id": 3.14, "episode_id": ["e"]}),
     ]
     out: list[tuple[str, object]] = []
-    for method in (
-        "ingestion.preview_trade_csv", "ingestion.commit_trade_import",
-        "market.preview_price_csv", "market.commit_price_import",
-        "account.list", "account.get_data_status", "investments.list", "episode.get",
-        "strategy_comparison.get", "strategy_simulation.run_custom",
-        "strategy_sensitivity.run", "strategy_teaching.explain", "data.delete_account",
-        "review.context", "review.start", "review.poll", "review.add_note",
-        "review_pack.get", "episode_tags.set",
-        "compare.export_share", "compare.import_share", "compare.list_shares", "compare.revoke_share",
-    ):
+    for method in PRODUCT_METHODS:
         for name, params in cases:
             out.append((f"{method}:{name}", params))
     return out

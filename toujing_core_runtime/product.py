@@ -108,6 +108,7 @@ def _bundled_universe_dir():
 
 
 def bundle_from_repository(repo: LocalRepository, subject_id: str, account_id: str) -> CanonicalImportBundle:
+    from .ledger import LedgerRuntime
     items = repo.executions(subject_id, account_id)
     requirements = tuple(
         MarketDataRequirement(
@@ -120,7 +121,9 @@ def bundle_from_repository(repo: LocalRepository, subject_id: str, account_id: s
     return CanonicalImportBundle(
         bundle_id=stable_id("persisted_bundle", [x.execution_id for x in items]), schema_version="1",
         subject_id=subject_id, account_id=account_id, source_metadata_refs=repo.file_hashes(subject_id, account_id, "trade"),
-        accepted_canonical_executions=items, instrument_refs=sorted_instruments(items),
+        accepted_canonical_executions=items, instrument_refs=tuple({
+            **{x.instrument_id: x for x in sorted_instruments(items)},
+            **LedgerRuntime.instruments_from_repository(repo, subject_id, account_id)}.values()),
         data_quality_summary=_summary_zero(len(items)), duplicate_summary=(), replay_eligibility_summary=(),
         market_data_requirements=requirements, limitations=("rebuilt_from_local_canonical_facts",),
     )
@@ -128,8 +131,14 @@ def bundle_from_repository(repo: LocalRepository, subject_id: str, account_id: s
 
 class ProductRuntime:
     def __init__(self, db_path: str | Path) -> None:
+        from .backup import recover_pending
+        recover_pending(db_path)
         self.repo = LocalRepository(db_path)
         self._review_runtime = None
+
+    def ledger_runtime(self):
+        from .ledger import LedgerRuntime
+        return LedgerRuntime(self)
 
     def review_pack(self, params: Mapping[str, object]) -> dict[str, object]:
         subject = _required_text(params, "subject_id")
@@ -234,7 +243,7 @@ class ProductRuntime:
                     accepted.append(row.candidate)
         imported_at = _now(params)
         initial_cash = float(params.get("initial_cash", 100000))
-        if not math.isfinite(initial_cash) or initial_cash <= 0:
+        if not math.isfinite(initial_cash) or initial_cash < 0 or (initial_cash == 0 and not self.repo.ledger_profile(subject, account)):
             raise ValueError("initial_cash must be finite and positive")
         existing_account = next(
             (item for item in self.repo.list_accounts()
@@ -312,7 +321,8 @@ class ProductRuntime:
     def accounts(self, params: Mapping[str, object]) -> dict[str, object]:
         if params:
             raise ValueError("params must be empty")
-        return {"accounts": self.repo.list_accounts(), "data_mode": "real_user"}
+        return {"accounts": [{**x, "ledger_enabled": self.repo.ledger_profile(x["subject_id"], x["account_id"]) is not None}
+            for x in self.repo.list_accounts()], "data_mode": "real_user"}
 
     def data_status(self, params: Mapping[str, object]) -> dict[str, object]:
         subject, account = _required_text(params, "subject_id"), _required_text(params, "account_id")
@@ -355,6 +365,8 @@ class ProductRuntime:
         if not accounts:
             raise ValueError("account not found")
         bundle, facts = bundle_from_repository(self.repo, subject, account), self.repo.prices(subject, account)
+        if self.repo.ledger_profile(subject, account) is not None:
+            return accounts[0], bundle, facts, None, "ledger_account_requires_ledger_projection"
         if _currency_context(bundle, facts)[1]:
             return accounts[0], bundle, facts, None, "unavailable_mixed_currency_without_fx"
         if not facts:
@@ -416,6 +428,7 @@ class ProductRuntime:
                 "allocation": allocation_block(entries), "episodes": entries}
 
     _LIFECYCLE_UNAVAILABLE_REASONS = {
+        "ledger_account_requires_ledger_projection": "请使用真实账户工作台查看含出入金及公司行动的账本。",
         "unavailable_pending_market_data": "exact required daily market observations are incomplete",
         "unavailable_replay_ineligible": "recorded executions are not replay-eligible",
         "unavailable_mixed_currency_without_fx": "mixed-currency accounting without FX conversion is unsupported",

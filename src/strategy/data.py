@@ -40,6 +40,9 @@ class CorporateAction:
     ex_date: date
     action: str
     ratio: float
+    cash_per_share: float = 0.0
+    payment_date: date | None = None
+    tax_per_share: float = 0.0
 
 
 @dataclass(frozen=True, slots=True)

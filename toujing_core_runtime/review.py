@@ -241,7 +241,8 @@ class ReviewRuntime:
             source = _pair().comparison_id
         else:
             subject, account = (_text(params, k) for k in ("subject_id", "account_id"))
-            source = json_value((self.product.repo.executions(subject, account), self.product.repo.prices(subject, account)))
+            source = json_value((self.product.repo.executions(subject, account), self.product.repo.prices(subject, account),
+                self.product.repo.ledger_profile(subject, account), self.product.repo.ledger_events(subject, account), self.product.repo.journal_entries(subject, account)))
         return hashlib.sha256(canonical_json_bytes(source)).hexdigest()
 
     def add_note(self, params):

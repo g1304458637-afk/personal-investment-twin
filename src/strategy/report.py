@@ -22,6 +22,7 @@ BUY_HOLD_POLICY = {
     "split": "held shares multiplied by split ratio at ex-date open",
     "suspension": "held shares valued at last observed raw close",
     "delisting": "liquidate at last observed raw close on delist_date; proceeds stay cash",
+    "dividends": "gross cash entitlement at ex-date, receivable until payment; withholding tax excluded",
 }
 
 
@@ -148,17 +149,26 @@ def buy_and_hold_curve(data: SimulationData, initial_cash: float) -> list[dict]:
     cash = {instrument: allocation for instrument in instruments}
     shares = {instrument: 0.0 for instrument in instruments}
     entered: set[str] = set()
+    pending_dividends: list[tuple[date, float]] = []
+    dividend_cash = 0.0
     actions_by_day: dict[date, list] = {}
     for action in data.actions:
-        if action.action == "split":
-            actions_by_day.setdefault(action.ex_date, []).append(action)
+        actions_by_day.setdefault(action.ex_date, []).append(action)
     curve = []
     for day in data.dates:
         # Match the engine's event ordering: split at open, then delisting
         # liquidation at the last real close.  Never synthesize a new price.
         for action in actions_by_day.get(day, ()):
             if action.instrument in shares and shares[action.instrument] > 0:
-                shares[action.instrument] *= action.ratio
+                if action.action == "split":
+                    shares[action.instrument] *= action.ratio
+                elif action.action == "cash_dividend":
+                    pending_dividends.append((action.payment_date or day, shares[action.instrument]*action.cash_per_share))
+        paid = sum(amount for pay_date, amount in pending_dividends if pay_date <= day)
+        # Dividend cash is not automatically reinvested.
+        pending_dividends = [(pay_date, amount) for pay_date, amount in pending_dividends if pay_date > day]
+        if instruments:
+            dividend_cash += paid
         listed = set(data.listed_on(day))
         for inst in instruments:
             member = data.members[inst]
@@ -177,7 +187,7 @@ def buy_and_hold_curve(data: SimulationData, initial_cash: float) -> list[dict]:
                     shares[inst] = cash[inst] / bar.close
                     cash[inst] = 0.0
                     entered.add(inst)
-        total = sum(cash.values())
+        total = dividend_cash + sum(cash.values()) + sum(amount for _, amount in pending_dividends)
         for inst in instruments:
             if shares[inst] > 0:
                 series = data.series.get(inst)

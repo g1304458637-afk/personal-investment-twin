@@ -1,0 +1,4 @@
+﻿event_id,event_type,effective_date,currency,source_ref,symbol,market,security_type,amount,tax,ex_date,ratio,quantity,subscription_id,sequence,note
+SYNTHETIC-deposit,deposit,2025-01-04,CNY,SYNTHETIC-QA,,,,5000,,,,,,,
+SYNTHETIC-split,split,2025-01-02,CNY,SYNTHETIC-QA,600000,XSHG,equity,,,,2,,,,
+SYNTHETIC-dividend,cash_dividend,2025-01-05,CNY,SYNTHETIC-QA,600000,XSHG,equity,100,10,2025-01-03,,,,,

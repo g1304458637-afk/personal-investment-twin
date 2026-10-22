@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
+import { resumeRestoredPreferences } from "./ledger";
 import { isTauriRuntime, realUserApi, type RuntimeAccount } from "./runtimeService";
 import { readCurrentAccounts } from "./currentAccountRead";
 import { positionEpisodeDemo } from "./backendEvidence";
@@ -45,7 +46,11 @@ export function DataModeProvider({ children }: { children: ReactNode }) {
     setActiveAccount((current) => result.accounts.find((x) => x.account_id === current?.account_id && x.subject_id === current?.subject_id) ?? result.accounts[0] ?? null);
   };
   useEffect(() => {
-    void refresh().catch(() => { /* Current failures are already displayed by refresh. */ });
+    const initialize = async () => {
+      if (runtimeAvailable && await resumeRestoredPreferences()) return;
+      await refresh();
+    };
+    void initialize().catch(value => { setError(String(value)); setAccountsLoading(false); });
     return () => { generation.current += 1; };
   }, []); // runtime lifecycle is app-scoped
   useEffect(() => {
@@ -60,7 +65,7 @@ export function DataModeProvider({ children }: { children: ReactNode }) {
           const entries = positionEpisodeDemo.entries.filter(entry => entry.episode.subjectId === account.subjectId && entry.episode.accountId === account.accountId);
           const episode = entries.find(entry => entry.episode.episodeId === positionEpisodeDemo.defaultEpisodeId)?.episode ?? entries[0]?.episode;
           if (episode && !cancelled) await reviewSessions.prefetch({subject_id:episode.subjectId, account_id:account.accountId, episode_id:episode.episodeId, data_mode:"synthetic_showcase"});
-        } else {
+        } else if (!activeAccount.ledger_enabled) {
           const result = await realUserApi.investments(activeAccount.subject_id, activeAccount.account_id);
           const episode = result.episodes[0];
           if (episode && !cancelled) await reviewSessions.prefetch({subject_id:activeAccount.subject_id, account_id:activeAccount.account_id, episode_id:episode.episode_id, data_mode:"real_user"});

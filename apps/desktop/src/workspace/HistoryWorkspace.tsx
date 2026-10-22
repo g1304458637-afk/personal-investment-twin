@@ -1,3 +1,4 @@
+import { LedgerWorkspace } from "@/components/ledger/LedgerWorkspace";
 import { ArrowRight, Database, FlaskConical, LockKeyhole, UsersRound } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -19,7 +20,7 @@ const dateText = (value: string | null, locale: string) => value
   : "—";
 
 
-export function HistoryWorkspace({
+function LegacyHistoryWorkspace({
   initialSection = "history",
   view,
 }: {
@@ -87,3 +88,5 @@ export function HistoryWorkspace({
     </>}
   </div>;
 }
+
+export function HistoryWorkspace(props: Parameters<typeof LegacyHistoryWorkspace>[0]) { const d=useDataMode(); return d.mode==="real_user" && d.activeAccount?.ledger_enabled ? <LedgerWorkspace initialTab="history"/> : <LegacyHistoryWorkspace {...props}/>; }

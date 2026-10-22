@@ -92,8 +92,9 @@ export function DataAccountsPage({ initialKind = "trade" }: { initialKind?: Kind
       .catch((value) => { if (!cancelled) setError(String(value)); });
     return () => { cancelled = true; };
   }, [active, statusReloadKey]);
+  useEffect(() => { if(active?.ledger_enabled) { setSubjectId(active.subject_id); setAccountId(active.account_id); setDisplayName(active.display_name); setInitialCash(String(active.initial_cash)); } }, [active]);
   const parsedInitialCash = Number(initialCash);
-  const initialCashInvalid = !Number.isFinite(parsedInitialCash) || parsedInitialCash <= 0;
+  const initialCashInvalid = !Number.isFinite(parsedInitialCash) || parsedInitialCash < 0 || (parsedInitialCash === 0 && !active?.ledger_enabled);
   const params = () => ({ file_path: file?.path, subject_id: subjectId, account_id: accountId,
     display_name: displayName, initial_cash: parsedInitialCash, source_timezone: timezone,
     use_source_row_order_as_sequence: true, source_id: sourceId, source_version: sourceVersion,
