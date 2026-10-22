@@ -24,7 +24,8 @@ CSV 文本，不支持 Excel；Excel 工作簿请先另存为 CSV 再导入。
 - 费用：generic_csv_v1 只有一个 ``fee`` 字段。若导出含“手续费”（总额
   列）则直接取该列；否则将 佣金+印花税+过户费+经手费+证管费+其他费
   求和，总额列与分项列不重复累计。文件完全没有费用列时不输出 ``fee``
-  列（generic 记为 unknown，仅告警）；费用单元格为空按 0 计。
+  列（generic 记为 unknown，仅告警）；选定的总额单元格为空，或任一
+  已导出的分项单元格为空时，输出空 ``fee``（unknown），不把缺失当零。
 - 价格/数量/费用支持千分位逗号与“元”后缀；数量为整数时输出整数形式。
 - 行序保持原文件顺序，不排序、不去重（重复检测由既有管道负责）。
 
@@ -444,13 +445,15 @@ def convert_to_generic_csv(raw: bytes, broker: str) -> str:
                 fee_sources = [
                     (index, spec["fee_parts"][0]) for index in fee_part_indexes
                 ]
+            fee_unknown = False
             for index, label in fee_sources:
                 cell = row[index] if index < len(row) else ""
                 cleaned = _clean_number(cell)
                 if not cleaned:
+                    fee_unknown = True
                     continue
                 fee_value += _to_decimal(cleaned, offset, label, cell)
-            record.append(_decimal_text(fee_value))
+            record.append("" if fee_unknown else _decimal_text(fee_value))
         if execution_id_index is not None:
             record.append(_cell(row, columns, "execution_id"))
         writer.writerow(record)

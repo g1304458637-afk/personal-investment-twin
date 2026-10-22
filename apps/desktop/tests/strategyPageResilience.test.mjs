@@ -52,7 +52,7 @@ test("built-in chunk loads catch failures and stale data is gated by a strategy-
   const page = await source("../src/pages/StrategySimulationPage.tsx");
   assert.match(page, /entry\.load\(\)\.then\(\(module\) => \{[\s\S]*?\}\)\.catch\(/);
   assert.match(page, /setStrategyLoadError/);
-  assert.match(page, /simulationReady = isUserStrategy\s*\?\s*!!userArtifacts\[strategyId\]\s*:\s*simulation\.strategy\.strategyId === strategyId/);
+  assert.match(page, /simulationReady = isUserStrategy\s*\?\s*!!currentUserArtifact && simulation === currentUserArtifact\s*:\s*simulation\.strategy\.strategyId === strategyId/);
   assert.match(page, /!simulationReady && !isUserStrategy \? strategyLoadError/);
 });
 
@@ -68,8 +68,8 @@ test("sensitivity runs carry a generation guard against late responses", async (
   const page = await source("../src/pages/StrategySimulationPage.tsx");
   assert.match(page, /const sensitivityGeneration = useRef\(0\)/);
   assert.match(page, /const generation = \+\+sensitivityGeneration\.current;/);
-  assert.match(page, /if \(generation !== sensitivityGeneration\.current\) return;/);
-  assert.match(page, /\[strategyId, sensitivityParam\]\)/);
+  assert.match(page, /generation !== sensitivityGeneration\.current \|\| context !== sensitivityContextRef\.current/);
+  assert.match(page, /\[sensitivityContext\]\)/);
 });
 
 test("chart axis formats dates in UTC and the stats card reuses the money currency", async () => {
@@ -100,9 +100,13 @@ test("workshop numeric inputs keep a string draft and clamp on commit", async ()
 });
 
 test("runtime transport treats null/false/0 results as payloads, not errors", async () => {
-  const service = await source("../src/data/runtimeService.ts");
-  assert.match(service, /if \(!response\.ok \|\| response\.error\) throw/);
-  assert.doesNotMatch(service, /!response\.result/);
+  const { runtimeResponseError } = await import("../src/data/runtimeResponse.ts");
+  for (const result of [null, false, 0]) {
+    assert.equal(runtimeResponseError({ ok: true, result, error: null }), null);
+  }
+  assert.match(runtimeResponseError({ ok: false, result: null, error: null }).message, /runtime_request_failed/);
+  assert.match(runtimeResponseError({ ok: true, result: 0, error: { code: "bad", message: "broken" } }).message, /broken/);
+  assert.match(runtimeResponseError({ ok: false, result: null, error: { code: "runtime_outcome_unknown", message: "timeout" } }).message, /重新读取账户数据.*避免重复提交/);
 });
 
 const MISSING_I18N_KEYS = [

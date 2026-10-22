@@ -1,11 +1,13 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { StrategyWorkshop, type WorkshopDraft } from "@/components/strategy/StrategyWorkshop";
 import { WorkshopNumberInput } from "@/components/strategy/WorkshopNumberInput";
 import { strategyLibrary } from "@/data/strategyLibrary";
 import { isTauriRuntime, LONG_TIMEOUT_MS, runtimeRequest } from "@/data/runtimeService";
 import { adaptStrategySimulation, type StrategySimulationView } from "@/data/strategySimulation";
+import { strategySimulation } from "@/data/strategySimulationDemo";
 import { useDataMode } from "@/data/DataModeProvider";
+import { onRuntimeDataChange } from "@/data/runtimeInvalidation";
 import { useLocale } from "@/locales/LocaleProvider";
 import { newUserStrategyId, readUserStrategies, type SavedUserStrategy } from "@/lib/userStrategyLibrary";
 import {
@@ -18,6 +20,7 @@ import { EChart } from "@/components/charts/EChart";
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { formatCurrencyValue } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { accountIdentity, confirmedActiveAccount, LatestRunGate, ScopeRevision, strategyRunKey } from "@/lib/strategyRunContext";
 
 import "./my-strategies.css";
 import "./strategy-simulation.css";
@@ -91,13 +94,35 @@ export function MyStrategiesPage() {
   const [runStateMap, setRunState] = useState<Record<string, "loading" | "ready" | "error">>({});
   const [runErrors, setRunErrors] = useState<Record<string, string>>({});
   const [artifacts, setArtifacts] = useState<Record<string, StrategySimulationView>>({});
+  const scopeRevisionRef = useRef(new ScopeRevision());
+  const globalScope = JSON.stringify([data.mode, data.activeAccount?.subject_id ?? null,
+    data.activeAccount?.account_id ?? null, data.mode === "demo" ? data.exampleAccount.key : null]);
+  const scopeRevision = scopeRevisionRef.current.update(globalScope);
+  const [runAccountConfirmation, setRunAccountConfirmation] = useState<{ key: string; scopeRevision: number } | null>(null);
+  const runAccount = confirmedActiveAccount(runAccountConfirmation, data.activeAccount, scopeRevision);
+  const [sourceRevision, setSourceRevision] = useState(0);
+  useEffect(() => onRuntimeDataChange((change) => {
+    if (change.subject === runAccount?.subject_id && change.account === runAccount?.account_id) {
+      setSourceRevision((value) => value + 1);
+    }
+  }), [runAccount?.subject_id, runAccount?.account_id]);
+  const runGate = useRef(new LatestRunGate());
 
   const currency = "CNY";
   const money = (value: number) => formatCurrencyValue(value, locale, currency);
   const selected = saved.find((item) => item.id === selectedId) ?? null;
-  const artifact = selectedId ? artifacts[selectedId] ?? null : null;
-  const runState: "loading" | "ready" | "error" | null = selectedId ? runStateMap[selectedId] ?? null : null;
-  const runError = selectedId ? runErrors[selectedId] ?? null : null;
+  const runKey = selected ? strategyRunKey({
+    strategyId: selected.id, spec: selected.spec, mode: data.mode,
+    subjectId: data.mode === "demo" ? data.exampleAccount.subjectId : runAccount?.subject_id ?? null,
+    accountId: data.mode === "demo" ? data.exampleAccount.accountId : runAccount?.account_id ?? null,
+    sourceFingerprint: `${data.mode === "demo" ? strategySimulation.dataFingerprint : `${runAccount?.updated_at ?? "missing"}:${sourceRevision}`}:${scopeRevision}`,
+    universe: data.mode === "demo" ? "synthetic" : "own_account",
+  }) : "";
+  runGate.current.setContext(runKey);
+  useEffect(() => () => runGate.current.invalidate(), []);
+  const artifact = runKey ? artifacts[runKey] ?? null : null;
+  const runState: "loading" | "ready" | "error" | null = runKey ? runStateMap[runKey] ?? null : null;
+  const runError = runKey ? runErrors[runKey] ?? null : null;
 
   const persist = (next: typeof saved) => {
     setSaved(next);
@@ -149,29 +174,35 @@ export function MyStrategiesPage() {
   };
 
   const run = (entry: { id: string; spec: Record<string, unknown> }) => {
-    setRunState((state) => ({ ...state, [entry.id]: "loading" }));
-    setRunErrors((state) => ({ ...state, [entry.id]: "" }));
-    const base: Record<string, unknown> = { strategy: entry.spec, universe: "own_account" };
-    if (data.activeAccount) {
-      base.subject_id = data.activeAccount.subject_id;
-      base.account_id = data.activeAccount.account_id;
+    if (!runKey || (data.mode === "real_user" && !runAccount)) return;
+    const generation = runGate.current.begin(runKey);
+    setArtifacts((state) => { const next = { ...state }; delete next[runKey]; return next; });
+    setRunState((state) => ({ ...state, [runKey]: "loading" }));
+    setRunErrors((state) => ({ ...state, [runKey]: "" }));
+    const base: Record<string, unknown> = { strategy: entry.spec,
+      universe: data.mode === "demo" ? "synthetic" : "own_account" };
+    if (data.mode === "real_user" && runAccount) {
+      base.subject_id = runAccount.subject_id;
+      base.account_id = runAccount.account_id;
     }
     runtimeRequest<{ status: string; reason: string | null; artifact: unknown }>(
       "strategy_simulation.run_custom", base, LONG_TIMEOUT_MS)
       .then((result) => {
+        if (!runGate.current.accepts(runKey, generation)) return;
         if (result.status === "available" && result.artifact) {
-          setArtifacts((state) => ({ ...state, [entry.id]: adaptStrategySimulation(result.artifact) }));
-          setRunState((state) => ({ ...state, [entry.id]: "ready" }));
+          setArtifacts((state) => ({ ...state, [runKey]: adaptStrategySimulation(result.artifact) }));
+          setRunState((state) => ({ ...state, [runKey]: "ready" }));
         } else {
           // Failure lands in the "error" run state so the run button and
           // the reason stay visible and the strategy can be re-run.
-          setRunErrors((state) => ({ ...state, [entry.id]: result.reason ?? "运行失败" }));
-          setRunState((state) => ({ ...state, [entry.id]: "error" }));
+          setRunErrors((state) => ({ ...state, [runKey]: result.reason ?? "运行失败" }));
+          setRunState((state) => ({ ...state, [runKey]: "error" }));
         }
       })
       .catch((value) => {
-        setRunErrors((state) => ({ ...state, [entry.id]: value instanceof Error ? value.message : String(value) }));
-        setRunState((state) => ({ ...state, [entry.id]: "error" }));
+        if (!runGate.current.accepts(runKey, generation)) return;
+        setRunErrors((state) => ({ ...state, [runKey]: value instanceof Error ? value.message : String(value) }));
+        setRunState((state) => ({ ...state, [runKey]: "error" }));
       });
   };
 
@@ -325,15 +356,24 @@ export function MyStrategiesPage() {
         <div className="strategy-panel__head">
           <p className="iw-kicker">{t("Custom strategy")} · {selected.name}</p>
         </div>
+        {isTauriRuntime() && data.mode === "real_user" ? <label className="workshop-inline-num">
+          {locale === "zh-CN" ? "运行账户" : "Run account"}
+          <select aria-label={locale === "zh-CN" ? "运行账户" : "Run account"} value={runAccount ? accountIdentity(runAccount) : ""}
+            onChange={(event) => setRunAccountConfirmation(event.target.value ? { key: event.target.value, scopeRevision } : null)}>
+            <option value="">{locale === "zh-CN" ? "请选择账户" : "Select an account"}</option>
+            {data.activeAccount ? <option value={accountIdentity(data.activeAccount)}>{data.activeAccount.display_name} · {data.activeAccount.account_id}</option> : null}
+          </select>
+        </label> : null}
         {!isTauriRuntime() ? <p className="strategy-comparison-note">{t("Running custom strategies needs the desktop app (browser preview cannot execute them).")}</p>
+          : data.mode === "real_user" && !runAccount ? <p className="strategy-comparison-note" role="alert">{locale === "zh-CN" ? "请先选择真实账户。" : "Select a real account before running."}</p>
           : runState === "loading" ? <p className="strategy-comparison-note">{t("Running on history…")}</p>
-          : runState === "ready" && artifact ? null
           : <div>
               <button type="button" className="workshop-save" onClick={() => run(selected)}>{t("Run on history")}</button>
               {runError ? <p role="alert" className="strategy-compare__note">{t("Run failed")}: {runError}</p> : null}
             </div>}
         {artifact ? (
           <div className="space-y-4">
+            <p className="strategy-comparison-note">{data.mode === "demo" ? t("Synthetic demo universe") : t("My own traded instruments (real market, hfq)")} · {data.mode === "real_user" && runAccount ? `${runAccount.display_name} (${runAccount.subject_id}/${runAccount.account_id}) · ` : ""}{t("Data fingerprint")}: {artifact.dataFingerprint}</p>
             <div className="strategy-stats">
               <div className="strategy-stat"><p className="strategy-stat__label">{t("Final equity")}</p><p className="strategy-stat__value">{money(artifact.summary.finalEquity)}</p></div>
               <div className="strategy-stat"><p className="strategy-stat__label">{t("Total return")}</p><p className={cn("strategy-stat__value", artifact.summary.totalReturn > 0 && "is-positive", artifact.summary.totalReturn < 0 && "is-negative")}>{percent(artifact.summary.totalReturn)}</p></div>

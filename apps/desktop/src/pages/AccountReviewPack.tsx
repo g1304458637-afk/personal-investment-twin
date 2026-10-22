@@ -14,6 +14,7 @@ import { useLocale } from "@/locales/LocaleProvider";
 import { downloadText, toCsv } from "@/lib/download";
 import { formatCurrencyValue } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { reviewPackBelongsToAccount } from "@/lib/reviewPackOwnership";
 
 import "./review-pack.css";
 
@@ -37,32 +38,30 @@ export function useAccountReviewPack(
   mode: ReviewPackMode,
   reloadKey: number,
 ): AccountReviewPackState {
-  const [state, setState] = useState<{ pack: ReviewPackView | null; loading: boolean; error: string | null }>(
-    { pack: null, loading: false, error: null });
+  const scope = JSON.stringify([mode, subjectId, accountId, reloadKey]);
+  const [state, setState] = useState<AccountReviewPackState & { scope: string }>(
+    { scope: "", pack: null, loading: false, error: null });
   useEffect(() => {
     let cancelled = false;
-    setState({ pack: null, loading: false, error: null });
+    setState({ scope, pack: null, loading: false, error: null });
     if (!subjectId || !accountId) return;
-    setState({ pack: null, loading: true, error: null });
+    setState({ scope, pack: null, loading: true, error: null });
     const load: Promise<ReviewPackView> = mode === "demo"
       ? import("@/data/reviewPackDemo").then((module) => module.reviewPackDemo)
       : realUserApi.reviewPack({ subject_id: subjectId, account_id: accountId }).then((raw) => adaptReviewPack(raw));
     load.then((pack) => {
       if (cancelled) return;
-      // Real accounts must never render another account's review pack. The
-      // demo artifact describes the demo universe as a whole (it is validated
-      // by the same fail-closed adapter); matching stays by episode_id there
-      // and absent records render as honest insufficient states.
-      if (mode !== "demo" && (pack.subjectId !== subjectId || pack.accountId !== accountId)) {
+      // Demo and real packs have the same account ownership boundary.
+      if (!reviewPackBelongsToAccount(pack, subjectId, accountId)) {
         throw new Error("review_pack_account_mismatch");
       }
-      setState({ pack, loading: false, error: null });
+      setState({ scope, pack, loading: false, error: null });
     }).catch((value) => {
-      if (!cancelled) setState({ pack: null, loading: false, error: value instanceof Error ? value.message : String(value) });
+      if (!cancelled) setState({ scope, pack: null, loading: false, error: value instanceof Error ? value.message : String(value) });
     });
     return () => { cancelled = true; };
-  }, [subjectId, accountId, mode, reloadKey]);
-  return state;
+  }, [subjectId, accountId, mode, reloadKey, scope]);
+  return state.scope === scope ? state : { pack: null, loading: false, error: null };
 }
 
 function Limitations({ items }: { items: string[] }) {

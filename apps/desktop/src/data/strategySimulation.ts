@@ -54,6 +54,7 @@ export interface StrategySummaryView {
   annualizedReturn: number | null;
   sharpeRatio: number | null;
   benchmarkBuyHold: { date: string; equity: number }[];
+  benchmarkBuyHoldPolicy: Record<string, string> | null;
   maxDrawdown: number;
   maxDrawdownPeakDate: string;
   maxDrawdownTroughDate: string;
@@ -228,6 +229,8 @@ function summary(raw: unknown): StrategySummaryView {
           date: day(item.date), equity: finite(item.equity),
         }))
       : [],
+    benchmarkBuyHoldPolicy: value.benchmark_buy_hold_policy === undefined ? null
+      : Object.fromEntries(Object.entries(object(value.benchmark_buy_hold_policy)).map(([key, item]) => [text(key), text(item)])),
     roundTrips,
     // Optional: absent in artifacts generated before r_multiple_stats existed.
     rMultipleStats: value.r_multiple_stats === undefined ? null : rMultipleStats(value.r_multiple_stats),

@@ -1,0 +1,152 @@
+{
+ "account_id": "SYN_STUDY_SHOWCASE",
+ "as_of": "2025-12-31",
+ "behavior_flags": {
+  "limitations": [
+   "tilt 为确定性规则下的描述性观察，只描述可观测事实，不推断心理动机，不构成诊断。",
+   "触发规则：连续 3 个已闭合 episode 净已实现盈亏 < 0（含费净额口径）。",
+   "全历史成交不足 20 笔时样本不足，不输出任何观察。",
+   "交易日轴来自可用日线价格观测日并集，不是交易所官方日历。",
+   "观察窗口与基线均按交易日计数；触发后窗口与下一触发不重叠。",
+   "此复盘包与“我的年度投资 · 示例”共用合成成交和收盘行情；不代表真实账户、真实市场或真实业绩。"
+  ],
+  "tilt": []
+ },
+ "calendar": {
+  "days": [
+   {
+    "closed_count": 1,
+    "date": "2025-06-06",
+    "realized_pnl": -630.0
+   },
+   {
+    "closed_count": 1,
+    "date": "2025-06-13",
+    "realized_pnl": 3980.0
+   }
+  ],
+  "limitations": [
+   "realized P&L 按退出日（平仓成交的日历日）归属，不是开仓日，也不是按月持有期分摊。",
+   "仅统计已闭合 episode；未平仓浮动盈亏不出现在日历中。",
+   "空月/空日不出现在列表中：前端绘制热力图或日历视图时需自行补零。",
+   "金额为 canonical 成交含费净额，保持账户原始币种，不做汇率换算。",
+   "同一日多笔平仓合并为一行，closed_count 为该日平仓的 episode 数。",
+   "此复盘包与“我的年度投资 · 示例”共用合成成交和收盘行情；不代表真实账户、真实市场或真实业绩。"
+  ],
+  "months": [
+   {
+    "closed_count": 2,
+    "month": "2025-06",
+    "realized_pnl": 3350.0,
+    "win_count": 1
+   }
+  ]
+ },
+ "coverage": {
+  "episode_count": 5,
+  "execution_count": 20,
+  "first_date": "2025-01-02",
+  "last_date": "2025-11-14"
+ },
+ "data_tier": "synthetic",
+ "episode_identity_mapping": [
+  {
+   "canonical_episode_id": "pe_d58e428ff71a3ef4024056785b91c6a27983c8d313193c82f9a576e6470801a3",
+   "canonical_instrument_id": "inst_v2_1028392369b65524b98a7b660a6c7e5434a3682e9e8db384c67443a3a407b6ca",
+   "display_episode_id": "pe_6bcbc3de0f2a744a9e4b553187bb4dc1736f92c641e18dfee9dc0bfec309a964",
+   "display_instrument_id": "SYN_GROWTH"
+  },
+  {
+   "canonical_episode_id": "pe_bb4b4dcf54ddc93a5a4b9b8e71cff8c33dcb7d0247ad9bd7a7fc074fdf4056a4",
+   "canonical_instrument_id": "inst_v2_e6e56d83d3d58711bb77012bc1aee6ed84f1dc85858e3d8396e1662ee57f2f2a",
+   "display_episode_id": "pe_a92f86148e2030927e41ea94270250cd219dfbb1b84b937fe2cfe9b0078ecae2",
+   "display_instrument_id": "SYN_VALUE"
+  }
+ ],
+ "episode_tags": [],
+ "exit_quality": {
+  "episodes": [
+   {
+    "episode_id": "pe_a92f86148e2030927e41ea94270250cd219dfbb1b84b937fe2cfe9b0078ecae2",
+    "exit_efficiency": 1.0,
+    "facts": {
+     "hold_days": 162,
+     "peak_date": "2025-06-13",
+     "trough_date": "2025-02-20"
+    },
+    "giveback_ratio": 0.0,
+    "hold_baseline_delta": 385.0,
+    "hold_baseline_pnl": 3595.0,
+    "instrument": "SYN_VALUE",
+    "limitations": [
+     "MFE/MAE 用持仓窗口内日线收盘价对 episode 层仓位逐日 mark-to-market，盘中极值不可见。",
+     "盈亏金额为 canonical 成交口径的净额，费用按 canonical 事实含入。",
+     "价格缺失日直接跳过，不做前向填充（遵循仓库既有市场数据原则）。",
+     "mfe_pct/mae_pct 是相对窗口内最大持仓市值（收盘口径）的小数比例，不是百分数。",
+     "exit_efficiency 仅在 MFE>0 且已实现盈亏>0 时给出；giveback_ratio 上限为 1。",
+     "此复盘包与“我的年度投资 · 示例”共用合成成交和收盘行情；不代表真实账户、真实市场或真实业绩。"
+    ],
+    "mae_amount": -585.0199999999996,
+    "mae_pct": -0.03041555060142744,
+    "mfe_amount": 3980.0,
+    "mfe_pct": 0.20692265459929793,
+    "realized_pnl": 3980.0,
+    "status": "closed"
+   },
+   {
+    "episode_id": "pe_6bcbc3de0f2a744a9e4b553187bb4dc1736f92c641e18dfee9dc0bfec309a964",
+    "exit_efficiency": null,
+    "facts": {
+     "hold_days": 144,
+     "peak_date": "2025-03-21",
+     "trough_date": "2025-04-04"
+    },
+    "giveback_ratio": 1.0,
+    "hold_baseline_delta": -825.0,
+    "hold_baseline_pnl": 195.0,
+    "instrument": "SYN_GROWTH",
+    "limitations": [
+     "MFE/MAE 用持仓窗口内日线收盘价对 episode 层仓位逐日 mark-to-market，盘中极值不可见。",
+     "盈亏金额为 canonical 成交口径的净额，费用按 canonical 事实含入。",
+     "价格缺失日直接跳过，不做前向填充（遵循仓库既有市场数据原则）。",
+     "mfe_pct/mae_pct 是相对窗口内最大持仓市值（收盘口径）的小数比例，不是百分数。",
+     "exit_efficiency 仅在 MFE>0 且已实现盈亏>0 时给出；giveback_ratio 上限为 1。",
+     "此复盘包与“我的年度投资 · 示例”共用合成成交和收盘行情；不代表真实账户、真实市场或真实业绩。"
+    ],
+    "mae_amount": -1474.9999999999989,
+    "mae_pct": -0.10475852272727265,
+    "mfe_amount": 1825.0000000000011,
+    "mfe_pct": 0.12961647727272735,
+    "realized_pnl": -630.0,
+    "status": "closed"
+   }
+  ],
+  "limitations": [
+   "MFE/MAE 用持仓窗口内日线收盘价对 episode 层仓位逐日 mark-to-market，盘中极值不可见。",
+   "盈亏金额为 canonical 成交口径的净额，费用按 canonical 事实含入。",
+   "价格缺失日直接跳过，不做前向填充（遵循仓库既有市场数据原则）。",
+   "mfe_pct/mae_pct 是相对窗口内最大持仓市值（收盘口径）的小数比例，不是百分数。",
+   "exit_efficiency 仅在 MFE>0 且已实现盈亏>0 时给出；giveback_ratio 上限为 1。",
+   "仅分析已闭合 episode；未平仓持仓不参与出场质量统计。",
+   "realized_pnl 为 vectorbt 仓位级净已实现盈亏（含费），与 investments 端口同源。",
+   "连续多日并列峰值/谷值时取最早一天。",
+   "hold_baseline 只对照“首笔买入数量一直拿到最后一日收盘”的反事实，与实际路径共用同一收盘序列与费用口径，不构成任何建议。",
+   "此复盘包与“我的年度投资 · 示例”共用合成成交和收盘行情；不代表真实账户、真实市场或真实业绩。"
+  ]
+ },
+ "playbook": {
+  "limitations": [
+   "标签来自用户事后人工标注（review_episode_tags_v1），不是系统推断；标签口径由用户自定义。",
+   "win_rate 仅在携带该标签的已闭合 episode 数 ≥ 5 时给出，否则置信度为 insufficient 且不给评分。",
+   "win 定义为已闭合 episode 净已实现盈亏 > 0（含费净额口径）。",
+   "标签聚合是描述性统计，不构成任何策略建议或因果结论。",
+   "此复盘包与“我的年度投资 · 示例”共用合成成交和收盘行情；不代表真实账户、真实市场或真实业绩。"
+  ],
+  "tags": [],
+  "untagged_episode_count": 2
+ },
+ "schema_version": "review_pack.v1",
+ "source_fingerprint": "b1e5a282f05555786ba37f2cbcf2bbe6fe80fb798125a96ccb11b188dcfecb33",
+ "source_version": "toujing_showcase_v1",
+ "subject_id": "SYN_STUDY_SHOWCASE"
+}

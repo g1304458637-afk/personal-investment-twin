@@ -8,7 +8,9 @@ from scripts.qa_dsa_packaged import decode_response, request_timeout
 def test_separate_startup_context_and_service_deadlines():
     assert request_timeout("runtime.handshake") == 90
     assert request_timeout("review.context") == 300
-    for method in ("quotes.status", "review.start", "review.poll", "runtime.shutdown"):
+    for method in ("review.start", "review.poll", "strategy_simulation.run_custom", "ingestion.commit_trade_import"):
+        assert request_timeout(method) == 300
+    for method in ("quotes.status", "runtime.health", "runtime.shutdown"):
         assert request_timeout(method) == 30
 
 

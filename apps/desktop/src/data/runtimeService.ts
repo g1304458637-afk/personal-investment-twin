@@ -2,6 +2,7 @@ import type { ArchiveOutcome } from "./investments";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { notifyRuntimeDataChange } from "./runtimeInvalidation";
+import { runtimeResponseError } from "./runtimeResponse";
 
 export interface RuntimeResponse<T> {
   request_id: string | null;
@@ -12,10 +13,10 @@ export interface RuntimeResponse<T> {
 
 export const isTauriRuntime = () => typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
-const DEFAULT_TIMEOUT_MS = 90_000;
-// Long-running replays: a full strategy simulation (and its sensitivity
-// variants) legitimately walks years of daily bars before answering.
-export const LONG_TIMEOUT_MS = 300_000;
+// The host gives FIFO product work 300s, including time waiting behind cold
+// analytics. Keep a margin for its timeout/health diagnostic to reach the UI.
+const DEFAULT_TIMEOUT_MS = 330_000;
+export const LONG_TIMEOUT_MS = DEFAULT_TIMEOUT_MS;
 
 function withTimeout<T>(promise: Promise<T>, method: string, timeoutMs: number): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -38,7 +39,11 @@ export async function runtimeRequest<T>(method: string, params: Record<string, u
     invoke<RuntimeResponse<T>>("runtime_product_request", { method, params }), method, timeoutMs);
   // Only ok/error decide failure: a null, false or 0 result is a valid
   // payload, not an error.  Fail closed on any error marker.
-  if (!response.ok || response.error) throw new Error(response.error?.message ?? "runtime_request_failed");
+  const error = runtimeResponseError(response);
+  if (error) {
+    if (response.error?.code === "runtime_outcome_unknown") notifyRuntimeDataChange(method, params);
+    throw error;
+  }
   notifyRuntimeDataChange(method, params);
   return response.result as T;
 }

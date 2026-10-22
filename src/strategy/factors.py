@@ -18,6 +18,7 @@ from typing import Final
 
 from src.strategy.data import InstrumentSeries
 from src.strategy.rsi_state import wilder_rsi_at
+from src.strategy.ema import ema_at
 from src.strategy.signals import prior_extreme, trailing_mean
 
 
@@ -155,14 +156,8 @@ def _compute_streak_down(series: InstrumentSeries, index: int, params: dict[str,
 
 def _compute_ema_gap(series: InstrumentSeries, index: int, params: dict[str, float]) -> float | None:
     window = int(params["window"])
-    closes = series.adjusted_close[: index + 1]
-    if len(closes) < window:
-        return None
-    alpha = 2.0 / (window + 1)
-    ema = closes[0]
-    for close in closes[1:]:
-        ema = alpha * close + (1 - alpha) * ema
-    return closes[-1] / ema - 1.0 if ema > 0 else None
+    ema = ema_at(series, index, window)
+    return series.adjusted_close[index] / ema - 1.0 if ema is not None and ema > 0 else None
 
 
 FACTOR_LIBRARY: Final[dict[str, dict]] = {

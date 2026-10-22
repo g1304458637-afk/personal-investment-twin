@@ -27,6 +27,7 @@ from typing import Any, Mapping
 from src.strategy.signals import prior_extreme, trailing_mean
 from src.strategy.rsi_state import wilder_rsi_at
 from src.strategy.factors import _rsi
+from src.strategy.ema import ema_at
 
 FORMULA_SCHEMA_VERSION = "user_strategy_formula.v1"
 
@@ -37,17 +38,6 @@ class FormulaError(ValueError):
 
 def _mean(closes: tuple[float, ...]) -> float | None:
     return sum(closes) / len(closes) if closes else None
-
-
-def _ema(closes: tuple[float, ...]) -> float | None:
-    if not closes:
-        return None
-    n = len(closes)
-    alpha = 2.0 / (n + 1)
-    ema = closes[0]
-    for close in closes[1:]:
-        ema = alpha * close + (1 - alpha) * ema
-    return ema
 
 
 def _closes(series, index: int, count: int, *, include_current: bool) -> tuple[float, ...] | None:
@@ -64,8 +54,7 @@ def _f_sma(series, index, args) -> float | None:
 
 
 def _f_ema(series, index, args) -> float | None:
-    closes = _closes(series, index, int(args[0]), include_current=True)
-    return _ema(closes) if closes else None
+    return ema_at(series, index, int(args[0]))
 
 
 def _f_highest(series, index, args) -> float | None:
@@ -180,7 +169,7 @@ def _f_atr(series, index, args) -> float | None:
 # name → (min_args, max_args, compute, description)
 FORMULA_FUNCTIONS: dict[str, dict] = {
     "sma": {"args": 1, "compute": _f_sma, "desc": "sma(20)：最近 20 个收盘的简单均线"},
-    "ema": {"args": 1, "compute": _f_ema, "desc": "ema(20)：最近 20 个收盘的指数均线"},
+    "ema": {"args": 1, "compute": _f_ema, "desc": "ema(20)：前 20 个收盘均值播种、此后递推的指数均线"},
     "highest": {"args": 1, "compute": _f_highest, "desc": "highest(20)：此前 20 个收盘的最高价（不含当日）"},
     "lowest": {"args": 1, "compute": _f_lowest, "desc": "lowest(10)：此前 10 个收盘的最低价（不含当日）"},
     "rsi": {"args": 1, "compute": _f_rsi, "desc": "rsi(14)：相对强弱指标"},

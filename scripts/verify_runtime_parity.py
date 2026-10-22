@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import signal
 import subprocess
 import sys
 import tempfile
@@ -29,19 +30,30 @@ REQUESTS = tuple(
 
 
 def _run(command: list[str], *, cwd: Path, environment: dict[str, str] | None = None):
-    completed = subprocess.run(
+    process = subprocess.Popen(
         command,
-        input="".join(json.dumps(item, separators=(",", ":")) + "\n" for item in REQUESTS),
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         text=True,
-        capture_output=True,
         cwd=cwd,
         env=environment,
-        timeout=90,
-        check=True,
+        start_new_session=True,
     )
-    if completed.stderr:
-        raise SystemExit(f"runtime wrote diagnostics during valid smoke: {completed.stderr}")
-    responses = [json.loads(line) for line in completed.stdout.splitlines()]
+    try:
+        stdout, stderr = process.communicate(
+            "".join(json.dumps(item, separators=(",", ":")) + "\n" for item in REQUESTS),
+            timeout=330,  # 300s cold product budget plus host/reporting margin.
+        )
+    except subprocess.TimeoutExpired:
+        # A onefile bootloader owns a child. Killing only the parent leaves
+        # compilation running against a temporary HOME that is being removed.
+        os.killpg(process.pid, signal.SIGKILL)
+        stdout, stderr = process.communicate()
+        raise SystemExit(f"runtime smoke timed out after 330s: {stdout[-2000:]} {stderr[-2000:]}") from None
+    if process.returncode:
+        raise SystemExit(f"runtime exited {process.returncode}: {stderr[-4000:]}")
+    if stderr:
+        raise SystemExit(f"runtime wrote diagnostics during valid smoke: {stderr}")
+    responses = [json.loads(line) for line in stdout.splitlines()]
     if len(responses) != len(REQUESTS) or not all(item.get("ok") for item in responses):
         raise SystemExit(f"runtime smoke failed: {responses}")
     return responses

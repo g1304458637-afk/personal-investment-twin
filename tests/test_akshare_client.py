@@ -18,6 +18,20 @@ def _fake_frame() -> pd.DataFrame:
     ])
 
 
+def test_cache_directory_is_injected_not_relative_to_source(tmp_path, monkeypatch):
+    monkeypatch.setenv("TOUJING_CACHE_DIR", str(tmp_path / "app-data-cache"))
+    assert akshare_client._default_cache_root() == tmp_path / "app-data-cache" / "akshare"
+
+
+def test_successful_fetch_survives_unwritable_cache(tmp_path, monkeypatch):
+    # A file cannot be used as a directory, even when tests run as an admin.
+    obstacle = tmp_path / "read-only-cache"
+    obstacle.write_text("occupied")
+    monkeypatch.setattr(akshare_client, "_CACHE_ROOT", obstacle)
+    bars = fetch_ohlc("600000.SH", "2025-01-01", "2025-01-31", fetcher=lambda **kw: _fake_frame())
+    assert [bar["close"] for bar in bars] == [10.5, 11.0]
+
+
 @pytest.fixture()
 def isolated_cache(tmp_path, monkeypatch):
     monkeypatch.setattr(akshare_client, "_CACHE_ROOT", tmp_path / "cache")

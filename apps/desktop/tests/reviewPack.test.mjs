@@ -174,7 +174,7 @@ test('episode pages and the account home load the pack through the sanctioned pa
   assert.match(loader, /adaptReviewPack/);
   assert.match(loader, /review_pack_account_mismatch/);
   const wrapper = await readFile(new URL('../src/data/reviewPackDemo.ts', import.meta.url), 'utf8');
-  assert.match(wrapper, /import source from "@\/generated\/review-pack-demo\.json"/);
+  assert.match(wrapper, /import source from "@\/generated\/showcase-review-pack-demo\.json"/);
   const episodePage = await readFile(new URL('../src/pages/PositionEpisodePage.tsx', import.meta.url), 'utf8');
   assert.match(episodePage, /episodeExitQuality/);
   assert.match(episodePage, /setEpisodeTags/);

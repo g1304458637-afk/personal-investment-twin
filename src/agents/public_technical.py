@@ -4,6 +4,8 @@ from __future__ import annotations
 import math
 from typing import Iterable
 
+from src.strategy.ema import ema_series
+
 
 def _finite(value):
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(float(value))
@@ -31,25 +33,12 @@ def _available(value, *, window=None):
 
 
 def _ema(values: list[float], period: int):
-    if len(values) < period:
-        return None
-    current = sum(values[:period]) / period
-    multiplier = 2.0 / (period + 1.0)
-    for value in values[period:]:
-        current = (value - current) * multiplier + current
-    return current
+    output = ema_series(values, period)
+    return output[-1] if output else None
 
 
 def _ema_series(values: list[float], period: int):
-    if len(values) < period:
-        return []
-    current = sum(values[:period]) / period
-    output = [current]
-    multiplier = 2.0 / (period + 1.0)
-    for value in values[period:]:
-        current = (value - current) * multiplier + current
-        output.append(current)
-    return output
+    return ema_series(values, period)
 
 
 def _rsi_wilder(closes: list[float], period=14):
@@ -105,10 +94,10 @@ def calculate_technical_indicators(bars: Iterable[dict], *, latest_bar_may_be_in
     metrics = {}
     for window in (5, 20, 50):
         metrics[f"sma_{window}"] = _available(sum(closes[-window:]) / window, window=window) if len(closes) >= window else _unavailable("insufficient_closed_bars", window=window)
-    for window in (12, 26):
-        value = _ema(closes, window)
-        metrics[f"ema_{window}"] = _available(value, window=window) if value is not None else _unavailable("insufficient_closed_bars", window=window)
     fast, slow = _ema_series(closes, 12), _ema_series(closes, 26)
+    for window, values in ((12, fast), (26, slow)):
+        metrics[f"ema_{window}"] = (_available(values[-1], window=window) if values
+                                      else _unavailable("insufficient_closed_bars", window=window))
     lines = [fast[index + 14] - slow[index] for index in range(len(slow))] if slow else []
     signal = _ema(lines, 9)
     metrics["macd_12_26_9"] = ({"status": "available", "line": float(lines[-1]), "signal": float(signal), "histogram": float(lines[-1] - signal),

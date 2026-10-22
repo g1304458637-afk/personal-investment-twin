@@ -111,5 +111,5 @@ test('preparation is wired before the analysis tab and never starts a model', as
   assert.doesNotMatch(provider,/reviewService.start|reviewSessions.analyze/);
   assert.doesNotMatch(page,/reviewService.start|reviewSessions.analyze/);
   const rpc=await source('data/runtimeService.ts');
-  assert.ok(rpc.indexOf('notifyRuntimeDataChange(method, params)')>rpc.indexOf('if (!response.ok'));
+  assert.ok(rpc.indexOf('notifyRuntimeDataChange(method, params)')>rpc.indexOf('runtimeResponseError(response)'));
 });

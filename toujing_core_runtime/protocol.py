@@ -6,7 +6,10 @@ import json
 import platform
 import sqlite3
 import sys
+import threading
+import time
 from collections.abc import Callable, Mapping
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, TextIO
 
 PROTOCOL_VERSION = "1"
@@ -25,6 +28,7 @@ PRODUCT_METHODS = (
     "strategy_comparison.get",
     "strategy_simulation.run_custom",
     "strategy_sensitivity.run",
+    "strategy_teaching.explain",
     "data.delete_account",
     "review.context", "review.start", "review.poll", "review.add_note",
     "review_pack.get", "episode_tags.set",
@@ -129,6 +133,12 @@ def _quotes_status(params):
     return quotes_status()
 
 
+def _strategy_teaching(params):
+    # Keep the model SDK out of startup and ordinary account reads.
+    from src.agents.strategy_teaching import explain_report
+    return explain_report(params)
+
+
 _METHODS: dict[str, Callable[[object], Mapping[str, object]]] = {
     "runtime.handshake": _handshake,
     "runtime.health": _health,
@@ -171,6 +181,7 @@ def _product_methods(db_path: str | None) -> tuple[dict[str, Callable[[object], 
         "strategy_comparison.get": checked(product.strategy_comparison),
         "strategy_simulation.run_custom": checked(product.strategy_simulation_run_custom),
         "strategy_sensitivity.run": checked(product.strategy_sensitivity_run),
+        "strategy_teaching.explain": checked(_strategy_teaching),
         "data.delete_account": checked(product.delete_account),
         "review.context": checked(lambda p: product.review_runtime().context(p)),
         "review.start": checked(lambda p: product.review_runtime().start(p)),
@@ -186,24 +197,44 @@ def _product_methods(db_path: str | None) -> tuple[dict[str, Callable[[object], 
     return methods, product
 
 
-def handle_request(request: object, methods: Mapping[str, Callable[[object], Mapping[str, object]]] | None = None) -> tuple[dict[str, object], bool]:
+def _validate_request(request: object, handlers: Mapping[str, Callable]) -> dict[str, object] | None:
+    """Validate transport only: safe on the reader, never calls a product method."""
     if not isinstance(request, Mapping):
-        return _error(None, "invalid_request", "request must be a JSON object"), False
+        return _error(None, "invalid_request", "request must be a JSON object")
     request_id = request.get("request_id")
     if not isinstance(request_id, str) or not request_id.strip():
-        return _error(request_id, "invalid_request", "request_id must be non-empty"), False
-    if set(request) != {"protocol_version", "request_id", "method", "params"}:
+        return _error(request_id, "invalid_request", "request_id must be non-empty")
+    required = {"protocol_version", "request_id", "method", "params"}
+    if not required <= set(request) or set(request) - required - {"deadline_unix_ms"}:
         return _error(
             request_id,
             "invalid_request",
-            "request must contain only protocol_version, request_id, method, and params",
-        ), False
+            "request must contain protocol_version, request_id, method, params and optional deadline_unix_ms",
+        )
     if request.get("protocol_version") != PROTOCOL_VERSION:
-        return _error(request_id, "protocol_incompatible", "unsupported protocol_version"), False
+        return _error(request_id, "protocol_incompatible", "unsupported protocol_version")
     method = request.get("method")
-    handlers = methods or _METHODS
     if not isinstance(method, str) or method not in handlers:
-        return _error(request_id, "unknown_method", "method is not supported"), False
+        return _error(request_id, "unknown_method", "method is not supported")
+    if "deadline_unix_ms" in request:
+        deadline = request["deadline_unix_ms"]
+        if isinstance(deadline, bool) or not isinstance(deadline, int) or deadline <= 0:
+            return _error(request_id, "invalid_request", "deadline_unix_ms must be a positive integer")
+        if time.time_ns() // 1_000_000 >= deadline:
+            return _error(request_id, "request_expired", "request expired before execution; no action was performed")
+    if method in BASE_METHODS and (not isinstance(request["params"], Mapping) or request["params"]):
+        return _error(request_id, "invalid_params", "params must be an empty object")
+    if method in PRODUCT_METHODS and not isinstance(request["params"], Mapping):
+        return _error(request_id, "invalid_params", "params must be an object")
+    return None
+
+
+def handle_request(request: object, methods: Mapping[str, Callable[[object], Mapping[str, object]]] | None = None) -> tuple[dict[str, object], bool]:
+    handlers = methods if methods is not None else _METHODS
+    error = _validate_request(request, handlers)
+    if error is not None:
+        return error, False
+    request_id, method = request["request_id"], request["method"]
     try:
         result = handlers[method](request.get("params"))
     except RuntimeRequestError as exc:
@@ -215,20 +246,18 @@ def handle_request(request: object, methods: Mapping[str, Callable[[object], Map
 
 
 def run(stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout, *, db_path: str | None = None) -> int:
-    """Serve requests until EOF or an acknowledged shutdown request."""
+    """Serve RPC with a responsive control lane and one ordered data worker.
 
-    product_methods, product = _product_methods(db_path)
-    methods = {**_METHODS, **product_methods}
-    for raw_line in stdin:
-        try:
-            request = json.loads(raw_line)
-        except json.JSONDecodeError as exc:
-            response, should_stop = (
-                _error(None, "malformed_json", f"invalid JSON request: {exc.msg}"),
-                False,
-            )
-        else:
-            response, should_stop = handle_request(request, methods)
+    SQLite is created, used and closed on the same worker. Account mutations
+    remain FIFO; only handshake/health bypass that queue. Shutdown and EOF
+    drain accepted work before closing storage. Responses are request-id
+    addressed and may arrive out of order (health may overtake a replay).
+    """
+    write_lock = threading.Lock()
+    # Bound queued work without blocking the reader that serves health.
+    capacity = threading.BoundedSemaphore(64)
+
+    def emit(response):
         try:
             line = json.dumps(response, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
         except (TypeError, ValueError) as exc:
@@ -238,12 +267,49 @@ def run(stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout, *, db_path: str 
             line = json.dumps(
                 _error(response.get("request_id"), "serialization_error", f"response is not serializable: {exc}"),
                 ensure_ascii=False, separators=(",", ":"), allow_nan=False)
-        stdout.write(line + "\n")
-        stdout.flush()
-        if should_stop:
+        with write_lock:
+            stdout.write(line + "\n")
+            stdout.flush()
+
+    with ThreadPoolExecutor(max_workers=1, thread_name_prefix="toujing-data") as worker:
+        product_methods, product = worker.submit(_product_methods, db_path).result()
+        methods = {**_METHODS, **product_methods}
+
+        def dispatch(request):
+            try:
+                response, _ = handle_request(request, methods)
+                emit(response)
+            finally:
+                capacity.release()
+
+        try:
+            for raw_line in stdin:
+                try:
+                    request = json.loads(raw_line)
+                except json.JSONDecodeError as exc:
+                    emit(_error(None, "malformed_json", f"invalid JSON request: {exc.msg}"))
+                    continue
+                method = request.get("method") if isinstance(request, Mapping) else None
+                error = _validate_request(request, methods)
+                if error is not None:
+                    emit(error)
+                    continue
+                if isinstance(method, str) and method in {"runtime.handshake", "runtime.health"}:
+                    response, _ = handle_request(request, methods)
+                    emit(response)
+                elif method == "runtime.shutdown":
+                    # Also validate malformed shutdown envelopes. An invalid
+                    # shutdown must not stop the worker or drop queued writes.
+                    response, should_stop = worker.submit(handle_request, request, methods).result()
+                    emit(response)
+                    if should_stop:
+                        break
+                elif capacity.acquire(blocking=False):
+                    worker.submit(dispatch, request)
+                else:
+                    request_id = request.get("request_id") if isinstance(request, Mapping) else None
+                    emit(_error(request_id, "runtime_busy", "runtime work queue is full; retry after pending work completes"))
+        finally:
             if product is not None:
-                product.close()  # type: ignore[attr-defined]
-            return 0
-    if product is not None:
-        product.close()  # type: ignore[attr-defined]
+                worker.submit(product.close).result()  # type: ignore[attr-defined]
     return 0

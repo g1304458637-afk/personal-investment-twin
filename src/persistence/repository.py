@@ -22,6 +22,7 @@ from src.core.canonical_execution import (
     instrument_ref,
 )
 from src.market_data.models import HistoricalPriceFact
+from .private_files import prepare_private_database, restrict_database_files
 
 SCHEMA_VERSION = 2
 
@@ -157,7 +158,7 @@ def _decode_price(payload: str) -> HistoricalPriceFact:
 class LocalRepository:
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
-        self.path.parent.mkdir(parents=True, exist_ok=True)
+        prepare_private_database(self.path)
         self.connection = sqlite3.connect(self.path)
         self.connection.row_factory = sqlite3.Row
         self.connection.execute("PRAGMA foreign_keys=ON")
@@ -167,6 +168,7 @@ class LocalRepository:
         self.connection.execute("PRAGMA journal_mode=WAL")
         self.connection.execute("PRAGMA busy_timeout=5000")
         self._migrate()
+        restrict_database_files(self.path)
 
     def close(self) -> None:
         self.connection.close()

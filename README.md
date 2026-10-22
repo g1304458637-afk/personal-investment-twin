@@ -19,12 +19,13 @@ All screens show bundled synthetic demo data, rendered in the offline browser pr
 
 ## 核心能力
 
-- **交易数据导入**：统一标准交易 Schema，支持 Excel / CSV 交易记录导入
+- **当前能力边界**：真实账户链路覆盖 CSV 导入、投资 Episode、复盘及部分分析；完整 History/Twin、决策前提醒仍有合成示例限制。复工修复与待办见 [2026-10-23 复工记录](docs/RESTART_20261023.md)。
+- **交易数据导入**：桌面支持通用及已适配券商的 CSV 交易记录导入；Excel 需先导出 CSV
 - **Investment Episode 重建**：将同一资产从首次建仓到完全退出重建为一个投资 Episode，识别加仓、减仓、清仓
-- **决策归因（Decision Attribution）**：选股、入场时机、退出时机、仓位管理、交易摩擦五类贡献分解
+- **决策归因（Decision Attribution）**：提供选股、入场与退出时机、仓位、交易摩擦等证据指标；这些独立参照不等于可加和的完整盈亏分解
 - **行为分析（Behavioral Analytics）**：过度交易、集中度、持仓周期、处置效应、追涨、亏损加仓等可观测指标
-- **Investor DNA**：个人投资能力画像，每个维度标注样本量与置信度，样本不足时输出 Insufficient Evidence，不强行评分
-- **决策前提醒（Pre-Decision Intervention）**：输入一笔准备执行的新交易，系统检索你历史上的相似决策，用真实结果提示风险；是否继续由你决定
+- **行为画像与自身历史参照**：基于确定性指标展示行为；样本不足时输出 Insufficient Evidence，不把历史收益当成投资能力评分。完整 Twin 页面目前使用合成示例
+- **决策前提醒（Pre-Decision Intervention）**：已有确定性试算核心与注册示例，真实账户的完整决策前计划、相似历史检索和执行关联仍待接通
 - **复盘面板（Review Pack）**：出场质量（MFE/MAE、出场效率、浮盈回吐）、月度盈亏热力图、连亏后行为观察（纯描述性统计，不推断心理动机）、打法标签聚合（样本不足时如实显示 Insufficient Evidence）
 - **策略引擎与仿真**：内置双均线、RSI 均值回归、海龟等规则策略库，可在你的数据上回放对照，规则来源透明标注，结果含 R-multiple 与标准绩效指标（年化波动、Sortino、Calmar、盈亏比、相对等权买入持有的超额年化，定义随结果一并展示）
 - **数据导出**：投资 Episode 列表与月度盈亏热力图一键导出 CSV，策略净值曲线导出 PNG；导出的数值与界面展示完全一致

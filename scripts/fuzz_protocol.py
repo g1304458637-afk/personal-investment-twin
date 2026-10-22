@@ -53,7 +53,7 @@ def hostile_params() -> list[tuple[str, object]]:
         "market.preview_price_csv", "market.commit_price_import",
         "account.list", "account.get_data_status", "investments.list", "episode.get",
         "strategy_comparison.get", "strategy_simulation.run_custom",
-        "strategy_sensitivity.run", "data.delete_account",
+        "strategy_sensitivity.run", "strategy_teaching.explain", "data.delete_account",
         "review.context", "review.start", "review.poll", "review.add_note",
         "review_pack.get", "episode_tags.set",
         "compare.export_share", "compare.import_share", "compare.list_shares", "compare.revoke_share",

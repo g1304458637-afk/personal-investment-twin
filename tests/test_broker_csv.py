@@ -7,6 +7,8 @@ generic_csv_v1 管道原样吃下。
 
 from __future__ import annotations
 
+import csv
+import io
 from datetime import date
 
 import pytest
@@ -148,6 +150,45 @@ def test_convert_eastmoney_fee_total_column_wins_over_parts():
     # 手续费(总额)17.61 优先，不与佣金/印花税分项重复累计；千分位被清洗。
     assert lines[1] == "2024-12-31 09:31:05+08:00,second,600519,BUY,100,1500.00,17.61"
     assert "source_execution_id" not in lines[0]
+
+
+@pytest.mark.parametrize("broker,header", [
+    (BROKER_EASTMONEY, "成交日期,证券代码,买卖方向,成交价格,成交数量"),
+    (BROKER_THS, "日期,代码,操作,成交价,数量"),
+])
+@pytest.mark.parametrize("encoding", ["utf-8", "utf-8-sig", "gb18030"])
+def test_broker_total_fee_blank_is_unknown_but_numeric_zero_is_explicit(
+    broker, header, encoding
+):
+    raw = (header + ",手续费,佣金\n"
+           "2024-12-31,600519,买入,10,100,,5\n"
+           "2024-12-31,600519,买入,10,100,0,5\n"
+           "2024-12-31,600519,买入,10,100,2.5,5\n").encode(encoding)
+    converted = convert_to_generic_csv(raw, broker)
+    assert [row["fee"] for row in csv.DictReader(io.StringIO(converted))] == ["", "0", "2.5"]
+    preview = preview_generic_csv(converted, config=CONFIG)
+    assert [row.candidate.fee.status for row in preview.rows] == [
+        "unknown", "explicit_zero", "known_nonzero"]
+    assert preview.summary.fee_issue_count == 1
+
+
+@pytest.mark.parametrize("broker,header", [
+    (BROKER_EASTMONEY, "成交日期,证券代码,买卖方向,成交价格,成交数量"),
+    (BROKER_THS, "日期,代码,操作,成交价,数量"),
+])
+def test_broker_fee_parts_require_every_exported_cell(broker, header):
+    raw = (header + ",佣金,印花税,过户费\n"
+           "2024-12-31,600519,买入,10,100,1,,0.2\n"
+           "2024-12-31,600519,买入,10,100,1,0,0.2\n"
+           "2024-12-31,600519,买入,10,100,0,0,0\n"
+           "2024-12-31,600519,买入,10,100,,0,0\n").encode("gb18030")
+    converted = convert_to_generic_csv(raw, broker)
+    assert [row["fee"] for row in csv.DictReader(io.StringIO(converted))] == [
+        "", "1.2", "0", ""]
+    preview = preview_generic_csv(converted, config=CONFIG)
+    assert [row.candidate.fee.status for row in preview.rows] == [
+        "unknown", "known_nonzero", "explicit_zero", "unknown"]
+    assert preview.summary.fee_issue_count == 2
 
 
 def test_convert_ths_minute_precision_row():

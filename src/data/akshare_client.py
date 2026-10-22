@@ -11,13 +11,25 @@ import json
 import math
 import os
 import tempfile
+import sys
 from datetime import date
 from pathlib import Path
 from typing import Any
 
 SOURCE_ID = "akshare_public"
 SOURCE_VERSION = "1"
-_CACHE_ROOT = Path(__file__).resolve().parents[2] / "data" / "cache" / "akshare"
+def _default_cache_root() -> Path:
+    configured = os.environ.get("TOUJING_CACHE_DIR")
+    if configured:
+        return Path(configured).expanduser() / "akshare"
+    if sys.platform == "darwin":
+        return Path.home() / "Library" / "Caches" / "com.toujing.desktop" / "akshare"
+    if os.name == "nt":
+        return Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local")) / "Toujing" / "Cache" / "akshare"
+    return Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "toujing" / "akshare"
+
+
+_CACHE_ROOT = _default_cache_root()
 _COLUMN_MAP = {
     "日期": "date", "开盘": "open", "收盘": "close", "最高": "high", "最低": "low",
 }
@@ -143,23 +155,28 @@ def fetch_ohlc(instrument: str, start: str, end: str, *, force_refresh: bool = F
     bars.sort(key=lambda item: item["date"])
     if not bars:
         raise AkshareUnavailable("akshare_empty_response")
-    _CACHE_ROOT.mkdir(parents=True, exist_ok=True)
     target = _cache_path(normalized, start, end, adjust)
     # Write-then-rename keeps concurrent readers from ever observing a
     # half-written cache file under the final name.
-    descriptor, temp_name = tempfile.mkstemp(
-        dir=_CACHE_ROOT, prefix=f"{target.name}.", suffix=".tmp"
-    )
+    temp_name = None
     try:
+        _CACHE_ROOT.mkdir(parents=True, exist_ok=True)
+        descriptor, temp_name = tempfile.mkstemp(
+            dir=_CACHE_ROOT, prefix=f"{target.name}.", suffix=".tmp"
+        )
         with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
             handle.write(
                 json.dumps({"source": SOURCE_ID, "adjust": adjust, "bars": bars}, ensure_ascii=False)
             )
         os.replace(temp_name, target)
-    except BaseException:
+    except OSError:
+        # Cache is disposable. A read-only/full cache must not discard an
+        # otherwise successful public-market response.
+        pass
+    finally:
         try:
-            os.unlink(temp_name)
+            if temp_name is not None:
+                os.unlink(temp_name)
         except OSError:
             pass
-        raise
     return bars

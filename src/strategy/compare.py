@@ -18,6 +18,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
+import hashlib
+import json
+import math
 from typing import Any, Mapping, Sequence
 
 from src.strategy.data import Bar, InstrumentSeries, SimulationData, UniverseMember
@@ -32,6 +35,46 @@ NO_VERDICT_NOTE = "本报告只并列事实与条件差异，不构成任何买�
 
 class ComparisonError(ValueError):
     """Inputs cannot form an honest comparison."""
+
+
+# These fields are included only when actually supplied by the data source.
+# In particular, an absent currency, corporate action or source fingerprint
+# must not be invented from the symbol or from the replay's own assumptions.
+_BAR_PROVENANCE_FIELDS = (
+    "currency", "price_basis", "adjust", "adjusted_close", "split_factor",
+    "corporate_action", "actions", "source_id", "source_version",
+    "source_fingerprint", "rules", "rule_version",
+)
+
+
+def _canonical_value(value: Any) -> Any:
+    if isinstance(value, date):
+        return value.isoformat()
+    if isinstance(value, Mapping):
+        return {str(key): _canonical_value(item) for key, item in sorted(value.items(), key=lambda pair: str(pair[0]))}
+    if isinstance(value, (tuple, list)):
+        return [_canonical_value(item) for item in value]
+    if isinstance(value, float) and not math.isfinite(value):
+        raise ComparisonError("non-finite history provenance")
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    raise ComparisonError(f"unsupported history provenance type: {type(value).__name__}")
+
+
+def _content_fingerprint(kind: str, instruments: Mapping[str, Sequence[Mapping[str, Any]]], *,
+                         is_synthetic: bool) -> str:
+    """Hash canonical validated observations, independent of row/map ordering."""
+    payload = {
+        "schema": "strategy_history_fingerprint.v2", "kind": kind,
+        "is_synthetic": is_synthetic,
+        "instruments": [
+            {"instrument": instrument, "bars": sorted(rows, key=lambda row: row["date"])}
+            for instrument, rows in sorted(instruments.items())
+        ],
+    }
+    raw = json.dumps(payload, ensure_ascii=False, sort_keys=True,
+                     separators=(",", ":"), allow_nan=False).encode("utf-8")
+    return f"history.v2:{hashlib.sha256(raw).hexdigest()}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,6 +104,7 @@ def simulation_data_from_bars(instrument: str, bars: Sequence[Mapping[str, Any]]
     if not is_synthetic and instrument.startswith("SYN"):
         raise ComparisonError("real bars cannot use synthetic instrument ids")
     parsed: list[tuple[date, Bar]] = []
+    canonical_rows: list[dict[str, Any]] = []
     seen: set[date] = set()
     for row in bars:
         try:
@@ -74,14 +118,24 @@ def simulation_data_from_bars(instrument: str, bars: Sequence[Mapping[str, Any]]
             values = [float(row[key]) for key in ("open", "high", "low", "close")]
         except (KeyError, TypeError, ValueError) as exc:
             raise ComparisonError(f"invalid OHLC on {day} for {instrument}") from exc
-        if not all(value > 0 and value == value for value in values):
+        if not all(math.isfinite(value) and value > 0 for value in values):
             raise ComparisonError(f"non-positive OHLC on {day} for {instrument}")
         open_, high, low, close = values
         if high < max(open_, close) or low > min(open_, close):
             raise ComparisonError(f"inconsistent OHLC on {day} for {instrument}")
         volume = row.get("volume")
-        volume_f = float(volume) if volume not in (None, "") else None
+        try:
+            volume_f = float(volume) if volume not in (None, "") else None
+        except (TypeError, ValueError) as exc:
+            raise ComparisonError(f"invalid volume on {day} for {instrument}") from exc
+        if volume_f is not None and (not math.isfinite(volume_f) or volume_f < 0):
+            raise ComparisonError(f"invalid volume on {day} for {instrument}")
         parsed.append((day, Bar(open=open_, high=high, low=low, close=close, volume=volume_f)))
+        canonical_rows.append({
+            "date": day.isoformat(), "open": open_, "high": high,
+            "low": low, "close": close, "volume": volume_f,
+            **{field: _canonical_value(row[field]) for field in _BAR_PROVENANCE_FIELDS if field in row},
+        })
     if not parsed:
         raise ComparisonError(f"no bars for {instrument}")
     parsed.sort(key=lambda item: item[0])
@@ -92,7 +146,8 @@ def simulation_data_from_bars(instrument: str, bars: Sequence[Mapping[str, Any]]
     member = UniverseMember(instrument=instrument, display_name=instrument,
                             list_date=dates[0], delist_date=None)
     return SimulationData(dates=dates, series={instrument: series}, members={instrument: member},
-                          actions=(), fingerprint=f"comparison:{instrument}:{len(dates)}:{dates[0]}:{dates[-1]}")
+                          actions=(), fingerprint=_content_fingerprint(
+                              "single", {instrument: canonical_rows}, is_synthetic=is_synthetic))
 
 
 def execution_facts(rows: Sequence[Mapping[str, Any]], *, instrument: str,
@@ -308,14 +363,24 @@ def multi_simulation_data(bars_by_instrument: Mapping[str, Sequence[Mapping[str,
     series: dict[str, InstrumentSeries] = {}
     members: dict[str, UniverseMember] = {}
     all_dates: set[date] = set()
+    canonical_by_instrument: dict[str, list[dict[str, Any]]] = {}
     for instrument, rows in sorted(bars_by_instrument.items()):
         single = simulation_data_from_bars(instrument, rows, is_synthetic=is_synthetic)
         series[instrument] = single.series[instrument]
         members[instrument] = single.members[instrument]
         all_dates.update(single.dates)
+        canonical_by_instrument[instrument] = [
+            {"date": day.isoformat(), "open": bar.open, "high": bar.high,
+             "low": bar.low, "close": bar.close, "volume": bar.volume,
+             **{field: _canonical_value(row[field]) for field in _BAR_PROVENANCE_FIELDS if field in row}}
+            for day, bar, row in sorted(zip(single.dates, single.series[instrument].bars,
+                                            sorted(rows, key=lambda item: str(item["date"]))),
+                                        key=lambda item: item[0])
+        ]
     if not series:
         raise ComparisonError("no_instruments_could_be_loaded")
     return SimulationData(
         dates=tuple(sorted(all_dates)), series=series, members=members, actions=(),
-        fingerprint=f"multi:{len(series)}:{sorted(member.list_date.isoformat() for member in members.values())}",
+        fingerprint=_content_fingerprint("multi", canonical_by_instrument,
+                                         is_synthetic=is_synthetic),
     )

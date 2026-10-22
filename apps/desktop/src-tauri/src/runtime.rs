@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, Manager};
 use tauri_plugin_shell::process::{CommandChild, CommandEvent};
 use tauri_plugin_shell::ShellExt;
@@ -14,10 +14,10 @@ const PROTOCOL_VERSION: &str = "1";
 #[cfg(not(debug_assertions))]
 const SIDECAR_NAME: &str = "toujing-core";
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
-// Packaged cold account-context construction includes analytics imports and
-// replay compilation (cold QA exceeded 180s under concurrent desktop load). Only initial context
-// gets this deadline; start reuses fingerprint-bound facts, never a cached answer.
-const REVIEW_CONTEXT_TIMEOUT: Duration = Duration::from_secs(300);
+// Product work is FIFO on a single SQLite owner. Even a small account read
+// can wait behind a cold replay, so all product calls need the same budget.
+// The frontend waits 330s, allowing the host's structured timeout to arrive.
+const PRODUCT_TIMEOUT: Duration = Duration::from_secs(300);
 const STARTUP_TIMEOUT: Duration = Duration::from_secs(90);
 const HEALTH_PROBE_TIMEOUT: Duration = Duration::from_secs(10);
 const MAX_LINE_BYTES: usize = 64 * 1024 * 1024;
@@ -28,8 +28,8 @@ const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(3);
 // leftover process instead of silently orphaning it.
 const SIDECAR_PIDFILE: &str = "toujing-core.pid";
 fn request_timeout(method: &str) -> Duration {
-    if method == "review.context" {
-        REVIEW_CONTEXT_TIMEOUT
+    if PRODUCT_METHODS.contains(&method) || method == "runtime.core_smoke" {
+        PRODUCT_TIMEOUT
     } else {
         REQUEST_TIMEOUT
     }
@@ -63,6 +63,22 @@ const PRODUCT_METHODS: &[&str] = &[
 // entry here MUST also be in PRODUCT_METHODS (enforced by a test) or the
 // branch would be unreachable dead code.
 const KEYED_PRODUCT_METHODS: &[&str] = &["review.start", "strategy_teaching.explain"];
+// A timeout after dispatch cannot prove whether a write committed. Never
+// present that ambiguity as cancellation or invite a blind retry.
+fn mutates_local_state(method: &str) -> bool {
+    matches!(method, "ingestion.commit_trade_import" | "market.commit_price_import"
+        | "data.delete_account" | "review.add_note" | "episode_tags.set"
+        | "compare.export_share" | "compare.import_share" | "compare.revoke_share")
+}
+
+fn timed_out_response(method: &str, request_id: String, error: String) -> Result<RuntimeResponse, String> {
+    if mutates_local_state(method) {
+        Ok(RuntimeResponse::error(Some(request_id), "runtime_outcome_unknown",
+            "Request timed out; the write outcome is not yet confirmed. Reload account data before retrying."))
+    } else {
+        Err(error)
+    }
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct RuntimeError {
@@ -403,6 +419,12 @@ impl RuntimeManager {
             .map_err(|error| format!("app data directory unavailable: {error}"))?;
         std::fs::create_dir_all(&app_data)
             .map_err(|error| format!("cannot create app data directory: {error}"))?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&app_data, std::fs::Permissions::from_mode(0o700))
+                .map_err(|error| format!("cannot protect app data directory: {error}"))?;
+        }
         note_previous_sidecar(&app_data);
         let db_path = app_data.join("toujing-v1.sqlite3");
         let db_arg = db_path.to_string_lossy().into_owned();
@@ -430,6 +452,7 @@ impl RuntimeManager {
             .args(["--db-path", db_arg.as_str()]);
 
         let (mut events, child) = command
+            .env("TOUJING_CACHE_DIR", app_data.join("cache").to_string_lossy().as_ref())
             // A packaged desktop must not inherit verbose model/tool payload logging.
             .env("OPENAI_AGENTS_DONT_LOG_MODEL_DATA", "1")
             .env("OPENAI_AGENTS_DONT_LOG_TOOL_DATA", "1")
@@ -517,9 +540,10 @@ impl RuntimeManager {
     /// A request timeout no longer stops the shared runtime by itself: one
     /// slow replay (cold caches, big CSV preview) must fail alone instead of
     /// turning into a global outage for every other in-flight request.  The
-    /// runtime is killed only when a follow-up health probe also fails —
-    /// that distinguishes "slow" from "wedged" without losing the wedged-
-    /// child protection.  `rescue=false` (the probe itself) skips the probe
+    /// A health failure is diagnostic, not proof of process death: a native
+    /// library can hold the GIL during legitimate work. Process exit/protocol
+    /// corruption and explicit shutdown still stop the shared runtime.
+    /// `rescue=false` (the probe itself) skips the probe
     /// so a failing probe can never recurse.
     async fn request_inner(
         &self,
@@ -540,6 +564,9 @@ impl RuntimeManager {
             "request_id": request_id,
             "method": method,
             "params": params,
+            "deadline_unix_ms": SystemTime::now().duration_since(UNIX_EPOCH)
+                .map_err(|_| "system clock is before Unix epoch".to_owned())?
+                .as_millis() as u64 + timeout.as_millis() as u64,
         });
         let mut bytes = serde_json::to_vec(&payload)
             .map_err(|error| format!("runtime request serialization failed: {error}"))?;
@@ -574,14 +601,13 @@ impl RuntimeManager {
                     .await;
                     let healthy = matches!(probe, Ok(Ok(response)) if response.ok);
                     if !healthy {
-                        eprintln!("toujing: health probe failed; stopping the core runtime");
-                        self.kill();
+                        eprintln!("toujing: health probe did not answer; preserving in-flight work");
                     }
                 } else {
                     eprintln!("toujing: {error} for {method}");
                 }
                 remove_pending(&self.pending, &request_id);
-                Err(error)
+                timed_out_response(method, request_id, error)
             }
         }
     }
@@ -740,11 +766,23 @@ mod tests {
     }
 
     #[test]
-    fn cold_review_context_has_a_bounded_separate_deadline() {
-        assert_eq!(request_timeout("review.context"), Duration::from_secs(300));
-        for method in ["review.start", "review.poll", "account.list", "runtime.health"] {
+    fn queued_product_work_has_one_bounded_deadline() {
+        for method in PRODUCT_METHODS {
+            assert_eq!(request_timeout(method), Duration::from_secs(300));
+        }
+        for method in ["runtime.health", "runtime.handshake", "model.test_connection"] {
             assert_eq!(request_timeout(method), Duration::from_secs(30));
         }
+    }
+
+    #[test]
+    fn write_timeout_reports_unknown_outcome_instead_of_cancellation() {
+        for method in ["ingestion.commit_trade_import", "data.delete_account", "review.add_note", "episode_tags.set"] {
+            let response = timed_out_response(method, "request-1".into(), "timed out".into()).unwrap();
+            assert!(!response.ok);
+            assert_eq!(response.error.unwrap().code, "runtime_outcome_unknown");
+        }
+        assert_eq!(timed_out_response("account.list", "request-2".into(), "timed out".into()).unwrap_err(), "timed out");
     }
 
     #[test]

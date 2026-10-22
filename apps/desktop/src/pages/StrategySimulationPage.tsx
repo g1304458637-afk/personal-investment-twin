@@ -6,6 +6,7 @@ import { InvestmentChartWorkspace } from "@/components/charts/InvestmentChartWor
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { isTauriRuntime, LONG_TIMEOUT_MS, runtimeRequest, type SensitivityReportView } from "@/data/runtimeService";
 import { useDataMode } from "@/data/DataModeProvider";
+import { onRuntimeDataChange } from "@/data/runtimeInvalidation";
 import { adaptStrategySimulation, type StrategySimulationView } from "@/data/strategySimulation";
 import { StrategyWorkshop, type WorkshopDraft } from "@/components/strategy/StrategyWorkshop";
 import { rawComparisonReportFor, strategyComparison } from "@/data/strategyComparisonDemo";
@@ -14,6 +15,7 @@ import { useLocale } from "@/locales/LocaleProvider";
 import { describeUserStrategySpec, newUserStrategyId, readUserStrategies } from "@/lib/userStrategyLibrary";
 import { formatCurrencyValue } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { accountIdentity, confirmedActiveAccount, LatestRunGate, ScopeRevision, sensitivityAvailability, strategyRunKey } from "@/lib/strategyRunContext";
 
 import "./strategy-simulation.css";
 
@@ -59,6 +61,20 @@ export function StrategySimulationPage() {
   const [userArtifacts, setUserArtifacts] = useState<Record<string, StrategySimulationView>>({});
   const [userRunState, setUserRunState] = useState<Record<string, "loading" | "ready" | "error">>({});
   const [userRunError, setUserRunError] = useState<Record<string, string>>({});
+  const scopeRevisionRef = useRef(new ScopeRevision());
+  const globalScope = JSON.stringify([data.mode, data.activeAccount?.subject_id ?? null,
+    data.activeAccount?.account_id ?? null, data.mode === "demo" ? data.exampleAccount.key : null]);
+  const scopeRevision = scopeRevisionRef.current.update(globalScope);
+  const [runAccountConfirmation, setRunAccountConfirmation] = useState<{ key: string; scopeRevision: number } | null>(null);
+  const runAccount = confirmedActiveAccount(runAccountConfirmation, data.activeAccount, scopeRevision);
+  const [sourceRevision, setSourceRevision] = useState(0);
+  useEffect(() => onRuntimeDataChange((change) => {
+    if (change.subject === runAccount?.subject_id && change.account === runAccount?.account_id) {
+      setSourceRevision((value) => value + 1);
+    }
+  }), [runAccount?.subject_id, runAccount?.account_id]);
+  const runGate = useRef(new LatestRunGate());
+  useEffect(() => () => runGate.current.invalidate(), []);
   const defaultStrategyId = (() => {
     const fromUrl = search.get("strategy");
     if (fromUrl && fromUrl in STRATEGY_FILES) return fromUrl;
@@ -78,11 +94,28 @@ export function StrategySimulationPage() {
     setSearch(next, { replace: true });
   };
   const [simulation, setSimulation] = useState<StrategySimulationView>(strategySimulation);
+  const [userRunUniverse, setUserRunUniverse] = useState<"synthetic" | "own_account">("synthetic");
+  const isUserStrategy = strategyId.startsWith("user_");
+  const selectedUserStrategy = isUserStrategy
+    ? userStrategies.find((item) => item.id === strategyId) ?? null : null;
+  const effectiveUniverse = data.mode === "demo" ? "synthetic" : userRunUniverse;
+  const userRunKey = selectedUserStrategy ? strategyRunKey({
+    strategyId: selectedUserStrategy.id, spec: selectedUserStrategy.spec, mode: data.mode,
+    subjectId: effectiveUniverse === "synthetic" ? data.exampleAccount.subjectId : runAccount?.subject_id ?? null,
+    accountId: effectiveUniverse === "synthetic" ? data.exampleAccount.accountId : runAccount?.account_id ?? null,
+    sourceFingerprint: `${effectiveUniverse === "synthetic" ? strategySimulation.dataFingerprint
+      : `${runAccount?.updated_at ?? "missing"}:${sourceRevision}`}:${scopeRevision}`,
+    universe: effectiveUniverse,
+  }) : "";
+  runGate.current.setContext(userRunKey);
+  const currentUserArtifact = userRunKey ? userArtifacts[userRunKey] ?? null : null;
+  const currentUserState = userRunKey ? userRunState[userRunKey] ?? null : null;
+  const currentUserError = userRunKey ? userRunError[userRunKey] ?? null : null;
   const [loadingStrategy, setLoadingStrategy] = useState(false);
   const [strategyLoadError, setStrategyLoadError] = useState<string | null>(null);
   useEffect(() => {
     if (strategyId.startsWith("user_")) {
-      const artifact = userArtifacts[strategyId];
+      const artifact = currentUserArtifact;
       if (artifact) setSimulation(artifact);
       setLoadingStrategy(false);
       setStrategyLoadError(null);
@@ -102,23 +135,20 @@ export function StrategySimulationPage() {
       if (!cancelled) setStrategyLoadError(value instanceof Error ? value.message : String(value));
     }).finally(() => { if (!cancelled) setLoadingStrategy(false); });
     return () => { cancelled = true; };
-  }, [strategyId, userArtifacts]);
+  }, [strategyId, currentUserArtifact]);
   const isT1 = simulation.strategy.strategyId === "toujing_t1_breakout_trend";
-  const isUserStrategy = strategyId.startsWith("user_");
   // A user strategy that has not been run yet must NOT show another
   // strategy's stale numbers: gate every data section on readiness.
   // Built-in strategies gate on the artifact matching the selection, so a
   // slow or failed chunk load can never show the previous strategy's data.
   const simulationReady = isUserStrategy
-    ? !!userArtifacts[strategyId]
+    ? !!currentUserArtifact && simulation === currentUserArtifact
     : simulation.strategy.strategyId === strategyId;
-  const selectedUserStrategy = isUserStrategy
-    ? userStrategies.find((item) => item.id === strategyId) ?? null : null;
   // Hero identity must follow the selection even before the first run.
   const hero = isUserStrategy && selectedUserStrategy ? {
     title: `自建策略：${selectedUserStrategy.name}`,
-    description: "你在因子库内自建的规则组合；保存后可在桌面应用中于真实行情或合成历史上运行。",
-    meta: `${selectedUserStrategy.id} · 保存于 ${selectedUserStrategy.savedAt}`,
+    description: locale === "zh-CN" ? "你保存的规则组合，可在桌面应用中选择合成历史或当前账户的真实行情运行。" : "Your saved rules can run on synthetic history or the selected account's real market history in the desktop app.",
+    meta: `${selectedUserStrategy.id} · ${locale === "zh-CN" ? "保存于" : "Saved"} ${selectedUserStrategy.savedAt}${currentUserArtifact ? ` · ${effectiveUniverse === "own_account" ? `${locale === "zh-CN" ? "真实账户行情（后复权）" : "Real account market history (adjusted)"} · ${runAccount?.display_name ?? ""} (${runAccount?.subject_id ?? ""}/${runAccount?.account_id ?? ""})` : t("Synthetic demo universe")} · ${currentUserArtifact.dataFingerprint}` : ""}`,
   } : simulationReady ? {
     title: simulation.strategy.title,
     description: simulation.strategy.description,
@@ -137,31 +167,35 @@ export function StrategySimulationPage() {
     setWorkshopOpen(false);
     setStrategyId(id);
   };
-  const [userRunUniverse, setUserRunUniverse] = useState<"synthetic" | "own_account">("own_account");
   const runUserStrategy = (entry: { id: string; spec: Record<string, unknown> }) => {
-    setUserRunState((state) => ({ ...state, [entry.id]: "loading" }));
-    setUserRunError((state) => ({ ...state, [entry.id]: "" }));
-    const base: Record<string, unknown> = { strategy: entry.spec, universe: userRunUniverse };
-    if (userRunUniverse === "own_account" && data.activeAccount) {
-      base.subject_id = data.activeAccount.subject_id;
-      base.account_id = data.activeAccount.account_id;
+    if (!userRunKey || (effectiveUniverse === "own_account" && !runAccount)) return;
+    const generation = runGate.current.begin(userRunKey);
+    setUserArtifacts((state) => { const next = { ...state }; delete next[userRunKey]; return next; });
+    setUserRunState((state) => ({ ...state, [userRunKey]: "loading" }));
+    setUserRunError((state) => ({ ...state, [userRunKey]: "" }));
+    const base: Record<string, unknown> = { strategy: entry.spec, universe: effectiveUniverse };
+    if (effectiveUniverse === "own_account" && runAccount) {
+      base.subject_id = runAccount.subject_id;
+      base.account_id = runAccount.account_id;
     }
     runtimeRequest<{ status: string; reason: string | null; artifact: unknown }>(
       "strategy_simulation.run_custom", base, LONG_TIMEOUT_MS)
       .then((result) => {
+        if (!runGate.current.accepts(userRunKey, generation)) return;
         if (result.status !== "available" || !result.artifact) {
           // Failure lands in the "error" run state so the run button and
           // the reason stay visible and the strategy can be re-run.
-          setUserRunError((state) => ({ ...state, [entry.id]: result.reason ?? t("Run failed") }));
-          setUserRunState((state) => ({ ...state, [entry.id]: "error" }));
+          setUserRunError((state) => ({ ...state, [userRunKey]: result.reason ?? t("Run failed") }));
+          setUserRunState((state) => ({ ...state, [userRunKey]: "error" }));
           return;
         }
-        setUserArtifacts((state) => ({ ...state, [entry.id]: adaptStrategySimulation(result.artifact) }));
-        setUserRunState((state) => ({ ...state, [entry.id]: "ready" }));
+        setUserArtifacts((state) => ({ ...state, [userRunKey]: adaptStrategySimulation(result.artifact) }));
+        setUserRunState((state) => ({ ...state, [userRunKey]: "ready" }));
       })
       .catch((value) => {
-        setUserRunError((state) => ({ ...state, [entry.id]: value instanceof Error ? value.message : String(value) }));
-        setUserRunState((state) => ({ ...state, [entry.id]: "error" }));
+        if (!runGate.current.accepts(userRunKey, generation)) return;
+        setUserRunError((state) => ({ ...state, [userRunKey]: value instanceof Error ? value.message : String(value) }));
+        setUserRunState((state) => ({ ...state, [userRunKey]: "error" }));
       });
   };
   const deleteUserStrategy = (id: string) => {
@@ -187,6 +221,16 @@ export function StrategySimulationPage() {
   const [sensitivityBusy, setSensitivityBusy] = useState(false);
   const [sensitivityError, setSensitivityError] = useState<string | null>(null);
   const sensitivityGeneration = useRef(0);
+  const sensitivityContext = JSON.stringify([strategyId, userRunKey, sensitivityParam, sensitivityValues]);
+  const sensitivityContextRef = useRef(sensitivityContext);
+  if (sensitivityContextRef.current !== sensitivityContext) {
+    sensitivityContextRef.current = sensitivityContext;
+    sensitivityGeneration.current += 1;
+  }
+  const sensitivitySupport = sensitivityAvailability(isUserStrategy ? "user" : "built_in",
+    selectedUserStrategy?.spec.schema_version, effectiveUniverse);
+  const formulaSensitivityUnsupported = sensitivitySupport === "formula_unsupported";
+  const realSensitivityUnsupported = sensitivitySupport === "real_history_unsupported";
   // Changing the parameter or switching strategy tab invalidates any run in
   // flight: a late response must never overwrite the new selection's state.
   useEffect(() => {
@@ -194,7 +238,7 @@ export function StrategySimulationPage() {
     setSensitivityBusy(false);
     setSensitivityResult(null);
     setSensitivityError(null);
-  }, [strategyId, sensitivityParam]);
+  }, [sensitivityContext]);
   // Instrument filters describe one strategy's universe; carrying them across
   // a tab switch leaves the chart and trades list pointed at an instrument
   // the new strategy may never trade, with no way to tell from the UI.
@@ -203,6 +247,7 @@ export function StrategySimulationPage() {
     setChartInstrument(null);
   }, [strategyId]);
   const runSensitivity = () => {
+    if (sensitivitySupport !== "available") return;
     if (!isTauriRuntime()) {
       setSensitivityError(t("Desktop app required (variants do not run in the browser preview)."));
       return;
@@ -211,24 +256,25 @@ export function StrategySimulationPage() {
     const values = sensitivityValues.split(/[,，]/).map((text) => Number(text.trim())).filter((value) => Number.isFinite(value));
     if (values.length < 2) { setSensitivityError(t("Enter at least two values, separated by commas.")); return; }
     const generation = ++sensitivityGeneration.current;
+    const context = sensitivityContext;
     setSensitivityBusy(true);
     setSensitivityError(null);
     const request = strategyId.startsWith("user_")
       ? { strategy: selectedUserStrategy?.spec, parameter: sensitivityParam, values }
       : { strategy_id: strategyId, parameter: sensitivityParam, values };
     runtimeRequest<{ status: string; reason: string | null; report: SensitivityReportView | null }>(
-      "strategy_sensitivity.run", request)
+      "strategy_sensitivity.run", request, LONG_TIMEOUT_MS)
       .then((result) => {
-        if (generation !== sensitivityGeneration.current) return;
+        if (generation !== sensitivityGeneration.current || context !== sensitivityContextRef.current) return;
         if (result.status === "available" && result.report) setSensitivityResult(result.report);
         else setSensitivityError(result.reason ?? t("Run failed"));
       })
       .catch((value) => {
-        if (generation !== sensitivityGeneration.current) return;
+        if (generation !== sensitivityGeneration.current || context !== sensitivityContextRef.current) return;
         setSensitivityError(value instanceof Error ? value.message : String(value));
       })
       .finally(() => {
-        if (generation === sensitivityGeneration.current) setSensitivityBusy(false);
+        if (generation === sensitivityGeneration.current && context === sensitivityContextRef.current) setSensitivityBusy(false);
       });
   };
   const [teaching, setTeaching] = useState<Record<string, { status: string; texts: string[]; reason: string | null } | "loading">>({});
@@ -375,7 +421,7 @@ export function StrategySimulationPage() {
         <div className="strategy-anchor-nav">
           {[["#rules", t("Rules")], ["#results", t("Results")], ["#charts", t("Charts")],
             ["#trades", t("Trades")], ["#comparison", t("Comparison")]].map(([id, label]) => (
-            <a key={id} href={`javascript:void(0)`} className="strategy-anchor-link"
+            <a key={id} href={id} className="strategy-anchor-link"
               onClick={(e) => { e.preventDefault(); document.querySelector(id)?.scrollIntoView({ behavior: "smooth" }); }}>
               {label}
             </a>
@@ -386,8 +432,12 @@ export function StrategySimulationPage() {
         <p className="strategy-hero__meta">{hero.meta}</p>
       </div>
       <div className="strategy-hero__boundary">
-        <p>{t("This path is replayed by deterministic code on synthetic prices. It is not advice, not a prediction, and not real market performance.")}</p>
-        <p>{t("The strategy account has its own cash, holdings and fees. It never reads or changes your records.")}</p>
+        <p>{isUserStrategy && effectiveUniverse === "own_account"
+          ? (locale === "zh-CN" ? "此路径使用当前账户曾交易标的的公开后复权历史行情，模拟策略买卖；它不是实际账户收益，也不是建议或预测。" : "This simulation uses adjusted public market history for instruments traded by the selected account. It is not actual account performance, advice, or a prediction.")
+          : t("This path is replayed by deterministic code on synthetic prices. It is not advice, not a prediction, and not real market performance.")}</p>
+        <p>{isUserStrategy && effectiveUniverse === "own_account"
+          ? (locale === "zh-CN" ? "仿真只读取本账户的标的范围，使用独立的模拟现金、持仓和费用，不会修改账户记录。" : "The simulation reads this account's instrument scope and uses separate simulated cash, holdings, and fees. It never changes account records.")
+          : t("The strategy account has its own cash, holdings and fees. It never reads or changes your records.")}</p>
       </div>
     </header>
     {workshopOpen ? <section className="iw-inset strategy-panel">
@@ -402,7 +452,7 @@ export function StrategySimulationPage() {
         <p className="iw-kicker">{t("Custom strategy")}</p>
         <button type="button" onClick={() => deleteUserStrategy(selectedUserStrategy.id)}>{t("Delete")}</button>
       </div>
-      <p className="strategy-comparison-note">{t("Custom strategies are data specs, run by the deterministic interpreter on the bundled synthetic universe. They are never advice and never touch real accounts.")}</p>
+      <p className="strategy-comparison-note">{locale === "zh-CN" ? "自建策略是确定性规则。合成模式使用内置示例行情；真实账户模式仅取当前账户曾交易过的标的，行情为公开后复权日线。两种模式均为模拟交易，不会修改账户记录。" : "Custom strategies use deterministic rules. Synthetic mode uses bundled example prices. Real account mode uses adjusted public daily prices for instruments traded by the selected account. Both modes simulate trades without changing account records."}</p>
       {(() => {
         // Two saved spec shapes exist (workshop conditions and formula
         // mode); render each through the shared, shape-checked helper and
@@ -422,29 +472,33 @@ export function StrategySimulationPage() {
         </ul>;
       })()}
       {isTauriRuntime() ? (
-        userRunState[selectedUserStrategy.id] === "ready" && userArtifacts[selectedUserStrategy.id] ? (
-          <>
-            {userArtifacts[selectedUserStrategy.id].limitations ? (
+        <div>
+          <label className="workshop-inline-num">
+            {t("Run on")}
+            {data.mode === "demo" ? <span>{t("Synthetic demo universe")}</span> : <select aria-label={t("Run on")} value={userRunUniverse} onChange={(event) => setUserRunUniverse(event.target.value as "synthetic" | "own_account")}>
+              <option value="synthetic">{t("Synthetic demo universe")}</option>
+              <option value="own_account">{t("My own traded instruments (real market, hfq)")}</option>
+            </select>}
+          </label>
+          {effectiveUniverse === "own_account" ? <label className="workshop-inline-num">
+            {locale === "zh-CN" ? "运行账户" : "Run account"}
+            <select aria-label={locale === "zh-CN" ? "运行账户" : "Run account"} value={runAccount ? accountIdentity(runAccount) : ""}
+              onChange={(event) => setRunAccountConfirmation(event.target.value ? { key: event.target.value, scopeRevision } : null)}>
+              <option value="">{locale === "zh-CN" ? "请选择账户" : "Select an account"}</option>
+              {data.activeAccount ? <option value={accountIdentity(data.activeAccount)}>{data.activeAccount.display_name} · {data.activeAccount.account_id}</option> : null}
+            </select>
+          </label> : null}
+          {effectiveUniverse === "own_account" && !runAccount
+            ? <p className="strategy-compare__note" role="alert">{locale === "zh-CN" ? "请先选择真实账户。" : "Select a real account first."}</p>
+            : currentUserState === "loading" ? <p className="strategy-compare__note">{t("Running on history…")}</p>
+            : <button type="button" className="workshop-save" onClick={() => runUserStrategy(selectedUserStrategy)}>{t("Run on history")}</button>}
+          {currentUserError ? <p className="strategy-compare__note" role="alert">{t("Run failed")}: {currentUserError}</p> : null}
+          {currentUserState === "ready" && currentUserArtifact?.limitations ? (
               <ul className="strategy-comparison-limits">
-                {userArtifacts[selectedUserStrategy.id].limitations!.map((limitation, index) => <li key={index}>{limitation}</li>)}
+                {currentUserArtifact.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}
               </ul>
-            ) : null}
-          </>
-        ) : userRunState[selectedUserStrategy.id] === "loading" ? (
-          <p className="strategy-compare__note">{t("Running on history…")}</p>
-        ) : (
-          <div>
-            <label className="workshop-inline-num">
-              {t("Run on")}
-              <select aria-label={t("Run on")} value={userRunUniverse} onChange={(event) => setUserRunUniverse(event.target.value as "synthetic" | "own_account")}>
-                <option value="own_account">{t("My own traded instruments (real market, hfq)")}</option>
-                <option value="synthetic">{t("Synthetic demo universe")}</option>
-              </select>
-            </label>
-            <button type="button" className="workshop-save" onClick={() => runUserStrategy(selectedUserStrategy)}>{t("Run on history")}</button>
-            {userRunError[selectedUserStrategy.id] ? <p className="strategy-compare__note">{t("Run failed")}: {userRunError[selectedUserStrategy.id]}</p> : null}
-          </div>
-        )
+          ) : null}
+        </div>
       ) : <div className="strategy-compare__note">
         <p>{t("Running custom strategies needs the desktop app (browser preview cannot execute them).")}</p>
         <p>{t("Open the desktop app → Strategy Simulation → select this strategy → Run on history.")}</p>
@@ -460,7 +514,9 @@ export function StrategySimulationPage() {
 
         <h2>{t("If one fixed, fully public set of rules ran independently in the same market, where would it have gone?")}</h2>
 
-        <p className="strategy-purpose__answer">{t("This path is the reference group for your own history: same synthetic market, fixed rules, every fill explained. The performance numbers above are on synthetic prices — read the rule behavior (when it enters, exits, or stands aside), not the profit.")}</p>
+        <p className="strategy-purpose__answer">{isUserStrategy && effectiveUniverse === "own_account"
+          ? (locale === "zh-CN" ? "这里展示固定规则在当前账户曾交易标的的真实后复权行情上的模拟路径；成交与收益属于独立仿真，不是账户实际表现。" : "This shows fixed rules simulated on adjusted real prices for instruments traded by the selected account. Fills and returns belong to the simulation, not the actual account.")
+          : t("This path is the reference group for your own history: same synthetic market, fixed rules, every fill explained. The performance numbers above are on synthetic prices — read the rule behavior (when it enters, exits, or stands aside), not the profit.")}</p>
 
         <ol className="strategy-purpose__steps">
 
@@ -587,7 +643,7 @@ export function StrategySimulationPage() {
           detail={`${t("Avg win")} ${summary.performanceStats.avgWin === null ? "—" : money(summary.performanceStats.avgWin)} · ${t("Avg loss")} ${summary.performanceStats.avgLoss === null ? "—" : money(summary.performanceStats.avgLoss)}`} /> : null}
         {summary.performanceStats ? <StatCard label={t("Excess vs buy-and-hold")}
           value={summary.performanceStats.excessAnnualizedReturn === null ? "—" : percentLabel(summary.performanceStats.excessAnnualizedReturn)}
-          detail={`${t("Benchmark annualized")} ${summary.performanceStats.benchmarkAnnualizedReturn === null ? "—" : percentLabel(summary.performanceStats.benchmarkAnnualizedReturn)}`} /> : null}
+          detail={`${t("Benchmark annualized")} ${summary.performanceStats.benchmarkAnnualizedReturn === null ? "—" : percentLabel(summary.performanceStats.benchmarkAnnualizedReturn)} · ${locale === "zh-CN" ? "基准为毛收益口径，未计费用与滑点" : "Gross benchmark; fees and slippage excluded"}`} /> : null}
 
       </section>
 
@@ -597,6 +653,10 @@ export function StrategySimulationPage() {
           {Object.entries(summary.performanceStats.definitions).map(([key, defText]) => <span key={key} className="block">{defText}</span>)}
         </p>
       ) : null}
+      {summary.benchmarkBuyHold.length > 0 ? <p className="strategy-comparison-note r-multiple-note">
+        {locale === "zh-CN" ? "买入持有基准采用预定标的等额初始资金，未上市前资金保留现金；允许碎股，不按整手成交，不计费用和滑点。拆股调整持股数，退市按最后可见收盘价清算。基准为毛收益，策略仿真包含自己的成交成本，两者并非同口径净收益。" : "The buy and hold benchmark splits initial cash equally across dataset instruments. Cash waits for later listings; fractional shares are allowed, with no lot rounding, fees, or slippage. Splits adjust shares, and delistings liquidate at the last observed close. This is a gross benchmark, while the strategy simulation includes its own execution costs."}
+        {summary.benchmarkBuyHoldPolicy ? <span className="block">{locale === "zh-CN" ? "口径来源：仿真结果随附的" : "Method supplied with the simulation:"} benchmark_buy_hold_policy.</span> : null}
+      </p> : null}
 
 
 
@@ -646,7 +706,8 @@ export function StrategySimulationPage() {
 
                 displayName: effectiveChartInstrument, currency: "CNY",
 
-                priceBasis: "synthetic_unadjusted", sourceUrl: "", sourceSha256: "",
+                priceBasis: isUserStrategy && effectiveUniverse === "own_account" ? "hfq" : "synthetic_unadjusted",
+                sourceUrl: isUserStrategy && effectiveUniverse === "own_account" ? "https://github.com/akfamily/akshare" : "", sourceSha256: "",
 
                 bars: barsByInstrument[effectiveChartInstrument].map((bar) => ({
 
@@ -898,7 +959,9 @@ export function StrategySimulationPage() {
 
         </div>
 
-        <p className="strategy-comparison-note">{t("See how fragile a conclusion is: change one parameter, rerun the same history, compare. High sensitivity means the historical result leans on that assumption.")}</p>
+        {realSensitivityUnsupported ? <p className="strategy-comparison-note" role="status">{locale === "zh-CN" ? "参数敏感度目前仅在内置合成示例行情上运行；当前真实账户历史不支持敏感度变体。切换到合成模式后可运行。" : "Parameter sensitivity currently runs only on bundled synthetic history. Variants are unavailable for this real account history; switch to synthetic mode to run them."}</p>
+          : formulaSensitivityUnsupported ? <p className="strategy-comparison-note" role="status">{locale === "zh-CN" ? "公式策略暂不支持参数敏感度运行。" : "Parameter sensitivity is not supported for formula strategies yet."}</p> : <>
+        <p className="strategy-comparison-note">{locale === "zh-CN" ? "仅使用内置合成示例行情：一次改变一个参数，重复运行并比较。敏感度高说明合成历史结论依赖该假设。" : "Bundled synthetic history only: vary one parameter, rerun, and compare. High sensitivity means the historical result depends on that assumption."}</p>
 
         <div className="strategy-sensitivity-controls">
 
@@ -969,6 +1032,7 @@ export function StrategySimulationPage() {
           <ul className="strategy-comparison-limits">{sensitivityResult.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul>
 
         </div> : null}
+        </>}
 
       </section>
 
@@ -982,7 +1046,8 @@ export function StrategySimulationPage() {
 
         <p>{t("Data fingerprint")}: {simulation.dataFingerprint}</p>
 
-        <p>{t("Regenerate via scripts/run_strategy_simulation.py")}</p>
+        {isUserStrategy ? <p>{effectiveUniverse === "own_account" ? (locale === "zh-CN" ? "来源：当前账户曾交易标的 · 公开后复权行情 · 独立模拟交易" : "Source: selected account's traded instruments · adjusted public market history · independent simulated trades") : (locale === "zh-CN" ? "来源：内置合成示例行情 · 独立模拟交易" : "Source: bundled synthetic example prices · independent simulated trades")}</p>
+          : <p>{t("Regenerate via scripts/run_strategy_simulation.py")}</p>}
 
       </footer>
 </> : null}

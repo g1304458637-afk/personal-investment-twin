@@ -6,19 +6,16 @@ An atomic scope snapshot preserves the continuation head across process restarts
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 import sqlite3
 from contextlib import contextmanager
+from src.persistence.private_files import prepare_private_database
 
 
 class ChatArchive:
     def __init__(self, path: str | Path):
         self.path = Path(path)
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        # Restrictive mode at creation, not only after SQLite has written data.
-        fd = os.open(self.path, os.O_CREAT | os.O_RDWR, 0o600)
-        os.close(fd)
+        prepare_private_database(self.path)
         with self.connect() as connection:
             connection.execute("CREATE TABLE IF NOT EXISTS validated_conversations_v1 "
                 "(scope_key TEXT PRIMARY KEY, payload TEXT NOT NULL)")

@@ -1,13 +1,13 @@
-import source from "@/generated/review-pack-demo.json";
+import source from "@/generated/showcase-review-pack-demo.json";
 
 import { adaptReviewPack } from "./reviewPack.ts";
 
 /**
  * Vite-only binding of the account-level review pack demo artifact.
  *
- * src/generated/review-pack-demo.json is produced by the backend script
- * (regenerate it there when the demo universe changes) and describes the demo
- * universe, which may use its own subject/account ids. The fail-closed adapter
- * in reviewPack.ts validates it exactly like a runtime response.
+ * src/generated/showcase-review-pack-demo.json is generated from the same
+ * fictional account inputs as showcase-demo.json. The older independent
+ * review-pack-demo.json remains a research fixture. The fail-closed adapter
+ * in reviewPack.ts validates this pack like a runtime response.
  */
 export const reviewPackDemo = adaptReviewPack(source);

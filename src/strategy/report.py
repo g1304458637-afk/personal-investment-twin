@@ -10,6 +10,20 @@ from src.strategy.engine import SimulationResult
 
 SCHEMA_VERSION = "strategy_simulation.v1"
 
+# This descriptive benchmark deliberately keeps the historical gross,
+# fractional-share convention.  Its cash and corporate-action bookkeeping is
+# real, but it does not pretend to obey the strategy engine's fee/lot/slippage
+# execution model.  Keep this alongside the serialized curve for consumers.
+BUY_HOLD_POLICY = {
+    "allocation": "equal fixed initial cash sleeve per predeclared dataset instrument, including later listings",
+    "entry": "first observed close on or after listing; uninvested sleeve stays cash",
+    "shares": "fractional shares allowed; no lot rounding",
+    "fees_and_slippage": "excluded (gross benchmark)",
+    "split": "held shares multiplied by split ratio at ex-date open",
+    "suspension": "held shares valued at last observed raw close",
+    "delisting": "liquidate at last observed raw close on delist_date; proceeds stay cash",
+}
+
 
 def _safe(value: Any) -> Any:
     if isinstance(value, dict):
@@ -120,29 +134,57 @@ def _sharpe(daily_equity: list[float], initial_cash: float) -> float | None:
 
 
 def buy_and_hold_curve(data: SimulationData, initial_cash: float) -> list[dict]:
-    """Equal-weight buy-and-hold across all instruments, hold to the end."""
-    instruments = sorted(data.series.keys())
+    """Gross equal-sleeve buy-and-hold with chronological cash accounting.
+
+    The dataset instrument roster defines sleeves up front.  A sleeve buys
+    fractional shares only at its first observed listed close, so a later
+    listing remains cash until its own first bar.  Only actions on or before
+    the current day affect the position; raw prices are never back-adjusted.
+    """
+    instruments = sorted(data.members)
     if not instruments:
         return []
     allocation = initial_cash / len(instruments)
-    share_counts: dict[str, float] = {}
-    all_dates = sorted({d for inst in instruments for d in data.series[inst].dates})
-    date_to_idx = {inst: {d: i for i, d in enumerate(data.series[inst].dates)} for inst in instruments}
-    for inst in instruments:
-        first_close = data.series[inst].bars[0].close
-        share_counts[inst] = allocation / first_close if first_close > 0 else 0.0
+    cash = {instrument: allocation for instrument in instruments}
+    shares = {instrument: 0.0 for instrument in instruments}
+    entered: set[str] = set()
+    actions_by_day: dict[date, list] = {}
+    for action in data.actions:
+        if action.action == "split":
+            actions_by_day.setdefault(action.ex_date, []).append(action)
     curve = []
-    for day in all_dates:
-        total = 0.0
+    for day in data.dates:
+        # Match the engine's event ordering: split at open, then delisting
+        # liquidation at the last real close.  Never synthesize a new price.
+        for action in actions_by_day.get(day, ()):
+            if action.instrument in shares and shares[action.instrument] > 0:
+                shares[action.instrument] *= action.ratio
+        listed = set(data.listed_on(day))
         for inst in instruments:
-            idx_map = date_to_idx[inst]
-            if day in idx_map:
-                close = data.series[inst].bars[idx_map[day]].close
-                total += share_counts.get(inst, 0.0) * close
-            else:
-                last = data.series[inst].raw_close_on_or_before(day)
-                if last is not None:
-                    total += share_counts.get(inst, 0.0) * last
+            member = data.members[inst]
+            series = data.series.get(inst)
+            if member.delist_date == day and shares[inst] > 0:
+                if series is None:
+                    raise ValueError(f"held {inst} has no price series on delisting day")
+                last = series.raw_close_on_or_before(day)
+                if last is None:
+                    raise ValueError(f"delisted {inst} has no historical close")
+                cash[inst] += shares[inst] * last
+                shares[inst] = 0.0
+            if inst not in entered and inst in listed and series is not None:
+                bar = series.bar_on(day)
+                if bar is not None:
+                    shares[inst] = cash[inst] / bar.close
+                    cash[inst] = 0.0
+                    entered.add(inst)
+        total = sum(cash.values())
+        for inst in instruments:
+            if shares[inst] > 0:
+                series = data.series.get(inst)
+                last = series.raw_close_on_or_before(day) if series is not None else None
+                if last is None:
+                    raise ValueError(f"held {inst} has no historical close on or before {day}")
+                total += shares[inst] * last
         curve.append({"date": day.isoformat(), "equity": round(total, 2)})
     return curve
 
@@ -168,6 +210,7 @@ def enrich_summary(payload: dict, data: SimulationData) -> dict:
     summary["sharpe_ratio"] = sharpe
     benchmark_curve = buy_and_hold_curve(data, initial_cash)
     summary["benchmark_buy_hold"] = benchmark_curve
+    summary["benchmark_buy_hold_policy"] = dict(BUY_HOLD_POLICY)
     summary["performance_stats"] = performance_stats(
         days, initial_cash, float(summary.get("max_drawdown", 0.0)),
         ann, sharpe, summary.get("round_trips", []), benchmark_curve)

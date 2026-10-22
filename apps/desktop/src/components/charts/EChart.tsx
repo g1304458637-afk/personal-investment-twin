@@ -4,6 +4,7 @@ import {
   AxisPointerComponent,
   DataZoomComponent,
   GridComponent,
+  LegendComponent,
   MarkAreaComponent,
   TooltipComponent,
 } from "echarts/components";
@@ -36,6 +37,7 @@ use([
   LineChart,
   ScatterChart,
   GridComponent,
+  LegendComponent,
   TooltipComponent,
   MarkAreaComponent,
   DataZoomComponent,

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import platform
 import shutil
 import subprocess
@@ -123,7 +124,8 @@ def build(mode: str) -> Path:
     universe_dir = ROOT / "data" / "sample" / "strategy_universe"
     for filename in ("universe.csv", "prices.csv", "corporate_actions.csv"):
         command[-1:-1] = ["--add-data", f"{universe_dir / filename}:data/sample/strategy_universe"]
-    subprocess.run(command, check=True, cwd=ROOT)
+    environment = {**os.environ, "PYINSTALLER_CONFIG_DIR": str(work_root / "cache")}
+    subprocess.run(command, check=True, cwd=ROOT, env=environment)
 
     built = dist_root / BINARY_NAME
     if mode == "onedir":
