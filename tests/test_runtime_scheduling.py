@@ -175,3 +175,73 @@ def test_teaching_dispatch_reaches_existing_implementation_without_network(tmp_p
         assert invalid["error"]["code"] == "invalid_params"
     finally:
         product.close()
+
+
+def test_company_wait_does_not_block_account_owner_lane(monkeypatch, tmp_path):
+    """A slow external company model must not hold the account SQLite worker."""
+    started,release,account_done=threading.Event(),threading.Event(),threading.Event()
+    inputs,output=Queue(),io.StringIO()
+    original=protocol._product_methods
+    def product_methods(path):
+        methods,product=original(path)
+        def company(_params):
+            started.set()
+            assert release.wait(10)
+            return {'status':'ANSWERED'}
+        methods['company_research.chat']=company
+        return methods,product
+    monkeypatch.setattr(protocol,'_product_methods',product_methods)
+    class Input:
+        def __iter__(self):
+            while (item:=inputs.get()) is not None:yield json.dumps(item)+'\n'
+    class Output:
+        def write(self,line):
+            output.write(line)
+            if json.loads(line)['request_id']=='account':account_done.set()
+        def flush(self):pass
+    runner=threading.Thread(target=protocol.run,args=(Input(),Output()),kwargs={'db_path':str(tmp_path/'independent.sqlite3')})
+    runner.start()
+    try:
+        inputs.put(request('company','company_research.chat',{}));assert started.wait(5)
+        inputs.put(request('account','account.list'))
+        assert account_done.wait(5),'Account read waited behind an external company model'
+        before=[json.loads(line) for line in output.getvalue().splitlines()]
+        assert before[0]['request_id']=='account' and before[0]['ok']
+    finally:
+        release.set();inputs.put(request('stop','runtime.shutdown'));runner.join(10)
+    assert not runner.is_alive()
+    responses=[json.loads(line) for line in output.getvalue().splitlines()]
+    assert responses[-1]['request_id']=='stop'
+
+
+@pytest.mark.parametrize('invalid', [
+    {'params': {'unexpected': True}},
+    {'protocol_version': 'unsupported'},
+    {'deadline_unix_ms': 1},
+])
+def test_invalid_shutdown_keeps_company_and_account_lanes_available(monkeypatch, tmp_path, invalid):
+    monkeypatch.setattr(protocol.CompanyResearchClient, 'call', lambda *_args: {'application': 'company-operating-twin'})
+    messages = [{**request('invalid', 'runtime.shutdown'), **invalid},
+                request('company', 'company_research.status'), request('account', 'account.list'),
+                request('stop', 'runtime.shutdown')]
+    output = io.StringIO()
+    protocol.run(io.StringIO(''.join(json.dumps(message) + '\n' for message in messages)), output,
+                 db_path=str(tmp_path / 'shutdown-contract.sqlite3'))
+    replies = {item['request_id']: item for item in map(json.loads, output.getvalue().splitlines())}
+    assert not replies['invalid']['ok']
+    assert all(replies[key]['ok'] for key in ('company', 'account', 'stop'))
+
+
+def test_shutdown_expiring_after_reader_validation_keeps_company_lane_available(monkeypatch, tmp_path):
+    # Accepted while reading, expired by the time the account worker executes it.
+    clock = iter([1000_000_000, 2000_000_000])
+    monkeypatch.setattr(protocol.time, 'time_ns', lambda: next(clock))
+    monkeypatch.setattr(protocol.CompanyResearchClient, 'call', lambda *_args: {'application': 'company-operating-twin'})
+    messages = [{**request('expired', 'runtime.shutdown'), 'deadline_unix_ms': 1500},
+                request('company', 'company_research.status'), request('stop', 'runtime.shutdown')]
+    output = io.StringIO()
+    protocol.run(io.StringIO(''.join(json.dumps(message) + '\n' for message in messages)), output,
+                 db_path=str(tmp_path / 'expired-shutdown.sqlite3'))
+    replies = {item['request_id']: item for item in map(json.loads, output.getvalue().splitlines())}
+    assert replies['expired']['error']['code'] == 'request_expired'
+    assert replies['company']['ok'] and replies['stop']['ok']

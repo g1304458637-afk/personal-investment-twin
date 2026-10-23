@@ -1,5 +1,7 @@
 /** Stable source-message keys used by the lightweight desktop locale layer. */
 export const enUS = {
+  "Company research": "Company research",
+  "Company operating, financial and source evidence": "Company operating, financial and source evidence",
   "各自完整投资期间的结果，不是共同区间收益，也不是能力排名。": "Full Episode results, not shared-window returns or skill rankings.",
   "标准化持仓仅显示各自加减仓形状，不等于账户风险暴露。": "Normalized holdings show each Episode's position shape, not account risk exposure.",
   "共同价格仅使用双方一致的已记录日观察；不补齐缺失日期，不代表盘中已知价格。": "Shared prices use matching recorded daily observations only; missing dates are not filled and marks are not intraday availability claims.",

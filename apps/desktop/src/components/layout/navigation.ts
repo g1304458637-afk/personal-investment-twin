@@ -3,6 +3,7 @@ import {
   BetweenHorizontalStart,
   BookOpenText,
   BrainCircuit,
+  Building2,
   BriefcaseBusiness,
   Database,
   History,
@@ -46,6 +47,7 @@ export type NavigationItem = NavigationRouteItem | NavigationGroupItem;
 const icons: Readonly<Record<ProductIconKey, LucideIcon>> = {
   overview: LayoutDashboard,
   investments: BriefcaseBusiness,
+  company: Building2,
   review: History,
   twin: BrainCircuit,
   pretrade: ScanSearch,

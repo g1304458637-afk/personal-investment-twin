@@ -10,3 +10,6 @@ apps/desktop/src-tauri/binaries/toujing-core-*
 
 # Local UI screenshots and other generated visual artifacts
 artifacts/ui/
+
+# Machine-specific company engine configuration and generated integration evidence.
+.local/

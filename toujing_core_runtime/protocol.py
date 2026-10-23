@@ -12,6 +12,8 @@ from collections.abc import Callable, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, TextIO
 
+from .company_research import METHODS as COMPANY_METHODS, CompanyResearchClient, CompanyResearchError
+
 PROTOCOL_VERSION = "1"
 RUNTIME_VERSION = "1.0.0"
 CORE_VERSION = "1.0.0"
@@ -22,6 +24,7 @@ BASE_METHODS = (
     "runtime.shutdown",
 )
 PRODUCT_METHODS = (
+    *COMPANY_METHODS,
     "ledger.get", "ledger.preview", "ledger.commit", "ledger.research",
     "backup.create", "backup.preview_restore", "backup.restore", "backup.pending_preferences", "backup.ack_preferences",
     "ingestion.preview_trade_csv", "ingestion.commit_trade_import",
@@ -163,6 +166,8 @@ def _product_methods(db_path: str | None) -> tuple[dict[str, Callable[[object], 
                 raise RuntimeRequestError("invalid_params", "params must be an object")
             try:
                 return fn(params)
+            except CompanyResearchError as exc:
+                raise RuntimeRequestError(exc.code, str(exc)) from exc
             except (TypeError, ValueError) as exc:
                 raise RuntimeRequestError("invalid_params", str(exc)) from exc
             except (OSError, sqlite3.Error) as exc:
@@ -175,6 +180,8 @@ def _product_methods(db_path: str | None) -> tuple[dict[str, Callable[[object], 
     from .research import run as research_run
     backup = BackupRuntime(product)
     methods = {
+        **{method: checked(lambda p, method=method: CompanyResearchClient().call(method, p))
+           for method in COMPANY_METHODS},
         "ledger.research": checked(lambda p: research_run(product, p)),
         "backup.create": checked(backup.create),
         "backup.preview_restore": checked(backup.preview),
@@ -263,13 +270,15 @@ def run(stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout, *, db_path: str 
     """Serve RPC with a responsive control lane and one ordered data worker.
 
     SQLite is created, used and closed on the same worker. Account mutations
-    remain FIFO; only handshake/health bypass that queue. Shutdown and EOF
+    remain FIFO; company research uses a separate bounded I/O lane and never
+    accesses this account SQLite connection. Shutdown and EOF
     drain accepted work before closing storage. Responses are request-id
     addressed and may arrive out of order (health may overtake a replay).
     """
     write_lock = threading.Lock()
     # Bound queued work without blocking the reader that serves health.
     capacity = threading.BoundedSemaphore(64)
+    company_capacity = threading.BoundedSemaphore(8)
 
     def emit(response):
         try:
@@ -285,16 +294,17 @@ def run(stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout, *, db_path: str 
             stdout.write(line + "\n")
             stdout.flush()
 
-    with ThreadPoolExecutor(max_workers=1, thread_name_prefix="toujing-data") as worker:
+    with (ThreadPoolExecutor(max_workers=1, thread_name_prefix="toujing-data") as worker,
+          ThreadPoolExecutor(max_workers=2, thread_name_prefix="toujing-company") as company_worker):
         product_methods, product = worker.submit(_product_methods, db_path).result()
         methods = {**_METHODS, **product_methods}
 
-        def dispatch(request):
+        def dispatch(request, slot=capacity):
             try:
                 response, _ = handle_request(request, methods)
                 emit(response)
             finally:
-                capacity.release()
+                slot.release()
 
         try:
             for raw_line in stdin:
@@ -315,15 +325,23 @@ def run(stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout, *, db_path: str 
                     # Also validate malformed shutdown envelopes. An invalid
                     # shutdown must not stop the worker or drop queued writes.
                     response, should_stop = worker.submit(handle_request, request, methods).result()
+                    if should_stop:
+                        company_worker.shutdown(wait=True)
                     emit(response)
                     if should_stop:
                         break
+                elif method in COMPANY_METHODS:
+                    if company_capacity.acquire(blocking=False):
+                        company_worker.submit(dispatch, request, company_capacity)
+                    else:
+                        emit(_error(request.get("request_id"), "runtime_busy", "company research work queue is full"))
                 elif capacity.acquire(blocking=False):
                     worker.submit(dispatch, request)
                 else:
                     request_id = request.get("request_id") if isinstance(request, Mapping) else None
                     emit(_error(request_id, "runtime_busy", "runtime work queue is full; retry after pending work completes"))
         finally:
+            company_worker.shutdown(wait=True)
             if product is not None:
                 worker.submit(product.close).result()  # type: ignore[attr-defined]
     return 0

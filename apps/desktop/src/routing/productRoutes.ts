@@ -3,6 +3,7 @@ import type { LocaleMessage } from "@/locales/en-US";
 export const PRODUCT_ROUTE_IDS = [
   "overview",
   "investments",
+  "company_research",
   "strategy_simulation",
   "my_strategies",
   "review",
@@ -24,6 +25,7 @@ export type NavigationGroupId = "review";
 export type ProductIconKey =
   | "overview"
   | "investments"
+  | "company"
   | "review"
   | "twin"
   | "pretrade"
@@ -101,6 +103,22 @@ export const productRoutes: readonly ProductRouteDefinition[] = [
     availability: "available",
     parentId: null,
     inspectorPolicy: "supported",
+  }),
+  route({
+    id: "company_research",
+    path: "/company-research",
+    legacyPaths: [],
+    labelKey: "Company research",
+    pageTitleKey: "Company research",
+    descriptionKey: "Company operating, financial and source evidence",
+    icon: "company",
+    navigationSection: "work",
+    navigationGroup: null,
+    navigationOrder: 15,
+    showInSidebar: true,
+    availability: "available",
+    parentId: null,
+    inspectorPolicy: "none",
   }),
   route({
     id: "my_strategies",

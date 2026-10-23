@@ -16,6 +16,7 @@ import {
   resolveLegacyRedirect,
   type ProductRouteId,
 } from "@/routing/productRoutes";
+const CompanyResearchWorkspace = lazy(async () => ({ default: (await import("@/workspace/CompanyResearchWorkspace")).CompanyResearchWorkspace }));
 const InvestmentsPage = lazy(async () => ({ default: (await import("@/pages/InvestmentsPage")).InvestmentsPage }));
 const StrategySimulationPage = lazy(async () => ({ default: (await import("@/pages/StrategySimulationPage")).StrategySimulationPage }));
 const MyStrategiesPage = lazy(async () => ({ default: (await import("@/pages/MyStrategiesPage")).MyStrategiesPage }));
@@ -44,6 +45,7 @@ const WelcomeEntry = lazy(async () => ({ default: (await import("@/workspace/Wel
 const routeElements: Partial<Record<ProductRouteId, React.ReactNode>> = {
   overview: <Navigate to="/investments" replace />,
   investments: <InvestmentsPage />,
+  company_research: <CompanyResearchWorkspace />,
   strategy_simulation: <StrategySimulationPage />,
   my_strategies: <MyStrategiesPage />,
   same_stock_example: <SameStockComparePage />,

@@ -51,7 +51,7 @@ test("primary sidebar derives only ready routes from metadata", () => {
       ? [entry.route.id]
       : [entry.route.id, ...entry.children.map((child) => child.id)],
   );
-  assert.deepEqual(ids, ["investments", "strategy_simulation", "my_strategies", "data_accounts", "settings"]);
+  assert.deepEqual(ids, ["investments", "company_research", "strategy_simulation", "my_strategies", "data_accounts", "settings"]);
   assert.equal(ids.includes("advanced_evidence"), false);
   assert.equal(ids.includes("investments"), true);
   assert.equal(ids.includes("data_accounts"), true);
@@ -86,4 +86,13 @@ test("App, Sidebar, and Command Palette consume the metadata source", async () =
   assert.doesNotMatch(shell, /AgentPanel/);
   assert.doesNotMatch(shell, /Ask Twin/);
   assert.match(app, /overview: <Navigate to="\/investments"/);
+});
+
+
+test("company research has its own account-independent route and command entry",()=>{
+ assert.equal(activeRouteId('/company-research'),'company_research');
+ assert.equal(activeNavigationRouteId('/company-research'),'company_research');
+ assert.equal(pageTitleKey('/company-research'),'Company research');
+ const route=productRoutes.find(r=>r.id==='company_research');
+ assert.equal(route.parentId,null);assert.equal(route.inspectorPolicy,'none');
 });

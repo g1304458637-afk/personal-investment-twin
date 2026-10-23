@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowDownUp, ArrowUpRight, BookOpen, ChevronRight, Database, FolderOpen, History, MessageCircle, ScanLine, Search, Settings2, ShieldCheck, Sun, Moon } from "lucide-react";
+import { ArrowDownUp, ArrowUpRight, BookOpen, Building2, ChevronRight, Database, FolderOpen, History, MessageCircle, ScanLine, Search, Settings2, ShieldCheck, Sun, Moon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
@@ -14,7 +14,7 @@ import { useLiquidCopy } from "./liquidCopy";
 import { LiquidBackdrop } from "./LiquidBackdrop";
 import { GlassOrbLogo } from "@/components/common/GlassOrbLogo";
 
-const icons = { investments: FolderOpen, review: ScanLine, history: History, comparison: ArrowDownUp, pretrade: ScanLine, journal: BookOpen, data: Database, settings: Settings2, ask: MessageCircle };
+const icons = { company: Building2, investments: FolderOpen, review: ScanLine, history: History, comparison: ArrowDownUp, pretrade: ScanLine, journal: BookOpen, data: Database, settings: Settings2, ask: MessageCircle };
 
 export function IntelligenceShell({ openCommands }: { openCommands: () => void }) {
   const data = useDataMode();
@@ -36,7 +36,9 @@ export function IntelligenceShell({ openCommands }: { openCommands: () => void }
     window.addEventListener("keydown", close);
     return () => window.removeEventListener("keydown", close);
   }, [menuOpen]);
-  const askTarget = "/ask";
+  const companyResearch = section === "/company-research";
+  const companyAskSearch = new URLSearchParams(location.search); companyAskSearch.set("ask", "1");
+  const askTarget = companyResearch ? `/company-research?${companyAskSearch}` : "/ask";
   return <div className={`workspace-shell intelligence-workspace liquid-workspace ${menuOpen ? "lg-menu-open" : ""}`} onPointerMove={(event) => {
     if (event.pointerType !== "mouse") return;
     const card = (event.target as HTMLElement).closest<HTMLElement>(".lg-interactive");
@@ -86,9 +88,9 @@ export function IntelligenceShell({ openCommands }: { openCommands: () => void }
       <header className="iw-topbar">
         <button className="iw-icon-button lg-menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? glass.close : glass.menu} aria-expanded={menuOpen}>{menuOpen ? <X size={20} /> : <Menu size={20} />}</button>
         <div className="iw-breadcrumb" data-tauri-drag-region><span>TOUJING</span><ChevronRight size={13} /><strong>{selected ? glass[selected.label] : c.ask}</strong></div>
-        <div className="iw-top-actions"><span className="iw-runtime">{data.runtimeAvailable ? c.native : c.offline}</span><button className="iw-icon-button" onClick={openCommands} aria-label={c.search}><Search size={17} /></button><button className="iw-icon-button" onClick={toggleTheme} aria-label={t("Switch to {theme} mode", { theme: t(theme === "dark" ? "light" : "dark") })}>{theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}</button><NavLink className="iw-ask" to={askTarget}><MessageCircle size={16} />{c.ask}<ArrowUpRight size={13} /></NavLink></div>
+        <div className="iw-top-actions"><span className="iw-runtime">{companyResearch ? (locale === "zh-CN" ? "公司研究 · 本地引擎" : "Company research · Local engine") : data.runtimeAvailable ? c.native : c.offline}</span><button className="iw-icon-button" onClick={openCommands} aria-label={c.search}><Search size={17} /></button><button className="iw-icon-button" onClick={toggleTheme} aria-label={t("Switch to {theme} mode", { theme: t(theme === "dark" ? "light" : "dark") })}>{theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}</button><NavLink className="iw-ask" to={askTarget}><MessageCircle size={16} />{c.ask}<ArrowUpRight size={13} /></NavLink></div>
       </header>
-      <div className={`iw-mode-strip ${data.mode === "demo" ? "is-demo" : ""}`}><span><i />{data.mode === "demo" ? c.example : c.local}</span><span className="iw-mode-account">{account}</span><span className="iw-mode-help" title={data.mode === "demo" ? c.modeHint : c.realHint}>{data.mode === "demo" ? c.modeHint : c.realHint}</span><button onClick={() => data.setMode(data.mode === "demo" ? "real_user" : "demo")}>{data.mode === "demo" ? c.exitPreview : c.preview}<ArrowUpRight size={12} /></button></div>
+      {companyResearch ? <div className="iw-mode-strip"><span><i />{locale === "zh-CN" ? "公司研究" : "Company research"}</span><span className="iw-mode-account">{locale === "zh-CN" ? "公开报告资料 · 本地模型" : "Public filings · Local models"}</span><span className="iw-mode-help">{locale === "zh-CN" ? "公司资料独立于投资账户；关键事实请核对原文。" : "Company evidence is separate from account data."}</span></div> : <div className={`iw-mode-strip ${data.mode === "demo" ? "is-demo" : ""}`}><span><i />{data.mode === "demo" ? c.example : c.local}</span><span className="iw-mode-account">{account}</span><span className="iw-mode-help" title={data.mode === "demo" ? c.modeHint : c.realHint}>{data.mode === "demo" ? c.modeHint : c.realHint}</span><button onClick={() => data.setMode(data.mode === "demo" ? "real_user" : "demo")}>{data.mode === "demo" ? c.exitPreview : c.preview}<ArrowUpRight size={12} /></button></div>}
       <main className="workspace-content" id="workspace-content">
         {section === "/analysis" && <nav className="lg-context-nav" aria-label={glass.analysis}>{analysisLinks.map((item) => <NavLink key={item.path} to={item.path} end>{glass[item.label]}</NavLink>)}</nav>}
         {section === "/pretrade" && <nav className="lg-context-nav" aria-label={glass.prepare}><NavLink to="/pretrade">{glass.prepare}</NavLink><NavLink to="/journal">{glass.journal}</NavLink></nav>}

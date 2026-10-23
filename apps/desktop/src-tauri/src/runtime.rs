@@ -35,6 +35,9 @@ fn request_timeout(method: &str) -> Duration {
     }
 }
 const PRODUCT_METHODS: &[&str] = &[
+    "company_research.status", "company_research.list", "company_research.load",
+    "company_research.resolve", "company_research.build", "company_research.snapshot",
+    "company_research.ask", "company_research.chat", "company_research.report",
     "ledger.get", "ledger.preview", "ledger.commit", "ledger.research",
     "backup.create", "backup.preview_restore", "backup.restore", "backup.pending_preferences", "backup.ack_preferences",
     "ingestion.preview_trade_csv",
@@ -70,7 +73,8 @@ const KEYED_PRODUCT_METHODS: &[&str] = &["review.start", "strategy_teaching.expl
 fn mutates_local_state(method: &str) -> bool {
     matches!(method, "ledger.commit" | "ledger.research" | "backup.restore" | "backup.ack_preferences" | "ingestion.commit_trade_import" | "market.commit_price_import"
         | "data.delete_account" | "review.add_note" | "episode_tags.set"
-        | "compare.export_share" | "compare.import_share" | "compare.revoke_share")
+        | "compare.export_share" | "compare.import_share" | "compare.revoke_share"
+        | "company_research.build")
 }
 
 fn timed_out_response(method: &str, request_id: String, error: String) -> Result<RuntimeResponse, String> {

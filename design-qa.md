@@ -1,99 +1,79 @@
-# Liquid Glass application pass — 2026-09-06
+# 投镜内置公司研究：本地整合验收
 
-## Target and scope
-
-The user selected the **right-hand translucent investment card** in the running
-Liquid Glass demo and requested an application-wide implementation. This is an
-adaptation of that material to a working financial application, not a pixel clone
-of the demo's marketing composition.
-
-- Source: `/private/tmp/toujing-liquid-reference-1440.png`, captured from `http://127.0.0.1:1423/`.
-- Implementation: `/private/tmp/toujing-liquid-investments.png`, `http://127.0.0.1:1420/#/investments`.
-- Further evidence: `/private/tmp/toujing-liquid-analysis.png`, `/private/tmp/toujing-liquid-episode.png`, `/private/tmp/toujing-liquid-mobile.png`.
-- Desktop reference and implementation: 1440 × 900 CSS/pixel captures, 1:1; no density rescaling. Mobile: 390 × 844.
-- State: zh-CN, dark, explicitly selected Synthetic example. English/light and real-account empty states were also inspected.
-- Source and implementation were opened together in a single image comparison input. The investment cards are readable at this size; a separate enlarged crop was not needed to inspect the edge, type, value, date and action treatment.
-
-## Design and information hierarchy
-
-- Three primary tasks: Investments, Analysis & comparison, Decision preparation. Data and Settings remain auxiliary. Existing review, history, journal, ask and evidence routes remain reachable; command search includes the new analysis hub.
-- Application-shell video persists across route transitions. A stronger page scrim and darker chart/reading panels intentionally reduce motion and contrast competition relative to the standalone demo.
-- Card material retains the 1% white surface, 4px backdrop blur and masked gradient edge. Interactive cards have pointer-following light, restrained hover lift and press feedback. Static financial panels do not lift on hover.
-- Existing charts, quantities, Outcomes, historical metrics, comparison values and permission/runtime gates are reused. No generated payload or financial implementation was edited.
-- The source's oversized hero and non-monospace result are deliberately not copied: the application retains its existing system typography and monospace financial values for scanability, offline font support and consistency.
-
-## Comparison history
-
-1. P2 — lazy page CSS overrode card layout and restored table columns. Fixed by scoping the application material with higher specificity. Later archive capture shows three separate cards with readable values and actions.
-2. P2 — inherited flex gaps plus section margins pushed the first investment below the fold. Removed redundant margins; later archive capture shows the complete first row at 1440 × 900.
-3. P2 — inherited account-context width stacked History provenance chips into a large header. Removed that width restriction in the History scope, retaining every source field.
-4. P2 — light-mode Synthetic label had insufficient contrast. Applied a darker amber label/semantic warning token in light mode.
-5. P2 — same-stock page mixed flex gaps and utility spacing. Grouped its introduction and reused glass result panels; no comparison values, formula, scope or callbacks changed.
-
-## Fidelity and interaction checks
-
-- Typography: Chinese/English hierarchy and wrapping inspected; system font retained intentionally. Financial values remain monospace.
-- Spacing: cards, task hub, chart/detail, form and settings checked at desktop size; 390px archive and Settings have no document horizontal overflow. Mobile navigation opens, routes and closes after selection.
-- Colors/material: same supplied blue/amber video, masked quiet edges, transparent surfaces. Light mode is an intentional daylight counterpart. Chart and inspector glass is more opaque for reading.
-- Imagery: original remote video, no downloaded copy, no substituted bitmap or copied branding. Retains existing Toujing mark. Failure falls back to a static gradient; decorative media has no account parameters.
-- Copy: actual/marked results and Synthetic/offline/runtime boundaries retained. Missing history does not load another account until an explicit registered-example switch.
-- Verified interactions: investment card → Episode, execution → factual drawer → close; history mismatch → explicitly select registered study; comparison hub → independent A/B example; decision-check offline result → edit quantity → stale result cleared; Settings language/theme; background pause/resume; mobile menu.
-- No Vite error overlay or blocking route failure observed. No authenticated native import, real-user share or paid model invocation was performed in this visual pass.
-
-## Verification
-
-- Python: 751 passed.
-- Desktop Node: 184 passed, including four new navigation/media-boundary tests.
-- TypeScript check, Vite production build, cargo check: passed.
-- `git diff --check`: passed.
-- Vite retains `strictPort: true`, port 1420; actual HTTP response verified as 200.
-- Existing large-chunk build warnings remain; no dependency was added.
-
-## Follow-up / intentional boundaries
-
-- Video is the user-supplied remote asset. Fully offline video packaging and distribution rights were not established; graceful fallback is present.
-- Browser import and unconnected capabilities remain labelled previews; this pass does not claim native workflow recertification.
-- The classic presentation and isolated reference demo are preserved. No commit or push.
+Date: 2026-10-23
 
 final result: passed
 
-## Welcome entrance and animated sphere logo
+## Comparison target and scope
 
-- Source: `/private/tmp/toujing-liquid-reference-1440.png` (approved liquid-glass demo).
-- Implementation: `/private/tmp/toujing-welcome-final.png`; mobile English: `/private/tmp/toujing-welcome-mobile-en.png`.
-- Desktop source and implementation are both 1440 × 900 pixels/CSS viewport; no density resampling. Mobile is 390 × 844.
-- Source and implementation opened together for comparison. Introduction content intentionally replaces the lab controls; the right-hand example uses existing generated results.
-- Typography: restrained system font, two-line Chinese headline; English wraps naturally on mobile. Layout: left explanation/right single translucent card; no horizontal mobile overflow (380px content in 390px viewport).
-- Color/image: same supplied video and thin masked glass edge. Initial overlay dimmed the blue/gold excessively (P2); reduced overlay opacity and re-captured/re-compared. Final video remains visible with legible foreground text. Sphere logo uses independent local artwork, no hand/video crop; visible circle has no checkerboard leakage.
-- Focused logo and card inspected in the full-resolution capture; monetary values, dates and Synthetic label remain readable. No replacement financial calculations.
-- Interaction checks: explicit sample CTA selects matching subject/account and opens exact Episode; enter-workspace preserves selected account; logo returns to welcome; English toggle works. Reduced-motion rules disable logo animation and existing video control remains available. No Vite blocking overlay; video readyState 4. Native/offline media delivery not newly certified.
-- Tests: frontend 189 passed; TypeScript and production build passed; existing bundle-size warnings remain. Five added tests cover startup preference, restricted storage, scoped example entry and reduced-motion asset use. No backend changes this increment.
-- Residual P3: independent high-resolution logo bitmap could later be optimized for packaging; remote-video distribution/offline rights remain a separate deployment consideration.
+- Source visual truth: `/Users/cccc/Projects/investment-twin/投镜_公司研究_Demo_20261023/evidence/demo-overview-dark.png` — 用户认可的公司研究 Demo。
+- Implementation: `http://127.0.0.1:18022/#/company-research`，投镜实际前端与 Company Twin 实际引擎。
+- Implementation screenshot: `/Users/cccc/Projects/investment-twin/投镜_统一入口/公司研究整合_20261023/evidence/integrated-overview-dark.png`。
+- 两张截图均为 1280 × 720 pixels；CSS viewport 1280 × 720；1 screenshot pixel / CSS pixel；无缩放归一化。状态均为宁德时代、2025 年、公司概览、深色。动画背景使用同一原始素材，暂停时刻不同。
+- 验收范围为当前桌面尺寸的本地浏览器整合页及桌面 RPC 契约。未将其等同于正式安装版、已打包 sidecar 或真实账户 UI 全链路验收。未声称验证其他窗口尺寸。
 
-final result: passed
+## Visual evidence
 
-## Opt-in investment review sample — local only
+证据目录：`/Users/cccc/Projects/investment-twin/投镜_统一入口/公司研究整合_20261023/evidence/`。
 
-- Target: existing glass Episode detail plus the approved process-first hierarchy; not a new visual identity. Source `/private/tmp/episode-original-1440.png`, implementation `/private/tmp/episode-sample-final.png`, both 1440 × 900 at 1:1 density. Original has its default top padding; sample scroll aligns its toolbar to the content start. Both show the same Synthetic H account and full investment range.
-- Both images were opened in the same comparison input. The original result, dates, story, price/quantity paths and three backend-selected facts are retained. Only section grouping, sizing and surface hierarchy differ intentionally.
-- Initial findings: quantity pane below the first screen; shortening it caused cramped ticks; chart scrim referenced a nonexistent background token. Fixed by compacting the price pane/header, restoring the original quantity height and using the existing canvas token. Revised capture shows the full quantity pane and a stable 92%-opaque chart surface.
-- Typography and spacing: existing system fonts/tabular figures; compact heading, separate result, four section buttons. Colors: existing glass palette, subdued fact rail and stronger chart reading surface. Assets: existing video/logo untouched. Copy: bilingual presentation strings, explicit Synthetic and unavailable-analysis boundaries; no new financial claims.
-- Focused interaction evidence: selecting consecutive additions exposes 2025/01/24 and 2025/02/20 actions; first action opens original drawer (300 shares, recorded fee ¥2, before 400 / after 700). Existing counterfactual and provenance disclosure remain untouched. Reset uses the existing time-navigation reset. All six actions remain under All actions. Evidence disclosure retains genuine empty state rather than borrowing another Episode's refs.
-- Browser checks: four sections, fact selection, decision drawer, original/sample toggle and source disclosure work. Mobile capture `/private/tmp/episode-sample-mobile.png`: 390 × 844, content width 340, no horizontal page overflow. This is responsive browser inspection, not native iPhone certification. No Vite blocking overlay. Full browser console/native runtime were not recertified.
-- Tests: 192 frontend tests passed; check/build and diff check passed. One existing markup assertion updated for the explicitly hidden ledger section; three tests added for opt-in scope preservation, bilingual sections and original data/ownership links. Python/financial modules unchanged; no backend regression rerun.
-- No deployment, no commit. Existing online video-loading issue remains separate and unresolved.
+已实际打开合成的同图对照并检查：
 
-## Independent Agent conversation UX — 2026-09-07
+- `comparison-full.png`：左侧认可 Demo，右侧真实整合页，等尺寸全图。
+- `comparison-brand.png`：原始 logo、字标、侧栏账户上下文。
+- `comparison-topbar.png`：面包屑、状态、主题与问答按钮。
+- `comparison-metrics.png`：公司身份、期间、页签、数值卡片及单位。
+- `comparison-graph-fix.png`：同一营业收入节点的修复前后关系图。
+- 补充状态：`integrated-overview-light.png`、`integrated-financial-dark.png`、`evidence-detail-final.png`、`company-catalog.png`、`model-version-dialog.png`。
 
-- Scope: approved conversation-first revision of the supplied Ask Toujing screenshot, not a new visual identity. Existing glass sphere, video, fonts, icons and account boundaries retained. The side guide is now collapsed; the reading surface is quieter.
-- Source: user attachment `codex-clipboard-e0a46b6b-ea63-4d65-8858-b6cffb18be30.png` (2880 × 1780). Evidence: `/tmp/toujing-chat-browser-final.png` and `/tmp/toujing-chat-native-retry.png`. Browser/native captures use different window sizes; this is responsive hierarchy verification, not a same-size pixel-fidelity claim.
-- Native verified: whole-account Synthetic scope loads; selecting a question fills the composer; explicit model consent enables sending; welcome disappears after send; backend research/writing phases appear in the transcript; a failed real model answer leaves the original question and an in-place retry button. Composer stays in the conversation frame. No fabricated success answer was used.
-- Browser verified: offline label, disabled model sending, existing chart guidance and collapsed help. Existing browser scroll position can leave the page heading above the viewport; no claim of full native trackpad certification.
-- Unit verification covers retry-in-place, no mutation of previous turns, rejection of stale/running/completed retries, source-bound chart identity mapping, separate context/model/answer states and closed help by default.
-- Found and fixed: packaged cold Synthetic context took about 43 seconds after handshake, exceeding the old 30-second request deadline. Only `review.context` now has a bounded 120-second deadline; other requests remain 30 seconds. Source computations unchanged. Also separated Keychain configuration loading from account context: the old Promise.all kept displaying account loading while macOS credential access was waiting. Security prompts remain user-controlled.
-- Regression: Python full 948 passed; latest focused Agent 21 passed; Desktop Node 294 passed; TypeScript/build passed; Rust runtime tests 5 passed and cargo check passed. Existing bundle-size warning remains.
-- Acceptance limitation: current live Synthetic model runs still sometimes fail paragraph-level numeric/evidence verification after the allowed single correction. Native final success/linked-chart flow is therefore not certified in this pass. No verification gates were weakened, no real-account data sent, no commit or deployment.
+## Findings and comparison history
 
-final result: blocked — visual/interactivity revision verified; complete real Agent success-flow acceptance remains open.
+1. [P2, fixed] 真实图谱曾裸露 `Accounting`、`PARTIAL`、英文来源描述，来源边缺少可读标签。见 `actual-model-relations.png`。已将已知经营模块、覆盖状态和来源边映射为中文，并在工具栏保留当前公司。修复后重新打开同一节点，见 `actual-model-relations-final.png` 与 `comparison-graph-fix.png`。真实节点、边 ID、方向及公式未改写。
+2. 最终 Demo / 整合页全图与局部对照无剩余可执行 P0/P1/P2 视觉问题。
 
-final result: passed
+有意保留的产品差异：
+
+- 侧栏沿用投镜真实账户上下文，替代 Demo 的模拟公司研究上下文；公司研究独立于账户是否导入。
+- 增加一行真实模型版本、刷新与报告导出操作，下方内容整体约向后移动 27 px，卡片网格、字号、间距及操作区保持原设计。
+- 已有公司由 Demo 的 3 家扩展为真实库中的 7 家；收藏、来源数量、期间和缺失状态读取真实模型。
+- Demo 外观演示状态改为本地引擎与公开报告资料状态；问答由演示文字改为有据回答。
+
+## Required fidelity surfaces
+
+| Surface | Result |
+| --- | --- |
+| Fonts / typography | 沿用投镜字体栈、字标和标题层级。中文标题、卡片数值、单位、页签及小字在局部对照中可读，未见异常截断或挤压。 |
+| Spacing / layout rhythm | 侧栏、页边距、四列指标、圆角、分隔线和主辅栏保持 Demo；新增模型操作行作为明确产品差异记录。1280 px 无文档横向溢出；长财务表与图谱使用页面滚动。 |
+| Colors / tokens | 共用投镜深浅色及玻璃材质 token；已检查选中、禁用、缺失、资料待核验状态，以及来源弹窗的阅读底色。 |
+| Image / asset fidelity | 直接复用投镜原 logo 和动态背景文件；无重绘或生成替代素材。图标继续使用既有 Lucide；图表和经营关系为可操作的数据视图。 |
+| Copy / content | 保留长期研究定位；真实来源、未覆盖数据及待核验状态明确。万元/千元等原单位正确显示，未知单位不冒充人民币；不存在用零补缺失。 |
+
+## Interaction and data verification
+
+- 实际公司库 7 个已完成模型全部读取；财务与图谱版本逐一一致，见 `catalog-coverage.json`。
+- 实际 UI：公司切换、财务页、图谱模块筛选、原始关系展开、证据搜索及来源定位、模型版本、深浅主题、原有投资页面往返。
+- 实际公司身份解析：招商银行 600036，唯一已解析对象不再同时混排词面相似公司。未点击付费建模动作；见 `live-company-resolution.png`。
+- 实际 AI 问答返回当前模型数值与引用，引用可打开来源详情；见 `live-company-answer.png`、`live-answer-source.png`。这证明调用链可用，不代表原始财务资料已核验正确。
+- 建模进度、完成后打开、提供方失败时明确降级、跨公司延迟回答隔离使用独立 SYNTHETIC 服务验收；见 `offline-build-progress.png`、`offline-fallback-isolation.png`。未向真实库写入测试模型。
+- 原始万元展示、无可比年度、中国平安无财务序列等真实空状态均保留；见 `original-unit-financials.png`、`missing-financial-state.png`。
+- 实际 NDJSON 桌面运行时：公司读取、确定性查询、报告导出、空的隔离账户库访问及正常退出通过，见 `runtime-roundtrip.json`。
+- 浏览器 warn/error 记录为空；文档宽度 1280，与 viewport 相同，见 `browser-final-log.json`。
+- 自动化：投镜完整 Python 回归 1444 passed，最终退出时序修复后另跑公司/调度/协议回归 51 passed；前端 421 passed；Company Twin Python 690 passed；Rust 38 passed / 2 ignored，Clippy passed。TypeScript 与前端生产构建通过。构建保留大 chunk / 既有动态导入提示。
+
+## Open questions and remaining test gaps
+
+- 原始公司数据仍包含待核验、缺失及抽取覆盖不完整的记录；整合没有擅自补全，也没有将它们视为投资结论。
+- 浏览器页没有开放真实账户数据库 API。正式桌面安装包、sidecar 重新打包与安装版人工验收不在本次本地整合交付范围。
+- 未验证原生 WebKit 完整 UI、屏幕阅读器全流程、其他窗口尺寸、真实新公司长时间建模或外部服务长期稳定性。
+
+## Implementation checklist
+
+- [x] 原投镜外观与统一导航。
+- [x] 真实公司引擎与界面功能连接。
+- [x] 账户与公司请求通道隔离、同库单实例保护。
+- [x] 真实页面和隔离异常流程验收。
+- [x] 全图及重点区域对照；P2 修复后复查。
+- [x] 本地启动入口、源码变更清单和验证记录保留。
+
+## Follow-up polish
+
+P3：后续可补充不同桌面窗口尺寸的视觉检查；现有长表和关系视图以滚动呈现，本次不扩大为布局重设计。
