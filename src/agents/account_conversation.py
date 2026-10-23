@@ -263,8 +263,31 @@ def get_current_allocation(ctx: RunContextWrapper[AccountReviewContext]) -> str:
     return json.dumps({"status": "complete", "records": records}, ensure_ascii=False, allow_nan=False)
 
 
-CONVERSATION_TOOLS = (*CONVERSATION_TOOLS, get_current_allocation, *PUBLIC_TOOLS,
+@function_tool
+def get_account_ledger_activity(ctx: RunContextWrapper[AccountReviewContext]) -> str:
+    """Read real-ledger flows/actions, plans/notes/research, and broker reconciliation; preserve voids, timing and stale states."""
+    records = []
+    for kind in ("ledger_activity", "ledger_journal", "ledger_reconciliation"):
+        records.extend(json.loads(_read(ctx, kind))["records"])
+    return json.dumps({"status": "complete", "records": records}, ensure_ascii=False, allow_nan=False)
+
+
+CONVERSATION_TOOLS = (*CONVERSATION_TOOLS, get_current_allocation, get_account_ledger_activity, *PUBLIC_TOOLS,
                       read_stock_research_method, *OWNED_ANALYSIS_TOOLS)
+
+
+def conversation_tools(context):
+    """Never offer fixed-cash calculators to a ledger account."""
+    excluded = ({tool.name for tool in OWNED_ANALYSIS_TOOLS}
+                if getattr(context, "projection_kind", "legacy_replay") == "account_ledger.v1" else {get_account_ledger_activity.name})
+    return tuple(tool for tool in CONVERSATION_TOOLS if tool.name not in excluded)
+
+
+def projection_policy(context):
+    if getattr(context, "projection_kind", "legacy_replay") == "account_ledger.v1":
+        from src.agents.ledger_review_sources import LEDGER_POLICY
+        return "\n" + LEDGER_POLICY
+    return ""
 
 
 def _history(value):
@@ -538,9 +561,10 @@ async def run_account_conversation(question, context, *, runtime, conversation_c
     if not local.access_allowed():
         raise ConversationError("account_review_cancelled")
     # Required tool use is retained; the model chooses WHICH sources to read.
-    agent = Agent(name="Toujing Account Analyst V2", instructions=POLICY,
+    tools = conversation_tools(local)
+    agent = Agent(name="Toujing Account Analyst V2", instructions=POLICY + projection_policy(local),
         model=runtime.model, model_settings=runtime.model_settings,
-        tools=list(CONVERSATION_TOOLS), output_type=None)
+        tools=list(tools), output_type=None)
     report("researching")
     result = await Runner.run(agent, json.dumps({"question": question, "history": history}, ensure_ascii=False),
         context=local, run_config=runtime.run_config, max_turns=10)
@@ -548,7 +572,7 @@ async def run_account_conversation(question, context, *, runtime, conversation_c
     records = json.loads(json.dumps({ref: asdict(r) for ref, r in local.records.items()},
                                    ensure_ascii=False, allow_nan=False))
     payload = build_finalization_input(result, question=question, scope=local.scope, records=records,
-        retrieved_refs=local.retrieved, tool_names={t.name for t in CONVERSATION_TOOLS})
+        retrieved_refs=local.retrieved, tool_names={t.name for t in tools})
     return await finalize_account_conversation(question, local, runtime=runtime,
         history=history, records=records, payload=payload, report=report)
 
@@ -584,7 +608,7 @@ async def finalize_account_conversation(question, local, *, runtime, history, re
             writer_input["analysis_candidates"] = payload.get("analysis_candidates")
         writer_payload, decode_refs = finalizer_reference_codec(writer_input, allowed)
         writer_payload["reference_instruction"] = "Use each record's short Rxxx ref exactly. Each paragraph must cite its own sources. The aliases are not facts or numbers."
-        candidate = await _structured(runtime, writing_instructions or WRITER, writer_payload, ConversationAnswer, local.access_allowed)
+        candidate = await _structured(runtime, (writing_instructions or WRITER) + projection_policy(local), writer_payload, ConversationAnswer, local.access_allowed)
         try:
             mark("numeric_reference_validation")
             answer = decode_refs(candidate)

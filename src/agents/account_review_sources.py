@@ -178,6 +178,7 @@ class AccountReviewContext:
     # Request identity is retained for navigation/cache isolation. Records keep
     # their canonical owned Episode IDs; never broaden a focused conversation.
     focus_episode_id: str | None = None
+    projection_kind: str = "legacy_replay"
 
     @property
     def scope(self) -> dict[str, str]:
@@ -216,6 +217,9 @@ def _record(*, kind: str, subject_id: str, account_id: str, currency: str,
             "performance_path": "账户实际日表现路径",
             "knowledge": "金融概念与图表读法",
             "allocation": "当前账户现金与风险资产估值",
+            "ledger_activity": "出入金、公司行动与原始成交",
+            "ledger_journal": "投资计划、笔记与历史研究",
+            "ledger_reconciliation": "券商对账及有效状态",
             "public_security": "公开证券识别",
             "public_ohlcv": "公开日线行情",
             "public_snapshot": "公开行情快照",
@@ -546,10 +550,18 @@ def compose_account_answer(selected_ids: list[str], guide_ids: list[str],
     if snapshot.ref not in context.retrieved:
         raise ValueError("account_summary_not_read")
     value = snapshot.value
-    summary = _text(
-        f"截至 {value['valuation_date']} 的最后一条实际日估值，账户价值为 {_money(value['portfolio_value'], context.currency)}；以下发现只来自当前账户的已读取记录。",
-        f"At the last actual daily valuation on {value['valuation_date']}, account value was {_money(value['portfolio_value'], context.currency)}; the findings below use only read records from this account.",
-    )
+    if context.projection_kind == "account_ledger.v1":
+        amount = (f"{value['equity']} {context.currency}" if value['equity'] is not None
+                  else "暂不可用 / unavailable")
+        summary = _text(
+            f"截至 {value['valuation_date']}，真实账本总值为{amount}；以下发现保留缺价、费用及资金流口径。",
+            f"As of {value['valuation_date']}, ledger equity: {amount}; findings preserve missing data, fee and external-flow limitations.",
+        )
+    else:
+        summary = _text(
+            f"截至 {value['valuation_date']} 的最后一条实际日估值，账户价值为 {_money(value['portfolio_value'], context.currency)}；以下发现只来自当前账户的已读取记录。",
+            f"At the last actual daily valuation on {value['valuation_date']}, account value was {_money(value['portfolio_value'], context.currency)}; the findings below use only read records from this account.",
+        )
     return {
         "version": ACCOUNT_ANSWER_VERSION,
         "summary": summary,

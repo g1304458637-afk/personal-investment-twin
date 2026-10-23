@@ -119,6 +119,7 @@ class AccountReviewService:
                 self.product.repo.ledger_profile(subject, account),
                 self.product.repo.ledger_events(subject, account),
                 self.product.repo.journal_entries(subject, account),
+                self.product.repo.reconciliation_runs(subject, account),
             ))
         return hashlib.sha256(canonical_json_bytes({"scope": scope, "source": source})).hexdigest()
 
@@ -189,6 +190,22 @@ class AccountReviewService:
                 source_refs=source_refs)
             return context
 
+        if self.product.repo.ledger_profile(subject, account) is not None:
+            from src.agents.ledger_review_sources import build_ledger_review_context
+            data = self.product.ledger_runtime().get({"subject_id": subject, "account_id": account})
+            prices = tuple(f for f in self.product.repo.prices(subject, account)
+                if f.price_type == "unadjusted_close" and f.currency == data["snapshot"]["currency"]
+                and f.date.isoformat() <= data["snapshot"]["as_of"])
+            context = build_ledger_review_context(data, journal=data.get("journal", ()),
+                price_refs=tuple(f.observation_id for f in prices),
+                episode_price_refs={ep["episode_id"]: tuple(f.observation_id for f in prices
+                    if f.instrument.instrument_id == ep["instrument_id"]
+                    and ep["opened_at"] <= f.date.isoformat() <= (ep["closed_at"] or data["snapshot"]["as_of"]))
+                    for ep in data["snapshot"]["episodes"]})
+            if scope["scope_kind"] == "episode":
+                return focus_episode_context(context, scope["episode_id"])
+            return context
+
         account_row, bundle, price_facts, lifecycle, status = self.product._lifecycle(params)
         if lifecycle is None:
             raise ValueError(f"account_review_unavailable:{status}")
@@ -250,7 +267,9 @@ class AccountReviewService:
             "version": ACCOUNT_CONTEXT_VERSION,
             "scope": context.scope,
             "as_of": context.as_of,
-            "as_of_semantics": "daily_eod_last_actual_replay_observation_no_fill",
+            "as_of_semantics": ("ledger_last_known_unadjusted_prices_with_dates" if context.projection_kind == "account_ledger.v1"
+                                else "daily_eod_last_actual_replay_observation_no_fill"),
+            "projection_kind": context.projection_kind,
             "source_fingerprint": fingerprint,
             "data_tier": context.data_tier,
             "finding_options": [item.public() for item in context.finding_options],

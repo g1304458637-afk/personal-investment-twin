@@ -7,6 +7,7 @@ export interface AgentServices {
   search: ServiceState;
   wholeAccount: boolean;
   synthetic?: boolean;
+  ledger?: boolean;
 }
 export const capabilityCatalog = [
   { id: "analyze", title: { zh: "看清我的投资", en: "Understand my investments" },
@@ -62,7 +63,27 @@ export function capabilityStatus(needs: string, services: AgentServices, zh: boo
 }
 
 /** Do not turn an unsupported scope into a misleading ready-to-send example. */
-export function capabilityScopeTarget(needs: string, services: AgentServices): "/data" | "/ask" | null {
+export function capabilityScopeTarget(needs: string, services: AgentServices): "/data" | "/ask" | "/pretrade" | null {
+  if (needs === "scenario" && services.ledger) return "/pretrade";
   if (needs === "scenario" && !services.synthetic) return "/data";
   return (needs === "scenario" || needs === "account") && !services.wholeAccount ? "/ask" : null;
+}
+
+export function capabilitiesFor(services: AgentServices) {
+  if (!services.ledger) return capabilityCatalog;
+  return capabilityCatalog.map(item => {
+    if (item.id === "analyze") return {...item,
+      includes:services.wholeAccount ? {zh:"期间盈亏 · 出入金口径 · 持仓与费用 · 初始持仓",en:"Period PnL · External flows · Holdings & fees · Opening positions"} : {zh:"单轮记录 · 初始持仓 · 已实现交易盈亏 · 成本",en:"Episode records · Opening positions · Realized trading PnL · Book cost"}};
+    if (item.id === "compare") return {...item,
+      title:{zh:"核对账户记录",en:"Check my account records"},
+      benefit:{zh:"查看出入金、公司行动、计划和券商对账是否仍有效。",en:"Inspect flows, corporate actions, plans and current reconciliation status."},
+      includes:{zh:"资金流水 · 公司行动 · 计划时间 · 对账差异",en:"Cash flows · Corporate actions · Plan timing · Reconciliation differences"},
+      prompt:{zh:"帮我核对当前账户的出入金、公司行动和最近一次券商对账，说明哪些数据还需要补全。",en:"Check flows, corporate actions and the latest broker reconciliation. Explain what remains missing."}};
+    if (item.id === "scenario") return {...item,
+      includes:{zh:"账户工作台 · 显式价格与费用 · 假设前后状态",en:"Account workspace · Explicit prices & fees · Hypothetical before / after"}};
+    if (item.id === "chart") return {...item,
+      includes:{zh:"账本历史 · 资金流 · 估值日期与缺价",en:"Ledger history · Cash flows · Valuation dates & missing marks"},
+      prompt:services.wholeAccount ? {zh:"帮我看懂总资产和期间盈亏的区别，说明出入金及估值日期如何影响读图。",en:"Explain equity versus period PnL, including external flows and valuation dates."} : {zh:"说明这轮投资的来源类型、时间、持仓路径与成本，不把初始持仓或公司行动当作买入。",en:"Explain this episode's origin, dates, position path and cost. Distinguish opening positions and corporate actions from purchases."}};
+    return item;
+  });
 }

@@ -20,7 +20,7 @@ with path.open('w') as f:
  for i in range(90):
   day=date(2025,1,1)+timedelta(days=i);price=12+i*0.01
   f.write(f'bar,600000,XSHG,equity,{day},{price},{price+1},{price-1},{price},1000\n')
-allowed={'ledger.get','ledger.preview','ledger.commit','ledger.research','backup.create','backup.preview_restore','backup.restore','backup.pending_preferences','backup.ack_preferences','account.list'}
+allowed={'ledger.get','ledger.preview','ledger.commit','ledger.research','backup.create','backup.preview_restore','backup.restore','backup.pending_preferences','backup.ack_preferences','account.list','review.context'}
 class Handler(BaseHTTPRequestHandler):
  def log_message(self,*args):pass
  def do_POST(self):
@@ -33,7 +33,7 @@ class Handler(BaseHTTPRequestHandler):
    else:
     if method not in allowed:raise ValueError('fixture method only')
     if 'file_path' in params and Path(params['file_path']).parent!=root:raise ValueError('fixture paths only')
-    if method.startswith('ledger.'):params={**params,**scope}
+    if method.startswith('ledger.') or method=='review.context':params={**params,**scope}
     result=methods[method](params)
    payload={'ok':True,'result':result}
   except Exception as exc:payload={'ok':False,'error':str(exc)}

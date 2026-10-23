@@ -23,8 +23,8 @@ def focus_episode_context(context, requested_id):
         raise ValueError("owned_episode_unavailable")
     detail = details[0]
     canonical = detail.episode_id
-    execution_refs = tuple(sorted({operation["execution_id"]
-        for operation in detail.value.get("operations", [])}))
+    execution_refs = (detail.underlying_refs if context.projection_kind == "account_ledger.v1" else
+        tuple(sorted({operation["execution_id"] for operation in detail.value.get("operations", [])})))
     def scoped_value(value):
         # The replay builders include account-import provenance. Retain only
         # this Episode's actual execution references in the conversational view.

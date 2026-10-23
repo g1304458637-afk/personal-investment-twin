@@ -395,7 +395,8 @@ async def run_dsa_conversation(question, context, *, runtime, conversation_conte
             mark(phase)
         notify_progress(phase)
     stop = threading.Event()
-    tools = tuple(t for t in CONVERSATION_TOOLS if not local.focus_episode_id or t.name in EPISODE_TOOL_NAMES)
+    from src.agents.account_conversation import conversation_tools, projection_policy
+    tools = tuple(t for t in conversation_tools(local) if not local.focus_episode_id or t.name in EPISODE_TOOL_NAMES)
     adapter = ResponsesAdapter(runtime, asyncio.get_running_loop(), local.access_allowed, stop, tools)
     adapter.check()
     registry = ToolRegistry()
@@ -435,7 +436,7 @@ async def run_dsa_conversation(question, context, *, runtime, conversation_conte
     focus = ("\n这是单轮投资对话，只能读取本轮的实际操作与结果。先读本轮详情；整轮问题覆盖建仓到退出/当前，"
              "不要缩成单次操作，不引用全账户或其他轮次。若用户想分析整个账户，请他切换到整个账户。"
              if local.focus_episode_id else "")
-    messages = [{"role": "system", "content": POLICY + "\n" + RESEARCH_POLICY + focus}, {"role": "user", "content": json.dumps(
+    messages = [{"role": "system", "content": POLICY + "\n" + RESEARCH_POLICY + focus + projection_policy(local)}, {"role": "user", "content": json.dumps(
         {"question": question, "scope": local.scope, "history": history, "research_date": research_now.isoformat()}, ensure_ascii=False)}]
     report("researching")
     def on_event(event):

@@ -1,5 +1,6 @@
 import type { RuntimeInvestments } from "@/data/runtimeService";
 import type { PositionEpisodeEntryView } from "@/data/positionEpisode";
+import type { LedgerData } from "@/data/ledger";
 
 /** A deliberately thin index over already-authoritative Episode projections. */
 export interface ReviewEpisodeCandidate {
@@ -60,4 +61,16 @@ export function reviewCandidatesFromRuntime(value: RuntimeInvestments): ReviewEp
 
 export function scopedCandidate(candidates: readonly ReviewEpisodeCandidate[], episodeId: string | null): ReviewEpisodeCandidate | null {
   return candidates.find((candidate) => candidate.episodeId === episodeId) ?? candidates[0] ?? null;
+}
+
+export function reviewCandidatesFromLedger(value: LedgerData, subjectId: string, accountId: string): ReviewEpisodeCandidate[] {
+  if (value.subject_id !== subjectId || value.account_id !== accountId || !value.enabled || !value.snapshot) return [];
+  return chronological(value.snapshot.episodes.flatMap(ep => {
+    if (typeof ep.episode_id !== "string" || typeof ep.instrument_id !== "string" || typeof ep.opened_at !== "string" ||
+        !["open", "closed"].includes(String(ep.status))) return [];
+    return [{episodeId:ep.episode_id, subjectId, accountId, instrumentName:String(ep.symbol ?? ep.instrument_id),
+      instrumentId:ep.instrument_id, status:ep.status as "open" | "closed", openedAt:ep.opened_at,
+      closedAt:typeof ep.closed_at === "string" ? ep.closed_at : null, durationDays:0,
+      decisionCount:null, reviewFactCount:null, source:"runtime" as const}];
+  }));
 }

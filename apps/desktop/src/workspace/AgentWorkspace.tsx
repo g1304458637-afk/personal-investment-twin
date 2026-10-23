@@ -5,10 +5,11 @@ import { useDataMode } from "@/data/DataModeProvider";
 import { useLocale } from "@/locales/LocaleProvider";
 import { positionEpisodeDemo } from "@/data/backendEvidence";
 import { realUserApi } from "@/data/runtimeService";
+import { ledgerRead } from "@/data/ledger";
 import { modelServiceRequest, type ModelServiceStatus } from "@/data/modelService";
 import { searchServiceRequest, type SearchServiceStatus } from "@/data/searchService";
 import { AgentCapabilityOverview } from "./AgentCapabilityOverview";
-import { capabilityCatalog, capabilityScopeTarget, type ServiceState } from "./agentCapabilityCatalog";
+import { capabilitiesFor, capabilityScopeTarget, type ServiceState } from "./agentCapabilityCatalog";
 import { AgentAnalysisCards } from "./AgentAnalysisCards";
 import { AgentTurnStatus } from "./AgentTurnStatus";
 import { agentChatService } from "@/data/agentChatService";
@@ -17,11 +18,11 @@ import { accountGuideEpisode, restoredConversationTurns } from "@/data/agentChat
 import { chartGuideTarget } from "@/data/chartGuide";
 import { ChatTurnError, chatScopeKey, contextMatchesScope, isAccountScope, previousChatResult, projectAccountAnswer, readChat, readChatContext, saveChatContext, runChatTurn, saveChat, verifiedChatResult, type ChatContext, type ConversationScope, type ChatTurn } from "@/data/agentChat";
 import { SourceLink } from "@/components/common/SourceLink";
-import { reviewCandidatesFromFixture, reviewCandidatesFromRuntime, type ReviewEpisodeCandidate } from "./reviewWorkspaceData";
+import { reviewCandidatesFromFixture, reviewCandidatesFromRuntime, reviewCandidatesFromLedger, type ReviewEpisodeCandidate } from "./reviewWorkspaceData";
 import { agentChatCopy, chatErrorText, chatContextErrorText } from "./agentChatCopy";
 import "./agent-chat.css";
 
-function ChatSession({ scope, candidates }: { scope: ConversationScope; candidates: ReviewEpisodeCandidate[] }) {
+function ChatSession({ scope, candidates, ledgerEnabled = false }: { scope: ConversationScope; candidates: ReviewEpisodeCandidate[]; ledgerEnabled?: boolean }) {
   const { locale } = useLocale(); const c = agentChatCopy[locale];
   const [context, setContext] = useState<ChatContext | null>(() => readChatContext(scope));
   const [configured, setConfigured] = useState(false);
@@ -104,12 +105,17 @@ function ChatSession({ scope, candidates }: { scope: ConversationScope; candidat
   };
   const newChat = () => { restoreOnLoad.current = false; stop(); update([]); setDraft(""); setConsent(false); setReload(value => value + 1); textarea.current?.focus({ preventScroll: true }); };
   const prompts = isAccountScope(scope) ? c.accountPrompts : c.episodePrompts;
-  const entry = c.entries.find(item => item.id === activeEntry);
   const services = {
-    desktop: agentChatService.available(), wholeAccount: isAccountScope(scope), synthetic: scope.data_mode === "synthetic_showcase",
+    desktop: agentChatService.available(), wholeAccount: isAccountScope(scope), synthetic: scope.data_mode === "synthetic_showcase", ledger:ledgerEnabled,
     model: (modelLoading ? "checking" : configured ? "configured" : "unavailable") as ServiceState, quotes: quotesState, search: searchState,
   };
-  const selectedCapability = capabilityCatalog.find(item => item.id === activeEntry);
+  const catalog = capabilitiesFor(services);
+  const entries = c.entries.map(item => {
+    const capability = catalog.find(c => c.id === item.id);
+    return ledgerEnabled && capability ? {...item, title:capability.title[locale === "zh-CN" ? "zh" : "en"], blurb:capability.benefit[locale === "zh-CN" ? "zh" : "en"]} : item;
+  });
+  const entry = entries.find(item => item.id === activeEntry);
+  const selectedCapability = catalog.find(item => item.id === activeEntry);
   const entryScopeTarget = selectedCapability ? capabilityScopeTarget(selectedCapability.needs, services) : null;
   const comparisonPrompts = locale === "zh-CN" ? [
     "帮我比较两个时间段的账户表现，先告诉我有哪些日期记录、还需要我选择什么。",
@@ -117,7 +123,7 @@ function ChatSession({ scope, candidates }: { scope: ConversationScope; candidat
   ] : ["Compare two periods of my account. First tell me which dates are recorded and what I need to choose.",
     "Find two investments I made in the same stock. Check for a shared market window before explaining operations and costs."];
   const scenarioPrompts = selectedCapability?.id === "scenario" ? [selectedCapability.prompt[locale === "zh-CN" ? "zh" : "en"]] : [];
-  const entryPrompts = entryScopeTarget ? [] : activeEntry === "analyze" ? prompts : activeEntry === "compare" ? comparisonPrompts
+  const entryPrompts = entryScopeTarget ? [] : ledgerEnabled && selectedCapability ? [selectedCapability.prompt[locale === "zh-CN" ? "zh" : "en"]] : activeEntry === "analyze" ? prompts : activeEntry === "compare" ? comparisonPrompts
     : activeEntry === "scenario" ? scenarioPrompts : c.suggestions[activeEntry as keyof typeof c.suggestions] ?? [];
   const chooseQuestion = (question: string) => {
     setDraft(question);
@@ -154,10 +160,10 @@ function ChatSession({ scope, candidates }: { scope: ConversationScope; candidat
       </article>)}
     </div>
     <div className="agent-chat__capabilities" aria-label={c.capabilities} onKeyDown={event => { if (event.key === "Escape" && activeEntry) { event.preventDefault(); const button = event.currentTarget.querySelector<HTMLButtonElement>('button[aria-expanded="true"]'); setActiveEntry(null); button?.focus(); } }}>
-      <div className="agent-chat__capability-bar">{c.entries.map(item => <button type="button" key={item.id} aria-expanded={activeEntry === item.id} aria-controls="agent-capability-examples" onClick={() => setActiveEntry(current => current === item.id ? null : item.id)}>{item.title}<ChevronDown size={13} aria-hidden="true" /></button>)}</div>
+      <div className="agent-chat__capability-bar">{entries.map(item => <button type="button" key={item.id} aria-expanded={activeEntry === item.id} aria-controls="agent-capability-examples" onClick={() => setActiveEntry(current => current === item.id ? null : item.id)}>{item.title}<ChevronDown size={13} aria-hidden="true" /></button>)}</div>
       {entry && <div id="agent-capability-examples" className="agent-chat__capability-examples">
         <p>{entry.blurb}</p><button type="button" className="agent-chat__examples-close" onClick={() => setActiveEntry(null)}>{locale === "zh-CN" ? "收起" : "Close"}</button>
-        {entryScopeTarget && <Link to={entryScopeTarget}>{entryScopeTarget === "/ask" ? (locale === "zh-CN" ? "切换到整个账户" : "Switch to whole account") : (locale === "zh-CN" ? "前往数据与账户选择示例" : "Choose an example in Data & accounts")}<ArrowUpRight size={12}/></Link>}
+        {entryScopeTarget && <Link to={entryScopeTarget}>{entryScopeTarget === "/ask" ? (locale === "zh-CN" ? "切换到整个账户" : "Switch to whole account") : entryScopeTarget === "/pretrade" ? (locale === "zh-CN" ? "打开账户假设检查" : "Open account scenario check") : (locale === "zh-CN" ? "前往数据与账户选择示例" : "Choose an example in Data & accounts")}<ArrowUpRight size={12}/></Link>}
         <div>{entryPrompts.map(question => <button type="button" key={question} disabled={busy} onClick={() => { setDraft(question); setActiveEntry(null); textarea.current?.focus({ preventScroll: true }); }}>{question}<ArrowUpRight size={13} aria-hidden="true" /></button>)}</div>
         {activeEntry === "research" && !searchReady && <Link to="/settings">{c.searchNeeded}<ArrowUpRight size={12} aria-hidden="true" /></Link>}
       </div>}
@@ -179,12 +185,19 @@ export function AgentWorkspace() {
   const account = data.mode === "demo" ? data.exampleAccount.accountId : data.activeAccount?.account_id;
   const selected = new URLSearchParams(location.search).get("episode") ?? "";
   const [catalog, setCatalog] = useState<{ key: string; items: ReviewEpisodeCandidate[] }>({key:"",items:[]});
-  const accountKey = JSON.stringify([data.mode, subject, account]);
+  const ledgerEnabled = data.mode === "real_user" && !!data.activeAccount?.ledger_enabled;
+  const accountKey = JSON.stringify([data.mode, subject, account, ledgerEnabled]);
   const candidates = catalog.key === accountKey ? catalog.items : [];
   useEffect(() => {
     let alive = true;
     if (!subject || !account) return;
     if (data.mode === "demo") { setCatalog({key:accountKey,items:reviewCandidatesFromFixture(positionEpisodeDemo.entries, subject, account)}); return; }
+    if (ledgerEnabled) {
+      void ledgerRead({subject_id:subject,account_id:account}).then(value => {
+        if (alive) setCatalog({key:accountKey,items:reviewCandidatesFromLedger(value,subject,account)});
+      }).catch(() => { if (alive) setCatalog({key:accountKey,items:[]}); });
+      return () => { alive = false; };
+    }
     void realUserApi.investments(subject, account).then(value => { if (alive && value.subject_id === subject && value.account_id === account) setCatalog({key:accountKey,items:reviewCandidatesFromRuntime(value)}); }).catch(() => { if (alive) setCatalog({key:accountKey,items:[]}); });
     return () => { alive = false; };
   }, [accountKey]);
@@ -199,7 +212,7 @@ export function AgentWorkspace() {
     }} />}
     {!subject || !account ? <section className="agent-chat__empty"><MessageCircle size={28} /><h2>{c.emptyTitle}</h2><p>{c.noAccount}</p><div><Link className="iw-action" to="/data">{c.import}</Link><button className="iw-primary" onClick={() => { data.setMode("demo"); navigate("/ask"); }}>{c.example}</button></div></section> : <>
       <div className="agent-chat__scope"><label htmlFor="agent-scope">{c.scope}</label><select id="agent-scope" value={selected} onChange={event => navigate(event.target.value ? `/ask?episode=${encodeURIComponent(event.target.value)}` : "/ask")}><option value="">{c.account}</option>{selected && !validEpisode && <option value={selected} disabled>{c.unavailableEpisode}</option>}{candidates.map(item => <option key={item.episodeId} value={item.episodeId}>{t(item.instrumentName)} · {item.openedAt.slice(0,10)}</option>)}</select>{validEpisode && <Link to={chartGuideTarget("episode-process", validEpisode.episodeId)!}>{c.open}<ArrowUpRight size={14}/></Link>}</div>
-      <div className="agent-chat__layout">{scope ? <ChatSession key={chatScopeKey(scope)} scope={scope} candidates={candidates} /> : <section className="agent-chat__empty"><p>{c.unavailableEpisode}</p><button onClick={() => navigate("/ask")}>{c.account}</button></section>}
+      <div className="agent-chat__layout">{scope ? <ChatSession key={chatScopeKey(scope)} scope={scope} candidates={candidates} ledgerEnabled={ledgerEnabled} /> : <section className="agent-chat__empty"><p>{c.unavailableEpisode}</p><button onClick={() => navigate("/ask")}>{c.account}</button></section>}
         <details className="agent-chat__guide-disclosure"><summary><ChartNoAxesCombined size={17}/>{c.guide}<ChevronDown size={15}/></summary><aside className="agent-chat__guides"><p>{c.guideHint}</p>{validEpisode ? <Link to={chartGuideTarget("episode-process",validEpisode.episodeId)!}>{c.guideEpisode}<ArrowUpRight size={15} /></Link> : <label>{c.guideEpisode}<select aria-label={c.choose} value="" onChange={event => { const item = candidates.find(candidate => candidate.episodeId === event.target.value); const target = item && chartGuideTarget("episode-process", item.episodeId); if (target) navigate(target); }}><option value="" disabled>{c.choose}</option>{candidates.map(item => <option key={item.episodeId} value={item.episodeId}>{t(item.instrumentName)} · {item.openedAt.slice(0,10)}</option>)}</select></label>}<Link to={chartGuideTarget("pretrade-allocation")!}>{c.guideAllocation}<ArrowUpRight size={15}/></Link><Link to={chartGuideTarget("same-stock")!}>{c.guideCompare}<ArrowUpRight size={15}/></Link><p className="agent-chat__scope-note">{c.scopeHint}</p></aside></details>
       </div>
     </>}

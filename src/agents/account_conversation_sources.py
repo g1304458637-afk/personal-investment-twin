@@ -116,11 +116,16 @@ KNOWLEDGE = {
 def knowledge_record(context, topic):
     if topic not in KNOWLEDGE:
         raise ValueError("unknown_account_knowledge_topic")
+    value = KNOWLEDGE[topic]
+    if context.projection_kind == "account_ledger.v1" and topic in {"performance", "drawdown", "turnover", "cost_position", "chart", "concentration"}:
+        from src.agents.ledger_review_sources import LEDGER_POLICY
+        value = {**value, "content": value["content"] + "\n真实账本当前适用口径：\n" + LEDGER_POLICY,
+                 "method_refs": ["account_ledger.v1"]}
     return _record(kind="knowledge", subject_id=context.subject_id, account_id=context.account_id,
         currency=context.currency, as_of=context.as_of, method_id="toujing_method_knowledge_v1",
-        method_version="1", availability="complete", underlying_refs=tuple(KNOWLEDGE[topic]["method_refs"]),
-        tags=(topic, "general_knowledge_not_account_fact"), value=KNOWLEDGE[topic],
-        identity_extra=topic)
+        method_version="1", availability="complete", underlying_refs=tuple(value["method_refs"]),
+        tags=(topic, "general_knowledge_not_account_fact"), value=value,
+        identity_extra={"topic": topic, "content": value} if context.projection_kind == "account_ledger.v1" else topic)
 
 
 def compact_performance_path(performance):
