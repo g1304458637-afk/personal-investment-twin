@@ -126,3 +126,26 @@ def test_reopen_status_identifies_the_workspace_without_proxying_or_data(gateway
     assert status==200 and payload['application']=='toujing-company-integration'
     assert set(payload)=={'application','source_id'}
     assert calls==[]
+
+
+def test_member_community_is_integrated_without_account_or_engine_access(tmp_path):
+    from toujing_community.service import CommunityService
+    (tmp_path/'index.html').write_text('workspace')
+    community=CommunityService(tmp_path/'members.db',['http://127.0.0.1:1'])
+    class Client:
+        def call(self,*_args):raise AssertionError('Community must not read the company engine')
+    server=make_server(0,tmp_path,client=Client(),community=community)
+    origin=f'http://127.0.0.1:{server.server_port}'
+    community.origins={origin};community.hosts={f'127.0.0.1:{server.server_port}'}
+    thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+    try:
+        status,raw=send(server,'/api/community/status',method='GET')
+        assert status==200 and json.loads(raw)['audience']=='members'
+        status,raw=send(server,'/api/community/posts',method='GET')
+        assert status==401
+        status,raw=send(server,'/api/community/register',body={'username':'integration','name':'Integration','password':'synthetic-integration-password'},headers={'Origin':origin})
+        assert status==200 and json.loads(raw)['user']['username']=='integration'
+        assert send(server,'/api/community/register',body={'username':'cross_site','name':'Wrong','password':'synthetic-integration-password'},headers={'Origin':'https://evil.test'})[0]==403
+        assert send(server,'/api/accounts',method='GET')[0]==404
+    finally:
+        server.shutdown();server.server_close();thread.join(5)

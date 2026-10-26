@@ -1,0 +1,3 @@
+# Independent deployment: no brokerage, research engine or AI credentials needed.
+uvicorn==0.52.4
+jsonschema==4.26.0

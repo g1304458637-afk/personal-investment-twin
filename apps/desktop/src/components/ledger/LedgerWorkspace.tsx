@@ -1,3 +1,5 @@
+import { InvestmentShareEntry } from '@/workspace/community/InvestmentShareEntry';
+import { investmentInputsFromLedger } from '@/data/investmentShareAdapters';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { open, save } from '@tauri-apps/plugin-dialog';
@@ -58,6 +60,7 @@ function LedgerEditor({subject,account,initialTab,episodeId}:{subject:string;acc
  const researchRun=(mode:string)=>act(async()=>{setResearch(null);const value=await runtimeRequest<Row>('ledger.research',request(mode,mode==='pretrade'?{as_of:fields.effective_date,proposed_trade:{...fields,currency:data?.profile?.currency,side:fields.side??'BUY'}}:{file_path:researchFile?.path,source_ref:fields.source_ref,corporate_actions_complete:coverage,test_start:testStart,strategy_id:strategy,...(customStrategies.find(s=>s.id===strategy)?{strategy:customStrategies.find(s=>s.id===strategy)!.spec}:{}),execution_assumptions:assumptions,...(sensitivity?{parameter:sensitivity,values:sensitivityValues.split(',').map(Number)}:{})}));if(alive.current){setResearch(value);await refresh();}});
  if(!context.runtimeAvailable || context.mode!=='real_user')return <section className="ledger-workspace"><h1>真实账户工作台</h1><p>在桌面应用的“我的账户”模式打开，可使用账本、长期复盘、研究及加密备份。网页示例不读写本机账户。</p><Link to="/data">返回数据入口</Link></section>;
  return <div className="ledger-workspace"><header><span className="iw-kicker">TOUJING / ACCOUNT WORKSPACE</span><h1>真实账户工作台</h1><p>{context.activeAccount?.display_name??'新建本机账户'} · {subject} / {account} {snapshot?`· ${snapshot.currency} · 截至 ${snapshot.as_of}`:''}</p></header>
+ {data?.enabled&&snapshot&&<InvestmentShareEntry getInputs={()=>investmentInputsFromLedger(data,subject,account,episodeId)}/>}
  <fieldset disabled={busy} className="ledger-fields"><nav aria-label="账户工作台">{tabs.map(([key,title])=><button key={key} aria-pressed={tab===key} onClick={()=>{setTab(key);setPreview(null);setResearch(null);setRestore(null);}}>{title}</button>)}</nav>
  {error&&<p role="alert" className="ledger-error">{error}</p>}{notice&&<p role="status">{notice}</p>}{busy&&<p role="status">正在处理，请等待本次结果后继续…</p>}
  {data&&!data.enabled&&tab!=='backup'&&<section><h2>建立可信期初</h2><p>填券商期初现金及持仓。持仓不会扣现金；总成本与期初市值分别保留。启用后旧买卖仍保留，期初日期之前的成交不重复记账。同一期初日的成交会计入，请选当日成交前的快照。</p><div className="ledger-form">{['opening_date','currency','initial_cash','display_name','source_ref'].map(field)}</div>{positionEditor}<button disabled={busy} onClick={()=>act(()=>inspect({mode:'opening',opening:fields,records:positions.map((p,i)=>({...p,event_id:`opening-${i}-${fields.opening_date}`,event_type:'opening_position',effective_date:fields.opening_date,currency:fields.currency,source_ref:fields.source_ref}))}))}>预览期初</button></section>}

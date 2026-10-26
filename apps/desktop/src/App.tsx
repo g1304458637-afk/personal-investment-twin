@@ -17,6 +17,8 @@ import {
   type ProductRouteId,
 } from "@/routing/productRoutes";
 const CompanyResearchWorkspace = lazy(async () => ({ default: (await import("@/workspace/CompanyResearchWorkspace")).CompanyResearchWorkspace }));
+const CommunityWorkspace = lazy(() => import("./workspace/CommunityWorkspace"));
+const CommunityDemoWorkspace = lazy(async () => ({ default: (await import("@/workspace/CommunityDemoWorkspace")).CommunityDemoWorkspace }));
 const InvestmentsPage = lazy(async () => ({ default: (await import("@/pages/InvestmentsPage")).InvestmentsPage }));
 const StrategySimulationPage = lazy(async () => ({ default: (await import("@/pages/StrategySimulationPage")).StrategySimulationPage }));
 const MyStrategiesPage = lazy(async () => ({ default: (await import("@/pages/MyStrategiesPage")).MyStrategiesPage }));
@@ -111,6 +113,8 @@ export default function App() {
                     <Route path="/comparison/professional" element={load(<ProfessionalComparisonWorkspace />)} />
                     <Route path="/journal" element={load(<ReviewWorkspace view="journal" />)} />
                     <Route path="/ask" element={load(<AgentWorkspace />)} />
+                    <Route path="/community" element={load(<CommunityWorkspace />)} />
+                    <Route path="/community-demo" element={load(<CommunityDemoWorkspace />)} />
                     {legacyRoutePaths().map((path) => (
                       <Route key={`legacy:${path}`} path={path} element={<LegacyRouteRedirect />} />
                     ))}

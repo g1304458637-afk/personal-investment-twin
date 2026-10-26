@@ -11,7 +11,7 @@ from urllib.parse import unquote, urlsplit
 from toujing_core_runtime.company_research import CompanyResearchClient, CompanyResearchError, METHODS
 
 
-def make_server(port: int, dist: Path, *, client=None):
+def make_server(port: int, dist: Path, *, client=None, community=None):
     adapter = client or CompanyResearchClient()
     root = dist.resolve()
 
@@ -19,13 +19,15 @@ def make_server(port: int, dist: Path, *, client=None):
         def log_message(self, *_args):
             pass
 
-        def send(self, status, payload, content_type="application/json"):
+        def send(self, status, payload, content_type="application/json", extra=None):
             self.send_response(status)
             self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(payload)))
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("Referrer-Policy", "no-referrer")
+            for key, value in (extra or {}).items():
+                self.send_header(key, value)
             self.end_headers()
             if self.command != "HEAD":
                 try:
@@ -39,10 +41,27 @@ def make_server(port: int, dist: Path, *, client=None):
         def trusted_host(self):
             return self.headers.get("Host") in {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"}
 
+        def community_request(self):
+            if community is None:
+                return self.json(503, {"error": "请重启投镜整合服务以启用多人社区。"})
+            body = b""
+            if self.command == "POST":
+                try:
+                    size = int(self.headers.get("Content-Length", "0"))
+                    if not 0 < size <= 128*1024 or self.headers.get("Transfer-Encoding"):
+                        return self.json(413, {"error": "请求长度无效。"})
+                    body = self.rfile.read(size)
+                except ValueError:
+                    return self.json(422, {"error": "请求长度无效。"})
+            status, payload, extra = community.request(self.command, self.path, dict(self.headers), body, self.client_address[0])
+            self.send(status, json.dumps(payload, ensure_ascii=False, allow_nan=False).encode(), extra=extra)
+
         def do_GET(self):
             if not self.trusted_host():
                 return self.json(403, {"error": {"code": "invalid_host"}})
             path = unquote(urlsplit(self.path).path)
+            if path.startswith("/api/community/"):
+                return self.community_request()
             if path == "/api/workspace-status":
                 return self.json(200, {"application": "toujing-company-integration",
                                        "source_id": hashlib.sha256(str(root).encode()).hexdigest()[:16]})
@@ -68,6 +87,8 @@ def make_server(port: int, dist: Path, *, client=None):
             if (not self.trusted_host() or (origin is not None and origin not in allowed)
                     or self.headers.get("Sec-Fetch-Site") == "cross-site"):
                 return self.json(403, {"error": {"code": "invalid_origin", "message": "仅允许本机投镜界面调用。"}})
+            if self.path.startswith("/api/community/"):
+                return self.community_request()
             if self.path != "/api/company-research":
                 return self.json(404, {"error": {"code": "unknown_endpoint"}})
             if self.headers.get_content_type() != "application/json" or self.headers.get("Transfer-Encoding"):

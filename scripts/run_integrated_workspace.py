@@ -88,7 +88,9 @@ def main():
                 time.sleep(.2)
         else:
             raise SystemExit("Company research engine startup timed out")
-        server = make_server(args.port, dist, client=client)
+        from toujing_community.service import CommunityService
+        community = CommunityService(ROOT / ".local/community/community.sqlite3", [f"http://127.0.0.1:{args.port}", f"http://localhost:{args.port}"])
+        server = make_server(args.port, dist, client=client, community=community)
         print(f"投镜整合版：http://127.0.0.1:{args.port}/#/company-research", flush=True)
         if args.open_browser:
             webbrowser.open(f"http://127.0.0.1:{args.port}/#/company-research")

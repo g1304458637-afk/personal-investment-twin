@@ -1,0 +1,7 @@
+# Replace the example hostname; it must match --origin exactly.
+community.example.com {
+    request_body {
+        max_size 128KB
+    }
+    reverse_proxy 127.0.0.1:18026
+}

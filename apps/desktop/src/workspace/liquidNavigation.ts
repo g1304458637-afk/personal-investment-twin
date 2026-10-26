@@ -2,6 +2,7 @@
 export const liquidNavigation = [
   { path: "/investments", label: "investments", icon: "investments", group: "work" },
   { path: "/company-research", label: "companyResearch", icon: "company", group: "work" },
+  { path: "/community", label: "community", icon: "community", group: "work" },
   { path: "/strategy-simulation", label: "strategy", icon: "review", group: "work" },
   { path: "/my-strategies", label: "myStrategies", icon: "review", group: "work" },
   { path: "/analysis", label: "analysis", icon: "comparison", group: "work" },
