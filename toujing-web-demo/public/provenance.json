@@ -1,0 +1,11 @@
+{
+  "data_source": "Existing strategy-studio-demo.json; public research archive",
+  "data_sha256": "1a12a501f53d2f2fc77e17ae834d01f7b2ed1b50482c390e6fb68ad3fc2ac640",
+  "source_sha256": "b0ae1f9499f51c55853afad3a787369c55eae1506089b8aab679d426b6bcf49a",
+  "truth": "Archived daily market prices and authored teaching transactions. Initial paths are precomputed; confirmed rule changes run the existing local strategy engine. No real investor records.",
+  "orb": "Edited from existing Toujing glass-orb.png using imagegen to remove baked checkerboard; preserves blue/orange brand orb.",
+  "background": "Exact user-specified looping video; streamed directly without substitution, tint or full-screen dark overlay.",
+  "no_native_modification": true,
+  "orb_sha256": "08cb9fda5fccb449d283be47c77d07511803b39c1959a1d78f97eef09f3c5350",
+  "background_url": "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260511_230229_7c9bc431-46cf-489a-948d-e8144d8eb5d4.mp4"
+}

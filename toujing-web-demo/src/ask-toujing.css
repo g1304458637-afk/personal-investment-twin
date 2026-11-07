@@ -1,0 +1,39 @@
+/* Competition Ask overview, fitted to the cinematic demo's existing shell. */
+.ask-view{flex:1;min-height:0;overflow:auto;container-type:inline-size;padding:0 2px 18px;scrollbar-gutter:stable}
+.ask-context{display:flex;align-items:center;flex-wrap:wrap;gap:18px;padding-top:20px;color:#b8c9d7;font-size:11px;font-variant-numeric:tabular-nums}
+.ask-context>span:first-child{display:inline-flex;align-items:center;gap:8px}
+.ask-intro{margin:22px 0 29px}
+.ask-intro h1{font-size:32px;line-height:1.3;font-weight:600;letter-spacing:-.025em}
+.ask-intro p{margin-top:10px;font-size:14px;line-height:1.8;color:#c0ced9}
+.ask-discovery-heading{display:flex;align-items:center;justify-content:space-between;gap:22px;margin-bottom:18px}
+.ask-discovery-heading h2{font-size:22px;line-height:1.45;font-weight:500}
+.ask-link{display:inline-flex;align-items:center;justify-content:flex-start;gap:8px;color:#b6dbf0;font-size:13px;line-height:1.6;min-height:30px;text-align:left;text-underline-offset:4px}
+.ask-link:hover:not(:disabled){color:#edf8ff;text-decoration:underline}
+.ask-link svg{flex-shrink:0}
+.ask-discovery-heading>.ask-link{flex-shrink:0}
+.ask-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.ask-card{display:flex;flex-direction:column;align-items:flex-start;min-width:0;padding:22px 22px 16px;border-radius:16px;background:linear-gradient(135deg,rgba(24,43,60,.88),rgba(16,24,38,.94));box-shadow:inset 0 1px 0 rgba(199,224,242,.16)}
+.ask-card-heading{display:flex;align-items:center;gap:12px;margin-bottom:13px;color:#b4d8eb}
+.ask-card-heading h3{font-size:18px;font-weight:550;line-height:1.45;color:#edf3f8;letter-spacing:-.015em}
+.ask-card-heading svg{flex-shrink:0}
+.ask-card>p{font-size:14px;line-height:1.75;color:#d3dce5;max-width:36ch}
+.ask-card>small{display:block;font-size:12px;line-height:1.7;color:#adbfce;margin-top:8px;max-width:40ch}
+.ask-card-bottom{display:flex;flex-direction:column;align-items:flex-start;gap:5px;width:100%;padding-top:20px;margin-top:auto}
+.ask-card-status{font-size:11px;line-height:1.6;color:#b9ccdb}
+.ask-card-status.is-pending{color:#dfc394}
+.ask-card-bottom>.ask-link{font-size:14px}
+.ask-footer{padding:18px 0 4px;color:#b0c1d0}
+.ask-footer>div{display:flex;align-items:center;flex-wrap:wrap;gap:7px 22px;font-size:12px}
+.ask-footer p{font-size:11px;margin-top:10px;line-height:1.7}
+.ask-detail{margin-top:18px;padding:20px 24px;background:#0c1b29f5;border-radius:14px;scroll-margin:16px}
+.ask-detail>header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.ask-detail h2{font-size:19px}
+.ask-detail p{font-size:13px;color:#c2d2de;max-width:75ch;margin-bottom:12px}
+.ask-guide-list{display:grid;gap:18px;margin:0 0 16px;max-width:75ch}
+.ask-guide-list dt{font-size:14px;color:#e2edf5;margin-bottom:5px}
+.ask-guide-list dd{font-size:13px;color:#b8cad8;line-height:1.8;margin:0}
+.ask-guide-actions{display:flex;flex-wrap:wrap;gap:12px 24px}
+.ask-service-status>p{color:#c9e6d8}
+@container (max-width:960px){.ask-grid{gap:12px}.ask-card{padding:18px 16px 14px}.ask-card-heading{gap:9px}.ask-card-heading h3{font-size:16px}.ask-card>p{font-size:13px}.ask-card>small{font-size:11px}.ask-card-bottom{padding-top:16px}.ask-card-status{font-size:10px}.ask-intro{margin:19px 0 24px}.ask-discovery-heading h2{font-size:20px}}
+@container (max-width:700px){.ask-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ask-discovery-heading{align-items:flex-start;flex-wrap:wrap;gap:8px}.ask-card-status{font-size:11px}.ask-intro h1{font-size:30px}.ask-intro p{font-size:13px}}
+@container (max-width:430px){.ask-grid{grid-template-columns:minmax(0,1fr)}.ask-overview-heading{background:rgba(7,18,29,.9);padding:0 14px 16px;margin:12px 0 16px;border-radius:14px}.ask-context{gap:6px 14px;padding-top:16px}.ask-intro{margin:18px 0 22px}.ask-intro h1{font-size:28px}.ask-discovery-heading{margin-bottom:0}.ask-discovery-heading h2{font-size:19px}.ask-card{padding:20px}.ask-card-heading h3{font-size:18px}.ask-card>p{font-size:14px}.ask-card>small{font-size:12px}.ask-card-bottom{padding-top:16px}.ask-detail{padding:18px}.ask-footer>div{gap:7px 16px}}

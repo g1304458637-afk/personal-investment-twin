@@ -1,0 +1,44 @@
+{
+  "captured_on": "2026-11-07",
+  "source_state": "current working files, including uncommitted and untracked changes; not Git HEAD",
+  "backend": "../../投镜_R6_开发候选_20261028/product + sibling company via existing isolated runtimePlugin",
+  "files": [
+    {
+      "source": "product/apps/desktop/src/workspace/company-research/OperatingGraph.tsx",
+      "sha256": "cabde001746114414b7e211672dbb3744b16adb88dceeb02fda525c4454e3d8b",
+      "target": "src/company/OperatingGraph.tsx"
+    },
+    {
+      "source": "product/apps/desktop/src/workspace/company-research/operating-graph.css",
+      "sha256": "9d71da49b0f9d4051ce3223c94f3a48f93e4e29c3b02256251aa6a263d2659ef",
+      "target": "src/company/operating-graph.css"
+    },
+    {
+      "source": "product/apps/desktop/src/data/companyOperatingScene.ts",
+      "sha256": "8f666502052e8a3bbcb690fcd069a87280efb8bb841c1c42c4cc087415e21491",
+      "target": "src/company/companyOperatingScene.ts"
+    },
+    {
+      "source": "product/apps/desktop/src/data/companyOperatingLayout.ts",
+      "sha256": "ecb6c79c598621a3796ca7e5dbfcb0933898afe446aeb9d3af26771c45588e72",
+      "target": "src/company/companyOperatingLayout.ts"
+    },
+    {
+      "source": "product/apps/desktop/src/data/companyResearchGraph.ts",
+      "sha256": "9b95dcfed846350f12b3fc563422bdb83d5b721bdb37f68168885b235434be67",
+      "target": "src/company/companyResearchGraph.ts"
+    },
+    {
+      "source": "product/apps/desktop/src/data/companyResearchFormatting.ts",
+      "sha256": "b2e91cceec7424911f76ec58089869d37d32b8e51bf1c77ed8747e1c4a7faa62",
+      "target": "src/company/companyResearchFormatting.ts"
+    },
+    {
+      "source": "product/apps/desktop/src/data/companyResearch.ts",
+      "sha256": "314b95702e1e67f6ade29f3a43a6576937109242cb345e051144bb191b88812f",
+      "target": "src/company/companyResearch.ts",
+      "adaptation": "type-only contracts; legacy HTTP service omitted"
+    }
+  ],
+  "source_path_note": "Source paths are relative to the product workspace; absolute local paths removed for public sharing."
+}

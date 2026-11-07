@@ -1,0 +1,89 @@
+/* Keep the reading surface generous; the existing glass and video frame it. */
+.page:has(.episode-research)>.page-tabs {display:none}
+.episode-research,.episode-static-view,.episode-records-view,.episode-comparison-view {display:flex;flex:1;flex-direction:column;min-width:0;min-height:0}
+.episode-static-view[hidden],.episode-comparison-view[hidden] {display:none}
+.episode-research-heading {display:flex;align-items:center;gap:18px;padding:22px 0 20px;flex:0 0 auto}
+.episode-research-heading .episode-back {font-size:11px}
+.episode-research-identity {flex:1;min-width:0}
+.episode-research-identity h1 {display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;font-size:24px;line-height:1.3;font-weight:450;letter-spacing:-.025em;margin:0}
+.episode-research-identity h1 small {font-size:11px;letter-spacing:0;font-weight:400;color:#b1c7d7}
+.episode-research-identity p {font-size:11px;line-height:1.5;color:#b1c7d7;margin:6px 0 0;font-variant-numeric:tabular-nums}
+.episode-play-link.secondary {font-size:12px;padding:10px 13px;gap:7px;flex-shrink:0;background:#a5d9f510;border-color:#b2daf445;white-space:nowrap}
+.episode-chart-panel.liquid-glass {display:flex;flex-direction:column;flex:1;min-height:0;min-width:0;padding:14px 14px 0;border-radius:16px;background:linear-gradient(135deg,#102534e6,#091622f0 50%,#111d29eb);box-shadow:inset 0 1px 0 #d1eafa19}
+.episode-chart-toolbar {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0;padding:0 3px 12px;border-bottom:1px solid #a9c6d71c}
+.episode-chart-type {display:flex;align-items:center;gap:12px;font-size:13px;color:#deedf7;font-weight:500;white-space:nowrap}
+.episode-chart-type small {font-size:10px;font-weight:400;color:#a6bdce}
+.episode-chart-actions {display:flex;align-items:center;gap:4px}
+.episode-chart-actions button {display:flex;gap:7px;align-items:center;justify-content:center;min-width:30px;min-height:30px;border-radius:7px;color:#bfd4e4;font-size:11px;padding:6px}
+.episode-chart-actions button:first-child {padding:6px 9px;margin-right:5px;border:1px solid #a7cce42e}
+.episode-chart-actions button:hover:not(:disabled),.episode-chart-actions button.active {background:#b3d9ec18;color:#ecf8ff}
+.episode-chart-actions button:disabled {opacity:.3}
+.episode-quote {display:flex;align-items:center;gap:11px;flex-shrink:0;min-height:42px;font-size:11px;line-height:1.5;color:#8fa9bd;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;padding:7px 3px}
+.episode-quote time,.episode-quote b {font-weight:400;color:#d8e5ef}
+.episode-quote-position {margin-left:auto}
+.episode-candle-stage {position:relative;flex:1;min-height:160px;min-width:0;border-radius:8px;background:#091624a3}
+.episode-candle-stage .price-plot.large {height:100%;min-height:0;position:relative;width:100%;margin:0;padding:0}
+.episode-candle-stage .price-plot svg {display:block;width:100%;height:100%;min-height:0}
+.episode-candle-stage .axis-label,.episode-candle-stage .nav-axis-label {fill:#b4c9d9;font-size:11px}
+.episode-candle-stage .gridline {stroke-opacity:.12}
+.episode-candle-stage .candle-tooltip {font-size:10px;line-height:1.7;max-width:calc(100% - 24px);pointer-events:none}
+.episode-candle-stage .trade-marker:focus-visible rect {stroke:#e1f5ff;stroke-width:2}
+.episode-selection-action {max-width:calc(100% - 24px);white-space:nowrap;padding:7px 9px;gap:9px;border:1px solid #92c7e35c;background:#102536f5;box-shadow:0 6px 20px #02060a40}
+.episode-selection-action>span {font-size:11px;color:#d5e7f5}
+.episode-selection-action .primary {font-size:11px;padding:7px 10px;gap:6px}
+.episode-clear-selection {display:grid;place-items:center;min-width:26px;min-height:26px;color:#adc8da;border-radius:5px}
+.episode-clear-selection:hover {background:#afd3ed1c}
+.episode-selection-hint {position:absolute;top:12px;left:50%;transform:translateX(-50%);padding:8px 12px;border-radius:8px;background:#132b3deb;font-size:11px;white-space:nowrap;pointer-events:none;color:#d3e8f6}
+.episode-chart-range {display:flex;align-items:center;gap:10px;flex:0 0 40px;font-size:10px;color:#aec5d7;font-variant-numeric:tabular-nums;padding:0 4px}
+.episode-chart-range>div {position:relative;flex:1;height:24px;min-width:40px}
+.episode-chart-range>div:before {content:'';position:absolute;left:0;right:0;top:11px;height:3px;border-radius:4px;background:#375363}
+.episode-chart-range input {position:absolute;inset:0;width:100%;height:24px;margin:0;padding:0;background:transparent;border:0;pointer-events:none;appearance:none;-webkit-appearance:none;box-shadow:none}
+.episode-chart-range input::-webkit-slider-thumb {appearance:none;-webkit-appearance:none;width:12px;height:12px;border-radius:50%;border:2px solid #b9e5f7;background:#81c4df;box-shadow:0 0 0 3px #75c3e31a;pointer-events:auto;cursor:ew-resize}
+.episode-chart-range input::-moz-range-thumb {width:9px;height:9px;border-radius:50%;border:2px solid #b9e5f7;background:#81c4df;pointer-events:auto;cursor:ew-resize}
+.episode-chart-range input:focus-visible {outline:none}
+.episode-chart-range input:focus-visible::-webkit-slider-thumb {outline:2px solid #effaff;outline-offset:3px}
+.episode-chart-footer {display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #a9c6d71c;padding:12px 4px;flex-shrink:0;font-size:10px;line-height:1.5}
+.episode-records-toggle {display:flex;align-items:center;gap:8px;min-height:24px;text-align:left;color:#bdd0df;font-size:11px}
+.episode-records-toggle:hover {color:#e0f1fb}
+.episode-records-toggle b {font-weight:500;margin-left:5px;font-variant-numeric:tabular-nums}
+.episode-records-caption {color:#c1e4f7}
+.episode-chart-provenance {font-size:10px;color:#9db7ca;white-space:nowrap}
+.episode-research-hint {flex-shrink:0;font-size:10px;line-height:1.5;color:#adc2d2;margin:10px 0 0}
+.episode-records-view .episode-detail-summary.liquid-glass {grid-template-columns:1fr 1fr;padding:16px 20px}
+.episode-records-view .episode-detail-summary strong {font-size:23px}
+.episode-records-view .episode-timeline-workspace.liquid-glass {grid-template-columns:minmax(170px,.75fr) minmax(220px,1.25fr)}
+.episode-records-view .episode-timeline {padding:8px}
+.episode-records-view .episode-event-inspector {padding:18px}
+.episode-records-view .episode-step {gap:10px;padding:12px 10px;min-height:85px}
+.episode-records-view .episode-step-copy b>small {font-size:10px;margin-left:6px}
+.episode-comparison-view .replay-heading {min-height:70px;flex-basis:70px}
+.episode-comparison-view .replay-back {display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:11px;color:#c2ddec}
+.workspace:has(>.page .episode-research)>.chat-panel .chat-welcome h2 {font-size:22px}
+.workspace:has(>.page .episode-research)>.chat-panel .chat-welcome .orb-large {width:66px;height:66px}
+@container investment-experiences (max-width:720px) {
+ .episode-research-heading {gap:12px;padding:20px 0 17px}
+ .episode-research-heading .episode-back {font-size:0;gap:0;padding:9px 3px}
+ .episode-research-heading .episode-back svg {width:18px;height:18px}
+ .episode-research-identity h1 {font-size:22px}
+ .episode-research-identity h1 small {font-size:10px}
+ .episode-play-link.secondary {font-size:11px;padding:9px 10px}
+ .episode-chart-panel.liquid-glass {padding:12px 10px 0}
+ .episode-quote {gap:8px;font-size:10px}
+ .episode-quote-position {display:none}
+ .episode-chart-provenance {display:none}
+ .episode-chart-footer {padding:10px 4px}
+ .episode-records-view .episode-detail-heading>div {order:initial;flex-basis:initial}
+ .episode-records-view .episode-detail-heading h1 {font-size:21px}
+ .episode-records-view .episode-detail-heading>.secondary {display:none}
+ .episode-records-view .episode-timeline-workspace.liquid-glass {display:flex;flex-direction:column}
+ .episode-records-view .episode-timeline {display:flex;flex-shrink:0;height:95px;overflow-x:auto;overflow-y:hidden;border-right:0;border-bottom:1px solid var(--line)}
+ .episode-records-view .episode-step {flex:0 0 150px;min-height:0}
+ .episode-records-view .episode-step:after {display:none}
+}
+@media(max-height:760px) {
+ .episode-research-heading {padding-top:14px;padding-bottom:14px}
+ .episode-chart-toolbar {padding-bottom:8px}
+ .episode-quote {min-height:34px}
+ .episode-research-hint {margin-top:6px}
+ .episode-records-view .episode-detail-summary.liquid-glass {padding:12px 17px;gap:9px}
+}
